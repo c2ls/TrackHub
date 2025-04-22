@@ -2,6 +2,7 @@
 
 @inject IAppInfo appInfo
 @inject TransporterListViewModel ViewModel
+@inject ITransporterHelper transporterHelper
 
 <h1>Units</h1>
 
@@ -16,20 +17,23 @@ else
 			<tr>
 				<th>Name</th>
 				<th>Date Time</th>
-				<th>Address</th>
 				<th>Speed (Km/Hr)</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var item in ViewModel.Transporters)
 			{
-				<tr>
+				<tr @onclick="() => ViewModel.OnRowClick(item)">
 					<td>@item.DeviceName</td>
-					<td>@item.DeviceDateTime.DateTime</td>
-					<td>@item.Address</td>
+					<td>@transporterHelper.GetTimeDifference(item.DeviceDateTime.DateTime)</td>
 					<td>@item.Speed</td>
 				</tr>
 			}
 		</tbody>
 	</table>
+}
+
+@if (ViewModel.SelectedTransporter is not null)
+{
+	<TransporterDetail TransporterId="ViewModel.SelectedTransporter?.TransporterId" />
 }

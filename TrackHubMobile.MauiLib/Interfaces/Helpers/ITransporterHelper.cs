@@ -13,12 +13,9 @@
 //  limitations under the License.
 //
 
-using TrackHubMobile.Models;
+namespace TrackHubMobile.Interfaces.Helpers;
 
-namespace TrackHubMobile.Interfaces.Services;
-
-public interface IRouter
+public interface ITransporterHelper
 {
-    Task<IEnumerable<PositionVm>> GetDevicePositionsByUserAsync(CancellationToken cancellationToken);
-    Task<PositionVm> GetDeviceAsync(Guid transporterId, CancellationToken cancellationToken);
+    string GetTimeDifference(DateTime inputTime);
 }

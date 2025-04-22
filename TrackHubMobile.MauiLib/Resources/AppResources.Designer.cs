@@ -61,6 +61,33 @@ namespace TrackHubMobile.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to day.
+        /// </summary>
+        internal static string Day {
+            get {
+                return ResourceManager.GetString("Day", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to hour.
+        /// </summary>
+        internal static string Hour {
+            get {
+                return ResourceManager.GetString("Hour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Just Now.
+        /// </summary>
+        internal static string JustNow {
+            get {
+                return ResourceManager.GetString("JustNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to List View.
         /// </summary>
         internal static string ListView {
@@ -75,6 +102,15 @@ namespace TrackHubMobile.Resources {
         internal static string Logout {
             get {
                 return ResourceManager.GetString("Logout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to minute.
+        /// </summary>
+        internal static string Minute {
+            get {
+                return ResourceManager.GetString("Minute", resourceCulture);
             }
         }
     }

@@ -37,6 +37,7 @@ public static partial class MauiProgram
         builder.Services.AddSingleton<HomeViewModel>();
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<NavMenuViewModel>();
+        builder.Services.AddSingleton<TransporterDetailViewModel>();
         builder.Services.AddSingleton<TransporterListViewModel>();
         // Singleton will not allow NavigationManager to be injected
         builder.Services.AddSingleton<MainPage>();
@@ -54,6 +55,7 @@ public static partial class MauiProgram
         builder.Services.AddSingleton<IAuthentication, Authentication>();
         builder.Services.AddSingleton<ILocalizationResourceManager, LocalizationResourceManager>();
         builder.Services.AddSingleton<IGraphQLReader, GraphQLReader>();
+        builder.Services.AddSingleton<ITransporterHelper, TransporterHelper>();
         builder.Services.AddSingleton<IStorage, Storage>();
         builder.Services.AddSingleton<IRouter, Router>();
 
