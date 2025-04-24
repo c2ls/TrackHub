@@ -11,27 +11,15 @@
     x:DataType="vm:MainViewModel"
     mc:Ignorable="d">
     <ContentPage.Content>
-        <Grid RowDefinitions="*,40">
-            <BlazorWebView
-                x:Name="bwv"
-                HostPage="wwwroot/index.html"
-                StartPath="{Binding StartPath}">
-                <BlazorWebView.RootComponents>
-                    <RootComponent
-                        Selector="#app"
-                        ComponentType="{x:Type local:Main}" />
-                </BlazorWebView.RootComponents>
-            </BlazorWebView>
-            <Grid
-                Grid.Row="1"
-                BackgroundColor="{AppThemeBinding Dark={StaticResource BackgroundDark},
-                                                    Light={StaticResource Primary}}">
-                <Label
-                    x:Name="versionLabel"
-                    HorizontalOptions="Center"
-                    TextColor="{StaticResource White}"
-                    VerticalOptions="Center" />
-            </Grid>
-        </Grid>
+        <BlazorWebView
+            x:Name="bwv"
+            HostPage="wwwroot/index.html"
+            StartPath="{Binding StartPath}">
+            <BlazorWebView.RootComponents>
+                <RootComponent
+                    Selector="#app"
+                    ComponentType="{x:Type local:Main}" />
+            </BlazorWebView.RootComponents>
+        </BlazorWebView>
     </ContentPage.Content>
 </ContentPage>

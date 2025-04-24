@@ -4,36 +4,44 @@
 @inject TransporterListViewModel ViewModel
 @inject ITransporterHelper transporterHelper
 
-<h1>Units</h1>
+<h1>@LRM["Transporters"]</h1>
 
 @if (ViewModel.Transporters is null)
 {
-	<p><em>Loading...</em></p>
+    <p><em>@LRM["Loading"]...</em></p>
 }
 else
 {
-	<table class="@tableStyle">
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Date Time</th>
-				<th>Speed (Km/Hr)</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var item in ViewModel.Transporters)
-			{
-				<tr @onclick="() => ViewModel.OnRowClick(item)">
-					<td>@item.DeviceName</td>
-					<td>@transporterHelper.GetTimeDifference(item.DeviceDateTime.DateTime)</td>
-					<td>@item.Speed</td>
-				</tr>
-			}
-		</tbody>
-	</table>
-}
-
-@if (ViewModel.SelectedTransporter is not null)
-{
-	<TransporterDetail TransporterId="ViewModel.SelectedTransporter?.TransporterId" />
+    <div class="split-container">
+        <div class="top-section">
+            <table class="@tableStyle">
+                <thead>
+                    <tr>
+                        <th>@LRM["Name"]</th>
+                        <th>@LRM["LastUpdate"]</th>
+                        <th>@LRM["Speed"] (Km/Hr)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ViewModel.Transporters)
+                    {
+                        <tr @onclick="() => ViewModel.OnRowClick(item)"
+                            class="@(ViewModel.SelectedTransporter == item ? "selected-row" : "")">
+                            <td>@item.DeviceName</td>
+                            <td>@transporterHelper.GetTimeDifference(item.DeviceDateTime.DateTime)</td>
+                            <td>@item.Speed</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        @if (ViewModel.SelectedTransporter is not null)
+        {
+            <div class="bottom-section">
+                <TransporterDetail TransporterId="ViewModel.SelectedTransporter?.TransporterId" />
+            </div>
+        }
+        
+    </div>
 }

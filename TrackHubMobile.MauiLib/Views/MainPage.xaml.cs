@@ -13,9 +13,6 @@
 //  limitations under the License.
 //
 
-using System.Reflection;
-using TrackHubMobile.Services;
-
 namespace TrackHubMobile.Views;
 
 public partial class MainPage : ContentPage
@@ -26,9 +23,6 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
         BindingContext = this.viewModel = viewModel;
-
-        var version = typeof(MauiApp).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        versionLabel.Text = $".NET MAUI ver. {version?[..version.IndexOf('+')]}";
     }
 
     protected override async void OnAppearing()

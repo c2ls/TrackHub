@@ -18,4 +18,5 @@ namespace TrackHubMobile.Interfaces.Helpers;
 public interface ITransporterHelper
 {
     string GetTimeDifference(DateTime inputTime);
+    string GetAccStatus(bool? accStatus);
 }

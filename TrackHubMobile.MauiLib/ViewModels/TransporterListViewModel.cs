@@ -44,6 +44,13 @@ public partial class TransporterListViewModel(IRouter router, IDataRefresh dataR
 
     public void OnRowClick(PositionVm transporter)
     {
-        SelectedTransporter = transporter;
+        if (SelectedTransporter == transporter)
+        {
+            SelectedTransporter = null;
+        }
+        else
+        {
+            SelectedTransporter = transporter;
+        }
     }
 }

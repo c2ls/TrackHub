@@ -1,0 +1,28 @@
+﻿html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: auto; /* Allow scrolling */
+}
+
+.split-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 100px); /* Adjust for header height */
+    margin: 0;
+    padding: 0;
+}
+
+.top-section, .bottom-section {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.bottom-section {
+    border-top: 1px solid #ccc;
+}
+
+.selected-row {
+    border: 2px solid #0078d4;
+    font-weight: bold;
+}

@@ -34,4 +34,12 @@ public class TransporterHelper(ILocalizationResourceManager localization) : ITra
 
         return $"30+ {localization["Day"]}s";
     }
+
+    public string GetAccStatus(bool? accStatus)
+    {
+        if (accStatus is null)
+            return localization["AccUnknown"];
+        
+        return accStatus.Value ? localization["AccOn"] : localization["AccOff"];
+    }
 }

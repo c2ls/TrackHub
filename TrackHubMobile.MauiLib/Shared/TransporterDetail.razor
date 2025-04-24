@@ -1,26 +1,48 @@
 ﻿@inject IAppInfo appInfo
+@inject ITransporterHelper transporterHelper
 @inject TransporterDetailViewModel ViewModel
 
 @if (ViewModel.Transporter is null || ViewModel.IsRefreshing)
 {
-	<p><em>Loading...</em></p>
+	<p><em>@LRM["Loading"]...</em></p>
 } 
 else
 {
 	<div class="@alertStyle">
-		<div class="card-text p-3">
-			<p>
-				<span class="oi oi-pencil me-2" aria-hidden="true" style="display: inline;"></span>
-		<strong>@ViewModel.Transporter?.DeviceName</strong>
-			</p>
-			<p>
-				<span class="text-nowrap" style="display: inline;">
-			Please take our
-					<a target="_blank" class="font-weight-bold" href="https://go.microsoft.com/fwlink/?linkid=2149017">brief
-						survey</a>
-		</span>
-		and tell us what you think.
-			</p>
-		</div>
+        <div class="card-text p-3">
+            <h4>@LRM["Transporter Details"]</h4>
+            <ul class="details-list">
+                <li><strong>@LRM["Name"]:</strong> @ViewModel.Transporter?.DeviceName</li>
+                <li><strong>@LRM["LastReport"]:</strong> @ViewModel.Transporter?.DeviceDateTime</li>
+                <li><strong>@LRM["Speed"]:</strong> @ViewModel.Transporter?.Speed (Km/Hr)</li>
+                @if (!string.IsNullOrEmpty(ViewModel.Transporter?.Address))
+                {
+                    <li><strong>@LRM["Address"]:</strong> @ViewModel.Transporter?.Address</li>
+                }
+                @if (!string.IsNullOrEmpty(ViewModel.Transporter?.City))
+                {
+                    <li><strong>@LRM["City"]:</strong> @ViewModel.Transporter?.City</li>
+                }
+                @if (!string.IsNullOrEmpty(ViewModel.Transporter?.State))
+                {
+                    <li><strong>@LRM["State"]:</strong> @ViewModel.Transporter?.State</li>
+                }
+                @if (ViewModel.Transporter?.Attributes is not null)
+                {
+                    @if (ViewModel.Transporter?.Attributes?.Ignition is not null)
+                    {
+                        <li><strong>@LRM["AccStatus"]:</strong> @transporterHelper.GetAccStatus(ViewModel.Transporter?.Attributes?.Ignition)</li>
+                    }
+                    @if (ViewModel.Transporter?.Attributes?.Mileage is not null)
+                    {
+                        <li><strong>@LRM["Odometer"]:</strong> @ViewModel.Transporter?.Attributes?.Mileage</li>
+                    }
+                    @if (ViewModel.Transporter?.Attributes?.Temperature is not null)
+                    {
+                        <li><strong>@LRM["Temperature"]:</strong> @ViewModel.Transporter?.Attributes?.Temperature</li>
+                    }
+                }
+            </ul>
+        </div>
 	</div>
 }
