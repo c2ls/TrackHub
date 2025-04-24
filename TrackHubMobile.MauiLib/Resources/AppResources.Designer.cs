@@ -124,6 +124,15 @@ namespace TrackHubMobile.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Something went wrong.
+        /// </summary>
+        internal static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to hour.
         /// </summary>
         internal static string Hour {

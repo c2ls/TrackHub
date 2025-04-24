@@ -14,6 +14,7 @@
 //
 
 using TrackHubMobile.Helpers;
+using TrackHubMobile.Interfaces.Helpers;
 using TrackHubMobile.Interfaces.Services;
 
 namespace TrackHubMobile;
@@ -22,11 +23,12 @@ public partial class App : Application
 {
     private readonly IServiceProvider _services;
 
-    public App(IServiceProvider services)
+    public App(IServiceProvider services, IToastDisplay toastDisplay)
     {
         InitializeComponent();
         _services = services;
 
+        toastDisplay.Initialize();
         UserAppTheme = PlatformAppTheme;
     }
 

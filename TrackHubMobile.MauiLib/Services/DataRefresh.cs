@@ -13,13 +13,14 @@
 //  limitations under the License.
 //
 
+using TrackHubMobile.Interfaces.Helpers;
 using TrackHubMobile.Interfaces.Services;
 using TrackHubMobile.Messages;
 using TrackHubMobile.Models;
 
 namespace TrackHubMobile.Services;
 
-public class DataRefresh(IRouter router) : IAsyncDisposable, IDataRefresh
+public class DataRefresh(IRouter router, ILocalizationResourceManager localization) : IAsyncDisposable, IDataRefresh
 {
     private Timer? _timer;
     private int _counter = 0;
@@ -98,8 +99,11 @@ public class DataRefresh(IRouter router) : IAsyncDisposable, IDataRefresh
         }
         catch
         {
-            // Notify UI
-            // Log errors
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                WeakReferenceMessenger.Default.Send(new ToastMessage(localization["Error"], true));
+            });
+            //TODO: Log Error
         }
     }
 

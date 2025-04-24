@@ -34,11 +34,14 @@ public static partial class MauiProgram
                    fonts.AddFont("OpenSans-SemiBold.ttf", "OpenSansSemiBold");
                });
 
+        //ViewModels
         builder.Services.AddSingleton<HomeViewModel>();
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<NavMenuViewModel>();
         builder.Services.AddSingleton<TransporterDetailViewModel>();
         builder.Services.AddSingleton<TransporterListViewModel>();
+
+        //Pages
         // Singleton will not allow NavigationManager to be injected
         builder.Services.AddSingleton<MainPage>();
 
@@ -50,14 +53,18 @@ public static partial class MauiProgram
         builder.Services.AddHttpClient("Auth");
         builder.Services.AddMauiBlazorWebView();
         builder.Services.AddSingleton(AppInfo.Current);
-        builder.Services.AddSingleton<IDataRefresh, DataRefresh>();
 
-        builder.Services.AddSingleton<IAuthentication, Authentication>();
-        builder.Services.AddSingleton<ILocalizationResourceManager, LocalizationResourceManager>();
+        //Helpers
         builder.Services.AddSingleton<IGraphQLReader, GraphQLReader>();
+        builder.Services.AddSingleton<ILocalizationResourceManager, LocalizationResourceManager>();
+        builder.Services.AddSingleton<IToastDisplay, ToastDisplay>();
         builder.Services.AddSingleton<ITransporterHelper, TransporterHelper>();
-        builder.Services.AddSingleton<IStorage, Storage>();
+
+        //Services
+        builder.Services.AddSingleton<IAuthentication, Authentication>();
+        builder.Services.AddSingleton<IDataRefresh, DataRefresh>();
         builder.Services.AddSingleton<IRouter, Router>();
+        builder.Services.AddSingleton<IStorage, Storage>();
 
         var app = builder.Build();
         ServiceHelper.Services = app.Services;

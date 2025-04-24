@@ -17,6 +17,7 @@ using System.Text;
 using System.Text.Json;
 using TrackHubMobile.Interfaces.Helpers;
 using TrackHubMobile.Interfaces.Services;
+using TrackHubMobile.Messages;
 using TrackHubMobile.Utils;
 
 namespace TrackHubMobile.Helpers;
@@ -24,6 +25,7 @@ namespace TrackHubMobile.Helpers;
 public sealed class GraphQLReader(
     IHttpClientFactory httpClientFactory, 
     IAuthentication authentication,
+    ILocalizationResourceManager localization,
     IStorage storage) : IGraphQLReader
 {
     private readonly HttpClient client = httpClientFactory.CreateClient("GraphQL");
@@ -58,12 +60,16 @@ public sealed class GraphQLReader(
 
         if (root.TryGetProperty("errors", out var errorsElement) && errorsElement.ValueKind == JsonValueKind.Array)
         {
-            // Notify UI
-            // Log errorsElement.GetRawText()
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                WeakReferenceMessenger.Default.Send(new ToastMessage(localization["Error"], true));
+            });
+
             var errors = errorsElement.EnumerateArray()
                 .Select(e => e.GetProperty("message").GetString())
                 .Where(msg => !string.IsNullOrWhiteSpace(msg))
                 .ToList()!;
+            // TODO: Log errorsElement.GetRawText()
 
             return default;
         }
