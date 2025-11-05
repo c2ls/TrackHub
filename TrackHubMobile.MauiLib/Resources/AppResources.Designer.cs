@@ -133,6 +133,15 @@ namespace TrackHubMobile.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Home.
+        /// </summary>
+        internal static string Home {
+            get {
+                return ResourceManager.GetString("Home", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to hour.
         /// </summary>
         internal static string Hour {
@@ -192,6 +201,15 @@ namespace TrackHubMobile.Resources {
         internal static string Logout {
             get {
                 return ResourceManager.GetString("Logout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Map View.
+        /// </summary>
+        internal static string MapView {
+            get {
+                return ResourceManager.GetString("MapView", resourceCulture);
             }
         }
         

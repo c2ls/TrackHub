@@ -27,7 +27,6 @@ public static partial class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>()
                .UseMauiCommunityToolkit()
-               .UseMauiMaps()
                .ConfigureFonts(fonts =>
                {
                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -45,7 +44,6 @@ public static partial class MauiProgram
         // Singleton will not allow NavigationManager to be injected
         builder.Services.AddSingleton<MainPage>();
 
-        //builder.Services.AddHttpClient();
         builder.Services.AddHttpClient("GraphQL", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);

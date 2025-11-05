@@ -18,10 +18,6 @@ global using CommunityToolkit.Maui.Behaviors;
 global using CommunityToolkit.Maui.Converters;
 global using CommunityToolkit.Maui.Views;
 
-// MAUI Maps
-global using Microsoft.Maui.Controls.Maps;
-global using Microsoft.Maui.Maps;
-
 // MVVM Toolkit
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;

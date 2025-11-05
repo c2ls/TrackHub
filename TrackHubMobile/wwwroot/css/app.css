@@ -11,6 +11,12 @@ html, body, #app {
     overflow: hidden;
 }
 
+html, body, #app, .page, .main, .content, .maui-blazor, .maui-blazor-root {
+    height: 100% !important;
+    margin: 0;
+    padding: 0;
+}
+
 h1:focus {
     outline: none;
 }

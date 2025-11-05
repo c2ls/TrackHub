@@ -13,31 +13,29 @@
 //  limitations under the License.
 //
 
-using Microsoft.AspNetCore.Components;
-using TrackHubMobile.Interfaces.Services;
+using Microsoft.JSInterop;
 
 namespace TrackHubMobile.Pages;
 
-public partial class Home(
-    IDataRefresh refresh,
-    NavigationManager navigationManager) : ActiveScreenComponentBase(refresh, navigationManager)
+public partial class TransporterMap(IJSRuntime JS)
 {
+    private IEnumerable<Position> positions =
+            [
+                new Position { Lat = 12.34, Lng = 56.78 },
+                new Position { Lat = 90.12, Lng = 45.67 }
+            ];
 
-    private void NavigateToListView()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Replace with actual navigation logic
-        Navigation.NavigateTo("/listview");
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initMap", positions);
+        }
     }
+}
 
-    private void NavigateToMapView()
-    {
-        // Replace with actual navigation logic
-        Navigation.NavigateTo("/mapview");
-    }
-
-    protected override void OnInitialized()
-    {
-        ViewModel.OnUpdated = StateHasChanged;
-    }
-
+public class Position
+{
+    public double Lat { get; set; }
+    public double Lng { get; set; }
 }

@@ -141,6 +141,9 @@
   <data name="Error" xml:space="preserve">
     <value>Algo salió mal</value>
   </data>
+  <data name="Home" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
   <data name="Hour" xml:space="preserve">
     <value>hora</value>
   </data>
@@ -161,6 +164,9 @@
   </data>
   <data name="Logout" xml:space="preserve">
     <value>Cerrar Sesión</value>
+  </data>
+  <data name="MapView" xml:space="preserve">
+    <value>Mapa</value>
   </data>
   <data name="Minute" xml:space="preserve">
     <value>minuto</value>
