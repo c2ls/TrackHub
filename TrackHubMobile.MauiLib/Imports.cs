@@ -25,7 +25,6 @@ global using CommunityToolkit.Mvvm.Messaging;
 
 global using TrackHubMobile;
 global using TrackHubMobile.ViewModels;
-global using TrackHubMobile.Views;
 
 // Static
-global using static Microsoft.Maui.Graphics.Colors;
+global using static Microsoft.Maui.Graphics.Colors;global using static Microsoft.Maui.Graphics.Colors;
