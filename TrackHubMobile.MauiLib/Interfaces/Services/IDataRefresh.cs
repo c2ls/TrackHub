@@ -19,9 +19,10 @@ namespace TrackHubMobile.Interfaces.Services;
 
 public interface IDataRefresh
 {
-    IEnumerable<PositionVm> Transporters { get; set; }
+    IEnumerable<PositionVm> Transporters { get; }
 
     ValueTask DisposeAsync();
+    Task ForceRefreshAsync();
     Task SetAppActive(bool isActive, bool forceRefresh = false);
     void SetScreenActive(bool isActive);
 }

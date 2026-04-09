@@ -18,17 +18,47 @@ using TrackHubMobile.Models;
 
 namespace TrackHubMobile.ViewModels;
 
-public partial class TransporterDetailViewModel(IRouter router) : BaseViewModel
+public partial class TransporterDetailViewModel(IRouter router, IDataRefresh dataRefresh) : BaseViewModel
 {
     [ObservableProperty]
     private PositionVm? transporter;
     [ObservableProperty]
     private bool isRefreshing;
+    [ObservableProperty]
+    private bool hasError;
 
     public async Task OnTransporterSelected(Guid transporterId)
     {
+        HasError = false;
         IsRefreshing = true;
-        Transporter = await router.GetDeviceAsync(transporterId, CancellationToken.None);
-        IsRefreshing = false;
+
+        // Show cached basic data immediately while full details load
+        var cached = dataRefresh.Transporters.FirstOrDefault(t => t.TransporterId == transporterId);
+        if (cached.TransporterId != Guid.Empty)
+        {
+            Transporter = cached;
+        }
+
+        try
+        {
+            var result = await router.GetDeviceAsync(transporterId, CancellationToken.None);
+            if (result.DeviceDateTime != default)
+            {
+                Transporter = result;
+            }
+            // If API returned default but we have cached data, keep showing it
+        }
+        catch
+        {
+            // API failed — keep showing cached data if available
+            if (Transporter is null)
+            {
+                HasError = true;
+            }
+        }
+        finally
+        {
+            IsRefreshing = false;
+        }
     }
 }

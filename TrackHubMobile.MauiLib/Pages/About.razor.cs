@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2025 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,17 +13,8 @@
 //  limitations under the License.
 //
 
-using TrackHubMobile.Interfaces.Services;
+namespace TrackHubMobile.Pages;
 
-namespace TrackHubMobile.ViewModels;
-
-public partial class MainViewModel(IAuthentication authService) : BaseViewModel("Home")
+public partial class About
 {
-    [ObservableProperty]
-    private string startPath = "/";
-
-    public async Task InitializeAsync()
-    {
-        await authService.LoginAsync();
-    }
 }

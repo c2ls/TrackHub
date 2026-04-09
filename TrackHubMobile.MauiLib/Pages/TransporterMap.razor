@@ -1,3 +1,14 @@
 ﻿@page "/mapview"
 
-<div id="map"></div>
+@inherits ActiveScreenComponentBase
+
+<div id="map-container">
+    @if (isLoading)
+    {
+        <div class="map-loading">
+            <i class="fas fa-circle-notch fa-2x fa-spin"></i>
+            <p>@LRM["Loading"]...</p>
+        </div>
+    }
+    <div id="map"></div>
+</div>

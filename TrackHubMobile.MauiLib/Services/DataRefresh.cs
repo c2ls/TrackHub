@@ -22,13 +22,17 @@ namespace TrackHubMobile.Services;
 
 public class DataRefresh(IRouter router, ILocalizationResourceManager localization) : IAsyncDisposable, IDataRefresh
 {
-    private Timer? _timer;
-    private int _counter = 0;
-    private bool _isActiveScreen = false;
-    private bool _isAppActive = true;
-    private CancellationTokenSource? _cancellationTokenSource;
+    private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan RestartDelay = TimeSpan.FromMilliseconds(500);
 
-    public IEnumerable<PositionVm> Transporters { get; set; } = [];
+    private Timer? _timer;
+    private bool _isActiveScreen;
+    private bool _isAppActive = true;
+    private int _isRefreshing;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private readonly object _timerLock = new();
+
+    public IEnumerable<PositionVm> Transporters { get; private set; } = [];
 
     public void SetScreenActive(bool isActive)
     {
@@ -40,53 +44,86 @@ public class DataRefresh(IRouter router, ILocalizationResourceManager localizati
     {
         _isAppActive = isActive;
         CheckTimerStatus();
-        if (forceRefresh)
+        if (forceRefresh && _isActiveScreen)
         {
-            await RefreshDataAsync(_cancellationTokenSource?.Token ?? CancellationToken.None);
+            await ForceRefreshAsync();
+        }
+    }
+
+    public async Task ForceRefreshAsync()
+    {
+        var cts = _cancellationTokenSource;
+        if (cts == null || cts.IsCancellationRequested) return;
+
+        try
+        {
+            await RefreshDataAsync(cts.Token);
+        }
+        catch (ObjectDisposedException)
+        {
+            // CTS was disposed during navigation — safe to ignore
         }
     }
 
     private void CheckTimerStatus()
     {
-        if (_isActiveScreen && _isAppActive)
+        lock (_timerLock)
         {
-            if (_timer == null)
+            if (_isActiveScreen && _isAppActive)
             {
-                _cancellationTokenSource = new CancellationTokenSource();
-                _timer = new Timer(Tick, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+                if (_timer == null)
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    // Use a short delay instead of TimeSpan.Zero to avoid
+                    // racing with a still-running OnTick from the previous timer
+                    var startDelay = Transporters.Any() ? RestartDelay : TimeSpan.Zero;
+                    _timer = new Timer(OnTick, null, startDelay, RefreshInterval);
+                }
+            }
+            else
+            {
+                StopTimer();
             }
         }
-        else
-        {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
-
-            _timer?.Dispose();
-            _timer = null;
-        }
     }
 
-    private void Tick(object? state)
+    private void StopTimer()
     {
-        _ = TickAsync();
+        // Cancel first so in-flight requests stop
+        var oldCts = _cancellationTokenSource;
+        _cancellationTokenSource = null;
+        oldCts?.Cancel();
+
+        _timer?.Dispose();
+        _timer = null;
+
+        // Reset reentrancy guard so the next timer start isn't blocked
+        Interlocked.Exchange(ref _isRefreshing, 0);
+
+        // Dispose CTS after resetting the guard to avoid ObjectDisposedException
+        // while OnTick is still reading the token
+        oldCts?.Dispose();
     }
 
-    private async Task TickAsync()
+    private async void OnTick(object? state)
     {
+        if (Interlocked.CompareExchange(ref _isRefreshing, 1, 0) != 0)
+            return;
+
         try
         {
-            _counter++;
+            var cts = _cancellationTokenSource;
+            if (cts == null || cts.IsCancellationRequested) return;
 
-            if (_counter >= 6) // 30 seconds
-            {
-                _counter = 0;
-                await RefreshDataAsync(_cancellationTokenSource?.Token ?? CancellationToken.None);
-            }
+            await RefreshDataAsync(cts.Token);
         }
-        catch (Exception ex)
+        catch (ObjectDisposedException)
         {
-            Console.WriteLine($"Error in Tick: {ex.Message}");
+            // CTS was disposed during navigation — safe to ignore
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _isRefreshing, 0);
         }
     }
 
@@ -94,26 +131,40 @@ public class DataRefresh(IRouter router, ILocalizationResourceManager localizati
     {
         try
         {
-            Transporters = await router.GetDevicePositionsByUserAsync(cancellationToken);
-            WeakReferenceMessenger.Default.Send(new DataRefreshedMessage(Transporters));
+            if (cancellationToken.IsCancellationRequested) return;
+
+            var result = await router.GetDevicePositionsByUserAsync(cancellationToken);
+
+            if (!cancellationToken.IsCancellationRequested && result.Any())
+            {
+                Transporters = result;
+                WeakReferenceMessenger.Default.Send(new DataRefreshedMessage(Transporters));
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when screen/app goes inactive during a request
         }
         catch
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            // Only show error if we have no cached data at all
+            if (!Transporters.Any())
             {
-                WeakReferenceMessenger.Default.Send(new ToastMessage(localization["Error"], true));
-            });
-            //TODO: Log Error
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    WeakReferenceMessenger.Default.Send(new ToastMessage(localization["Error"], true));
+                });
+            }
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = null;
-
-        _timer?.Dispose();
-        _timer = null;
+        lock (_timerLock)
+        {
+            StopTimer();
+        }
+        GC.SuppressFinalize(this);
+        await Task.CompletedTask;
     }
 }

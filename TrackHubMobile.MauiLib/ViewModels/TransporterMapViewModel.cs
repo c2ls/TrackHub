@@ -18,39 +18,31 @@ using TrackHubMobile.Models;
 
 namespace TrackHubMobile.ViewModels;
 
-public partial class TransporterMapViewModel(IRouter router, IDataRefresh dataRefresh) : BaseViewModel
+public partial class TransporterMapViewModel(IDataRefresh dataRefresh) : BaseViewModel
 {
     [ObservableProperty]
     private IEnumerable<PositionVm>? transporters = null;
     [ObservableProperty]
     private bool isRefreshing;
-    [ObservableProperty]
-    private PositionVm? selectedTransporter;
 
-    public async Task RefreshDataAsync(CancellationToken cancellationToken)
+    public async Task LoadDataAsync()
     {
-        Transporters = null;
+        var existing = dataRefresh.Transporters;
+        if (existing.Any())
+        {
+            Transporters = existing;
+            return;
+        }
+
         IsRefreshing = true;
         try
         {
-            Transporters = await router.GetDevicePositionsByUserAsync(cancellationToken);
-            dataRefresh.Transporters = Transporters;
+            await dataRefresh.ForceRefreshAsync();
+            Transporters = dataRefresh.Transporters;
         }
         finally
         {
             IsRefreshing = false;
-        }
-    }
-
-    public void OnRowClick(PositionVm transporter)
-    {
-        if (SelectedTransporter == transporter)
-        {
-            SelectedTransporter = null;
-        }
-        else
-        {
-            SelectedTransporter = transporter;
         }
     }
 }

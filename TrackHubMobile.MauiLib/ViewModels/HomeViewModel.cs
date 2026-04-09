@@ -20,30 +20,48 @@ namespace TrackHubMobile.ViewModels;
 public partial class HomeViewModel : BaseViewModel
 {
     [ObservableProperty]
-    public int total = 0;
+    private int total;
     [ObservableProperty]
-    public int inMovement = 0;
+    private int inMovement;
     [ObservableProperty]
-    public int offline = 0;
+    private int stopped;
     [ObservableProperty]
-    public int speeding = 0;
+    private int offline;
+    [ObservableProperty]
+    private int speeding;
+    [ObservableProperty]
+    private int ignitionOn;
+    [ObservableProperty]
+    private double averageSpeed;
+    [ObservableProperty]
+    private DateTimeOffset? lastGlobalUpdate;
 
     public HomeViewModel() : base("Dashboard")
     {
         WeakReferenceMessenger.Default.Register<DataRefreshedMessage>(this, HandleRefreshMessage);
     }
+
     public Action? OnUpdated { get; set; }
 
     private void HandleRefreshMessage(object recipient, DataRefreshedMessage message)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            var transporters = message.Value;
-            Total = transporters.Count();
+            var transporters = message.Value.ToList();
+            var offlineThreshold = DateTimeOffset.UtcNow.AddHours(-2);
+
+            Total = transporters.Count;
             InMovement = transporters.Count(t => t.Speed > 0);
-            var offlineTime = DateTime.Now.AddHours(-2);
-            Offline = transporters.Count(t => t.DeviceDateTime < offlineTime);
+            Offline = transporters.Count(t => t.DeviceDateTime < offlineThreshold);
+            Stopped = Total - InMovement - Offline;
             Speeding = transporters.Count(t => t.Speed > 80);
+            IgnitionOn = transporters.Count(t => t.Attributes?.Ignition == true);
+            AverageSpeed = transporters.Count > 0
+                ? Math.Round(transporters.Average(t => t.Speed), 1)
+                : 0;
+            LastGlobalUpdate = transporters.Count > 0
+                ? transporters.Max(t => t.DeviceDateTime)
+                : null;
 
             OnUpdated?.Invoke();
         });

@@ -192,4 +192,94 @@
   <data name="Transporters" xml:space="preserve">
     <value>Units</value>
   </data>
+  <data name="SearchUnits" xml:space="preserve">
+    <value>Search units</value>
+  </data>
+  <data name="NoUnitsFound" xml:space="preserve">
+    <value>No units found</value>
+  </data>
+  <data name="OpenInGoogleMaps" xml:space="preserve">
+    <value>Google Maps</value>
+  </data>
+  <data name="ShowOnMap" xml:space="preserve">
+    <value>Show on Map</value>
+  </data>
+  <data name="ShareLocation" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="TransporterType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Coordinates" xml:space="preserve">
+    <value>Coordinates</value>
+  </data>
+  <data name="Altitude" xml:space="preserve">
+    <value>Altitude</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>Attributes</value>
+  </data>
+  <data name="Satellites" xml:space="preserve">
+    <value>Satellites</value>
+  </data>
+  <data name="Hourmeter" xml:space="preserve">
+    <value>Hourmeter</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="TotalUnits" xml:space="preserve">
+    <value>Total Units</value>
+  </data>
+  <data name="InMovement" xml:space="preserve">
+    <value>In Movement</value>
+  </data>
+  <data name="Stopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="Speeding" xml:space="preserve">
+    <value>Speeding</value>
+  </data>
+  <data name="IgnitionOn" xml:space="preserve">
+    <value>Ignition On</value>
+  </data>
+  <data name="AvgSpeed" xml:space="preserve">
+    <value>Avg. Speed</value>
+  </data>
+  <data name="LastGlobalUpdate" xml:space="preserve">
+    <value>Last Update</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Build" xml:space="preserve">
+    <value>Build</value>
+  </data>
+  <data name="AboutDescription" xml:space="preserve">
+    <value>TrackHub Mobile lets you monitor your fleet in real time. View unit locations, status, and details from anywhere.</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Developer" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="AllRightsReserved" xml:space="preserve">
+    <value>All rights reserved.</value>
+  </data>
 </root>

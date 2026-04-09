@@ -2,19 +2,23 @@
 @inject ITransporterHelper transporterHelper
 @inject TransporterDetailViewModel ViewModel
 
-@if (ViewModel.Transporter is null || ViewModel.IsRefreshing)
+@if (ViewModel.Transporter is null && ViewModel.IsRefreshing)
 {
 	<p><em>@LRM["Loading"]...</em></p>
+}
+else if (ViewModel.HasError && ViewModel.Transporter is null)
+{
+	<p class="text-muted"><em>@LRM["Error"]</em></p>
 } 
-else
+else if (ViewModel.Transporter is not null)
 {
 	<div class="@alertStyle">
         <div class="card-text p-3">
-            <h4>@LRM["Transporter Details"]</h4>
+            <h4>@LRM["TransporterDetails"]</h4>
             <ul class="details-list">
                 <li><strong>@LRM["Name"]:</strong> @ViewModel.Transporter?.DeviceName</li>
-                <li><strong>@LRM["LastReport"]:</strong> @ViewModel.Transporter?.DeviceDateTime</li>
-                <li><strong>@LRM["Speed"]:</strong> @ViewModel.Transporter?.Speed (Km/Hr)</li>
+                <li><strong>@LRM["LastReport"]:</strong> @ViewModel.Transporter?.DeviceDateTime.ToString("g")</li>
+                <li><strong>@LRM["Speed"]:</strong> @ViewModel.Transporter?.Speed km/h</li>
                 @if (!string.IsNullOrEmpty(ViewModel.Transporter?.Address))
                 {
                     <li><strong>@LRM["Address"]:</strong> @ViewModel.Transporter?.Address</li>

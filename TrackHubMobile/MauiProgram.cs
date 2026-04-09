@@ -37,11 +37,13 @@ public static partial class MauiProgram
                });
 
         //ViewModels
+        builder.Services.AddSingleton<AboutViewModel>();
         builder.Services.AddSingleton<HomeViewModel>();
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<NavMenuViewModel>();
         builder.Services.AddSingleton<TransporterDetailViewModel>();
         builder.Services.AddSingleton<TransporterListViewModel>();
+        builder.Services.AddSingleton<TransporterMapViewModel>();
 
         //Pages
         // Singleton will not allow NavigationManager to be injected

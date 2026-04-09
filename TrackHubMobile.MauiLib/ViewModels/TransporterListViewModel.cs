@@ -18,7 +18,7 @@ using TrackHubMobile.Models;
 
 namespace TrackHubMobile.ViewModels;
 
-public partial class TransporterListViewModel(IRouter router, IDataRefresh dataRefresh) : BaseViewModel
+public partial class TransporterListViewModel(IDataRefresh dataRefresh) : BaseViewModel
 {
     [ObservableProperty]
     private IEnumerable<PositionVm>? transporters = null;
@@ -26,15 +26,29 @@ public partial class TransporterListViewModel(IRouter router, IDataRefresh dataR
     private bool isRefreshing;
     [ObservableProperty]
     private PositionVm? selectedTransporter;
+    [ObservableProperty]
+    private string searchText = string.Empty;
 
-    public async Task RefreshDataAsync(CancellationToken cancellationToken)
+    public IEnumerable<PositionVm>? FilteredTransporters =>
+        string.IsNullOrWhiteSpace(SearchText)
+            ? Transporters
+            : Transporters?.Where(t =>
+                t.DeviceName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+
+    public async Task LoadDataAsync()
     {
-        Transporters = null;
+        var existing = dataRefresh.Transporters;
+        if (existing.Any())
+        {
+            Transporters = existing;
+            return;
+        }
+
         IsRefreshing = true;
         try
         {
-            Transporters = await router.GetDevicePositionsByUserAsync(cancellationToken);
-            dataRefresh.Transporters = Transporters;
+            await dataRefresh.ForceRefreshAsync();
+            Transporters = dataRefresh.Transporters;
         }
         finally
         {
@@ -42,9 +56,15 @@ public partial class TransporterListViewModel(IRouter router, IDataRefresh dataR
         }
     }
 
+    public void UpdateFromRefresh(IEnumerable<PositionVm> transporters)
+    {
+        Transporters = transporters;
+        OnPropertyChanged(nameof(FilteredTransporters));
+    }
+
     public void OnRowClick(PositionVm transporter)
     {
-        if (SelectedTransporter == transporter)
+        if (SelectedTransporter?.TransporterId == transporter.TransporterId)
         {
             SelectedTransporter = null;
         }
@@ -52,5 +72,11 @@ public partial class TransporterListViewModel(IRouter router, IDataRefresh dataR
         {
             SelectedTransporter = transporter;
         }
+    }
+
+    public void OnSearchChanged(string value)
+    {
+        SearchText = value;
+        OnPropertyChanged(nameof(FilteredTransporters));
     }
 }

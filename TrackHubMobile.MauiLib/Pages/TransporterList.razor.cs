@@ -13,22 +13,57 @@
 //  limitations under the License.
 //
 
+using Microsoft.AspNetCore.Components;
+using TrackHubMobile.Interfaces.Services;
+using TrackHubMobile.Messages;
+using TrackHubMobile.Models;
+
 namespace TrackHubMobile.Pages;
 
-public partial class TransporterList
+public partial class TransporterList(
+    IDataRefresh refresh,
+    NavigationManager navigationManager) : ActiveScreenComponentBase(refresh, navigationManager), IDisposable
 {
-
-    private string? tableStyle;
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        tableStyle = appInfo.RequestedTheme switch
-        {
-            AppTheme.Dark => "table table-dark",
-            _ => "table"
-        };
-
-        await ViewModel.RefreshDataAsync(CancellationToken.None);
+        base.OnInitialized();
+        WeakReferenceMessenger.Default.Register<DataRefreshedMessage>(this, HandleRefreshMessage);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await ViewModel.LoadDataAsync();
+            StateHasChanged();
+        }
+    }
+
+    private void HandleRefreshMessage(object recipient, DataRefreshedMessage message)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ViewModel.UpdateFromRefresh(message.Value);
+            StateHasChanged();
+        });
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        ViewModel.OnSearchChanged(e.Value?.ToString() ?? string.Empty);
+    }
+
+    private static string GetStatusClass(PositionVm unit)
+    {
+        var hoursSinceReport = (DateTimeOffset.UtcNow - unit.DeviceDateTime).TotalHours;
+        if (hoursSinceReport > 2) return "status-offline";
+        return unit.Speed > 0 ? "status-moving" : "status-stopped";
+    }
+
+    public new void Dispose()
+    {
+        WeakReferenceMessenger.Default.Unregister<DataRefreshedMessage>(this);
+        base.Dispose();
+    }
 }
