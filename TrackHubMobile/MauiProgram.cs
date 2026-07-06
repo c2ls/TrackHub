@@ -66,6 +66,7 @@ public static partial class MauiProgram
         //Services
         builder.Services.AddSingleton<IAuthentication, Authentication>();
         builder.Services.AddSingleton<IDataRefresh, DataRefresh>();
+        builder.Services.AddSingleton<IManager, Manager>();
         builder.Services.AddSingleton<IRouter, Router>();
         builder.Services.AddSingleton<IStorage, Storage>();
 

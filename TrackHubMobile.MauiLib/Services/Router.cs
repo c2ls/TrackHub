@@ -91,4 +91,85 @@ public sealed class Router(IGraphQLReader reader) : IRouter
         var response = await reader.ExecuteGraphQLQuery<PositionVm>(Constants.RouterUrl, query, "devicePositionByTransporter", cancellationToken);
         return response;
     }
+
+    /// <summary>
+    /// Retrieves the trips of a transporter within a date range.
+    /// </summary>
+    /// <param name="transporterId">The unique identifier of the transporter.</param>
+    /// <param name="from">Range start (inclusive).</param>
+    /// <param name="to">Range end (inclusive).</param>
+    /// <param name="source">Optional history source enum literal (STORED or PROVIDER). Omitted when null.</param>
+    /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
+    /// <returns>A <see cref="GraphQLResult{T}"/> wrapping the trips or the first GraphQL error.</returns>
+    public async Task<GraphQLResult<IEnumerable<TripVm>>> GetTripsByTransporterAsync(
+        Guid transporterId,
+        DateTimeOffset from,
+        DateTimeOffset to,
+        string? source,
+        CancellationToken cancellationToken)
+    {
+        string query = $@"
+        query {{
+          tripsByTransporter(query: {{ transporterId: ""{transporterId}"", from: ""{from:o}"", to: ""{to:o}""{FormatSourceArgument(source)} }}) {{
+            averageSpeed
+            duration
+            totalDistance
+            tripId
+            type
+            from
+            to
+            points {{
+              course
+              deviceDateTime
+              eventId
+              latitude
+              longitude
+              speed
+            }}
+          }}
+        }}";
+
+        return await reader.ExecuteGraphQLQueryWithErrors<IEnumerable<TripVm>>(Constants.RouterUrl, query, "tripsByTransporter", cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves the raw positions of a transporter within a date range.
+    /// </summary>
+    /// <param name="transporterId">The unique identifier of the transporter.</param>
+    /// <param name="from">Range start (inclusive).</param>
+    /// <param name="to">Range end (inclusive).</param>
+    /// <param name="source">Optional history source enum literal (STORED or PROVIDER). Omitted when null.</param>
+    /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
+    /// <returns>A <see cref="GraphQLResult{T}"/> wrapping the positions or the first GraphQL error.</returns>
+    public async Task<GraphQLResult<IEnumerable<PositionVm>>> GetPositionsByTransporterAsync(
+        Guid transporterId,
+        DateTimeOffset from,
+        DateTimeOffset to,
+        string? source,
+        CancellationToken cancellationToken)
+    {
+        string query = $@"
+        query {{
+          positionsByTransporter(query: {{ transporterId: ""{transporterId}"", from: ""{from:o}"", to: ""{to:o}""{FormatSourceArgument(source)} }}) {{
+            deviceName
+            transporterType
+            speed
+            transporterId
+            deviceDateTime
+            longitude
+            latitude
+            course
+            address
+            city
+            state
+            country
+          }}
+        }}";
+
+        return await reader.ExecuteGraphQLQueryWithErrors<IEnumerable<PositionVm>>(Constants.RouterUrl, query, "positionsByTransporter", cancellationToken);
+    }
+
+    // The source argument is a GraphQL enum literal (unquoted) and only included when provided
+    private static string FormatSourceArgument(string? source)
+        => string.IsNullOrEmpty(source) ? string.Empty : $", source: {source}";
 }

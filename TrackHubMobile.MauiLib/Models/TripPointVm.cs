@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2025 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,17 +13,13 @@
 //  limitations under the License.
 //
 
-using TrackHubMobile.Models;
+namespace TrackHubMobile.Models;
 
-namespace TrackHubMobile.Interfaces.Services;
-
-public interface IDataRefresh
-{
-    IEnumerable<PositionVm> Transporters { get; }
-
-    ValueTask DisposeAsync();
-    Task ForceRefreshAsync();
-    Task SetAppActive(bool isActive, bool forceRefresh = false);
-    void SetScreenActive(bool isActive);
-    void ApplyAccountSettings(bool refreshEnabled, int refreshIntervalSeconds);
-}
+public readonly record struct TripPointVm(
+    double Latitude,
+    double Longitude,
+    double Speed,
+    double? Course,
+    DateTimeOffset DeviceDateTime,
+    int? EventId
+    );

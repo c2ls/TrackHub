@@ -282,4 +282,58 @@
   <data name="AllRightsReserved" xml:space="preserve">
     <value>All rights reserved.</value>
   </data>
+  <data name="PositionHistory" xml:space="preserve">
+    <value>Position History</value>
+  </data>
+  <data name="HistorySource" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SourceProvider" xml:space="preserve">
+    <value>GPS provider</value>
+  </data>
+  <data name="SourceTrackHub" xml:space="preserve">
+    <value>TrackHub</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Trips" xml:space="preserve">
+    <value>Trips</value>
+  </data>
+  <data name="Distance" xml:space="preserve">
+    <value>Distance</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="AverageSpeed" xml:space="preserve">
+    <value>Average Speed</value>
+  </data>
+  <data name="MovingTrip" xml:space="preserve">
+    <value>In transit</value>
+  </data>
+  <data name="StoppedTrip" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="NoTripsFound" xml:space="preserve">
+    <value>No trips found for the selected range.</value>
+  </data>
+  <data name="FeatureDisabledHistory" xml:space="preserve">
+    <value>Stored history is not enabled for this account</value>
+  </data>
+  <data name="MaxRangeExceeded" xml:space="preserve">
+    <value>The date range is invalid or exceeds 31 days.</value>
+  </data>
+  <data name="HistoryError" xml:space="preserve">
+    <value>Could not load the position history. Check your connection and try again.</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>History</value>
+  </data>
 </root>

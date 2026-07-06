@@ -17,6 +17,7 @@ using System.Text;
 using System.Text.Json;
 using TrackHubMobile.Interfaces.Helpers;
 using TrackHubMobile.Interfaces.Services;
+using TrackHubMobile.Models;
 using TrackHubMobile.Utils;
 
 namespace TrackHubMobile.Helpers;
@@ -40,7 +41,7 @@ public sealed class GraphQLReader(
     {
         var requestBody = new { query };
         var token = await storage.GetSecure(Constants.AccessToken);
-        if (TokenHelper.IsTokenValid(token)) 
+        if (!TokenHelper.IsTokenValid(token))
         {
             token = await authentication.RefreshAccessTokenAsync();
         }
@@ -82,5 +83,80 @@ public sealed class GraphQLReader(
         }
 
         return default;
+    }
+
+    /// <summary>
+    /// Executes a GraphQL query and returns the data together with the first
+    /// GraphQL error code/message (if any), so callers can react to specific
+    /// server errors such as FEATURE_DISABLED instead of receiving default.
+    /// </summary>
+    public async Task<GraphQLResult<T>> ExecuteGraphQLQueryWithErrors<T>(
+        string url,
+        string query,
+        string rootFieldName,
+        CancellationToken cancellationToken)
+    {
+        var requestBody = new { query };
+        var token = await storage.GetSecure(Constants.AccessToken);
+        if (!TokenHelper.IsTokenValid(token))
+        {
+            token = await authentication.RefreshAccessTokenAsync();
+        }
+
+        using var jsonContent = new StringContent(
+            JsonSerializer.Serialize(requestBody),
+            Encoding.UTF8,
+            "application/json");
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = jsonContent
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        using var response = await client.SendAsync(request, cancellationToken);
+        await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var doc = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
+
+        var root = doc.RootElement;
+
+        string? errorCode = null;
+        string? errorMessage = null;
+
+        if (root.TryGetProperty("errors", out var errorsElement) &&
+            errorsElement.ValueKind == JsonValueKind.Array &&
+            errorsElement.GetArrayLength() > 0)
+        {
+            var firstError = errorsElement[0];
+
+            if (firstError.TryGetProperty("message", out var messageElement) &&
+                messageElement.ValueKind == JsonValueKind.String)
+            {
+                errorMessage = messageElement.GetString();
+            }
+
+            if (firstError.TryGetProperty("extensions", out var extensionsElement) &&
+                extensionsElement.ValueKind == JsonValueKind.Object &&
+                extensionsElement.TryGetProperty("code", out var codeElement) &&
+                codeElement.ValueKind == JsonValueKind.String)
+            {
+                errorCode = codeElement.GetString();
+            }
+
+            errorMessage ??= "GraphQL error";
+        }
+
+        T? data = default;
+        if (root.TryGetProperty("data", out var dataElement) &&
+            dataElement.ValueKind == JsonValueKind.Object &&
+            dataElement.TryGetProperty(rootFieldName, out var fieldElement) &&
+            fieldElement.ValueKind != JsonValueKind.Null)
+        {
+            data = JsonSerializer.Deserialize<T>(
+                fieldElement.GetRawText(),
+                _defaultJsonOptions);
+        }
+
+        return new GraphQLResult<T>(data, errorCode, errorMessage);
     }
 }

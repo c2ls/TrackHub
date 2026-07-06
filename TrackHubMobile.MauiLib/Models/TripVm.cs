@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2025 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,17 +13,20 @@
 //  limitations under the License.
 //
 
-using TrackHubMobile.Models;
+namespace TrackHubMobile.Models;
 
-namespace TrackHubMobile.Interfaces.Services;
-
-public interface IDataRefresh
-{
-    IEnumerable<PositionVm> Transporters { get; }
-
-    ValueTask DisposeAsync();
-    Task ForceRefreshAsync();
-    Task SetAppActive(bool isActive, bool forceRefresh = false);
-    void SetScreenActive(bool isActive);
-    void ApplyAccountSettings(bool refreshEnabled, int refreshIntervalSeconds);
-}
+/// <summary>
+/// A trip segment returned by the Router tripsByTransporter query.
+/// TripId is a Guid and Duration an ISO 8601 duration string (e.g. "PT1H5M"),
+/// matching the Router GraphQL serialization.
+/// </summary>
+public readonly record struct TripVm(
+    Guid TripId,
+    short Type,
+    DateTimeOffset From,
+    DateTimeOffset To,
+    double TotalDistance,
+    string? Duration,
+    double AverageSpeed,
+    List<TripPointVm>? Points
+    );

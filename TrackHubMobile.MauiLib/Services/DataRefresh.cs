@@ -20,9 +20,10 @@ using TrackHubMobile.Models;
 
 namespace TrackHubMobile.Services;
 
-public class DataRefresh(IRouter router, ILocalizationResourceManager localization) : IAsyncDisposable, IDataRefresh
+public class DataRefresh(IRouter router, IManager manager, ILocalizationResourceManager localization) : IAsyncDisposable, IDataRefresh
 {
-    private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultRefreshInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan RestartDelay = TimeSpan.FromMilliseconds(500);
 
     private Timer? _timer;
@@ -31,6 +32,11 @@ public class DataRefresh(IRouter router, ILocalizationResourceManager localizati
     private int _isRefreshing;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly object _timerLock = new();
+
+    // Account-settings-driven refresh configuration (defaults: enabled, 30 s)
+    private TimeSpan _refreshInterval = DefaultRefreshInterval;
+    private bool _refreshEnabled = true;
+    private int _settingsFetchStarted;
 
     public IEnumerable<PositionVm> Transporters { get; private set; } = [];
 
@@ -77,7 +83,10 @@ public class DataRefresh(IRouter router, ILocalizationResourceManager localizati
                     // Use a short delay instead of TimeSpan.Zero to avoid
                     // racing with a still-running OnTick from the previous timer
                     var startDelay = Transporters.Any() ? RestartDelay : TimeSpan.Zero;
-                    _timer = new Timer(OnTick, null, startDelay, RefreshInterval);
+                    // When auto-refresh is disabled by account settings we still
+                    // fire once to load the initial snapshot, but never repeat.
+                    var period = _refreshEnabled ? _refreshInterval : Timeout.InfiniteTimeSpan;
+                    _timer = new Timer(OnTick, null, startDelay, period);
                 }
             }
             else
@@ -127,11 +136,70 @@ public class DataRefresh(IRouter router, ILocalizationResourceManager localizati
         }
     }
 
+    /// <summary>
+    /// Applies the account-level refresh settings. The interval is clamped to
+    /// a minimum of 10 seconds; when the timer is already running it is
+    /// rescheduled with the new cadence. refreshEnabled = false stops the
+    /// periodic auto-refresh (manual/forced refresh keeps working).
+    /// </summary>
+    public void ApplyAccountSettings(bool refreshEnabled, int refreshIntervalSeconds)
+    {
+        var seconds = Math.Max((int)MinRefreshInterval.TotalSeconds, refreshIntervalSeconds);
+        var interval = TimeSpan.FromSeconds(seconds);
+
+        lock (_timerLock)
+        {
+            _refreshEnabled = refreshEnabled;
+            _refreshInterval = interval;
+
+            if (_timer != null)
+            {
+                if (_refreshEnabled)
+                {
+                    _timer.Change(_refreshInterval, _refreshInterval);
+                }
+                else
+                {
+                    _timer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+                }
+            }
+        }
+    }
+
+    // Fetches account settings once per session; falls back silently
+    // to the 30 s default when the Manager call fails or returns nothing.
+    private async Task EnsureAccountSettingsAsync(CancellationToken cancellationToken)
+    {
+        if (Interlocked.CompareExchange(ref _settingsFetchStarted, 1, 0) != 0)
+            return;
+
+        try
+        {
+            var settings = await manager.GetAccountSettingsAsync(cancellationToken);
+            if (settings.HasValue && settings.Value.AccountId != Guid.Empty)
+            {
+                // RefreshMapInterval is expressed in seconds
+                ApplyAccountSettings(settings.Value.RefreshMap, settings.Value.RefreshMapInterval);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // The attempt never completed — allow a retry on the next session tick
+            Interlocked.Exchange(ref _settingsFetchStarted, 0);
+        }
+        catch
+        {
+            // Keep the 30 s defaults when the settings cannot be retrieved
+        }
+    }
+
     private async Task RefreshDataAsync(CancellationToken cancellationToken)
     {
         try
         {
             if (cancellationToken.IsCancellationRequested) return;
+
+            await EnsureAccountSettingsAsync(cancellationToken);
 
             var result = await router.GetDevicePositionsByUserAsync(cancellationToken);
 

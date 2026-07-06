@@ -57,4 +57,9 @@ public partial class TransporterActions
     {
         Navigation.NavigateTo($"/transporter/{Transporter.TransporterId}");
     }
+
+    private void ViewHistory()
+    {
+        Navigation.NavigateTo($"/transporter/{Transporter.TransporterId}/history");
+    }
 }

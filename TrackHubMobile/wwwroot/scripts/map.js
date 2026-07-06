@@ -2,6 +2,7 @@ window.trackHubMap = {
     map: null,
     clusterGroup: null,
     markers: {},
+    trackLayer: null,
 
     initMap: function (positions) {
         if (this.map) {
@@ -96,6 +97,7 @@ window.trackHubMap = {
     },
 
     destroyMap: function () {
+        this.clearTrack();
         if (this.clusterGroup) {
             this.clusterGroup.clearLayers();
             this.clusterGroup = null;
@@ -105,6 +107,94 @@ window.trackHubMap = {
             this.map = null;
         }
         this.markers = {};
+    },
+
+    // Draws a track polyline with start/end markers and fits the map to it.
+    // points: [{ lat, lng, speed, dateTime }], options: { color, weight }
+    drawTrack: function (points, options) {
+        if (!this.map) return;
+
+        this.clearTrack();
+        if (!points || points.length === 0) return;
+
+        options = options || {};
+        var color = options.color || '#0078d4';
+        var weight = options.weight || 4;
+
+        this.trackLayer = L.layerGroup().addTo(this.map);
+
+        var latlngs = [];
+        for (var i = 0; i < points.length; i++) {
+            latlngs.push([points[i].lat, points[i].lng]);
+        }
+
+        var polyline = L.polyline(latlngs, {
+            color: color,
+            weight: weight,
+            opacity: 0.85,
+            lineJoin: 'round',
+            lineCap: 'round'
+        });
+        this.trackLayer.addLayer(polyline);
+
+        var startMarker = L.marker(latlngs[0], {
+            icon: this._trackEndpointIcon('#22c55e')
+        });
+        var endMarker = L.marker(latlngs[latlngs.length - 1], {
+            icon: this._trackEndpointIcon('#ef4444')
+        });
+
+        if (points[0].dateTime) {
+            startMarker.bindPopup(this._trackEndpointPopup(points[0]));
+        }
+        if (points[points.length - 1].dateTime) {
+            endMarker.bindPopup(this._trackEndpointPopup(points[points.length - 1]));
+        }
+
+        this.trackLayer.addLayer(startMarker);
+        this.trackLayer.addLayer(endMarker);
+
+        if (latlngs.length === 1) {
+            this.map.setView(latlngs[0], 16);
+        } else {
+            this.map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+        }
+    },
+
+    clearTrack: function () {
+        if (this.trackLayer) {
+            if (this.map) {
+                this.map.removeLayer(this.trackLayer);
+            }
+            this.trackLayer = null;
+        }
+    },
+
+    _trackEndpointIcon: function (color) {
+        return L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="' +
+                'width:18px;height:18px;' +
+                'background:' + color + ';' +
+                'border:2.5px solid rgba(255,255,255,0.95);' +
+                'border-radius:50%;' +
+                'box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+            popupAnchor: [0, -12]
+        });
+    },
+
+    _trackEndpointPopup: function (p) {
+        var html = '<div class="th-popup-content"><div class="th-popup-body">';
+        html += '<div class="th-popup-row"><i class="fas fa-clock"></i><span>' +
+            new Date(p.dateTime).toLocaleString() + '</span></div>';
+        if (p.speed !== null && p.speed !== undefined) {
+            html += '<div class="th-popup-row"><i class="fas fa-tachometer-alt"></i><span>' +
+                Number(p.speed).toFixed(1) + ' km/h</span></div>';
+        }
+        html += '</div></div>';
+        return html;
     },
 
     _createMarker: function (p) {

@@ -282,4 +282,58 @@
   <data name="AllRightsReserved" xml:space="preserve">
     <value>Todos los derechos reservados.</value>
   </data>
+  <data name="PositionHistory" xml:space="preserve">
+    <value>Historial de Posiciones</value>
+  </data>
+  <data name="HistorySource" xml:space="preserve">
+    <value>Fuente</value>
+  </data>
+  <data name="SourceProvider" xml:space="preserve">
+    <value>Proveedor GPS</value>
+  </data>
+  <data name="SourceTrackHub" xml:space="preserve">
+    <value>TrackHub</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>Desde</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>Hasta</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="Trips" xml:space="preserve">
+    <value>Recorridos</value>
+  </data>
+  <data name="Distance" xml:space="preserve">
+    <value>Distancia</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Duración</value>
+  </data>
+  <data name="AverageSpeed" xml:space="preserve">
+    <value>Velocidad Promedio</value>
+  </data>
+  <data name="MovingTrip" xml:space="preserve">
+    <value>En tránsito</value>
+  </data>
+  <data name="StoppedTrip" xml:space="preserve">
+    <value>Detenido</value>
+  </data>
+  <data name="NoTripsFound" xml:space="preserve">
+    <value>No se encontraron recorridos en el rango seleccionado.</value>
+  </data>
+  <data name="FeatureDisabledHistory" xml:space="preserve">
+    <value>El historial almacenado no está habilitado para esta cuenta</value>
+  </data>
+  <data name="MaxRangeExceeded" xml:space="preserve">
+    <value>El rango de fechas no es válido o supera los 31 días.</value>
+  </data>
+  <data name="HistoryError" xml:space="preserve">
+    <value>No se pudo cargar el historial de posiciones. Verifica tu conexión e intenta de nuevo.</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>Historial</value>
+  </data>
 </root>

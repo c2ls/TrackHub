@@ -10,6 +10,9 @@
     <button class="btn btn-sm btn-outline-success" @onclick="ShareViaWhatsApp" title="@LRM["ShareLocation"]">
         <i class="fab fa-whatsapp"></i> @LRM["ShareLocation"]
     </button>
+    <button class="btn btn-sm btn-outline-primary" @onclick="ViewHistory" title="@LRM["History"]">
+        <i class="fas fa-history"></i> @LRM["History"]
+    </button>
     @if (ShowDetailsButton)
     {
         <button class="btn btn-sm btn-outline-info" @onclick="ViewDetails" title="@LRM["ViewDetails"]">

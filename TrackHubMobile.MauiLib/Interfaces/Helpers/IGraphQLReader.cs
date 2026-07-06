@@ -13,9 +13,12 @@
 //  limitations under the License.
 //
 
+using TrackHubMobile.Models;
+
 namespace TrackHubMobile.Interfaces.Helpers;
 
 public interface IGraphQLReader
 {
     Task<T?> ExecuteGraphQLQuery<T>(string url, string query, string rootFieldName, CancellationToken cancellationToken);
+    Task<GraphQLResult<T>> ExecuteGraphQLQueryWithErrors<T>(string url, string query, string rootFieldName, CancellationToken cancellationToken);
 }
