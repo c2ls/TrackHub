@@ -15,15 +15,18 @@ public sealed class TransporterPositionReader(IApplicationDbContext context, IVi
             .FirstOrDefaultAsync(cancellationToken);
         var visibleTransporterIds = (await visibleReader.GetVisibleTransporterIdsAsync(userId, accountId, cancellationToken)).ToArray();
 
-        return await context.TransporterDeviceAssignments
-            .Where(a => a.Status == (int)AssignmentStatus.Active
-                && a.Device.OperatorId == operatorId
-                && visibleTransporterIds.Contains(a.TransporterId))
-            .Select(a => a.Transporter.Position)
-            .Where(tp => tp != null)
-            .Distinct()
+        // Query the positions directly with an EXISTS over the active assignments: a transporter
+        // with several active devices must yield its single latest-position row once, and a
+        // DISTINCT over the entity is not translatable (the json attributes column has no
+        // equality operator in PostgreSQL).
+        return await context.TransporterPositions
+            .Where(tp => visibleTransporterIds.Contains(tp.TransporterId)
+                && context.TransporterDeviceAssignments.Any(a =>
+                    a.Status == (int)AssignmentStatus.Active
+                    && a.TransporterId == tp.TransporterId
+                    && a.Device.OperatorId == operatorId))
             .Select(tp => new TransporterPositionVm(
-                tp!.TransporterPositionId,
+                tp.TransporterPositionId,
                 tp.TransporterId,
                 tp.Transporter.Name,
                 (TransporterType)tp.Transporter.TransporterTypeId,
@@ -44,13 +47,13 @@ public sealed class TransporterPositionReader(IApplicationDbContext context, IVi
     }
 
     public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionsAsync(Guid operatorId, CancellationToken cancellationToken)
-        => await context.TransporterDeviceAssignments
-            .Where(a => a.Status == (int)AssignmentStatus.Active && a.Device.OperatorId == operatorId)
-            .Select(a => a.Transporter.Position)
-            .Where(tp => tp != null)
-            .Distinct()
+        => await context.TransporterPositions
+            .Where(tp => context.TransporterDeviceAssignments.Any(a =>
+                a.Status == (int)AssignmentStatus.Active
+                && a.TransporterId == tp.TransporterId
+                && a.Device.OperatorId == operatorId))
             .Select(tp => new TransporterPositionVm(
-                tp!.TransporterPositionId,
+                tp.TransporterPositionId,
                 tp.TransporterId,
                 tp.Transporter.Name,
                 (TransporterType)tp.Transporter.TransporterTypeId,

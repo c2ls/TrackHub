@@ -24,6 +24,7 @@ public static class DependencyInjection
     {
         var assembly = Assembly.GetExecutingAssembly();
         services.AddApplicationServices(assembly);
+        services.AddDistributedMemoryCache();
         return services;
     }
 }

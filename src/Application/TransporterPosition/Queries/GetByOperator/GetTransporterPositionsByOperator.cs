@@ -22,7 +22,10 @@ public readonly record struct GetTransporterPositionsByOperatorQuery(Guid Operat
 
 public class GetTransporterPositionsByOperatorQueryHandler(ITransporterPositionReader reader, IUser user) : IRequestHandler<GetTransporterPositionsByOperatorQuery, IReadOnlyCollection<TransporterPositionVm>>
 {
-    private Guid UserId { get; } = user.Id is null ? throw new UnauthorizedAccessException() : new Guid(user.Id);
+    // This read is scoped to the calling USER's group visibility. Service-client tokens carry a
+    // non-Guid subject (the client id); TryParse turns that into a clean UNAUTHORIZED instead of
+    // an unhandled format exception masked as "Unexpected Execution Error".
+    private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
 
     public async Task<IReadOnlyCollection<TransporterPositionVm>> Handle(GetTransporterPositionsByOperatorQuery request, CancellationToken cancellationToken)
         => await reader.GetTransporterPositionsAsync(UserId, request.OperatorId, cancellationToken);
