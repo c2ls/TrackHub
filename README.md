@@ -14,8 +14,7 @@ Covered pairs: Router→Manager, Router→Telemetry, Router→Geofence, Reportin
 | Project | Purpose |
 |---|---|
 | `src/TrackHub.ServiceContracts.Harness` | Test-support library: `InProcessGraphQLClient` (an `IGraphQLClient` over a producer `IRequestExecutor`), the client factory, and the producer schema/executor builder that reuses the production `AddTrackHubGraphQLServer` configuration. |
-| `tests/TrackHub.ServiceContracts.Tests` | Contract + round-trip tests for all pairs whose producers are Manager, Telemetry, Security, or Router. |
-| `tests/TrackHub.ServiceContracts.Geofence.Tests` | The Geofence-producer pairs. Separate by necessity: `TrackHub.Geofencing` was cloned from Manager and its assemblies are named `TrackHub.Manager.*`, so they cannot be loaded alongside Manager's real assemblies in one process. |
+| `tests/TrackHub.ServiceContracts.Tests` | Contract + round-trip tests for all producer/consumer pairs (Manager, Telemetry, Security, Router, Geofence). |
 
 ## Prerequisites
 

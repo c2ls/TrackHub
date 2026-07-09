@@ -25,7 +25,7 @@ using TrackHub.Telemetry.Application.GpsIntegration.Queries;
 using TrackHub.Telemetry.Application.TransporterPosition.Commands.Create;
 using TrackHub.Telemetry.Application.TransporterPosition.Queries.GetByOperator;
 using TrackHub.Telemetry.Domain.Enums;
-using TrackHubRouter.Domain.Models;
+using TrackHub.Router.Domain.Models;
 using TelemetryModels = TrackHub.Telemetry.Domain.Models;
 using TelemetryRecords = TrackHub.Telemetry.Domain.Records;
 

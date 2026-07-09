@@ -19,8 +19,9 @@ using HotChocolate.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using TrackHub.Reporting.Infrastructure.GraphQLApi;
 using TrackHub.Router.Infrastructure.GeofenceApi;
+using TrackHub.ServiceContracts.Tests.Harness;
 
-namespace TrackHub.ServiceContracts.Geofence.Tests;
+namespace TrackHub.ServiceContracts.Tests.ContractTests;
 
 // Every query the Router and Reporting ship against the Geofence
 // service, validated against its real in-process-built schema.
@@ -31,7 +32,7 @@ public class GeofenceContractTests
     private ISchemaDefinition _schema = null!;
 
     [OneTimeSetUp]
-    public async Task BuildGeofenceSchema() => _schema = await GeofenceProducerSchema.BuildSchemaAsync();
+    public async Task BuildGeofenceSchema() => _schema = await ProducerSchema.BuildGeofenceSchemaAsync();
 
     private static IEnumerable<TestCaseData> Calls()
     {

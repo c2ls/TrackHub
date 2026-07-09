@@ -23,14 +23,14 @@
          Web references below; Reporting's GraphQLApi needs a direct reference. -->
     <ProjectReference Include="..\..\..\TrackHubRouter\src\Infrastructure\ManagerApi\ManagerApi.csproj" />
     <ProjectReference Include="..\..\..\TrackHubRouter\src\Infrastructure\TelemetryApi\TelemetryApi.csproj" />
+    <ProjectReference Include="..\..\..\TrackHubRouter\src\Infrastructure\GeofenceApi\GeofenceApi.csproj" />
     <ProjectReference Include="..\..\..\TrackHub.Reporting\src\Infrastructure\GraphQLApi\GraphQLApi.csproj" />
-    <!-- Producers: the real Query/Mutation types each service ships. Geofence is covered by
-         the separate TrackHub.ServiceContracts.Geofence.Tests project: its assemblies are named
-         TrackHub.Manager.* and cannot coexist with Manager's in one process. -->
+    <!-- Producers: the real Query/Mutation types each service ships. -->
     <ProjectReference Include="..\..\..\TrackHub.Manager\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\..\TrackHub.Telemetry\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\..\TrackHubSecurity\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\..\TrackHubRouter\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\..\TrackHub.Geofencing\src\Web\Web.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="NUnit.Framework" />

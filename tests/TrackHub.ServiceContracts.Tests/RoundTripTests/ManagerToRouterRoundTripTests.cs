@@ -20,7 +20,7 @@ using Moq;
 using TrackHub.Manager.Infrastructure.RouterApi;
 using TrackHub.ServiceContracts.Harness;
 using TrackHub.ServiceContracts.Tests.Harness;
-using TrackHubRouter.Application.DevicePositions.Commands.Sync;
+using TrackHub.Router.Application.DevicePositions.Commands.Sync;
 
 namespace TrackHub.ServiceContracts.Tests.RoundTripTests;
 

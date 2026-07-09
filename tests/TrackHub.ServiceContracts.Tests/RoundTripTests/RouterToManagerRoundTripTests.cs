@@ -23,7 +23,7 @@ using TrackHub.Manager.Application.Operators.Queries.Get;
 using TrackHub.Router.Infrastructure.ManagerApi;
 using TrackHub.ServiceContracts.Harness;
 using TrackHub.ServiceContracts.Tests.Harness;
-using TrackHubRouter.Domain.Models;
+using TrackHub.Router.Domain.Models;
 using ManagerModels = TrackHub.Manager.Domain.Models;
 
 namespace TrackHub.ServiceContracts.Tests.RoundTripTests;

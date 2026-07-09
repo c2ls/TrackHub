@@ -23,9 +23,9 @@ using TrackHub.Reporting.Infrastructure.GraphQLApi;
 using TrackHub.ServiceContracts.Harness;
 using TrackHub.ServiceContracts.Tests.Harness;
 using TrackHub.Telemetry.Application.GpsIntegration.Queries;
-using TrackHubRouter.Application.Positions.Queries.GetRange;
+using TrackHub.Router.Application.Positions.Queries.GetRange;
 using ManagerAuditVm = TrackHub.Manager.Domain.Models.AuditEventVm;
-using RouterModels = TrackHubRouter.Domain.Models;
+using RouterModels = TrackHub.Router.Domain.Models;
 using TelemetryModels = TrackHub.Telemetry.Domain.Models;
 
 namespace TrackHub.ServiceContracts.Tests.RoundTripTests;
