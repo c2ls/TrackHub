@@ -33,6 +33,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserGroup> UsersGroup { get; set; }
     public DbSet<Operator> Operators { get; set; }
     public DbSet<AccountFeature> AccountFeatures { get; set; }
+    public DbSet<Account> Accounts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
