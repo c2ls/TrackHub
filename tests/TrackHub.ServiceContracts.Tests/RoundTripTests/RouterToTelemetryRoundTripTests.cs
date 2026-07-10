@@ -169,6 +169,43 @@ public class RouterToTelemetryRoundTripTests
         }
     }
 
+    // Every checkType literal the Router actually SENDS must be a valid Telemetry enum value.
+    // Enum values travel in GraphQL variables, so the Layer A document validation cannot catch
+    // an invalid literal — this round trip does (regression: "SYNC" was rejected at coercion,
+    // silently killing the sync-recorded health observation).
+    [TestCase("PING", OperatorHealthCheckType.Ping)]
+    [TestCase("DEVICE_SYNC", OperatorHealthCheckType.DeviceSync)]
+    [TestCase("POSITION_SYNC", OperatorHealthCheckType.PositionSync)]
+    [TestCase("TOKEN_REFRESH", OperatorHealthCheckType.TokenRefresh)]
+    public async Task RecordOperatorHealth_EveryRouterCheckTypeLiteral_CoercesIntoTheTelemetryEnum(
+        string checkType, OperatorHealthCheckType expected)
+    {
+        TelemetryRecords.OperatorHealthCheckDto? received = null;
+        _sender
+            .Setup(s => s.Send(It.IsAny<RecordOperatorHealthCommand>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<TelemetryModels.OperatorHealthCheckVm>, CancellationToken>((cmd, _) =>
+                received = ((RecordOperatorHealthCommand)cmd).Check)
+            .ReturnsAsync(FakeData.TelemetryHealthCheck());
+
+        var writer = new OperatorHealthCheckWriter(_factory);
+        await writer.RecordAsync(new OperatorHealthCheckDto(
+            AccountId: FakeData.AccountId,
+            OperatorId: FakeData.OperatorId,
+            CheckType: checkType,
+            Status: "OFFLINE",
+            LatencyMs: 5,
+            StartedAt: FakeData.Timestamp,
+            CompletedAt: FakeData.Timestamp.AddSeconds(1),
+            ErrorCode: "ProviderUnreachable",
+            ErrorMessage: "probe failed",
+            RetryCount: 0,
+            CorrelationId: "corr-enum"), CancellationToken.None);
+
+        Assert.That(received, Is.Not.Null);
+        Assert.That(received!.Value.CheckType, Is.EqualTo(expected));
+        Assert.That(received!.Value.Status, Is.EqualTo(OperatorHealthStatus.Offline));
+    }
+
     [Test]
     public async Task RecordOperatorSyncRun_CoercesRouterStringsIntoTelemetryEnums()
     {
@@ -209,6 +246,49 @@ public class RouterToTelemetryRoundTripTests
             Assert.That(received!.Value.StartedAt, Is.EqualTo(FakeData.Timestamp));
             Assert.That(received!.Value.CompletedAt, Is.EqualTo(FakeData.Timestamp.AddSeconds(30)));
             Assert.That(received!.Value.CorrelationId, Is.EqualTo("corr-2"));
+        }
+    }
+
+    // Every (triggerType, result) literal pair the Router actually sends must coerce into the
+    // Telemetry enums — enum values travel in variables, invisible to Layer A validation.
+    [TestCase("MANUAL", SyncTriggerType.Manual, "SUCCEEDED", OperatorSyncResult.Succeeded)]
+    [TestCase("MANUAL", SyncTriggerType.Manual, "FAILED", OperatorSyncResult.Failed)]
+    [TestCase("AUTOMATIC", SyncTriggerType.Automatic, "FAILED", OperatorSyncResult.Failed)]
+    public async Task RecordOperatorSyncRun_EveryRouterLiteral_CoercesIntoTheTelemetryEnums(
+        string triggerType, SyncTriggerType expectedTrigger, string result, OperatorSyncResult expectedResult)
+    {
+        TelemetryRecords.OperatorSyncRunDto? received = null;
+        _sender
+            .Setup(s => s.Send(It.IsAny<RecordOperatorSyncRunCommand>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<TelemetryModels.OperatorSyncRunVm>, CancellationToken>((cmd, _) =>
+                received = ((RecordOperatorSyncRunCommand)cmd).Run)
+            .ReturnsAsync(FakeData.TelemetrySyncRun());
+
+        var writer = new OperatorSyncRunWriter(_factory);
+        await writer.RecordAsync(new OperatorSyncRunDto(
+            AccountId: FakeData.AccountId,
+            OperatorId: FakeData.OperatorId,
+            TriggerType: triggerType,
+            Result: result,
+            StartedAt: FakeData.Timestamp,
+            CompletedAt: FakeData.Timestamp.AddSeconds(5),
+            DevicesSeen: 0,
+            DevicesAdded: 0,
+            DevicesUpdated: 0,
+            DevicesRemoved: 0,
+            DevicesIgnored: 0,
+            PositionsRead: 0,
+            PositionsAccepted: 0,
+            PositionsRejected: 0,
+            ErrorCode: result == "FAILED" ? "ProviderUnreachable" : null,
+            ErrorMessage: result == "FAILED" ? "boom" : null,
+            CorrelationId: "corr-enum"), CancellationToken.None);
+
+        Assert.That(received, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(received!.Value.TriggerType, Is.EqualTo(expectedTrigger));
+            Assert.That(received!.Value.Result, Is.EqualTo(expectedResult));
         }
     }
 

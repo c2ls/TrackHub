@@ -89,8 +89,8 @@ public class AccountStatusContractTests
         // Reporting admin/lifecycle report readers (spec 03 §13).
         yield return new TestCaseData("Reporting.AdminReport.Accounts",
             TrackHub.Reporting.Infrastructure.GraphQLApi.AdminReportReader.AccountsQuery);
-        yield return new TestCaseData("Reporting.AdminReport.AccountFeaturesMaster",
-            TrackHub.Reporting.Infrastructure.GraphQLApi.AdminReportReader.AccountFeaturesMasterQuery);
+        yield return new TestCaseData("Reporting.AdminReport.AllAccountFeaturesMaster",
+            TrackHub.Reporting.Infrastructure.GraphQLApi.AdminReportReader.AllAccountFeaturesMasterQuery);
         yield return new TestCaseData("Reporting.AdminReport.GroupsByAccount",
             TrackHub.Reporting.Infrastructure.GraphQLApi.AdminReportReader.GroupsByAccountQuery);
         yield return new TestCaseData("Reporting.AdminReport.UsersByGroup",

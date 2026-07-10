@@ -37,6 +37,7 @@ public class RouterToTelemetryContractTests
     private static IEnumerable<TestCaseData> Calls()
     {
         yield return new TestCaseData("TransporterPositionReader.GetByOperator", TransporterPositionReader.TransporterPositionByOperatorQuery);
+        yield return new TestCaseData("TransporterPositionReader.GetByOperators", TransporterPositionReader.TransporterPositionsByOperatorsQuery);
         yield return new TestCaseData("PositionHistoryReader.GetRange", PositionHistoryReader.PositionHistoryRangeQuery);
         yield return new TestCaseData("PositionWriter.AddOrUpdate", PositionWriter.BulkTransporterPositionMutation);
         yield return new TestCaseData("PositionHistorySystemWriter.AppendRange", PositionHistorySystemWriter.AppendPositionHistoryBatchMutation);

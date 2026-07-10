@@ -46,9 +46,7 @@ public class ReportingToManagerContractTests
         // Document report readers (spec 04 §13).
         yield return new TestCaseData("DocumentReportReader.ExpiringDocuments", DocumentReportReader.ExpiringDocumentsQuery);
         yield return new TestCaseData("DocumentReportReader.DocumentTypes", DocumentReportReader.DocumentTypesQuery);
-        yield return new TestCaseData("DocumentReportReader.GroupsByAccount", DocumentReportReader.GroupsByAccountQuery);
-        yield return new TestCaseData("DocumentReportReader.TransportersByGroup", DocumentReportReader.TransportersByGroupQuery);
-        yield return new TestCaseData("DocumentReportReader.DocumentsForOwner", DocumentReportReader.DocumentsForOwnerQuery);
+        yield return new TestCaseData("DocumentReportReader.TransporterDocumentCompliance", DocumentReportReader.TransporterDocumentComplianceQuery);
         yield return new TestCaseData("DocumentReportReader.SharesByAccount", DocumentReportReader.SharesByAccountQuery);
         yield return new TestCaseData("DocumentReportReader.SearchDocuments", DocumentReportReader.SearchDocumentsQuery);
     }

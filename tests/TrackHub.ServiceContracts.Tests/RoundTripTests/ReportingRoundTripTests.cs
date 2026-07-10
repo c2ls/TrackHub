@@ -228,7 +228,8 @@ public class ReportingToManagerRoundTripTests
             Assert.That(audit.Action, Is.EqualTo("ReportExported"));
             Assert.That(audit.ResourceType, Is.EqualTo("Report"));
             Assert.That(audit.ResourceId, Is.EqualTo("gps.syncStatistics"));
-            Assert.That(audit.Result, Is.EqualTo("Success"));
+            // Unified with the security audit forwarder's literal (both write "Succeeded").
+            Assert.That(audit.Result, Is.EqualTo("Succeeded"));
             Assert.That(audit.NewValuesJson, Does.Contain("\"rowCount\":42"));
             Assert.That(audit.NewValuesJson, Does.Contain("gps.syncStatistics"));
             Assert.That(audit.CorrelationId, Is.EqualTo("corr-report-1"));
