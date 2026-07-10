@@ -23,4 +23,7 @@ public partial class Query
     public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionByOperator([Service] ISender sender, [AsParameters] GetTransporterPositionsByOperatorQuery query)
         => await sender.Send(query);
 
+    public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionsByOperators([Service] ISender sender, IReadOnlyCollection<Guid> operatorIds)
+        => await sender.Send(new GetTransporterPositionsByOperatorsQuery(operatorIds));
+
 }

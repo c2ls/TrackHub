@@ -31,3 +31,19 @@ public class GetTransporterPositionsByOperatorQueryHandler(ITransporterPositionR
         => await reader.GetTransporterPositionsAsync(UserId, request.OperatorId, cancellationToken);
 
 }
+
+/// <summary>
+/// Batched live-map read: positions for ALL the requested operators in one call, so consumers
+/// (Router's map hot path) don't loop one request per operator. Same user-visibility scoping
+/// as the singular query.
+/// </summary>
+[Authorize(Resource = Resources.Devices, Action = Actions.Read)]
+public readonly record struct GetTransporterPositionsByOperatorsQuery(IReadOnlyCollection<Guid> OperatorIds) : IRequest<IReadOnlyCollection<TransporterPositionVm>>;
+
+public class GetTransporterPositionsByOperatorsQueryHandler(ITransporterPositionReader reader, IUser user) : IRequestHandler<GetTransporterPositionsByOperatorsQuery, IReadOnlyCollection<TransporterPositionVm>>
+{
+    private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
+
+    public async Task<IReadOnlyCollection<TransporterPositionVm>> Handle(GetTransporterPositionsByOperatorsQuery request, CancellationToken cancellationToken)
+        => await reader.GetTransporterPositionsAsync(UserId, request.OperatorIds ?? [], cancellationToken);
+}

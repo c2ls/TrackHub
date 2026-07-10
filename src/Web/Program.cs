@@ -68,6 +68,11 @@ app.UseHealthChecks("/health");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Explicit: WebApplication would auto-insert these, but authentication must not depend on
+// pipeline inference.
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseExceptionHandler(options => { });
 
 app.MapGraphQL();
