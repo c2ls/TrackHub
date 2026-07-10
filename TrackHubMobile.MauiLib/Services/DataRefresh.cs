@@ -38,6 +38,11 @@ public class DataRefresh(IRouter router, IManager manager, ILocalizationResource
     private bool _refreshEnabled = true;
     private int _settingsFetchStarted;
 
+    // Account operational-status gating: once a non-operational status is observed,
+    // operational queries are suppressed and a suspension message is raised.
+    private int _accountStatusFetchStarted;
+    private volatile bool _accountOperational = true;
+
     public IEnumerable<PositionVm> Transporters { get; private set; } = [];
 
     public void SetScreenActive(bool isActive)
@@ -193,11 +198,54 @@ public class DataRefresh(IRouter router, IManager manager, ILocalizationResource
         }
     }
 
+    // Checks the account's operational status once per session. When non-operational, raises a
+    // suspension message and suppresses further operational queries. Unknown/failed reads fail open on
+    // the client (the backend still fail-closes every data call with ACCOUNT_SUSPENDED).
+    private async Task<bool> EnsureAccountOperationalAsync(CancellationToken cancellationToken)
+    {
+        if (!_accountOperational)
+        {
+            return false;
+        }
+
+        if (Interlocked.CompareExchange(ref _accountStatusFetchStarted, 1, 0) != 0)
+        {
+            return _accountOperational;
+        }
+
+        try
+        {
+            var statusId = await manager.GetAccountStatusAsync(cancellationToken);
+            // StatusId 1 (Trial) / 2 (Active) are operational; anything else is not.
+            if (statusId.HasValue && statusId.Value != 1 && statusId.Value != 2)
+            {
+                _accountOperational = false;
+                MainThread.BeginInvokeOnMainThread(() =>
+                    WeakReferenceMessenger.Default.Send(new AccountSuspendedMessage(true)));
+                return false;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Never completed — allow a retry on the next tick.
+            Interlocked.Exchange(ref _accountStatusFetchStarted, 0);
+        }
+        catch
+        {
+            // Unknown status — keep operating; the backend remains authoritative.
+        }
+
+        return _accountOperational;
+    }
+
     private async Task RefreshDataAsync(CancellationToken cancellationToken)
     {
         try
         {
             if (cancellationToken.IsCancellationRequested) return;
+
+            // Block operational queries when the account is non-operational.
+            if (!await EnsureAccountOperationalAsync(cancellationToken)) return;
 
             await EnsureAccountSettingsAsync(cancellationToken);
 

@@ -83,4 +83,23 @@ public sealed class Manager(IGraphQLReader reader) : IManager
         var response = await reader.ExecuteGraphQLQuery<IEnumerable<AccountFeatureVm>>(Constants.ManagerUrl, query, "accountFeatures", cancellationToken);
         return response ?? [];
     }
+
+    /// <summary>
+    /// Retrieves the current account's lifecycle status via the consolidated accountContext read.
+    /// The read is allowed on non-operational accounts, so a suspended account still reports its status.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
+    /// <returns>The status id, or null when unavailable.</returns>
+    public async Task<short?> GetAccountStatusAsync(CancellationToken cancellationToken)
+    {
+        const string query = @"
+        query {
+          accountContext {
+            statusId
+          }
+        }";
+
+        var response = await reader.ExecuteGraphQLQuery<AccountContextVm?>(Constants.ManagerUrl, query, "accountContext", cancellationToken);
+        return response?.StatusId;
+    }
 }

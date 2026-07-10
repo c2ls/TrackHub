@@ -21,4 +21,10 @@ public interface IManager
 {
     Task<AccountSettingsVm?> GetAccountSettingsAsync(CancellationToken cancellationToken);
     Task<IEnumerable<AccountFeatureVm>> GetAccountFeaturesAsync(Guid accountId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns the current account's lifecycle status id, or null when unavailable.
+    /// StatusId in {1,2} (Trial/Active) is operational; anything else is non-operational.
+    /// </summary>
+    Task<short?> GetAccountStatusAsync(CancellationToken cancellationToken);
 }
