@@ -44,7 +44,7 @@ public sealed class TransporterPositionWriter(IApplicationDbContext context) : I
         {
             if (existingByTransporter.TryGetValue(positionDto.TransporterId, out var existing))
             {
-                if (existing.DateTime >= positionDto.DeviceDateTime.UtcDateTime)
+                if (existing.DeviceDateTime >= positionDto.DeviceDateTime)
                 {
                     continue;
                 }
@@ -59,8 +59,7 @@ public sealed class TransporterPositionWriter(IApplicationDbContext context) : I
                 positionDto.Latitude,
                 positionDto.Longitude,
                 positionDto.Altitude,
-                positionDto.DeviceDateTime.UtcDateTime,
-                positionDto.DeviceDateTime.Offset,
+                positionDto.DeviceDateTime,
                 positionDto.Speed,
                 positionDto.Course,
                 positionDto.EventId,
@@ -95,8 +94,7 @@ public sealed class TransporterPositionWriter(IApplicationDbContext context) : I
         position.Latitude = positionDto.Latitude;
         position.Longitude = positionDto.Longitude;
         position.Altitude = positionDto.Altitude;
-        position.DateTime = positionDto.DeviceDateTime.UtcDateTime;
-        position.Offset = positionDto.DeviceDateTime.Offset;
+        position.DeviceDateTime = positionDto.DeviceDateTime;
         position.Speed = positionDto.Speed;
         position.Course = positionDto.Course;
         position.EventId = positionDto.EventId;
@@ -121,8 +119,7 @@ public sealed class TransporterPositionWriter(IApplicationDbContext context) : I
         position.Latitude = positionDto.Latitude;
         position.Longitude = positionDto.Longitude;
         position.Altitude = positionDto.Altitude;
-        position.DateTime = positionDto.DeviceDateTime.UtcDateTime;
-        position.Offset = positionDto.DeviceDateTime.Offset;
+        position.DeviceDateTime = positionDto.DeviceDateTime;
         position.Speed = positionDto.Speed;
         position.Course = positionDto.Course;
         position.EventId = positionDto.EventId;

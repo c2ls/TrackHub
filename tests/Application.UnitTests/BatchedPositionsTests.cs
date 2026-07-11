@@ -26,7 +26,7 @@ namespace TrackHub.Telemetry.Application.UnitTests;
 public class BatchedPositionsTests
 {
     private static TransporterPositionEntity Position(Guid transporterId)
-        => new(transporterId, null, 4.6, -74.0, null, DateTime.UtcNow, TimeSpan.Zero, 0, null, null, null, null, null, null, null);
+        => new(transporterId, null, 4.6, -74.0, null, DateTimeOffset.UtcNow, 0, null, null, null, null, null, null, null);
 
     private static (Infrastructure.TelemetryDB.ApplicationDbContext Context, Guid AccountId, Guid UserId, Guid OperatorA, Guid OperatorB, Guid TransporterA, Guid TransporterB) Seed()
     {

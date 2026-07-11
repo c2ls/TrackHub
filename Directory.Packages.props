@@ -12,10 +12,10 @@
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="10.0.2" />
     <PackageVersion Include="Npgsql.NetTopologySuite" Version="8.0.5" />
-    <PackageVersion Include="TrackHubCommon.Application" Version="1.3.0" />
-    <PackageVersion Include="TrackHubCommon.Domain" Version="1.3.0" />
-    <PackageVersion Include="TrackHubCommon.Infrastructure" Version="1.3.0" />
-    <PackageVersion Include="TrackHubCommon.Web" Version="1.3.0" />
+    <PackageVersion Include="TrackHubCommon.Application" Version="1.3.2" />
+    <PackageVersion Include="TrackHubCommon.Domain" Version="1.3.2" />
+    <PackageVersion Include="TrackHubCommon.Infrastructure" Version="1.3.2" />
+    <PackageVersion Include="TrackHubCommon.Web" Version="1.3.2" />
     <PackageVersion Include="HotChocolate.AspNetCore" Version="16.3.0" />
     <PackageVersion Include="HotChocolate.AspNetCore.Authorization" Version="16.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
