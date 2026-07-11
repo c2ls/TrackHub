@@ -88,9 +88,9 @@ public class RouterToManagerRoundTripTests
             Assert.That(credential.Token, Is.EqualTo("access-token"));
             Assert.That(credential.RefreshToken, Is.EqualTo("refresh-token"));
             Assert.That(credential.TokenExpiration, Is.Not.Null,
-                "Manager's DateTimeOffset must deserialize into the Router's DateTime field");
+                "Manager's DateTimeOffset must deserialize into the Router's DateTimeOffset field");
             Assert.That(credential.TokenExpiration!.Value.ToUniversalTime(),
-                Is.EqualTo(FakeData.TokenExpiration.UtcDateTime));
+                Is.EqualTo(FakeData.TokenExpiration.ToUniversalTime()));
         }
 
         _sender.Verify(s => s.Send(
