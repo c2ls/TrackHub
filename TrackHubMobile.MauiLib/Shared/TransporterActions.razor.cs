@@ -47,7 +47,7 @@ public partial class TransporterActions
         var lat = Transporter.Latitude.ToString(CultureInfo.InvariantCulture);
         var lng = Transporter.Longitude.ToString(CultureInfo.InvariantCulture);
         var mapsLink = $"https://www.google.com/maps?q={lat},{lng}";
-        var text = $"{Transporter.DeviceName} - {Transporter.DeviceDateTime:g}\n{mapsLink}";
+        var text = $"{Transporter.DeviceName} - {Transporter.DeviceDateTime.ToLocalTime():g}\n{mapsLink}";
         var encoded = Uri.EscapeDataString(text);
         var url = $"https://wa.me/?text={encoded}";
         await Browser.Default.OpenAsync(new Uri(url), BrowserLaunchMode.External);

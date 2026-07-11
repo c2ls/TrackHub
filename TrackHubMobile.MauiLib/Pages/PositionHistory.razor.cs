@@ -36,9 +36,11 @@ public partial class PositionHistory : IDisposable
     [Inject] private IRouter Router { get; set; } = default!;
     [Inject] private IManager Manager { get; set; } = default!;
 
-    // Default range: last 24 hours
-    private DateTime FromDate { get; set; } = DateTime.Now.AddDays(-1);
-    private DateTime ToDate { get; set; } = DateTime.Now;
+    // Default range: last 24 hours. These are bound to a local-time
+    // datetime-local picker, so they carry the device-local offset; they are
+    // converted to their absolute instant when passed to the API.
+    private DateTimeOffset FromDate { get; set; } = DateTimeOffset.Now.AddDays(-1);
+    private DateTimeOffset ToDate { get; set; } = DateTimeOffset.Now;
 
     private Guid transporterId;
     private bool hasStoredHistoryFeature;
@@ -137,8 +139,8 @@ public partial class PositionHistory : IDisposable
             var source = hasStoredHistoryFeature && useStoredSource ? StoredSource : null;
             var result = await Router.GetTripsByTransporterAsync(
                 transporterId,
-                new DateTimeOffset(FromDate),
-                new DateTimeOffset(ToDate),
+                FromDate,
+                ToDate,
                 source,
                 CancellationToken.None);
 

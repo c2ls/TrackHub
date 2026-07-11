@@ -32,11 +32,11 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">@LRM["LastReport"]</span>
-                    <span class="detail-value">@unit.DeviceDateTime.ToString("g")</span>
+                    <span class="detail-value">@unit.DeviceDateTime.ToLocalTime().ToString("g")</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">@LRM["LastUpdate"]</span>
-                    <span class="detail-value">@transporterHelper.GetTimeDifference(unit.DeviceDateTime.DateTime)</span>
+                    <span class="detail-value">@transporterHelper.GetTimeDifference(unit.DeviceDateTime)</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">@LRM["Speed"]</span>

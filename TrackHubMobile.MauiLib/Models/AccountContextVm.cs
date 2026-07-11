@@ -15,7 +15,7 @@
 
 namespace TrackHubMobile.Models;
 
-// Minimal projection of the Manager accountContext read (spec 03 §9.1). StatusId mirrors
+// Minimal projection of the Manager accountContext read. StatusId mirrors
 // Common.Domain.Enums.AccountStatus: Trial=1, Active=2 (operational); Suspended=3, Cancelled=4,
 // Archived=5 (non-operational).
 public readonly record struct AccountContextVm(

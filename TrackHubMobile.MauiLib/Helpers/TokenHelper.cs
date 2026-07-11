@@ -43,9 +43,9 @@ public class TokenHelper
                 return false; // Missing expiration claim
             }
 
-            // Convert expiration time to DateTime
-            var expirationTime = DateTimeOffset.FromUnixTimeSeconds(payload.Exp.Value).UtcDateTime;
-            var currentTime = DateTime.UtcNow;
+            // Convert expiration time to a UTC DateTimeOffset
+            var expirationTime = DateTimeOffset.FromUnixTimeSeconds(payload.Exp.Value);
+            var currentTime = DateTimeOffset.UtcNow;
 
             // Check if the token has expired
             return expirationTime > currentTime;

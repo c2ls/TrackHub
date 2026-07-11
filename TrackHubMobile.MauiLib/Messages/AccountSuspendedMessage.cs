@@ -18,7 +18,7 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 namespace TrackHubMobile.Messages;
 
 // Raised when the current account is non-operational; the UI renders a suspension screen and blocks
-// operational navigation (spec 03 §9.1).
+// operational navigation.
 public class AccountSuspendedMessage(bool isSuspended)
     : ValueChangedMessage<bool>(isSuspended)
 {

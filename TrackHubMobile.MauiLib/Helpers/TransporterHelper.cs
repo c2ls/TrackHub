@@ -19,9 +19,11 @@ namespace TrackHubMobile.Helpers;
 
 public class TransporterHelper(ILocalizationResourceManager localization) : ITransporterHelper
 {
-    public string GetTimeDifference(DateTime inputTime)
+    public string GetTimeDifference(DateTimeOffset inputTime)
     {
-        var timeDifference = DateTime.Now - inputTime;
+        // Both operands are absolute instants (UTC), so the elapsed time is
+        // timezone-independent — no need to shift into local time here.
+        var timeDifference = DateTimeOffset.UtcNow - inputTime;
 
         if (timeDifference.TotalMinutes < 1)
             return localization["JustNow"];
