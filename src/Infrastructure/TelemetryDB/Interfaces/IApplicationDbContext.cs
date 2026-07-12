@@ -32,6 +32,7 @@ public interface IApplicationDbContext
     DbSet<UserGroup> UsersGroup { get; }
     DbSet<Operator> Operators { get; }
     DbSet<AccountFeature> AccountFeatures { get; }
+    DbSet<Account> Accounts { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

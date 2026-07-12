@@ -13,18 +13,18 @@
 //  limitations under the License.
 //
 
-using System.Reflection;
-using Common.Application;
+using Common.Domain.Constants;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Configurations;
 
-public static class DependencyInjection
+public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public void Configure(EntityTypeBuilder<Account> builder)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        services.AddApplicationServices(assembly);
-        services.AddDistributedMemoryCache();
-        return services;
+        builder.ToTable(name: TableMetadata.Account, schema: SchemaMetadata.Application);
+        builder.HasKey(x => x.AccountId);
+        builder.Property(x => x.AccountId).HasColumnName("id");
+        builder.Property(x => x.Status).HasColumnName("status");
     }
 }

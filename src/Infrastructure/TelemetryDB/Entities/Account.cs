@@ -13,18 +13,12 @@
 //  limitations under the License.
 //
 
-using System.Reflection;
-using Common.Application;
+namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities;
 
-namespace Microsoft.Extensions.DependencyInjection;
-
-public static class DependencyInjection
+// Read-only scoping entity (schema app): minimal projection of the Manager-owned accounts table for
+// cross-service account-status enforcement (spec 03 §7.4). Never written.
+public sealed class Account
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        services.AddApplicationServices(assembly);
-        services.AddDistributedMemoryCache();
-        return services;
-    }
+    public Guid AccountId { get; set; }
+    public short Status { get; set; }
 }

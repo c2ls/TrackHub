@@ -14,6 +14,7 @@
 //
 
 using System.Reflection;
+using Common.Infrastructure;
 using TrackHub.Telemetry.Infrastructure.TelemetryDB.Interfaces;
 
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB;
@@ -33,6 +34,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserGroup> UsersGroup { get; set; }
     public DbSet<Operator> Operators { get; set; }
     public DbSet<AccountFeature> AccountFeatures { get; set; }
+    public DbSet<Account> Accounts { get; set; }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.UseUtcTimestamps();
+        base.ConfigureConventions(configurationBuilder);
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

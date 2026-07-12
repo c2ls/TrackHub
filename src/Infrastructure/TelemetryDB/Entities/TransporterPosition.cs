@@ -21,8 +21,7 @@ public class TransporterPosition(
     double latitude,
     double longitude,
     double? altitude,
-    DateTime dateTime,
-    TimeSpan offset,
+    DateTimeOffset deviceDateTime,
     double speed,
     double? course,
     int? eventId,
@@ -41,8 +40,7 @@ public class TransporterPosition(
     public double Latitude { get; set; } = latitude;
     public double Longitude { get; set; } = longitude;
     public double? Altitude { get; set; } = altitude;
-    public DateTime DateTime { get; set; } = dateTime;
-    public TimeSpan Offset { get; set; } = offset;
+    public DateTimeOffset DeviceDateTime { get; set; } = deviceDateTime;
     public double Speed { get; set; } = speed;
     public double? Course { get; set; } = course;
     public int? EventId { get; set; } = eventId;

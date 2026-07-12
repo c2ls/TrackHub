@@ -28,7 +28,7 @@ public class SchemaContractTests
 {
     private static readonly string[] ExpectedQueries =
     [
-        "transporterPositionByOperator", "positionHistory", "positionHistoryRange",
+        "transporterPositionByOperator", "transporterPositionsByOperators", "positionHistory", "positionHistoryRange",
         "operatorSyncRuns", "operatorHealth", "operatorHealthHistory", "operatorHealthSummary",
     ];
 

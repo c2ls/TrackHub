@@ -41,14 +41,7 @@ builder.Services.AddHostedService<PositionRetentionPurgeService>();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<ApplicationDbContext>();
 
-builder.Services
-    .AddGraphQLServer()
-    .AddAuthorization()
-    .AddMaxExecutionDepthRule(15)
-    .AddErrorFilter<TrackHubGraphQLErrorFilter>()
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
-    .AddQueryType<Query>()
-    .AddMutationType<Mutation>();
+builder.Services.AddTrackHubGraphQLServer<Query, Mutation>(builder.Environment.IsDevelopment());
 
 builder.Services.AddCors(options => options
     .AddPolicy("AllowFrontend",
@@ -74,6 +67,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHealthChecks("/health");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Explicit: WebApplication would auto-insert these, but authentication must not depend on
+// pipeline inference.
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseExceptionHandler(options => { });
 

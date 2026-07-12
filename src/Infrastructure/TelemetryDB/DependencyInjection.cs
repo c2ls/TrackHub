@@ -47,7 +47,7 @@ public static class DependencyInjection
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
-        services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
+        services.AddTrackHubHeaderPropagation();
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
@@ -62,6 +62,11 @@ public static class DependencyInjection
         services.AddScoped<IOperatorHealthCheckWriter, OperatorHealthCheckWriter>();
         services.AddScoped<IPositionRetentionPolicyReader, PositionRetentionPolicyReader>();
         services.AddScoped<IResolvedAddressWriter, ResolvedAddressWriter>();
+
+        // Cross-service account-status enforcement (spec 03 §7.4).
+        services.AddMemoryCache();
+        services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusReader, AccountOperationalStatusReader>();
+        services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusService, Common.Application.Services.CachedAccountOperationalStatusService>();
 
         return services;
     }

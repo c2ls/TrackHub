@@ -47,8 +47,8 @@ public class PositionWriterTests
     {
         var transporterId = Guid.NewGuid();
         var context = TestDb.NewContext();
-        var existingAt = DateTime.UtcNow;
-        context.TransporterPositions.Add(new TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities.TransporterPosition(transporterId, null, 1, 1, null, existingAt, TimeSpan.Zero, 0, null, null, null, null, null, null, null));
+        var existingAt = DateTimeOffset.UtcNow;
+        context.TransporterPositions.Add(new TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities.TransporterPosition(transporterId, null, 1, 1, null, existingAt, 0, null, null, null, null, null, null, null));
         context.SaveChanges();
         var writer = new TransporterPositionWriter(context);
 
@@ -108,7 +108,7 @@ public class PositionWriterTests
         var historyId = Guid.NewGuid();
         var context = TestDb.NewContext();
         // latest position with no address; history row that already has an address.
-        context.TransporterPositions.Add(new TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities.TransporterPosition(transporterId, null, 1, 1, null, DateTime.UtcNow, TimeSpan.Zero, 0, null, null, null, null, null, null, null));
+        context.TransporterPositions.Add(new TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities.TransporterPosition(transporterId, null, 1, 1, null, DateTimeOffset.UtcNow, 0, null, null, null, null, null, null, null));
         var history = new TransporterPositionHistory(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), transporterId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 1, 2, null, 0, null, null, "Existing St", null, null, null, null, "K1");
         typeof(TransporterPositionHistory).GetProperty(nameof(TransporterPositionHistory.TransporterPositionHistoryId))!.SetValue(history, historyId);
         context.TransporterPositionHistory.Add(history);
