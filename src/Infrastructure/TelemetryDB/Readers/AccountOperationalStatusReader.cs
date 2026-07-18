@@ -18,7 +18,7 @@ using Common.Domain.Enums;
 
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Readers;
 
-// Reads Manager account status over the shared database (spec 03 §7.4). Backs the cached
+// Reads Manager account status over the shared database. Backs the cached
 // IAccountOperationalStatusService that AccountStatusBehavior consumes.
 public sealed class AccountOperationalStatusReader(IApplicationDbContext context) : IAccountOperationalStatusReader
 {

@@ -23,7 +23,7 @@ public interface IApplicationDbContext
     DbSet<OperatorSyncRun> OperatorSyncRuns { get; }
     DbSet<OperatorHealthCheck> OperatorHealthChecks { get; }
 
-    // Read-only scoping projections (schema app, spec 01.3 §5.2).
+    // Read-only scoping projections (schema app).
     DbSet<Transporter> Transporters { get; }
     DbSet<Device> Devices { get; }
     DbSet<TransporterDeviceAssignment> TransporterDeviceAssignments { get; }

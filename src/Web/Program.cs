@@ -33,7 +33,7 @@ builder.Services.AddApplicationDbContext(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddWebServices();
 
-// Retention purge runs inside the Telemetry host (spec 01.3 §8): daily, per account with
+// Retention purge runs inside the Telemetry host: daily, per account with
 // gps.positionHistory, honoring retentionDays. Replaces the Manager-hosted trigger.
 builder.Services.AddHostedService<PositionRetentionPurgeService>();
 

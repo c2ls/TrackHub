@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Configurations;
 
-// Read-only scoping map (spec 01.3 §5.2): Telemetry reads this app-schema table cross-schema; it never writes it.
+// Read-only scoping map: Telemetry reads this app-schema table cross-schema; it never writes it.
 public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)

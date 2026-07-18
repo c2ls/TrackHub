@@ -16,7 +16,7 @@
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities;
 
 // Read-only scoping entity (schema app): minimal projection of the Manager-owned accounts table for
-// cross-service account-status enforcement (spec 03 §7.4). Never written.
+// cross-service account-status enforcement. Never written.
 public sealed class Account
 {
     public Guid AccountId { get; set; }

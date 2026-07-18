@@ -21,7 +21,7 @@ using TrackHub.Telemetry.Infrastructure.TelemetryDB.Readers;
 
 namespace TrackHub.Telemetry.Application.UnitTests;
 
-// Slice B: operator health/sync summary is DERIVED from the telemetry tables at read time (the
+// Operator health/sync summary is DERIVED from the telemetry tables at read time (the
 // denormalized operator columns are no longer written). These tests pin the derivation semantics.
 [TestFixture]
 public class OperatorHealthDerivationTests

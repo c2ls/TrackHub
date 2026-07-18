@@ -15,7 +15,7 @@
 
 namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 
-// Operator health is core (spec 07 section 3): no feature gate. Per the Slice B decision the handler
+// Operator health is core: no feature gate. The handler
 // no longer writes the denormalized operator health-summary columns (Telemetry has read-only access
 // to the operator master row); the summary is derived from the telemetry tables at read time.
 [Authorize(Resource = Resources.OperatorHealth, Action = Actions.Write, PrincipalTypes = "ServiceClient")]

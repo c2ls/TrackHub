@@ -22,7 +22,7 @@ namespace TrackHub.Telemetry.Infrastructure.TelemetryDB;
 
 // Account-scoping base for the Telemetry readers/writers. Mirrors Manager's primitive but without
 // the support-grant / audit-event machinery (Telemetry has read-only cross-schema access to the app
-// scoping tables and does not own audit_events - spec 01.3 section 5.2).
+// scoping tables and does not own audit_events).
 public abstract class AccountScopedDataAccess(IApplicationDbContext context, ICurrentPrincipal principal)
 {
     protected IApplicationDbContext Context { get; } = context;
@@ -31,7 +31,7 @@ public abstract class AccountScopedDataAccess(IApplicationDbContext context, ICu
     protected bool CanAccessAllAccounts => Principal.PrincipalType == PrincipalType.ServiceClient && !Principal.AccountId.HasValue;
 
     // Administrator/Manager roles (and global service clients) read account-wide; plain users are
-    // narrowed by group membership. Same privileged-bypass rule as the map/POI reads (spec 01.3 A1).
+    // narrowed by group membership. Same privileged-bypass rule as the map/POI reads.
     protected bool IsPrivileged =>
         CanAccessAllAccounts
         || string.Equals(Principal.Role, Roles.Administrator, StringComparison.OrdinalIgnoreCase)

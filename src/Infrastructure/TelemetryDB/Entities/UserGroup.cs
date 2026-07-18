@@ -15,7 +15,7 @@
 
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Entities;
 
-// Read-only scoping entity (spec 01.3 §5.2): Telemetry maps a minimal projection of this Manager-owned app-schema table for cross-schema visibility/account scoping. It never writes it.
+// Read-only scoping entity: Telemetry maps a minimal projection of this Manager-owned app-schema table for cross-schema visibility/account scoping. It never writes it.
 public sealed class UserGroup
 {
     public Guid UserId { get; set; }

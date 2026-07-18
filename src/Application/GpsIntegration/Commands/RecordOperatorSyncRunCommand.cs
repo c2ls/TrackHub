@@ -15,7 +15,7 @@
 
 namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 
-// Per the Slice B decision the handler no longer writes the denormalized operator sync-summary
+// The handler no longer writes the denormalized operator sync-summary
 // columns (Telemetry has read-only access to the operator master row); the summary is derived from
 // the telemetry tables at read time.
 [Authorize(Resource = Resources.OperatorSyncRuns, Action = Actions.Write, PrincipalTypes = "User,ServiceClient")]

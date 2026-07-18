@@ -96,7 +96,7 @@ public class TelemetryWriterTests
     public async Task RecordHealth_InsertsCheck_AndDoesNotWriteOperatorSummary()
     {
         // The minimal Operator scoping entity has no health-summary columns: the writer only inserts
-        // the check row (Slice B: the operator summary is derived, never written by Telemetry).
+        // the check row (the operator summary is derived, never written by Telemetry).
         var accountId = Guid.NewGuid();
         var operatorId = Guid.NewGuid();
         var context = TestDb.NewContext();
