@@ -20,6 +20,7 @@ public readonly record struct AttributesVm(
     int? Satellites,
     double? Mileage,
     double? Hourmeter,
-    double? Temperature
+    double? Temperature,
+    string? Extra = null
     );
 

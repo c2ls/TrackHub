@@ -107,7 +107,8 @@ public sealed class TransporterPositionWriter(IApplicationDbContext context) : I
             positionDto.Attributes?.Satellites,
             positionDto.Attributes?.Mileage,
             positionDto.Attributes?.Hourmeter,
-            positionDto.Attributes?.Temperature
+            positionDto.Attributes?.Temperature,
+            positionDto.Attributes?.Extra
         );
 
         await context.SaveChangesAsync(cancellationToken);
@@ -136,7 +137,8 @@ public sealed class TransporterPositionWriter(IApplicationDbContext context) : I
             attributes.Value.Satellites,
             attributes.Value.Mileage,
             attributes.Value.Hourmeter,
-            attributes.Value.Temperature);
+            attributes.Value.Temperature,
+            attributes.Value.Extra);
 
     /// <summary>
     /// This method will delete an existing TransporterPosition in the database
