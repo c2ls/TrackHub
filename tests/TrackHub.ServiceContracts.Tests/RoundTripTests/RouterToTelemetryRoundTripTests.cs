@@ -86,6 +86,9 @@ public class RouterToTelemetryRoundTripTests
             Assert.That(position.Attributes!.Value.Mileage, Is.EqualTo(12345.6));
             Assert.That(position.Attributes!.Value.Hourmeter, Is.EqualTo(220.5));
             Assert.That(position.Attributes!.Value.Temperature, Is.EqualTo(21.5));
+            // Open attribute bag round-trips as a JSON string through Telemetry's `extra: String`
+            // output and the Router's read query subselection (router-audit A-03).
+            Assert.That(position.Attributes!.Value.Extra, Is.EqualTo(FakeData.ExtraJson));
         }
 
         _sender.Verify(s => s.Send(
@@ -325,7 +328,8 @@ public class RouterToTelemetryRoundTripTests
                         Satellites: 12,
                         Mileage: 12345.6,
                         Hourmeter: 220.5,
-                        Temperature: 21.5)),
+                        Temperature: 21.5,
+                        Extra: FakeData.ExtraJson)),
             ], CancellationToken.None);
 
         Assert.That(ok, Is.True);
@@ -340,6 +344,9 @@ public class RouterToTelemetryRoundTripTests
             Assert.That(rows[0].Speed, Is.EqualTo(42.5));
             Assert.That(rows[0].Attributes, Is.Not.Null);
             Assert.That(rows[0].Attributes!.Value.Satellites, Is.EqualTo(12));
+            // The open attribute bag is accepted by Telemetry's AttributesDtoInput.extra and
+            // coerces into the producer command (router-audit A-03).
+            Assert.That(rows[0].Attributes!.Value.Extra, Is.EqualTo(FakeData.ExtraJson));
         }
     }
 }
