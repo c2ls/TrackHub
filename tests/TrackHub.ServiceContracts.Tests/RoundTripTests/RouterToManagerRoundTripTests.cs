@@ -165,7 +165,7 @@ public class RouterToManagerRoundTripTests
         }
     }
 
-    // Spec 05 §16 Layer B: the Router's alert emitter delivers every DTO field (severity/status
+    // Layer B: the Router's alert emitter delivers every DTO field (severity/status
     // travel as string literals in variables) into the real RecordAlertEventCommand — the command
     // whose post-commit evaluation creates Pending deliveries (evaluation itself is covered by
     // Manager's AlertRuleEvaluator unit tests and the smoke flow).

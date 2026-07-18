@@ -6,7 +6,7 @@ using TrackHub.ServiceContracts.Tests.Harness;
 
 namespace TrackHub.ServiceContracts.Tests.ContractTests;
 
-// Layer A (spec 03 §16): validates the new account lifecycle/branding/context GraphQL surface against
+// Layer A: validates the new account lifecycle/branding/context GraphQL surface against
 // the Manager producer schema — including the inter-service `accountStatus` query shipped by Router
 // and Reporting, and the portal-facing lifecycle/branding/context operations.
 [TestFixture]
@@ -86,7 +86,7 @@ public class AccountStatusContractTests
         yield return new TestCaseData("Portal.accountContext", GetAccountContextQuery);
         yield return new TestCaseData("Portal.account.status", GetAccountWithStatusQuery);
 
-        // Reporting admin/lifecycle report readers (spec 03 §13).
+        // Reporting admin/lifecycle report readers.
         yield return new TestCaseData("Reporting.AdminReport.Accounts",
             TrackHub.Reporting.Infrastructure.GraphQLApi.AdminReportReader.AccountsQuery);
         yield return new TestCaseData("Reporting.AdminReport.AllAccountFeaturesMaster",

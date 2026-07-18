@@ -23,7 +23,7 @@ using TrackHub.ServiceContracts.Tests.Harness;
 namespace TrackHub.ServiceContracts.Tests.ContractTests;
 
 // Every document the Geofencing service ships against Manager (alert emission and background
-// job-run recording under the geofence_client identity, spec 08 §7.2) is validated against
+// job-run recording under the geofence_client identity) is validated against
 // Manager's real, in-process-built schema.
 [TestFixture]
 public class GeofencingToManagerContractTests

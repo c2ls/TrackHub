@@ -19,7 +19,7 @@ namespace TrackHub.ServiceContracts.Tests.Harness;
 
 /// <summary>
 /// Exports each producer's SDL to <c>TrackHub/schemas/&lt;service&gt;.graphql</c> for the React
-/// portal's graphql-codegen pipeline (spec 26). Runs with the normal contract-test suite so the
+/// portal's graphql-codegen pipeline. Runs with the normal contract-test suite so the
 /// checked-in SDLs stay in lockstep with the producer schemas: a schema change shows up as a
 /// diff in the TrackHub repo, where the frontend codegen validates portal operations against it.
 /// File names match the frontend's GRAPHQL_ENDPOINTS keys (TrackHub/src/api/core/endpoints.ts).

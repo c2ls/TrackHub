@@ -27,7 +27,7 @@ using TrackHub.ServiceContracts.Tests.Harness;
 namespace TrackHub.ServiceContracts.Tests.RoundTripTests;
 
 // Security's REAL ManagerAuditWriter forwards a security audit event against Manager's REAL
-// CreateAuditEvent resolver (spec 02 §7.3 / §16 Layer B). Verifies the security_client audit
+// CreateAuditEvent resolver. Verifies the security_client audit
 // document maps field-for-field onto Manager's AuditEventDto through the real GraphQL pipeline.
 [TestFixture]
 public class SecurityToManagerRoundTripTests

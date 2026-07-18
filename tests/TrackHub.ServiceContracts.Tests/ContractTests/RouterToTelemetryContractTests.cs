@@ -24,7 +24,7 @@ namespace TrackHub.ServiceContracts.Tests.ContractTests;
 
 // Every query the Router ships against Telemetry is validated as a
 // document against Telemetry's real, in-process-built schema. This guards the seam created by
-// the Telemetry extraction (spec 01.3 Slice B) — the newest, most change-prone coupling.
+// the Telemetry extraction — the newest, most change-prone coupling.
 [TestFixture]
 public class RouterToTelemetryContractTests
 {

@@ -43,14 +43,14 @@ public class ReportingToManagerContractTests
         yield return new TestCaseData("AccountFeatureReader.EnsureFeatureEnabled", AccountFeatureReader.ValidateFeatureEnabledQuery);
         yield return new TestCaseData("ReportAuditWriter.RecordReportExport", ReportAuditWriter.CreateAuditEventMutation);
 
-        // Governed-catalog metadata lookup for the execution pipeline (spec 06 §7.2).
+        // Governed-catalog metadata lookup for the execution pipeline.
         yield return new TestCaseData("ReportCatalogReader.ReportByCode", ReportCatalogReader.ReportByCodeQuery);
 
-        // Account branding lookup for PDF export headers (spec 06 §6/§7.2) — reuses Manager's existing
+        // Account branding lookup for PDF export headers — reuses Manager's existing
         // accountBranding query, so no Manager schema change.
         yield return new TestCaseData("ReportBrandingReader.AccountBranding", ReportBrandingReader.AccountBrandingQuery);
 
-        // Document report readers (spec 04 §13).
+        // Document report readers.
         yield return new TestCaseData("DocumentReportReader.ExpiringDocuments", DocumentReportReader.ExpiringDocumentsQuery);
         yield return new TestCaseData("DocumentReportReader.DocumentTypes", DocumentReportReader.DocumentTypesQuery);
         yield return new TestCaseData("DocumentReportReader.TransporterDocumentCompliance", DocumentReportReader.TransporterDocumentComplianceQuery);
