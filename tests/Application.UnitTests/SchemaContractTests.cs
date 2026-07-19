@@ -54,8 +54,8 @@ public class SchemaContractTests
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(queryFields, Is.EquivalentTo(ExpectedQueries), "Telemetry query fields must match the spec §5.3 set the clients call");
-            Assert.That(mutationFields, Is.EquivalentTo(ExpectedMutations), "Telemetry mutation fields must match the spec §5.3 set the clients call");
+            Assert.That(queryFields, Is.EquivalentTo(ExpectedQueries), "Telemetry query fields must match the contract set the clients call");
+            Assert.That(mutationFields, Is.EquivalentTo(ExpectedMutations), "Telemetry mutation fields must match the contract set the clients call");
         }
     }
 }

@@ -18,7 +18,7 @@ namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 // Batched history append used by the Router storing pipeline: one mutation per
 // operator sync cycle instead of one per position. Idempotent per row.
 //
-// Gating matrix (spec 01.3 A7): history writes are intentionally DOUBLE-gated, unlike the core
+// Gating matrix: history writes are intentionally DOUBLE-gated, unlike the core
 // latest-position/health writes. (1) The RequireFeature attribute gates on gps.positionHistory and
 // forbids the global service client (AllowGlobalServiceClient = false) so an account without the
 // feature cannot store history. (2) The retention-policy check below is kept as fail-safe defense

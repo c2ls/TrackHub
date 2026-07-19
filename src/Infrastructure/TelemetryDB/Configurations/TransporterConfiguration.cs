@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB.Configurations;
 
-// Read-only scoping map (spec 01.3 §5.2): Telemetry reads this app-schema table cross-schema; it never writes it.
+// Read-only scoping map: Telemetry reads this app-schema table cross-schema; it never writes it.
 public sealed class TransporterConfiguration : IEntityTypeConfiguration<Transporter>
 {
     public void Configure(EntityTypeBuilder<Transporter> builder)
@@ -30,7 +30,7 @@ public sealed class TransporterConfiguration : IEntityTypeConfiguration<Transpor
         builder.Property(x => x.TransporterTypeId).HasColumnName("transportertypeid");
         builder.Property(x => x.AccountId).HasColumnName("accountid");
 
-        // Cross-schema 1:1 to the telemetry-owned latest position (spec 01.3 §5.2).
+        // Cross-schema 1:1 to the telemetry-owned latest position.
         builder.HasOne(d => d.Position)
             .WithOne(d => d.Transporter)
             .HasForeignKey<TransporterPosition>(d => d.TransporterId)

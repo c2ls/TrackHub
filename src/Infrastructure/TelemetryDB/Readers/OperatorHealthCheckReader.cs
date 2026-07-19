@@ -64,7 +64,7 @@ public sealed class OperatorHealthCheckReader(IApplicationDbContext context, ICu
             lastFailure?.ErrorCode);
     }
 
-    // Derived from the telemetry tables (Slice B decision): Telemetry no longer maintains the
+    // Derived from the telemetry tables: Telemetry no longer maintains the
     // denormalized operator health/sync-summary columns, so the current health snapshot is computed
     // at read time — status/latency from the latest health check, sync timestamps from the sync runs,
     // faithfully mirroring how Manager stamped those columns.

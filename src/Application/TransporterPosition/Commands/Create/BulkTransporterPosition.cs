@@ -15,7 +15,7 @@
 
 namespace TrackHub.Telemetry.Application.TransporterPosition.Commands.Create;
 
-// Gating matrix (spec 01.3 A7): the latest-position projection write is CORE — authorized only,
+// Gating matrix: the latest-position projection write is CORE — authorized only,
 // never feature-gated. The live map must render for every authorized account regardless of the
 // gps.positionHistory feature; only the *history* write (AppendPositionHistory*) is feature-gated.
 [Authorize(Resource = Resources.Positions, Action = Actions.Custom)]

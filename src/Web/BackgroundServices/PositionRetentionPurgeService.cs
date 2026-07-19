@@ -19,7 +19,7 @@ using TrackHub.Telemetry.Infrastructure.TelemetryDB;
 
 namespace TrackHub.Telemetry.Web.BackgroundServices;
 
-// Retention purge loop (spec 01.3 §8): once per day, for each account with gps.positionHistory
+// Retention purge loop: once per day, for each account with gps.positionHistory
 // enabled, deletes transporter_position_history rows older than the account's retentionDays. Runs as
 // a host-internal job against the Telemetry-owned schema directly (no per-account principal, no
 // cross-owner alert/audit writes), replacing the Manager-hosted trigger.

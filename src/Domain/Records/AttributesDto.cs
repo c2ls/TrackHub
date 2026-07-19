@@ -20,5 +20,6 @@ public readonly record struct AttributesDto(
     int? Satellites,
     double? Mileage,
     double? Hourmeter,
-    double? Temperature
+    double? Temperature,
+    string? Extra = null
     );

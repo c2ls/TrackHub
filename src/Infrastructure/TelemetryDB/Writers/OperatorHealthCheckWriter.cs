@@ -14,7 +14,7 @@ public sealed class OperatorHealthCheckWriter(IApplicationDbContext context, ICu
     public async Task<OperatorHealthCheckVm> RecordAsync(OperatorHealthCheckDto dto, CancellationToken cancellationToken)
     {
         var scoped = RequireAccountAccess(dto.AccountId);
-        // Read-only ownership check against the operator master row (spec 01.3 §5.2).
+        // Read-only ownership check against the operator master row.
         var operatorAccountId = await Context.Operators
             .Where(o => o.OperatorId == dto.OperatorId)
             .Select(o => (Guid?)o.AccountId)
@@ -31,7 +31,7 @@ public sealed class OperatorHealthCheckWriter(IApplicationDbContext context, ICu
 
         await Context.OperatorHealthChecks.AddAsync(entity, cancellationToken);
 
-        // Per the Slice B decision, Telemetry has read-only access to the operator master row and no
+        // Telemetry has read-only access to the operator master row and no
         // longer writes the denormalized operator health-summary columns. The operator health/sync
         // summary is derived from the telemetry tables at read time (GetLatestHealthAsync).
         await Context.SaveChangesAsync(cancellationToken);

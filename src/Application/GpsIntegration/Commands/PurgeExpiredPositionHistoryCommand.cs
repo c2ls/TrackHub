@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 
-// Retention purge (spec 01.3 section 8): invoked per account by the Telemetry host's background
+// Retention purge: invoked per account by the Telemetry host's background
 // retention loop. Telemetry does not own alert_events / audit_events (those stay in Manager), so
 // this handler logs the outcome instead of writing cross-owner alert/audit rows.
 [Authorize(Resource = Resources.PositionHistory, Action = Actions.Delete, PrincipalTypes = "ServiceClient")]
