@@ -61,6 +61,7 @@ public static class DependencyInjection
         services.AddScoped<IOperatorHealthCheckReader, OperatorHealthCheckReader>();
         services.AddScoped<IOperatorHealthCheckWriter, OperatorHealthCheckWriter>();
         services.AddScoped<IPositionRetentionPolicyReader, PositionRetentionPolicyReader>();
+        services.AddScoped<IPlatformSyncActivityReader, PlatformSyncActivityReader>();
         services.AddScoped<IResolvedAddressWriter, ResolvedAddressWriter>();
 
         // Cross-service account-status enforcement.
