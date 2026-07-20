@@ -30,6 +30,7 @@ public class SchemaContractTests
     [
         "transporterPositionByOperator", "transporterPositionsByOperators", "positionHistory", "positionHistoryRange",
         "operatorSyncRuns", "operatorHealth", "operatorHealthHistory", "operatorHealthSummary",
+        "platformSyncActivity",
     ];
 
     private static readonly string[] ExpectedMutations =
