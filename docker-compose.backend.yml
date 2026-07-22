@@ -20,6 +20,7 @@ services:
       - manager
       - router
       - geofencing
+      - tripmanagement
       - telemetry
       - reporting
     networks:
@@ -211,6 +212,8 @@ services:
       - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
       - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
       - AppSettings__GraphQLGeofenceService=${GRAPHQL_GEOFENCE_SERVICE}
+      # Router forwards stored position batches to TripManagement (processTripPositions).
+      - AppSettings__GraphQLTripManagementService=${GRAPHQL_TRIP_SERVICE}
       - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
       - AppSettings__Protocols__0=CommandTrack
       - AppSettings__Protocols__1=Flespi
@@ -274,6 +277,68 @@ services:
     volumes:
       - ./certificates:/app/certificates:ro
       - ./generated/appsettings.geofencing.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 384M
+        reservations:
+          memory: 192M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - manager
+
+  # =============================================================================
+  # TRIP MANAGEMENT API (GraphQL)
+  # =============================================================================
+  tripmanagement:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.tripmanagement
+    container_name: trackhub-tripmanagement
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      # The `trip` schema lives in the same TrackHub database as Manager/Geofencing
+      # (it needs the same postgis extension).
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_MANAGER}
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      - AuthorityServer__ClientId=${TRIP_CLIENT_ID}
+      - AuthorityServer__ClientSecret=${TRIP_CLIENT_SECRET}
+      - AuthorityServer__Scope=service_scope
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
+      - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
+      # Routing provider (OpenRouteService). REQUIRED per deployment: with an empty
+      # ApiKey route planning degrades to RoutePlan.Failed + ROUTING_NOT_CONFIGURED
+      # (trips stay usable, but no route is ever produced). Point BaseUrl at a
+      # self-hosted ORS instance to avoid the public quota.
+      - AppSettings__Routing__Provider=${ROUTING_PROVIDER:-OpenRouteService}
+      - AppSettings__Routing__BaseUrl=${ORS_BASE_URL:-https://api.openrouteservice.org}
+      - AppSettings__Routing__ApiKey=${ORS_API_KEY:-}
+      - AppSettings__Routing__Profile=${ORS_PROFILE:-driving-hgv}
+      - AppSettings__Routing__RequestsPerSecond=${ORS_REQUESTS_PER_SECOND:-2}
+      - AppSettings__Routing__TimeoutSeconds=${ORS_TIMEOUT_SECONDS:-30}
+      - AppSettings__Routing__MaxWaypoints=${ORS_MAX_WAYPOINTS:-50}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.tripmanagement.json:/app/appsettings.json:ro
     networks:
       - trackhub-network
     deploy:
@@ -359,6 +424,7 @@ services:
       - AppSettings__GraphQLGeofenceService=${GRAPHQL_GEOFENCE_SERVICE}
       - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
       - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
+      - AppSettings__GraphQLTripManagementService=${GRAPHQL_TRIP_SERVICE}
       - OpenIddict__LoadCertFromFile=true
       - OpenIddict__Path=/app/certificates/certificate.pfx
       - OpenIddict__Password=${CERTIFICATE_PASSWORD}
@@ -383,6 +449,7 @@ services:
     depends_on:
       - router
       - geofencing
+      - tripmanagement
 
   # =============================================================================
   # DATABASE INITIALIZATION (runs once)
@@ -424,6 +491,7 @@ services:
       - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
       - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
       - AppSettings__GraphQLGeofenceService=${GRAPHQL_GEOFENCE_SERVICE}
+      - AppSettings__GraphQLTripManagementService=${GRAPHQL_TRIP_SERVICE}
       - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
       # Full protocol list — must stay in sync with the router service above.
       # (Protrack/Mettax exist in the ProtocolType enum but are not wired into the

@@ -51,6 +51,7 @@ TrackHub.Deployment/
 │   ├── Dockerfile.manager       # Manager API
 │   ├── Dockerfile.router        # Router API
 │   ├── Dockerfile.geofencing    # Geofencing API
+│   ├── Dockerfile.tripmanagement # Trip Management API
 │   ├── Dockerfile.reporting     # Reporting API
 │   ├── Dockerfile.telemetry     # Telemetry API
 │   ├── Dockerfile.syncworker    # SyncWorker background service
@@ -91,8 +92,8 @@ cp config/clients.json.example config/clients.json
 nano config/clients.json
 
 # 3. Create the database schema — REQUIRED. db-init only SEEDS data; it does not
-#    create tables. See QUICKSTART.md Step 5 for the three `dotnet ef database update`
-#    commands (Security, Manager, Geofencing). Skipping this makes db-init fail.
+#    create tables. See QUICKSTART.md Step 5 for the four `dotnet ef database update`
+#    commands (Security, Manager, Geofencing, TripManagement). Skipping this makes db-init fail.
 
 # 4. Generate certificates
 sudo ./scripts/generate-certs.sh your-domain.com admin@your-domain.com
@@ -203,6 +204,7 @@ over the mounted file. Use the centralized configuration tools to work with them
 | Manager | `/Manager/` | 8080 | Asset management (GraphQL) + one **anonymous** REST endpoint: `api/PlatformStatus/announcements` |
 | Router | `/Router/` | 8080 | Device routing (GraphQL) |
 | Geofencing | `/Geofence/` | 8080 | Geofence management (GraphQL) |
+| TripManagement | `/Trip/` | 8080 | Trip & route planning, tolls (GraphQL). Needs an OpenRouteService key — see [INSTALL.md](INSTALL.md#openrouteservice-provisioning-required) |
 | Reporting | `/Reporting/` | 8080 | Reports generation (REST) |
 | Telemetry | `/Telemetry/` | 8080 | Position & telemetry store (GraphQL) |
 | SyncWorker | - | - | Background data sync service (built from `TrackHubRouter`) |
@@ -248,10 +250,17 @@ process, e.g. `dotnet ef database update`, for every stateful service.
 | TrackHubSecurity | `TrackHubSecurity` | `security` (+ OpenIddict) |
 | TrackHub.Manager | `TrackHub` | `app`, `map`, and `telemetry` (Manager owns the telemetry tables) |
 | TrackHub.Geofencing | `TrackHub` | `geofencing` (PostGIS) |
+| TrackHub.TripManagement | `TrackHub` | `trip` (PostGIS) |
 
 > Telemetry has **no migrations of its own** — its `telemetry`-schema tables are created by
 > the Manager migrations, so `DB_CONNECTION_TELEMETRY` must point at the same `TrackHub`
-> database. PostgreSQL must have **PostGIS** enabled for the Geofencing schema.
+> database. PostgreSQL must have **PostGIS** enabled for the Geofencing and TripManagement
+> schemas (one `CREATE EXTENSION` covers both — they share the `TrackHub` database).
+
+> **After adding TripManagement, re-run `db-init` on existing deployments.** The `trip`
+> migration creates the schema but seeds nothing; without the `trip_client` registration
+> and the `Trips`/`TripTracking`/`TollCatalog` resource + role seeding, **every trip call
+> returns `FORBIDDEN`** while the service reports healthy.
 
 Apply migrations **before** deploying the updated services (`db-init` seeds data only and
 assumes the schema already exists). See [INSTALL.md → Upgrading From a Previous Version](INSTALL.md#upgrading-from-a-previous-version).

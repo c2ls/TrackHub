@@ -33,8 +33,16 @@ print_info() {
     echo -e "${BLUE}ℹ $1${NC}"
 }
 
-# Valid services
-VALID_SERVICES=("frontend" "authority" "security" "manager" "router" "geofencing" "telemetry" "reporting" "syncworker" "nginx")
+# Valid services (names must match the compose service names)
+VALID_SERVICES=("frontend" "authority" "security" "manager" "router" "geofencing" "tripmanagement" "telemetry" "reporting" "syncworker" "nginx")
+
+# Convenience aliases: short name -> compose service name.
+resolve_service_alias() {
+    case "$1" in
+        trip) echo "tripmanagement" ;;
+        *)    echo "$1" ;;
+    esac
+}
 
 usage() {
     echo "Usage: $0 <service_name> [compose_file]"
@@ -48,9 +56,13 @@ usage() {
     echo "  compose_file - Specify compose file (default: docker-compose.yml)"
     echo "  --no-cache   - Force a full rebuild ignoring the Docker layer cache"
     echo ""
+    echo "Aliases:"
+    echo "  trip -> tripmanagement"
+    echo ""
     echo "Examples:"
     echo "  $0 frontend"
     echo "  $0 manager"
+    echo "  $0 trip"
     echo "  $0 security docker-compose.backend.yml"
 }
 
@@ -144,6 +156,9 @@ if [ -z "$SERVICE_NAME" ]; then
     usage
     exit 1
 fi
+
+# Resolve short aliases (e.g. trip -> tripmanagement) before validating
+SERVICE_NAME="$(resolve_service_alias "$SERVICE_NAME")"
 
 # Validate service name
 if ! validate_service "$SERVICE_NAME"; then

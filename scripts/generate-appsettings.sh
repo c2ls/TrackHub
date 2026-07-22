@@ -65,6 +65,7 @@ while [[ $# -gt 0 ]]; do
             echo "  manager    - TrackHub.Manager"
             echo "  router     - TrackHubRouter"
             echo "  geofencing - TrackHub.Geofencing"
+            echo "  tripmanagement - TrackHub.TripManagement"
             echo "  telemetry  - TrackHub.Telemetry"
             echo "  reporting  - TrackHub.Reporting"
             echo "  syncworker - TrackHubRouter (SyncWorker)"
@@ -314,6 +315,7 @@ $(serilog_section),
     "GraphQLManagerService": "${GRAPHQL_MANAGER_SERVICE}",
     "GraphQLTelemetryService": "${GRAPHQL_TELEMETRY_SERVICE}",
     "GraphQLGeofenceService": "${GRAPHQL_GEOFENCE_SERVICE}",
+    "GraphQLTripManagementService": "${GRAPHQL_TRIP_SERVICE}",
     "EncryptionKey": "${ENCRYPTION_KEY}",
     "Protocols": [
       "CommandTrack",
@@ -373,6 +375,56 @@ $(serilog_section),
 EOF
 }
 
+# Generate appsettings for Trip Management API
+# The `trip` schema lives in the same TrackHub database as Manager/Geofencing
+# (it needs the same postgis extension), hence DB_CONNECTION_MANAGER.
+# AppSettings:Routing is the OpenRouteService config: an empty ApiKey degrades route
+# planning to RoutePlan.Failed + ROUTING_NOT_CONFIGURED (trips stay usable, no route
+# is produced). Point ORS_BASE_URL at a self-hosted instance to avoid the public quota.
+generate_tripmanagement() {
+    cat << EOF
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "${DB_CONNECTION_MANAGER}",
+    "Logging": "${DB_CONNECTION_LOGGING}"
+  },
+$(serilog_section),
+  "AuthorityServer": {
+    "Authority": "${AUTHORITY_URL}",
+    "ValidateAudience": true,
+    "ValidAudience": "${VALID_AUDIENCE}",
+    "ValidateIssuer": true,
+    "ValidateIssuerSigningKey": true,
+    "ClientId": "${TRIP_CLIENT_ID}",
+    "ClientSecret": "${TRIP_CLIENT_SECRET}",
+    "Scope": "service_scope"
+  },
+  "AppSettings": {
+    "GraphQLIdentityService": "${GRAPHQL_IDENTITY_SERVICE}",
+    "GraphQLManagerService": "${GRAPHQL_MANAGER_SERVICE}",
+    "GraphQLTelemetryService": "${GRAPHQL_TELEMETRY_SERVICE}",
+    "Routing": {
+      "Provider": "${ROUTING_PROVIDER:-OpenRouteService}",
+      "BaseUrl": "${ORS_BASE_URL:-https://api.openrouteservice.org}",
+      "ApiKey": "${ORS_API_KEY}",
+      "Profile": "${ORS_PROFILE:-driving-hgv}",
+      "RequestsPerSecond": ${ORS_REQUESTS_PER_SECOND:-2},
+      "TimeoutSeconds": ${ORS_TIMEOUT_SECONDS:-30},
+      "MaxWaypoints": ${ORS_MAX_WAYPOINTS:-50}
+    }
+  },
+  "OpenIddict": {
+    "LoadCertFromFile": true,
+    "Path": "${CERTIFICATE_PATH}",
+    "Password": "${CERTIFICATE_PASSWORD}",
+    "Thumbprint": "${CERTIFICATE_THUMBPRINT}"
+  },
+  "AllowedHosts": "*",
+  "AllowedCorsOrigins": "${ALLOWED_CORS_ORIGINS}"
+}
+EOF
+}
+
 # Generate appsettings for Reporting API
 generate_reporting() {
     cat << EOF
@@ -393,7 +445,8 @@ $(serilog_section),
     "GraphQLRouterService": "${GRAPHQL_ROUTER_SERVICE}",
     "GraphQLGeofenceService": "${GRAPHQL_GEOFENCE_SERVICE}",
     "GraphQLManagerService": "${GRAPHQL_MANAGER_SERVICE}",
-    "GraphQLTelemetryService": "${GRAPHQL_TELEMETRY_SERVICE}"
+    "GraphQLTelemetryService": "${GRAPHQL_TELEMETRY_SERVICE}",
+    "GraphQLTripManagementService": "${GRAPHQL_TRIP_SERVICE}"
   },
   "OpenIddict": {
     "LoadCertFromFile": true,
@@ -464,6 +517,7 @@ $(serilog_section),
     "GraphQLManagerService": "${GRAPHQL_MANAGER_SERVICE}",
     "GraphQLTelemetryService": "${GRAPHQL_TELEMETRY_SERVICE}",
     "GraphQLGeofenceService": "${GRAPHQL_GEOFENCE_SERVICE}",
+    "GraphQLTripManagementService": "${GRAPHQL_TRIP_SERVICE}",
     "EncryptionKey": "${ENCRYPTION_KEY}",
     "Protocols": [
       "CommandTrack",
@@ -497,6 +551,7 @@ process_service() {
         manager)    content=$(generate_manager) ;;
         router)     content=$(generate_router) ;;
         geofencing) content=$(generate_geofencing) ;;
+        tripmanagement) content=$(generate_tripmanagement) ;;
         telemetry)  content=$(generate_telemetry) ;;
         reporting)  content=$(generate_reporting) ;;
         syncworker) content=$(generate_syncworker) ;;
@@ -523,7 +578,7 @@ process_service() {
 print_info "TrackHub AppSettings Generator"
 echo ""
 
-SERVICES=("authority" "security" "manager" "router" "geofencing" "telemetry" "reporting" "syncworker")
+SERVICES=("authority" "security" "manager" "router" "geofencing" "tripmanagement" "telemetry" "reporting" "syncworker")
 
 if [ -n "$SERVICE_FILTER" ]; then
     process_service "$SERVICE_FILTER"
