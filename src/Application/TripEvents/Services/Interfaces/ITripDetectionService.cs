@@ -1,0 +1,29 @@
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License").
+//  You may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+namespace TrackHub.TripManagement.Application.TripEvents.Services.Interfaces;
+
+/// <summary>
+/// Turns the raw position feed into trip business events: arrival, departure and route deviation.
+/// Operates only on the account's <c>InProgress</c> trips — a small working set, unlike the
+/// account-wide geofence catalog (spec 11 §7.4).
+/// </summary>
+public interface ITripDetectionService
+{
+    Task<TripProcessingResultVm> ProcessPositionsAsync(
+        IEnumerable<TransporterPositionDto> positions,
+        Guid accountId,
+        CancellationToken cancellationToken);
+}
