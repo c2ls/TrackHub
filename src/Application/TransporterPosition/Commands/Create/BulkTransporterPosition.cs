@@ -18,7 +18,15 @@ namespace TrackHub.Telemetry.Application.TransporterPosition.Commands.Create;
 // Gating matrix: the latest-position projection write is CORE — authorized only,
 // never feature-gated. The live map must render for every authorized account regardless of the
 // gps.positionHistory feature; only the *history* write (AppendPositionHistory*) is feature-gated.
-[Authorize(Resource = Resources.Positions, Action = Actions.Custom)]
+//
+// PrincipalTypes is the only tenant control this command can have: `Positions` is a collection and
+// `TransporterPositionDto` carries no AccountId, so `RequestAccountResolver` finds no account (it
+// never descends into a collection) and `AccountScopeBehavior` passes the request through untouched,
+// while the writer upserts keyed on TransporterId alone. Restricting the caller to a service identity
+// is what keeps a transporter id from being enough to write another account's position. Mirrors the
+// gating on its twin, AppendPositionHistoryBatchCommand.
+[Authorize(Resource = Resources.Positions, Action = Actions.Custom, PrincipalTypes = "ServiceClient")]
+[AllowCrossAccount("Router/SyncWorker live-position feed: one global router_client/syncworker_client identity iterates every account and pushes that account's latest-position batch. The batch spans accounts by design and the token carries no account claim, so there is nothing to bind the request to. Declared here so the surface appears in the `grep -r AllowCrossAccount` inventory of deliberate cross-tenant writes.")]
 public readonly record struct BulkTransporterPositionCommand(IEnumerable<TransporterPositionDto> Positions) : IRequest;
 
 public class CreateTransporterCommandHandler(
