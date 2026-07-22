@@ -23,6 +23,12 @@ namespace TrackHub.Telemetry.Application.GpsIntegration.Queries;
 // already-authorized user. Account ownership is enforced by the reader's account filter.
 [Authorize(Resource = Resources.PositionHistory, Action = Actions.Read, PrincipalTypes = "User,ServiceClient")]
 [RequireFeature(FeatureKeys.GpsPositionHistory)]
+// NOTE: this is the one marked request whose callers are MIXED. TripManagement's route-replay path
+// (Infrastructure/TelemetryApi/PositionHistoryClient, asService: true) reads it under the global
+// trip_client identity for whichever account owns the trip, which cannot satisfy the guard. The
+// user-principal path is NOT left unguarded by this: the handler's own visibility gate still runs
+// for PrincipalType.User, and the reader filters on AccountId regardless.
+[AllowCrossAccount("TripManagement replays a trip's route under its global trip_client service identity, which has no account claim, for whichever account owns the trip. Users reaching the same query remain bound by the handler's per-user visibility gate.")]
 public readonly record struct GetPositionHistoryRangeQuery(
     Guid AccountId,
     Guid TransporterId,

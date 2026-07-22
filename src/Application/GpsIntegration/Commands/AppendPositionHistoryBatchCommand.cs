@@ -25,6 +25,7 @@ namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 // in depth for any account-scoped service client that slips past the attribute. Both are deliberate.
 [Authorize(Resource = Resources.PositionHistory, Action = Actions.Write, PrincipalTypes = "ServiceClient")]
 [RequireFeature(FeatureKeys.GpsPositionHistory, AllowGlobalServiceClient = false)]
+[AllowCrossAccount("Router/SyncWorker position feed: one global router_client/syncworker_client identity iterates every account and pushes that account's position batch. The token carries no account claim, so there is nothing to compare the request's AccountId against.")]
 public readonly record struct AppendPositionHistoryBatchCommand(Guid AccountId, IReadOnlyCollection<TransporterPositionHistoryDto> Positions) : IRequest<int>;
 
 public class AppendPositionHistoryBatchCommandHandler(ITransporterPositionHistoryWriter writer, IPositionRetentionPolicyReader policyReader)
