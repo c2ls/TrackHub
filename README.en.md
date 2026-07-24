@@ -100,7 +100,6 @@ Minimal, read-only projections of the master-data tables the service needs for a
 - **persistResolvedAddress**: Write reverse-geocoded address back onto stored position rows.
 - **recordOperatorSyncRun**: Record a sync-run attempt.
 - **recordOperatorHealth**: Record an operator health check.
-- **purgeExpiredPositionHistory**: Delete history older than a cutoff for an account.
 
 ### Why GraphQL?
 

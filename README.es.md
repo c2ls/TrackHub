@@ -100,7 +100,6 @@ Proyecciones mínimas y de solo lectura de las tablas de datos maestros que el s
 - **persistResolvedAddress**: Escribe la dirección geocodificada en las filas de posición almacenadas.
 - **recordOperatorSyncRun**: Registra un intento de sincronización.
 - **recordOperatorHealth**: Registra un chequeo de salud del operador.
-- **purgeExpiredPositionHistory**: Elimina el historial anterior a una fecha de corte para una cuenta.
 
 ### ¿Por qué GraphQL?
 

@@ -4,9 +4,9 @@ namespace TrackHub.Telemetry.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<IReadOnlyCollection<TransporterPositionHistoryVm>> GetPositionHistory([Service] ISender sender, [AsParameters] GetPositionHistoryQuery query)
-        => await sender.Send(query);
+    public async Task<IReadOnlyCollection<TransporterPositionHistoryVm>> GetPositionHistory([Service] ISender sender, [AsParameters] GetPositionHistoryQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TransporterPositionHistoryVm>> GetPositionHistoryRange([Service] ISender sender, [AsParameters] GetPositionHistoryRangeQuery query)
-        => await sender.Send(query);
+    public async Task<IReadOnlyCollection<TransporterPositionHistoryVm>> GetPositionHistoryRange([Service] ISender sender, [AsParameters] GetPositionHistoryRangeQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 }

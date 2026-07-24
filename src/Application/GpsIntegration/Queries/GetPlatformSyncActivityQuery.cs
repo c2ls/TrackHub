@@ -10,6 +10,7 @@ namespace TrackHub.Telemetry.Application.GpsIntegration.Queries;
 // management stay Administrative/Read (Administrator-only).
 // No [Caching]: freshness is the point.
 [Authorize(Resource = Resources.OperatorSyncRuns, Action = Actions.Read)]
+[PlatformScoped("SVD-10 platform status: SyncWorker liveness timestamps and counts only — no account, operator, or per-tenant data in the response.")]
 public readonly record struct GetPlatformSyncActivityQuery(int LookbackMinutes = 60) : IRequest<PlatformSyncActivityVm>;
 
 public class GetPlatformSyncActivityQueryHandler(IPlatformSyncActivityReader reader)

@@ -18,6 +18,7 @@ using Common.Application.Interfaces;
 namespace TrackHub.Telemetry.Application.TransporterPosition.Queries.GetByOperator;
 
 [Authorize(Resource = Resources.Devices, Action = Actions.Read)]
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetTransporterPositionsByOperatorQuery(Guid OperatorId) : IRequest<IReadOnlyCollection<TransporterPositionVm>>;
 
 public class GetTransporterPositionsByOperatorQueryHandler(ITransporterPositionReader reader, IUser user) : IRequestHandler<GetTransporterPositionsByOperatorQuery, IReadOnlyCollection<TransporterPositionVm>>
@@ -38,6 +39,7 @@ public class GetTransporterPositionsByOperatorQueryHandler(ITransporterPositionR
 /// as the singular query.
 /// </summary>
 [Authorize(Resource = Resources.Devices, Action = Actions.Read)]
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetTransporterPositionsByOperatorsQuery(IReadOnlyCollection<Guid> OperatorIds) : IRequest<IReadOnlyCollection<TransporterPositionVm>>;
 
 public class GetTransporterPositionsByOperatorsQueryHandler(ITransporterPositionReader reader, IUser user) : IRequestHandler<GetTransporterPositionsByOperatorsQuery, IReadOnlyCollection<TransporterPositionVm>>

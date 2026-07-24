@@ -19,6 +19,7 @@ namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 // address columns of the stored history row and/or the latest-position row.
 // Idempotent: rows that already carry an address are skipped.
 [Authorize(Resource = Resources.Positions, Action = Actions.Custom, PrincipalTypes = "ServiceClient")]
+[AllowCrossAccount("Router geocoding write-back under the global service identity: keyed by TransporterPositionHistoryId/TransporterId, it stamps reverse-geocoded addresses onto stored position rows across every account the Router syncs. It carries no account and spans tenants by design.")]
 public readonly record struct PersistResolvedAddressCommand(
     Guid? TransporterPositionHistoryId,
     Guid? TransporterId,

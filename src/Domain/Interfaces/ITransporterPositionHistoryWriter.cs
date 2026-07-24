@@ -6,5 +6,4 @@ public interface ITransporterPositionHistoryWriter
 {
     Task<bool> AppendAsync(TransporterPositionHistoryDto dto, CancellationToken cancellationToken);
     Task<int> AppendRangeAsync(IReadOnlyCollection<TransporterPositionHistoryDto> dtos, CancellationToken cancellationToken);
-    Task<int> PurgeOlderThanAsync(Guid accountId, DateTimeOffset cutoff, CancellationToken cancellationToken);
 }

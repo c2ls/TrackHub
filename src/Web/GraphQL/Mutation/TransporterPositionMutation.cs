@@ -19,9 +19,9 @@ namespace TrackHub.Telemetry.Web.GraphQL.Mutation;
 
 public partial class Mutation
 {
-    public async Task<bool> BulkTransporterPosition([Service] ISender sender, BulkTransporterPositionCommand command)
-    { 
-        await sender.Send(command);
+    public async Task<bool> BulkTransporterPosition([Service] ISender sender, BulkTransporterPositionCommand command, CancellationToken cancellationToken)
+    {
+        await sender.Send(command, cancellationToken);
         return true;
     }
 

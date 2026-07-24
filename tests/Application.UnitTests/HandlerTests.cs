@@ -123,19 +123,4 @@ public class HandlerTests
             Assert.That(list[0].DeviceDateTime, Is.EqualTo(newer.DeviceDateTime), "freshest fix wins");
         }
     }
-
-    [Test]
-    public async Task Purge_DelegatesToWriter_AndReturnsCount()
-    {
-        var accountId = Guid.NewGuid();
-        var cutoff = DateTimeOffset.UtcNow.AddDays(-30);
-        var writer = new Mock<ITransporterPositionHistoryWriter>();
-        writer.Setup(w => w.PurgeOlderThanAsync(accountId, cutoff, It.IsAny<CancellationToken>())).ReturnsAsync(7);
-        var handler = new PurgeExpiredPositionHistoryCommandHandler(writer.Object, Mock.Of<ILogger<PurgeExpiredPositionHistoryCommandHandler>>());
-
-        var purged = await handler.Handle(new PurgeExpiredPositionHistoryCommand(accountId, cutoff), CancellationToken.None);
-
-        Assert.That(purged, Is.EqualTo(7));
-        writer.Verify(w => w.PurgeOlderThanAsync(accountId, cutoff, It.IsAny<CancellationToken>()), Times.Once);
-    }
 }
