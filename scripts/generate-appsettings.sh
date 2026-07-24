@@ -240,6 +240,11 @@ EOF
 # .NET configuration binder converts strings to bool/int, and treats an empty string as
 # "not set" (GetValue<bool?>/<int?> fall back to their defaults), so the unused provider's
 # section is harmless and the JSON stays valid when the variables are empty.
+# AppSettings:Smtp / AppSettings:WhatsApp power the spec-05 notification channels. They bind
+# through Configure<SmtpOptions>/<WhatsAppOptions>, whose Port/UseStartTls/From*/ApiBaseUrl/
+# TemplateName properties are NOT nullable - an empty string there fails to convert or wipes
+# the class default, so those keys carry the same defaults as docker-compose.yml. An empty
+# Smtp:Host (or WhatsApp PhoneNumberId/AccessToken) is the documented way to disable a channel.
 generate_manager() {
     cat << EOF
 {
@@ -259,7 +264,27 @@ $(serilog_section),
     "GraphQLIdentityService": "${GRAPHQL_IDENTITY_SERVICE}",
     "GraphQLSecurityService": "${GRAPHQL_SECURITY_SERVICE}",
     "GraphQLRouterService": "${GRAPHQL_ROUTER_SERVICE}",
-    "EncryptionKey": "${ENCRYPTION_KEY}"
+    "EncryptionKey": "${ENCRYPTION_KEY}",
+    "PortalBaseUrl": "${PORTAL_BASE_URL:-https://${DOMAIN}}",
+    "NotificationDeliveryRetentionDays": "${NOTIFICATION_DELIVERY_RETENTION_DAYS:-90}",
+    "NotificationSendingReclaimMinutes": "${NOTIFICATION_SENDING_RECLAIM_MINUTES:-10}",
+    "BackgroundJobRunRetentionDays": "${BACKGROUND_JOB_RUN_RETENTION_DAYS:-90}",
+    "AlertEventRetentionDays": "${ALERT_EVENT_RETENTION_DAYS:-180}",
+    "Smtp": {
+      "Host": "${SMTP_HOST:-}",
+      "Port": "${SMTP_PORT:-25}",
+      "Username": "${SMTP_USERNAME:-}",
+      "Password": "${SMTP_PASSWORD:-}",
+      "UseStartTls": "${SMTP_USE_STARTTLS:-false}",
+      "FromAddress": "${SMTP_FROM_ADDRESS:-alerts@trackhub.local}",
+      "FromName": "${SMTP_FROM_NAME:-TrackHub Alerts}"
+    },
+    "WhatsApp": {
+      "ApiBaseUrl": "${WHATSAPP_API_BASE_URL:-https://graph.facebook.com/v21.0}",
+      "PhoneNumberId": "${WHATSAPP_PHONE_NUMBER_ID:-}",
+      "AccessToken": "${WHATSAPP_ACCESS_TOKEN:-}",
+      "TemplateName": "${WHATSAPP_TEMPLATE_NAME:-trackhub_alert}"
+    }
   },
   "DocumentStorage": {
     "Provider": "${DOCUMENT_STORAGE_PROVIDER:-LocalFileSystem}",
@@ -323,6 +348,7 @@ $(serilog_section),
       "GeoTab",
       "GpsGate",
       "Navixy",
+      "Protrack",
       "Samsara",
       "Traccar",
       "Wialon"
@@ -381,6 +407,9 @@ EOF
 # AppSettings:Routing is the OpenRouteService config: an empty ApiKey degrades route
 # planning to RoutePlan.Failed + ROUTING_NOT_CONFIGURED (trips stay usable, no route
 # is produced). Point ORS_BASE_URL at a self-hosted instance to avoid the public quota.
+# InteractiveTimeoutSeconds / BackgroundRequestsPerWindow / BackgroundWindowSeconds bound the
+# shared request budget: an interactive caller waits at most that long for a slot, while
+# background ETA refreshes are additionally capped per rolling window.
 generate_tripmanagement() {
     cat << EOF
 {
@@ -410,7 +439,10 @@ $(serilog_section),
       "Profile": "${ORS_PROFILE:-driving-hgv}",
       "RequestsPerSecond": ${ORS_REQUESTS_PER_SECOND:-2},
       "TimeoutSeconds": ${ORS_TIMEOUT_SECONDS:-30},
-      "MaxWaypoints": ${ORS_MAX_WAYPOINTS:-50}
+      "MaxWaypoints": ${ORS_MAX_WAYPOINTS:-50},
+      "InteractiveTimeoutSeconds": ${ORS_INTERACTIVE_TIMEOUT_SECONDS:-15},
+      "BackgroundRequestsPerWindow": ${ORS_BACKGROUND_REQUESTS_PER_WINDOW:-250},
+      "BackgroundWindowSeconds": ${ORS_BACKGROUND_WINDOW_SECONDS:-300}
     }
   },
   "OpenIddict": {
@@ -426,6 +458,8 @@ EOF
 }
 
 # Generate appsettings for Reporting API
+# AppSettings:Reporting binds to ReportingLimitsOptions, whose int properties reject an empty
+# string, so the limits are always written with their defaults (100000 / 500 / 100).
 generate_reporting() {
     cat << EOF
 {
@@ -446,7 +480,12 @@ $(serilog_section),
     "GraphQLGeofenceService": "${GRAPHQL_GEOFENCE_SERVICE}",
     "GraphQLManagerService": "${GRAPHQL_MANAGER_SERVICE}",
     "GraphQLTelemetryService": "${GRAPHQL_TELEMETRY_SERVICE}",
-    "GraphQLTripManagementService": "${GRAPHQL_TRIP_SERVICE}"
+    "GraphQLTripManagementService": "${GRAPHQL_TRIP_SERVICE}",
+    "Reporting": {
+      "MaxExportRows": ${REPORTING_MAX_EXPORT_ROWS:-100000},
+      "MaxPdfRows": ${REPORTING_MAX_PDF_ROWS:-500},
+      "PreviewRows": ${REPORTING_PREVIEW_ROWS:-100}
+    }
   },
   "OpenIddict": {
     "LoadCertFromFile": true,
@@ -525,6 +564,7 @@ $(serilog_section),
       "GeoTab",
       "GpsGate",
       "Navixy",
+      "Protrack",
       "Samsara",
       "Traccar",
       "Wialon"

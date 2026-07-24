@@ -218,6 +218,11 @@ services:
       # Notifications (spec 05). Portal link in channel messages + delivery retention.
       - AppSettings__PortalBaseUrl=${PORTAL_BASE_URL:-https://${DOMAIN}}
       - AppSettings__NotificationDeliveryRetentionDays=${NOTIFICATION_DELIVERY_RETENTION_DAYS:-90}
+      # A delivery stuck in Sending (crashed dispatch cycle) is returned to Pending after this.
+      - AppSettings__NotificationSendingReclaimMinutes=${NOTIFICATION_SENDING_RECLAIM_MINUTES:-10}
+      # Platform retention sweep: job-run history and alert events older than these are purged.
+      - AppSettings__BackgroundJobRunRetentionDays=${BACKGROUND_JOB_RUN_RETENTION_DAYS:-90}
+      - AppSettings__AlertEventRetentionDays=${ALERT_EVENT_RETENTION_DAYS:-180}
       # Email channel (SMTP). Empty host disables sends. External blocker: a production relay.
       - AppSettings__Smtp__Host=${SMTP_HOST:-}
       - AppSettings__Smtp__Port=${SMTP_PORT:-25}
@@ -291,9 +296,10 @@ services:
       - AppSettings__Protocols__2=GeoTab
       - AppSettings__Protocols__3=GpsGate
       - AppSettings__Protocols__4=Navixy
-      - AppSettings__Protocols__5=Samsara
-      - AppSettings__Protocols__6=Traccar
-      - AppSettings__Protocols__7=Wialon
+      - AppSettings__Protocols__5=Protrack
+      - AppSettings__Protocols__6=Samsara
+      - AppSettings__Protocols__7=Traccar
+      - AppSettings__Protocols__8=Wialon
       - OpenIddict__LoadCertFromFile=true
       - OpenIddict__Path=/app/certificates/certificate.pfx
       - OpenIddict__Password=${CERTIFICATE_PASSWORD}
@@ -406,6 +412,11 @@ services:
       - AppSettings__Routing__RequestsPerSecond=${ORS_REQUESTS_PER_SECOND:-2}
       - AppSettings__Routing__TimeoutSeconds=${ORS_TIMEOUT_SECONDS:-30}
       - AppSettings__Routing__MaxWaypoints=${ORS_MAX_WAYPOINTS:-50}
+      # Admission control: an interactive caller waits at most InteractiveTimeoutSeconds for a
+      # slot; background ETA refreshes are additionally capped per rolling window.
+      - AppSettings__Routing__InteractiveTimeoutSeconds=${ORS_INTERACTIVE_TIMEOUT_SECONDS:-15}
+      - AppSettings__Routing__BackgroundRequestsPerWindow=${ORS_BACKGROUND_REQUESTS_PER_WINDOW:-250}
+      - AppSettings__Routing__BackgroundWindowSeconds=${ORS_BACKGROUND_WINDOW_SECONDS:-300}
       - OpenIddict__LoadCertFromFile=true
       - OpenIddict__Path=/app/certificates/certificate.pfx
       - OpenIddict__Password=${CERTIFICATE_PASSWORD}
@@ -498,6 +509,10 @@ services:
       - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
       - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
       - AppSettings__GraphQLTripManagementService=${GRAPHQL_TRIP_SERVICE}
+      # Report export/preview row limits (ReportingLimitsOptions defaults 100000 / 500 / 100).
+      - AppSettings__Reporting__MaxExportRows=${REPORTING_MAX_EXPORT_ROWS:-100000}
+      - AppSettings__Reporting__MaxPdfRows=${REPORTING_MAX_PDF_ROWS:-500}
+      - AppSettings__Reporting__PreviewRows=${REPORTING_PREVIEW_ROWS:-100}
       - OpenIddict__LoadCertFromFile=true
       - OpenIddict__Path=/app/certificates/certificate.pfx
       - OpenIddict__Password=${CERTIFICATE_PASSWORD}
@@ -567,16 +582,17 @@ services:
       - AppSettings__GraphQLTripManagementService=${GRAPHQL_TRIP_SERVICE}
       - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
       # Full protocol list — must stay in sync with the router service above.
-      # (Protrack/Mettax exist in the ProtocolType enum but are not wired into the
-      # Router DI assembly, so they must NOT be listed here.)
+      # (Mettax exists in the ProtocolType enum but is not wired into the Router DI
+      # assembly, so it must NOT be listed here.)
       - AppSettings__Protocols__0=CommandTrack
       - AppSettings__Protocols__1=Flespi
       - AppSettings__Protocols__2=GeoTab
       - AppSettings__Protocols__3=GpsGate
       - AppSettings__Protocols__4=Navixy
-      - AppSettings__Protocols__5=Samsara
-      - AppSettings__Protocols__6=Traccar
-      - AppSettings__Protocols__7=Wialon
+      - AppSettings__Protocols__5=Protrack
+      - AppSettings__Protocols__6=Samsara
+      - AppSettings__Protocols__7=Traccar
+      - AppSettings__Protocols__8=Wialon
       - OpenIddict__LoadCertFromFile=true
       - OpenIddict__Path=/app/certificates/certificate.pfx
       - OpenIddict__Password=${CERTIFICATE_PASSWORD}

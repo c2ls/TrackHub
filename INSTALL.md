@@ -676,6 +676,16 @@ Edit `config/clients.json`:
 }
 ```
 
+> **Tenant-bound (partner) service clients:** the five clients above are **platform-internal** —
+> their permission rows are seeded with `allowcrossaccount = true`, they receive a token with **no**
+> `account_id` claim, and they legitimately operate across every account. A partner/TMS client is
+> the opposite: seed its rows in `security.service_client_permissions` **with** an `accountid` and
+> **without** `allowcrossaccount`, and the token endpoint will bind its tokens to that account
+> automatically. If a partner client ends up holding grants on **several** accounts, its token
+> requests must add an `account_id=<account-guid>` form parameter to pick the tenant — otherwise the
+> token endpoint answers `invalid_request`, by design, rather than guessing a customer. See
+> *Client Credentials Flow* in `TrackHub.AuthorityServer/README.en.md` for the full claim rules.
+
 > **Important:** The `resource` for every scope must be `trackhub_api` (this is the
 > token audience the APIs validate). Each service client's `clientSecret` must match the
 > `${SYNCWORKER_CLIENT_SECRET}` / `${ROUTER_CLIENT_SECRET}` / `${SECURITY_CLIENT_SECRET}` /
@@ -834,10 +844,12 @@ The master template at `config/appsettings.template.json` shows all configurable
 | `${GEOFENCE_CLIENT_ID}` / `${GEOFENCE_CLIENT_SECRET}` | Geofencing | `geofence_client` service credentials (alert emission + dwell-evaluator job runs toward Manager) |
 | `${TRIP_CLIENT_ID}` / `${TRIP_CLIENT_SECRET}` | TripManagement | `trip_client` service credentials (alerts, job runs, public links, driver/transporter validation toward Manager; position history toward Telemetry) |
 | `${ROUTING_PROVIDER}` / `${ORS_BASE_URL}` / `${ORS_API_KEY}` / `${ORS_PROFILE}` / `${ORS_REQUESTS_PER_SECOND}` / `${ORS_TIMEOUT_SECONDS}` / `${ORS_MAX_WAYPOINTS}` | TripManagement | `AppSettings:Routing` — OpenRouteService directions/matrix. **Required per deployment**, see [OpenRouteService provisioning](#openrouteservice-provisioning-required) |
+| `${ORS_INTERACTIVE_TIMEOUT_SECONDS}` / `${ORS_BACKGROUND_REQUESTS_PER_WINDOW}` / `${ORS_BACKGROUND_WINDOW_SECONDS}` | TripManagement | `AppSettings:Routing` admission control — how long an interactive caller waits for a slot (default 15s) and the background ETA-refresh budget per rolling window (defaults 250 per 300s) |
 | `${DOCUMENT_STORAGE_PROVIDER}` / `${DOCUMENT_STORAGE_LOCAL_ROOT}` / `${DOCUMENT_RETENTION_DAYS}` | Manager | Document management storage |
-| `${SMTP_*}` / `${WHATSAPP_*}` / `${PORTAL_BASE_URL}` / `${NOTIFICATION_DELIVERY_RETENTION_DAYS}` | Manager | Alerts & notifications delivery channels |
+| `${SMTP_*}` / `${WHATSAPP_*}` / `${PORTAL_BASE_URL}` / `${NOTIFICATION_DELIVERY_RETENTION_DAYS}` / `${NOTIFICATION_SENDING_RECLAIM_MINUTES}` | Manager | Alerts & notifications delivery channels, retention, and stuck-delivery reclaim (default 10 min) |
+| `${BACKGROUND_JOB_RUN_RETENTION_DAYS}` / `${ALERT_EVENT_RETENTION_DAYS}` | Manager | Platform retention sweep (`platform-retention` job) — job-run history and alert events purge windows (defaults 90 / 180 days) |
 | `${GRAPHQL_*_SERVICE}` | Various | Internal service URLs (includes `GRAPHQL_TELEMETRY_SERVICE` and `GRAPHQL_TRIP_SERVICE`) |
-| `AppSettings__Reporting__MaxExportRows` / `__MaxPdfRows` / `__PreviewRows` | Reporting | Report export/preview row limits. Defaults 100000 / 500 / 100 are baked into the template; override at runtime with these env vars — no rebuild needed. |
+| `${REPORTING_MAX_EXPORT_ROWS}` / `${REPORTING_MAX_PDF_ROWS}` / `${REPORTING_PREVIEW_ROWS}` | Reporting | `AppSettings:Reporting` — report export/preview row limits. Defaults 100000 / 500 / 100 come from `ReportingLimitsOptions`; set these in `.env` and compose passes them as `AppSettings__Reporting__*` (`generate-appsettings.sh` writes the same block into `appsettings.reporting.json`) — no rebuild needed. |
 
 ### When to Regenerate
 
