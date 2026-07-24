@@ -36,6 +36,9 @@ namespace TrackHub.TripManagement.Application.Trips.Commands.PlanRoute;
 [Authorize(Resource = Resources.Trips, Action = Actions.Custom)]
 [RequireFeature(FeatureKeys.TripManagement)]
 [RateLimiting(PermitLimit = 10, WindowSeconds = 60)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct PlanTripRouteCommand(Guid TripId, int? CorridorMeters, string? TollVehicleClass) : IRequest<RoutePlanVm>;
 
 public sealed class PlanTripRouteCommandHandler(

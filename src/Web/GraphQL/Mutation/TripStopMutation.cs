@@ -24,35 +24,35 @@ namespace TrackHub.TripManagement.Web.GraphQL.Mutation;
 /// <summary>Stop structure plus the dispatcher-side progress overrides.</summary>
 public partial class Mutation
 {
-    public async Task<TripStopVm> AddTripStop([Service] ISender sender, AddTripStopCommand command)
-        => await sender.Send(command);
+    public async Task<TripStopVm> AddTripStop([Service] ISender sender, AddTripStopCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> UpdateTripStop([Service] ISender sender, UpdateTripStopCommand command)
+    public async Task<bool> UpdateTripStop([Service] ISender sender, UpdateTripStopCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<Guid> RemoveTripStop([Service] ISender sender, Guid id)
+    public async Task<Guid> RemoveTripStop([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new RemoveTripStopCommand(id));
+        await sender.Send(new RemoveTripStopCommand(id), cancellationToken);
         return id;
     }
 
-    public async Task<bool> ReorderTripStops([Service] ISender sender, ReorderTripStopsCommand command)
+    public async Task<bool> ReorderTripStops([Service] ISender sender, ReorderTripStopsCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
     // The three idempotent progress commands: a duplicate clientEventId returns false (nothing was
     // written) rather than an error, so an offline outbox can drain without special-casing retries.
-    public async Task<bool> RecordStopArrival([Service] ISender sender, RecordStopArrivalCommand command)
-        => await sender.Send(command);
+    public async Task<bool> RecordStopArrival([Service] ISender sender, RecordStopArrivalCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> RecordStopDeparture([Service] ISender sender, RecordStopDepartureCommand command)
-        => await sender.Send(command);
+    public async Task<bool> RecordStopDeparture([Service] ISender sender, RecordStopDepartureCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> SkipStop([Service] ISender sender, SkipStopCommand command)
-        => await sender.Send(command);
+    public async Task<bool> SkipStop([Service] ISender sender, SkipStopCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 }

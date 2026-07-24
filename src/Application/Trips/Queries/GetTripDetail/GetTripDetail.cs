@@ -22,6 +22,9 @@ namespace TrackHub.TripManagement.Application.Trips.Queries.GetTripDetail;
 /// <summary>Trip, stops, deliveries, assignment, route plan with toll breakdown, POD and shares.</summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Read)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetTripDetailQuery(Guid TripId) : IRequest<TripDetailVm>;
 
 public sealed class GetTripDetailQueryHandler(

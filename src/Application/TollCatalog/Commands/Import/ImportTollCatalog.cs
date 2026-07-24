@@ -29,6 +29,7 @@ namespace TrackHub.TripManagement.Application.TollCatalog.Commands.Import;
 /// NOT feature-flagged — platform reference data (spec 11 §3).
 /// </summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Write)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct ImportTollCatalogCommand(string Csv) : IRequest<TollCatalogImportResultVm>;
 
 public sealed class ImportTollCatalogCommandHandler(ITollCatalogWriter writer)

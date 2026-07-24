@@ -36,6 +36,9 @@ namespace TrackHub.TripManagement.Application.ProofsOfDelivery.Commands.Record;
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Write)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct RecordProofOfDeliveryCommand(Guid TripId, ProofOfDeliveryDto ProofOfDelivery) : IRequest<ProofOfDeliveryVm>;
 
 public sealed class RecordProofOfDeliveryCommandHandler(

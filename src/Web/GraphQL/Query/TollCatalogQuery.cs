@@ -22,19 +22,19 @@ namespace TrackHub.TripManagement.Web.GraphQL.Query;
 /// <summary>Toll reference-data reads plus the planner's what-if estimate.</summary>
 public partial class Query
 {
-    public async Task<TollStationsPageVm> GetTollStations([Service] ISender sender, [AsParameters] GetTollStationsQuery query)
-        => await sender.Send(query);
+    public async Task<TollStationsPageVm> GetTollStations([Service] ISender sender, [AsParameters] GetTollStationsQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<TollStationDetailVm> GetTollStationDetail([Service] ISender sender, [AsParameters] GetTollStationDetailQuery query)
-        => await sender.Send(query);
+    public async Task<TollStationDetailVm> GetTollStationDetail([Service] ISender sender, [AsParameters] GetTollStationDetailQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TollVehicleClassVm>> GetTollVehicleClasses([Service] ISender sender)
-        => await sender.Send(new GetTollVehicleClassesQuery());
+    public async Task<IReadOnlyCollection<TollVehicleClassVm>> GetTollVehicleClasses([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetTollVehicleClassesQuery(), cancellationToken);
 
     /// <summary>The account's transporter -> toll-class mappings (account-scoped, unlike the catalog).</summary>
-    public async Task<IReadOnlyCollection<TransporterTollClassVm>> GetTransporterTollClasses([Service] ISender sender)
-        => await sender.Send(new GetTransporterTollClassesQuery());
+    public async Task<IReadOnlyCollection<TransporterTollClassVm>> GetTransporterTollClasses([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetTransporterTollClassesQuery(), cancellationToken);
 
-    public async Task<TollEstimateVm> EstimateTolls([Service] ISender sender, [AsParameters] EstimateTollsQuery query)
-        => await sender.Send(query);
+    public async Task<TollEstimateVm> EstimateTolls([Service] ISender sender, [AsParameters] EstimateTollsQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 }
