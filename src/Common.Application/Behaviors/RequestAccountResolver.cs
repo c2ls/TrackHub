@@ -54,13 +54,15 @@ namespace Common.Application.Behaviors;
 /// per path step.</item>
 /// </list>
 /// </summary>
-internal static class RequestAccountResolver
+public static class RequestAccountResolver
 {
     /// <summary>
     /// How far below the request root an <c>AccountId</c> is looked for. 0 would mean "root only"
-    /// (the original, escapable behaviour); 2 covers request → DTO → nested DTO.
+    /// (the original, escapable behaviour); 2 covers request → DTO → nested DTO. Shared with
+    /// <see cref="Testing.AccountScopeCoverage"/> so the coverage walk and the account walk agree
+    /// on reach: a wire key the coverage test can see is a key this resolver could have scoped.
     /// </summary>
-    private const int MaxNestingDepth = 2;
+    internal const int MaxNestingDepth = 2;
 
     private const BindingFlags PublicInstance = BindingFlags.Public | BindingFlags.Instance;
 
@@ -80,6 +82,23 @@ internal static class RequestAccountResolver
     {
         var path = AccountIdPaths.GetOrAdd(typeof(TRequest), static type => FindAccountIdPath(type));
 
+        return ReadAccountId(request, path);
+    }
+
+    /// <summary>
+    /// Whether the request type exposes a resolvable <c>AccountId</c> at the root or within the
+    /// bounded nested search — i.e. whether <see cref="AccountScopeBehavior{TRequest, TResponse}"/>
+    /// has an account to scope. A type that returns <c>false</c> here must carry
+    /// <see cref="Attributes.PlatformScopedAttribute"/> or <see cref="Attributes.AllowCrossAccountAttribute"/>
+    /// (or reach the guard under a principal that carries an account) or the guard denies it. Exposed
+    /// for the per-service enforcement tests that prove every request is either account-bearing or a
+    /// declared opt-out; type-only, so it needs no request instance.
+    /// </summary>
+    public static bool NamesAccount(Type requestType)
+        => AccountIdPaths.GetOrAdd(requestType, static type => FindAccountIdPath(type)) is not null;
+
+    private static Guid? ReadAccountId(object? request, PropertyInfo[]? path)
+    {
         if (path is null)
         {
             return null;
@@ -167,13 +186,14 @@ internal static class RequestAccountResolver
 
     /// <summary>
     /// Complex TrackHub-owned members worth descending into, in a deterministic ordinal order.
+    /// Shared with <see cref="Testing.AccountScopeCoverage"/> so both walks descend identically.
     /// </summary>
-    private static IEnumerable<PropertyInfo> GetRecursableProperties(Type type)
+    internal static IEnumerable<PropertyInfo> GetRecursableProperties(Type type)
         => type.GetProperties(PublicInstance)
             .Where(property => IsReadable(property) && IsTrackHubComplexType(UnwrapNullable(property.PropertyType)))
             .OrderBy(property => property.Name, StringComparer.Ordinal);
 
-    private static bool IsReadable(PropertyInfo? property)
+    internal static bool IsReadable(PropertyInfo? property)
         => property is { CanRead: true } && property.GetIndexParameters().Length == 0;
 
     /// <summary>
@@ -195,6 +215,6 @@ internal static class RequestAccountResolver
                 || assemblyName.StartsWith("Common.", StringComparison.Ordinal));
     }
 
-    private static Type UnwrapNullable(Type type)
+    internal static Type UnwrapNullable(Type type)
         => Nullable.GetUnderlyingType(type) ?? type;
 }
