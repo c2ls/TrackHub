@@ -106,8 +106,7 @@ public sealed class TollCatalogReader(IApplicationDbContext context) : ITollCata
             return [];
         }
 
-        // ST_DWithin over the geography cast (useSpheroid: true) so the tolerance really is
-        // metres; the GiST index on toll_stations.point still serves the predicate.
+        // ST_DWithin over the geography cast (useSpheroid: true) so the tolerance really is metres.
         var rows = await context.TollStations
             .Where(s => s.Active && EF.Functions.IsWithinDistance(s.Point, line, toleranceMeters, true))
             .OrderBy(s => s.Name)

@@ -43,6 +43,46 @@ public class TripVisibilityEnforcementTests
     private static readonly Guid DeliveryId = Guid.Parse("99999999-9999-9999-9999-999999999999");
 
     // -----------------------------------------------------------------------------------------
+    // The [AllowCrossAccount] compensation on the four report feeds. The marker switches the
+    // pipeline guard off for EVERY caller, so this handler-side binding is the only thing keeping
+    // a user from exporting another tenant's trips — pin it so it cannot rot.
+    // -----------------------------------------------------------------------------------------
+
+    /// <summary>A user asking for a FOREIGN account's report feed must be refused.</summary>
+    [Test]
+    public void ReportScope_UserRequestingForeignAccount_IsForbidden()
+    {
+        var foreignAccountId = Guid.NewGuid();
+
+        Assert.ThrowsAsync<ForbiddenAccessException>(() => TripVisibility.ResolveReportScopeAsync(
+            TestFactory.User(Roles.Manager).Object, TestFactory.UserReader().Object, foreignAccountId, CancellationToken.None));
+    }
+
+    /// <summary>A user asking for their OWN account keeps working (group scope applies).</summary>
+    [Test]
+    public async Task ReportScope_UserRequestingOwnAccount_Passes()
+    {
+        var scope = await TripVisibility.ResolveReportScopeAsync(
+            TestFactory.User(Roles.User).Object, TestFactory.UserReader().Object, TestFactory.AccountId, CancellationToken.None);
+
+        Assert.That(scope, Is.EqualTo(TestFactory.UserId), "a dispatcher stays group-scoped on the report path");
+    }
+
+    /// <summary>The service identity (non-Guid subject) sees the whole requested account.</summary>
+    [Test]
+    public async Task ReportScope_ServiceIdentity_IsAccountWide()
+    {
+        var service = new Mock<IUser>();
+        service.SetupGet(u => u.Id).Returns("reporting_client");
+        service.SetupGet(u => u.PrincipalType).Returns(PrincipalType.ServiceClient);
+
+        var scope = await TripVisibility.ResolveReportScopeAsync(
+            service.Object, TestFactory.UserReader().Object, Guid.NewGuid(), CancellationToken.None);
+
+        Assert.That(scope, Is.Null);
+    }
+
+    // -----------------------------------------------------------------------------------------
     // Defect 2 - the single-trip lookup used by every write path and by route replay.
     // -----------------------------------------------------------------------------------------
 

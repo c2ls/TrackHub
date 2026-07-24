@@ -21,6 +21,9 @@ namespace TrackHub.TripManagement.Application.Deliveries.Commands.Create;
 /// <summary>Adds a delivery to a stop. A delivery belongs to the stop it was created on.</summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Write)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct CreateDeliveryCommand(Guid TripStopId, DeliveryDto Delivery) : IRequest<DeliveryVm>;
 
 public sealed class CreateDeliveryCommandHandler(

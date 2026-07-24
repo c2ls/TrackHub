@@ -29,6 +29,9 @@ namespace TrackHub.TripManagement.Application.TripStops.Commands.Progress;
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct RecordStopDepartureCommand(
     Guid TripId,
     Guid TripStopId,

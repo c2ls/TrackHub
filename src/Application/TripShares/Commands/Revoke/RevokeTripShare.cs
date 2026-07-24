@@ -29,6 +29,9 @@ namespace TrackHub.TripManagement.Application.TripShares.Commands.Revoke;
 /// </para>
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Custom)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct RevokeTripShareCommand(Guid TripId, Guid TripShareId) : IRequest<Guid>;
 
 public sealed class RevokeTripShareCommandHandler(

@@ -23,21 +23,21 @@ namespace TrackHub.TripManagement.Web.GraphQL.Mutation;
 /// <summary>Delivery lines on a stop and their recorded outcomes.</summary>
 public partial class Mutation
 {
-    public async Task<DeliveryVm> CreateDelivery([Service] ISender sender, CreateDeliveryCommand command)
-        => await sender.Send(command);
+    public async Task<DeliveryVm> CreateDelivery([Service] ISender sender, CreateDeliveryCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> UpdateDelivery([Service] ISender sender, UpdateDeliveryCommand command)
+    public async Task<bool> UpdateDelivery([Service] ISender sender, UpdateDeliveryCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<bool> UpdateDeliveryOutcome([Service] ISender sender, UpdateDeliveryOutcomeCommand command)
-        => await sender.Send(command);
+    public async Task<bool> UpdateDeliveryOutcome([Service] ISender sender, UpdateDeliveryOutcomeCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<Guid> DeleteDelivery([Service] ISender sender, Guid id)
+    public async Task<Guid> DeleteDelivery([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new DeleteDeliveryCommand(id));
+        await sender.Send(new DeleteDeliveryCommand(id), cancellationToken);
         return id;
     }
 }

@@ -21,11 +21,13 @@ namespace TrackHub.TripManagement.Application.Trips.Queries.GetTripPodReportData
 // No [Caching] — scope comes from the caller identity (SVD-09). See GetTripsQuery.
 /// <summary>
 /// POD register export feed behind <c>trip-pod-export</c>. Rows carry a document COUNT, never the
-/// documents: this is a register, and the bytes stay behind Manager's access policy. The report
-/// itself is classified sensitive and records a high-severity export audit (spec 11 §13, SC-06).
+/// documents: this is a register, and the bytes stay behind Manager's access policy. Rows carry
+/// receiver names, identity documents and signature coordinates, and the export audits through the
+/// same governed path as every other report — severity classification is spec 24a's scope.
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Export, PrincipalTypes = "User,ServiceClient")]
 [RequireFeature(FeatureKeys.TripManagement)]
+[AllowCrossAccount("Reporting drains this feed under a service identity that carries no account claim (spec 11 design: the account travels on the request), naming the target account explicitly. User callers are NOT unguarded by this: TripVisibility.ResolveReportScopeAsync forbids a user whose account differs from the requested one.")]
 public readonly record struct GetTripPodReportDataQuery(
     Guid AccountId,
     DateTimeOffset From,

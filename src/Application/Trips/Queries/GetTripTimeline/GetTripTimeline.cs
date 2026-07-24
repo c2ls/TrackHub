@@ -22,6 +22,9 @@ namespace TrackHub.TripManagement.Application.Trips.Queries.GetTripTimeline;
 /// <summary>Paged <c>TripEvent</c> history: manual overrides and detections in one log.</summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Read)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetTripTimelineQuery(Guid TripId, int? Skip, int? Take) : IRequest<TripTimelinePageVm>;
 
 public sealed class GetTripTimelineQueryHandler(

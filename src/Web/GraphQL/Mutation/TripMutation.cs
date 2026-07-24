@@ -25,61 +25,61 @@ namespace TrackHub.TripManagement.Web.GraphQL.Mutation;
 /// <summary>Trip CRUD, assignment, route planning and the lifecycle transitions.</summary>
 public partial class Mutation
 {
-    public async Task<TripVm> CreateTrip([Service] ISender sender, CreateTripCommand command)
-        => await sender.Send(command);
+    public async Task<TripVm> CreateTrip([Service] ISender sender, CreateTripCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> UpdateTrip([Service] ISender sender, UpdateTripCommand command)
+    public async Task<bool> UpdateTrip([Service] ISender sender, UpdateTripCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
     // Delete mutations return the deleted identifier, not a boolean (rules.md naming).
-    public async Task<Guid> DeleteTrip([Service] ISender sender, Guid id)
+    public async Task<Guid> DeleteTrip([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new DeleteTripCommand(id));
+        await sender.Send(new DeleteTripCommand(id), cancellationToken);
         return id;
     }
 
-    public async Task<TripAssignmentVm> AssignTrip([Service] ISender sender, AssignTripCommand command)
-        => await sender.Send(command);
+    public async Task<TripAssignmentVm> AssignTrip([Service] ISender sender, AssignTripCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<RoutePlanVm> PlanTripRoute([Service] ISender sender, PlanTripRouteCommand command)
-        => await sender.Send(command);
+    public async Task<RoutePlanVm> PlanTripRoute([Service] ISender sender, PlanTripRouteCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> StartTrip([Service] ISender sender, Guid id)
+    public async Task<bool> StartTrip([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new StartTripCommand(id));
+        await sender.Send(new StartTripCommand(id), cancellationToken);
         return true;
     }
 
-    public async Task<bool> PauseTrip([Service] ISender sender, Guid id)
+    public async Task<bool> PauseTrip([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new PauseTripCommand(id));
+        await sender.Send(new PauseTripCommand(id), cancellationToken);
         return true;
     }
 
-    public async Task<bool> ResumeTrip([Service] ISender sender, Guid id)
+    public async Task<bool> ResumeTrip([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new ResumeTripCommand(id));
+        await sender.Send(new ResumeTripCommand(id), cancellationToken);
         return true;
     }
 
-    public async Task<bool> CompleteTrip([Service] ISender sender, CompleteTripCommand command)
+    public async Task<bool> CompleteTrip([Service] ISender sender, CompleteTripCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<bool> CancelTrip([Service] ISender sender, CancelTripCommand command)
+    public async Task<bool> CancelTrip([Service] ISender sender, CancelTripCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<bool> AbortTrip([Service] ISender sender, AbortTripCommand command)
+    public async Task<bool> AbortTrip([Service] ISender sender, AbortTripCommand command, CancellationToken cancellationToken)
     {
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 }

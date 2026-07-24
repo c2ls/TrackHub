@@ -24,6 +24,7 @@ namespace TrackHub.TripManagement.Application.TollCatalog.Queries;
 
 /// <summary>Paged toll-station browser for the admin panel and the planner.</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Read)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct GetTollStationsQuery(
     string? Search,
     string? Country,
@@ -57,6 +58,7 @@ public sealed class GetTollStationsValidator : AbstractValidator<GetTollStations
 
 /// <summary>A station with its full, effective-dated tariff history.</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Read)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct GetTollStationDetailQuery(Guid TollStationId) : IRequest<TollStationDetailVm>;
 
 public sealed class GetTollStationDetailQueryHandler(ITollCatalogReader reader)
@@ -77,6 +79,7 @@ public sealed class GetTollStationDetailValidator : AbstractValidator<GetTollSta
 
 /// <summary>The deployment's vehicle classes. Empty until an operator defines them (spec 11 §7.7).</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Read)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct GetTollVehicleClassesQuery : IRequest<IReadOnlyCollection<TollVehicleClassVm>>;
 
 public sealed class GetTollVehicleClassesQueryHandler(ITollCatalogReader reader)

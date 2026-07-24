@@ -265,6 +265,90 @@ public class TripEtaServiceTests
             TripEventTypes.TripDelayed, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TripAlertDto>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    // ----- DelayThresholdMinutes: both sides of the boundary -------------------------------------
+    //
+    // The harness mocks a 600s ORS duration, so the computed ETA is always "now + 10 minutes".
+    // With a threshold of T minutes the alert fires exactly when planned + T < now + 10, which lets
+    // each case sit one minute either side of the line instead of hours away from it. Far-from-the-
+    // boundary cases pass with the comparison deleted entirely; these do not.
+
+    [Test]
+    public async Task Delay_IsNotRaisedOneMinuteInsideTheDefaultThreshold()
+    {
+        // ETA = now + 10m, threshold = (now - 4m) + 15m = now + 11m. Inside by one minute.
+        var harness = new EtaHarness();
+        harness.WithCandidate(Candidate(fresh: true, plannedArrivalTo: DateTimeOffset.UtcNow.AddMinutes(-4)));
+
+        await harness.Service().RefreshEtasAsync(CancellationToken.None);
+
+        harness.AlertEmitter.Verify(e => e.EmitAsync(
+            TripEventTypes.TripDelayed, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TripAlertDto>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Delay_IsRaisedOneMinuteOutsideTheDefaultThreshold()
+    {
+        // ETA = now + 10m, threshold = (now - 6m) + 15m = now + 9m. Outside by one minute.
+        var harness = new EtaHarness();
+        harness.WithCandidate(Candidate(fresh: true, plannedArrivalTo: DateTimeOffset.UtcNow.AddMinutes(-6)));
+
+        await harness.Service().RefreshEtasAsync(CancellationToken.None);
+
+        harness.AlertEmitter.Verify(e => e.EmitAsync(
+            TripEventTypes.TripDelayed, TripAlertSeverities.Warning, It.IsAny<string>(),
+            It.IsAny<TripAlertDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        harness.StopWriter.Verify(w => w.MarkStopDelayAlertedAsync(
+            StopId, TestFactory.AccountId, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Delay_UsesTheConfiguredThresholdRatherThanTheDefault_WhenItIsWider()
+    {
+        // An hour late against a two-hour tolerance is not an alert. Under the DEFAULT 15 minutes
+        // this same candidate WOULD alert, so a service that ignores config.DelayThresholdMinutes
+        // fails here.
+        var harness = new EtaHarness();
+        harness.WithConfig(TripAccountConfigVm.Default with { DelayThresholdMinutes = 120 });
+        harness.WithCandidate(Candidate(fresh: true, plannedArrivalTo: DateTimeOffset.UtcNow.AddMinutes(-60)));
+
+        await harness.Service().RefreshEtasAsync(CancellationToken.None);
+
+        harness.AlertEmitter.Verify(e => e.EmitAsync(
+            TripEventTypes.TripDelayed, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TripAlertDto>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Delay_UsesTheConfiguredThresholdRatherThanTheDefault_WhenItIsTighter()
+    {
+        // ETA = now + 10m, threshold = (now - 3m) + 2m = now - 1m. Alert. Under the DEFAULT 15
+        // minutes the threshold would be now + 12m and nothing would fire, so this pins the
+        // configured value being read in the other direction too.
+        var harness = new EtaHarness();
+        harness.WithConfig(TripAccountConfigVm.Default with { DelayThresholdMinutes = 2 });
+        harness.WithCandidate(Candidate(fresh: true, plannedArrivalTo: DateTimeOffset.UtcNow.AddMinutes(-3)));
+
+        await harness.Service().RefreshEtasAsync(CancellationToken.None);
+
+        harness.AlertEmitter.Verify(e => e.EmitAsync(
+            TripEventTypes.TripDelayed, TripAlertSeverities.Warning, It.IsAny<string>(),
+            It.IsAny<TripAlertDto>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Delay_ReportsTheLatenessAgainstThePlannedWindow_NotAgainstTheThreshold()
+    {
+        // DelayMinutes is (eta - plannedTo): the threshold decides WHETHER to alert, never the
+        // number the account is shown. ETA = now + 10m against a window that closed 30m ago.
+        var harness = new EtaHarness();
+        harness.WithCandidate(Candidate(fresh: true, plannedArrivalTo: DateTimeOffset.UtcNow.AddMinutes(-30)));
+
+        await harness.Service().RefreshEtasAsync(CancellationToken.None);
+
+        harness.AlertEmitter.Verify(e => e.EmitAsync(
+            TripEventTypes.TripDelayed, It.IsAny<string>(), It.IsAny<string>(),
+            It.Is<TripAlertDto>(a => a.DelayMinutes == 40), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Test]
     public async Task Delay_IsNotRaisedWithoutAPlannedWindowToBeLateAgainst()
     {
@@ -476,6 +560,12 @@ public class TripEtaServiceTests
             => DetectionReader
                 .Setup(r => r.GetEtaCandidatesAsync(It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([candidate]);
+
+        /// <summary>Replaces the account configuration so a non-default threshold can be exercised.</summary>
+        public void WithConfig(TripAccountConfigVm config)
+            => AccountFeatureReader
+                .Setup(r => r.GetAccountConfigAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(config);
 
         public void WithTripDueToStart(TripVm trip) => WithTripsDueToStart(trip);
 

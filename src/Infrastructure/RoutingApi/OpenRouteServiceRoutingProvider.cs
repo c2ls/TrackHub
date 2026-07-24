@@ -45,8 +45,32 @@ public sealed class OpenRouteServiceRoutingProvider(
 
     // Throttle state is process-wide: the provider itself is registered Scoped, but the vendor
     // rate limit is per deployment (the Router ReverseGeocodingService pattern).
-    private static readonly SemaphoreSlim ThrottleGate = new(1, 1);
+    //
+    // Two lanes, because interactive route planning and the ETA job are not equal callers. A single
+    // queue meant a dispatcher's PlanTripRoute waited behind everything the background job had already
+    // enqueued — unbounded, since the job walks every account and up to MaxTripsPerCycle trips in each.
+    // Each lane now queues separately; only the pacing clock, which is what the vendor limit actually
+    // constrains, is shared, so an interactive caller waits for at most one in-flight background
+    // request rather than for the whole background backlog.
+    private static readonly SemaphoreSlim InteractiveGate = new(1, 1);
+    private static readonly SemaphoreSlim BackgroundGate = new(1, 1);
+    private static readonly SemaphoreSlim PacingGate = new(1, 1);
     private static DateTimeOffset _lastRequestAt = DateTimeOffset.MinValue;
+
+    // Background requests stand aside while any interactive request is queueing, and the deferral is
+    // capped so continuous interactive traffic degrades ETA refresh rather than starving it outright.
+    private static int _interactiveQueued;
+    private static readonly TimeSpan InteractiveYieldInterval = TimeSpan.FromMilliseconds(50);
+
+    private static readonly Lock BudgetLock = new();
+    private static DateTimeOffset _budgetWindowStartedAt = DateTimeOffset.MinValue;
+    private static int _budgetUsed;
+
+    private enum RequestLane
+    {
+        Interactive,
+        Background
+    }
 
     public string Name => options.Value.Provider;
 
@@ -71,7 +95,7 @@ public sealed class OpenRouteServiceRoutingProvider(
                 $"The route has {waypoints.Count} waypoints, above the configured maximum of {routing.MaxWaypoints}.");
         }
 
-        using var document = await SendAsync(routing, waypoints, cancellationToken);
+        using var document = await SendAsync(routing, waypoints, RequestLane.Interactive, cancellationToken);
         var feature = GetFirstFeature(document);
 
         var geometry = ReadGeometry(feature);
@@ -85,7 +109,7 @@ public sealed class OpenRouteServiceRoutingProvider(
     {
         var routing = EnsureConfigured();
 
-        using var document = await SendAsync(routing, [from, to], cancellationToken);
+        using var document = await SendAsync(routing, [from, to], RequestLane.Background, cancellationToken);
         var feature = GetFirstFeature(document);
 
         // Deliberately no geometry: the ETA path never asks for what it will not store.
@@ -106,6 +130,7 @@ public sealed class OpenRouteServiceRoutingProvider(
     private async Task<JsonDocument> SendAsync(
         RoutingOptions routing,
         IReadOnlyCollection<CoordinateVm> waypoints,
+        RequestLane lane,
         CancellationToken cancellationToken)
     {
         var url = $"{routing.BaseUrl!.TrimEnd('/')}/v2/directions/{routing.Profile}/geojson";
@@ -117,7 +142,7 @@ public sealed class OpenRouteServiceRoutingProvider(
         var backoff = InitialBackoff;
         for (var attempt = 1; ; attempt++)
         {
-            await ThrottleAsync(routing.RequestsPerSecond, cancellationToken);
+            await ThrottleAsync(routing, lane, cancellationToken);
 
             HttpResponseMessage? response = null;
             try
@@ -261,11 +286,108 @@ public sealed class OpenRouteServiceRoutingProvider(
             ? value.GetDouble()
             : 0d;
 
-    private static async Task ThrottleAsync(int requestsPerSecond, CancellationToken cancellationToken)
+    private static Task ThrottleAsync(RoutingOptions routing, RequestLane lane, CancellationToken cancellationToken)
+        => lane == RequestLane.Interactive
+            ? ThrottleInteractiveAsync(routing, cancellationToken)
+            : ThrottleBackgroundAsync(routing, cancellationToken);
+
+    // The whole admission is bounded by InteractiveTimeoutSeconds: a dispatcher gets
+    // ROUTING_UNAVAILABLE — which the planning handler already records as a Failed plan, leaving the
+    // trip usable — rather than a request that hangs for as long as the queue happens to be.
+    private static async Task ThrottleInteractiveAsync(RoutingOptions routing, CancellationToken cancellationToken)
+    {
+        var timeout = TimeSpan.FromSeconds(Math.Max(1, routing.InteractiveTimeoutSeconds));
+        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutSource.CancelAfter(timeout);
+
+        Interlocked.Increment(ref _interactiveQueued);
+        try
+        {
+            await InteractiveGate.WaitAsync(timeoutSource.Token);
+            try
+            {
+                await PaceAsync(routing.RequestsPerSecond, timeoutSource.Token);
+            }
+            finally
+            {
+                InteractiveGate.Release();
+            }
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new RoutingUnavailableException(
+                TripErrorCodes.RoutingUnavailable,
+                $"The routing provider did not become available within {timeout.TotalSeconds:0} second(s).");
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _interactiveQueued);
+        }
+    }
+
+    private static async Task ThrottleBackgroundAsync(RoutingOptions routing, CancellationToken cancellationToken)
+    {
+        if (!TryConsumeBackgroundBudget(routing))
+        {
+            throw new RoutingUnavailableException(
+                TripErrorCodes.RoutingUnavailable,
+                $"The background routing budget of {Math.Max(1, routing.BackgroundRequestsPerWindow)} request(s) per {Math.Max(1, routing.BackgroundWindowSeconds)} second(s) is exhausted.");
+        }
+
+        await BackgroundGate.WaitAsync(cancellationToken);
+        try
+        {
+            await YieldToInteractiveAsync(routing, cancellationToken);
+            await PaceAsync(routing.RequestsPerSecond, cancellationToken);
+        }
+        finally
+        {
+            BackgroundGate.Release();
+        }
+    }
+
+    private static async Task YieldToInteractiveAsync(RoutingOptions routing, CancellationToken cancellationToken)
+    {
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(Math.Max(1, routing.InteractiveTimeoutSeconds));
+        while (Volatile.Read(ref _interactiveQueued) > 0 && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(InteractiveYieldInterval, cancellationToken);
+        }
+    }
+
+    // Rolling window rather than a per-cycle counter: the provider has no idea when a job cycle begins,
+    // and a window that resets on its own also covers overlapping cycles, which is the state this budget
+    // exists to survive.
+    private static bool TryConsumeBackgroundBudget(RoutingOptions routing)
+    {
+        var window = TimeSpan.FromSeconds(Math.Max(1, routing.BackgroundWindowSeconds));
+        var budget = Math.Max(1, routing.BackgroundRequestsPerWindow);
+
+        lock (BudgetLock)
+        {
+            var now = DateTimeOffset.UtcNow;
+            if (now - _budgetWindowStartedAt >= window)
+            {
+                _budgetWindowStartedAt = now;
+                _budgetUsed = 0;
+            }
+
+            if (_budgetUsed >= budget)
+            {
+                return false;
+            }
+
+            _budgetUsed++;
+            return true;
+        }
+    }
+
+    // The vendor rate limit is one limit for the whole deployment, so both lanes share this clock.
+    private static async Task PaceAsync(int requestsPerSecond, CancellationToken cancellationToken)
     {
         var minInterval = TimeSpan.FromSeconds(1d / Math.Max(1, requestsPerSecond));
 
-        await ThrottleGate.WaitAsync(cancellationToken);
+        await PacingGate.WaitAsync(cancellationToken);
         try
         {
             var wait = _lastRequestAt + minInterval - DateTimeOffset.UtcNow;
@@ -277,7 +399,7 @@ public sealed class OpenRouteServiceRoutingProvider(
         }
         finally
         {
-            ThrottleGate.Release();
+            PacingGate.Release();
         }
     }
 

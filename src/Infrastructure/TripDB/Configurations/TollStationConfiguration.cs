@@ -52,7 +52,9 @@ public sealed class TollStationConfiguration : IEntityTypeConfiguration<TollStat
             .IsUnique()
             .HasFilter("code is null");
 
-        // Route matching is ST_DWithin(point, planned line, tolerance) against this index.
+        // Geometry-side spatial predicates only. Route matching runs ST_DWithin over the geography
+        // cast, which this index cannot serve — it is answered by the functional index on
+        // (point::geography) created as raw SQL in the InitialCreate migration.
         builder.HasIndex(x => x.Point)
             .HasDatabaseName("ix_toll_stations_point_gist")
             .HasMethod("gist");
