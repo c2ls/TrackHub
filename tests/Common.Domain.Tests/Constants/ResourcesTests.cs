@@ -25,8 +25,11 @@ public class ResourcesTests
     [InlineData(Resources.Profile, "Profile")]
     [InlineData(Resources.Reports, "Reports")]
     [InlineData(Resources.SettingsScreen, "SettingsScreen")]
+    [InlineData(Resources.TollCatalog, "TollCatalog")]
     [InlineData(Resources.Transporters, "Transporters")]
     [InlineData(Resources.TransporterType, "TransporterType")]
+    [InlineData(Resources.Trips, "Trips")]
+    [InlineData(Resources.TripTracking, "TripTracking")]
     [InlineData(Resources.Users, "Users")]
     public void Resources_HaveExpectedValues(string actual, string expected) =>
         actual.Should().Be(expected);

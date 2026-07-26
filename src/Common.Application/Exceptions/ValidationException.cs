@@ -25,10 +25,14 @@ public class ValidationException : Exception
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationException"/> class.
     /// </summary>
+    /// <summary>The generic code used when a caller does not supply a specific one.</summary>
+    public const string DefaultCode = "VALIDATION_ERROR";
+
     public ValidationException()
         : base("One or more validation failures have occurred.")
     {
         Errors = new Dictionary<string, string[]>();
+        Code = DefaultCode;
     }
 
     /// <summary>
@@ -44,7 +48,27 @@ public class ValidationException : Exception
     }
 
     /// <summary>
+    /// Initializes a rejection carrying a SPECIFIC machine-readable code
+    /// (<c>TRIP_NOT_ACTIVE</c>, <c>POD_DOCUMENT_NOT_CLEAN</c>, …) alongside the failures.
+    /// <para>
+    /// The GraphQL error filter surfaces <see cref="Code"/> as the error code. Until it did, a
+    /// domain rejection thrown as a validation failure reached the client as an unmapped
+    /// <c>Unexpected Execution Error</c> with no code at all, because the filter had no
+    /// <see cref="ValidationException"/> branch — so the specific, localizable codes the API
+    /// promises were unreachable and every per-code translation in the portal was dead.
+    /// </para>
+    /// </summary>
+    public ValidationException(string code, IEnumerable<ValidationFailure> failures)
+        : this(failures)
+    {
+        Code = code;
+    }
+
+    /// <summary>
     /// Gets the dictionary of validation errors.
     /// </summary>
     public IDictionary<string, string[]> Errors { get; }
+
+    /// <summary>Machine-readable code; <see cref="DefaultCode"/> unless one was supplied.</summary>
+    public string Code { get; }
 }

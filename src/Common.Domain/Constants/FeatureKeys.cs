@@ -27,4 +27,11 @@ public static class FeatureKeys
     public const string NotificationsWhatsApp = "notifications.whatsapp";
     public const string GpsIntegration = "gps.integration";
     public const string GpsPositionHistory = "gps.positionHistory";
+
+    /// <summary>
+    /// Extended workforce capabilities (driver qualifications, time-bounded assignment history,
+    /// expiration alerts, workforce reports). Driver identity itself — registry, credentials and
+    /// device administration — is core platform and is deliberately NOT gated by this key.
+    /// </summary>
+    public const string Workforce = "workforce";
 }

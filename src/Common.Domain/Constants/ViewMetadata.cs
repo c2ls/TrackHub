@@ -20,4 +20,5 @@ public static class ViewMetadata
     public const string VwGeofence = "vw_geofence";
     public const string VwTransporterPosition = "vw_transporter_position";
     public const string VwUsers = "vw_users";
+    public const string VwVisibleTransporter = "vw_visible_transporter";
 }

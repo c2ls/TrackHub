@@ -12,7 +12,8 @@ public class ClientsTests
     [InlineData(Clients.Manager, "Manager")]
     [InlineData(Clients.Router, "Router")]
     [InlineData(Clients.Security, "Security")]
-    [InlineData(Clients.TripManagememt, "TripManagememt")]
+    [InlineData(Clients.Telemetry, "Telemetry")]
+    [InlineData(Clients.TripManagement, "TripManagement")]
     public void Clients_HaveExpectedValues(string actual, string expected) =>
         actual.Should().Be(expected);
 }

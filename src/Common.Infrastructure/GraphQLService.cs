@@ -97,6 +97,21 @@ public abstract class GraphQLService(IGraphQLClient graphQLClient)
             if (propertyValue != null)
                 return propertyValue;
         }
+
+        // A Nullable<T> return type means the caller declared null a VALID answer for this field —
+        // e.g. `activeGeocodingProvider` returning null when no provider is configured. Throwing
+        // here made every such null-handling branch unreachable (ReverseGeocodingService's
+        // `provider is null` check could never fire) and masked the real condition behind a bare
+        // Exception that no error filter maps, surfacing as "Unexpected Execution Error".
+        //
+        // Deliberately Nullable<T> ONLY, not `default(T) is null`: nullable reference annotations
+        // are erased at runtime, so `string` and `string?` are indistinguishable here and widening
+        // to all reference types would turn a genuine "field came back empty" bug into a silent
+        // null. Every cross-service Vm in this platform is a record struct, so the nullable ones
+        // are Nullable<T> and detectable.
+        if (Nullable.GetUnderlyingType(typeof(T)) is not null)
+            return default!;
+
         throw new Exception("Response is null or empty.");
     }
 }

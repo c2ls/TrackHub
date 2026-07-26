@@ -79,6 +79,27 @@ public class GraphQLServiceTests
         await act.Should().ThrowAsync<Exception>().WithMessage("Response is null or empty*");
     }
 
+    // A Nullable<T> return type declares null a VALID answer for the field (e.g.
+    // `activeGeocodingProvider` when no provider is configured). Before this, the bare throw above
+    // fired for those too, which made ReverseGeocodingService's `provider is null` branch
+    // unreachable and surfaced as an unmapped "Unexpected Execution Error" instead of
+    // GEOCODER_UNAVAILABLE.
+    [Fact]
+    public async Task QueryAsync_NullField_WithNullableValueType_ReturnsNull()
+    {
+        var response = new GraphQLResponse<object>
+        {
+            Data = System.Text.Json.JsonSerializer.Deserialize<object>("""{"result":null}""")!
+        };
+        _mockClient.Setup(c => c.SendQueryAsync<object>(It.IsAny<GraphQLRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        var service = new TestGraphQLService(_mockClient.Object);
+        var result = await service.TestQuery<int?>(new GraphQLRequest { Query = "query{}" }, CancellationToken.None);
+
+        result.Should().BeNull();
+    }
+
     [Fact]
     public async Task MutationAsync_SuccessfulResponse_ReturnsDeserializedData()
     {

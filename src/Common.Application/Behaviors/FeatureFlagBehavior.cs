@@ -13,7 +13,6 @@
 //  limitations under the License.
 //
 
-using System.Collections.Concurrent;
 using System.Reflection;
 using Common.Application.Attributes;
 using Common.Application.Exceptions;
@@ -38,8 +37,6 @@ public sealed class FeatureFlagBehavior<TRequest, TResponse>(
     ILogger<FeatureFlagBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
-    private static readonly ConcurrentDictionary<Type, PropertyInfo?> AccountIdProperties = new();
-
     public async Task<TResponse> HandleAsync(TRequest request, Func<Task<TResponse>> next, CancellationToken cancellationToken)
     {
         var attributes = typeof(TRequest).GetCustomAttributes<RequireFeatureAttribute>(inherit: true).ToArray();
@@ -78,20 +75,5 @@ public sealed class FeatureFlagBehavior<TRequest, TResponse>(
     }
 
     private Guid? ResolveAccountId(TRequest request)
-    {
-        var property = AccountIdProperties.GetOrAdd(typeof(TRequest), static t =>
-            t.GetProperty("AccountId", BindingFlags.Public | BindingFlags.Instance)
-            ?? t.GetProperty("accountId", BindingFlags.Public | BindingFlags.Instance));
-
-        if (property is not null)
-        {
-            var value = property.GetValue(request);
-            if (value is Guid guid && guid != Guid.Empty)
-            {
-                return guid;
-            }
-        }
-
-        return principal.AccountId;
-    }
+        => RequestAccountResolver.GetRequestAccountId(request) ?? principal.AccountId;
 }
