@@ -34,7 +34,11 @@ namespace Common.Domain.Constants;
 ///   <item><term>document-expiration</term><description>Manager DocumentExpirationService — only per expiring document.</description></item>
 ///   <item><term>document-retention-cleanup</term><description>Manager DocumentRetentionCleanupService — only per purged version.</description></item>
 ///   <item><term>trial-expiration</term><description>Manager TrialExpirationService — only per transitioned account (plus a Failed row on error).</description></item>
+///   <item><term>platform-retention</term><description>Manager PlatformRetentionService — only when it purged at least one job run or alert event.</description></item>
 ///   <item><term>geofence-dwell-evaluation</term><description>Geofencing DwellEvaluationService — only when it raised a dwell alert.</description></item>
+///   <item><term>workforce-expiration-scan</term><description>Manager WorkforceExpirationService — only per raised qualification-expiration alert.</description></item>
+///   <item><term>trip-eta-refresh</term><description>TripManagement TripEtaRefreshService — only when it refreshed an ETA for at least one in-progress trip.</description></item>
+///   <item><term>trip-schedule-reminder</term><description>TripManagement TripScheduleReminderService — only when it raised a start-due reminder.</description></item>
 /// </list>
 /// <para>
 /// Net result: <c>alert-evaluation</c> is the ONLY key with a guaranteed recording floor, and that
@@ -51,7 +55,11 @@ public static class BackgroundJobKeys
     public const string DocumentExpiration = "document-expiration";
     public const string DocumentRetentionCleanup = "document-retention-cleanup";
     public const string TrialExpiration = "trial-expiration";
+    public const string PlatformRetention = "platform-retention";
     public const string GeofenceDwellEvaluation = "geofence-dwell-evaluation";
+    public const string WorkforceExpirationScan = "workforce-expiration-scan";
+    public const string TripEtaRefresh = "trip-eta-refresh";
+    public const string TripScheduleReminder = "trip-schedule-reminder";
 
     /// <summary>
     /// Keys whose producer writes a row on a guaranteed schedule, so a missing recent row is a real

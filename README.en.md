@@ -1,135 +1,114 @@
 # TrackHub Common Library
 
-## Key Features
+[← Back to the landing page](README.md) · [Español](README.es.md)
 
-- **Shared Clean Architecture Layers**: Reusable application and domain layers based on Jason Taylor's template
-- **Enhanced RBAC Authorization**: Centralized role-based permission checking across all services
-- **GraphQL Validation Behaviors**: Custom validators ensuring consistent query structure and data integrity
-- **Secure Cryptography**: BCrypt for password hashing, server certificates for secrets encryption
-- **Caching Pipeline**: Request-level caching behavior to optimize performance and reduce API calls
-- **Audit Interceptors**: Automatic management of created/modified timestamps in database entities, with domain events dispatched after successful persistence
-- **GraphQL Client Factory**: Centralized HTTP client management for inter-service communication with Polly retry and circuit-breaker policies
-- **Identity Service Integration**: Unified authentication validation across all TrackHub microservices
-- **Production-Hardened Error Handling**: Structured exception handling with ProblemDetails responses and sanitized error logging
+TrackHubCommon is the shared foundation every TrackHub backend service builds on. It ships as **four local NuGet packages**, not project references.
+
+| Package | Contents |
+|---|---|
+| `TrackHubCommon.Domain` | Constants, enums, cryptography extensions, localization, domain-event primitives |
+| `TrackHubCommon.Application` | The custom CQRS mediator, the behavior pipeline, attributes, testing helpers |
+| `TrackHubCommon.Infrastructure` | EF conventions and interceptors, the GraphQL client factory, `IdentityService` |
+| `TrackHubCommon.Web` | GraphQL server registration, error filters, security scheme transformers |
+
+The structure follows [Jason Taylor's Clean Architecture template](https://github.com/jasontaylordev/CleanArchitecture), adapted to TrackHub's needs.
+
+Full detail: **[Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library)** in the wiki.
 
 ---
 
+## What it provides
 
+- **The custom CQRS mediator** (`Common.Mediator`) — `IRequest<TResult>`, `IRequestHandler<,>`, `MediatorDispatcher : ISender, IPublisher`. **MediatR is not used and is forbidden.**
+- **The behavior pipeline** — logging, validation, authorization, fail-closed tenant scoping, caching, rate limiting, unhandled-exception handling
+- **The cross-service constant catalogs** — `Resources`, `Actions`, `Roles`, `Policies`, `Clients`, `FeatureKeys`, `BackgroundJobKeys`, `Reports`, and the schema/table/column/view metadata
+- **Cryptography** — BCrypt for user passwords, server-certificate encryption for third-party secrets such as GPS provider credentials
+- **Localization** — `ResourceLocalizer`, the single primitive for server-rendered text from `.resx`
+- **EF interceptors and conventions** — audit columns, post-commit domain-event dispatch, `UseUtcTimestamps()`
+- **The GraphQL client factory** — the only sanctioned way to register an inter-service client, applying timeouts, header propagation and an explicit resilience policy
+- **`AddTrackHubGraphQLServer<TQuery, TMutation>`** — the single definition of the platform's GraphQL server configuration
 
-## Quick Start
+---
+
+## Quick start
 
 ### Prerequisites
 
-- .NET 10.0 SDK
-- NuGet package manager
+- .NET 10 SDK
+- A local NuGet feed — the packages are **not** published to nuget.org
 
-### Installation
+### Consuming the packages
 
-1. **Add package reference** to your project:
-   ```xml
-   <ItemGroup>
-     <ProjectReference Include="..\TrackHubCommon\src\Common.Application\Common.Application.csproj" />
-     <ProjectReference Include="..\TrackHubCommon\src\Common.Domain\Common.Domain.csproj" />
-     <ProjectReference Include="..\TrackHubCommon\src\Common.Infrastructure\Common.Infrastructure.csproj" />
-   </ItemGroup>
-   ```
+Add the package references through your repository's `Directory.Packages.props`, then reference them per project:
 
-2. **Register services** in your `Program.cs` or `DependencyInjection.cs`:
-   ```csharp
-   services.AddCommonApplicationServices();
-   services.AddCommonInfrastructureServices(configuration);
-   ```
+```xml
+<ItemGroup>
+  <PackageReference Include="TrackHubCommon.Domain" />
+  <PackageReference Include="TrackHubCommon.Application" />
+  <PackageReference Include="TrackHubCommon.Infrastructure" />
+  <PackageReference Include="TrackHubCommon.Web" />
+</ItemGroup>
+```
 
-3. **Configure authorization** in your GraphQL setup:
-   ```csharp
-   services.AddAuthorization(options =>
-   {
-       options.AddPolicy("RequireAdminRole", policy => 
-           policy.RequireRole("Administrator"));
-   });
-   ```
+Register the services in each layer's `DependencyInjection.cs`:
 
-### Using Behaviors
+```csharp
+// Application layer
+services.AddApplicationServices(typeof(SomeHandler).Assembly);
+services.AddDistributedMemoryCache();   // required — CachingBehavior resolves IDistributedCache
 
-The library automatically registers MediatR behaviors for:
-- Authorization checking
-- Request validation
-- Caching
-- Logging
-- Exception handling
+// Web layer
+builder.Services
+    .AddTrackHubGraphQLServer<Query, Mutation>(builder.Environment.IsDevelopment());
+```
+
+### Building the packages
+
+```bash
+dotnet build
+```
+
+**Use `dotnet build`, not `dotnet pack`.** The projects set `GeneratePackageOnBuild=true`, so packages are produced during build. `dotnet pack` can package a **stale** DLL, or fail with NU5026 after a clean — it does not reliably recompile.
 
 ---
 
-## Components and Resources
+## Repacking after a change
 
-| Component                | Description                                           | Documentation                                                                 |
-|--------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------|
-| Hot Chocolate            | GraphQL server for .NET                               | [Hot Chocolate Documentation](https://chillicream.com/docs/hotchocolate/v13)  |
-| GraphQL.Client           | HTTP client for GraphQL                               | [GraphQL.Client Documentation](https://github.com/graphql-dotnet/graphql-client)                           |
-| .NET Core                | Development platform for modern applications          | [.NET Core Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
-| BCrypt                   | Library for password encryption                       | [BCrypt Documentation](https://github.com/BcryptNet/bcrypt.net)               |
-| Clean Architecture Template | Template for clean architecture in ASP.NET         | [GitHub - Clean Architecture Template](https://github.com/jasontaylordev/CleanArchitecture) |
+When any `TrackHubCommon.*` project changes — a new constant, a new behavior, a contract change — the packages must be rebuilt and every consumer bumped.
+
+1. **Bump `<Version>`** in `Directory.Build.props`. It is the source of truth, applied in lockstep to all four packages.
+2. **`dotnet build`** (see above).
+3. **Copy the `.nupkg` files** from each `src/Common.*/bin/Debug/` to the local feed and to `NugetPackages/`.
+4. **Purge the global cache** when repacking the *same* version:
+
+   ```bash
+   rm -rf ~/.nuget/packages/trackhubcommon.*/<version>
+   ```
+
+   Otherwise consumers restore the previously extracted copy and you get confusing `CS0117 'Resources' does not contain …` errors against code you just wrote.
+5. **Bump and restore every consumer.**
 
 ---
 
-## Overview
+## Project-specific notes
 
-The common library is a shared set of components designed to standardize functionality across TrackHub services, improving reusability, maintainability, and adherence to Clean Architecture principles. Based on [Jason Taylor’s Clean Architecture Template](https://github.com/jasontaylordev/CleanArchitecture), this library organizes modules into distinct layers, which promotes clear separation of responsibilities and dependency independence. This design not only supports scalability and ease of testing but also simplifies updates and maintenance across the platform.
+- **Every consumer must move together, and none may be pinned back.** The eight service repositories track the version through their `Directory.Packages.props` — and **the ServiceContracts harness tracks it through a direct `PackageReference`** in `TrackHub.ServiceContracts.Harness.csproj`. It has no `Directory.Packages.props`, so a props-only sweep misses it and the contract suite then fails to restore.
+- **`AccountScopeBehavior` is fail-closed; the default `IFeatureFlagService` is fail-open.** That is deliberate: a missing tenant scope is a security failure, while a missing feature registration is a service-configuration failure the service's own tests should catch. A service that uses `[RequireFeature]` **must** register its own `IFeatureFlagService`.
+- **`AddDistributedMemoryCache()` is not optional.** `CachingBehavior` resolves `IDistributedCache` for every request type; a missing registration fails **every** request with a masked DI error.
+- **Adding an authorization resource is not enough.** It must also be added to `TrackHubSecurity`'s `ApplicationDbContextInitializer` `DefaultResources`, and granted in each role's matrix — [two separate steps](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity#seeding-rules-that-bite).
+- **The constant catalogs are the contract.** Resource, action, feature-key, schema and table names are never string literals at a call site — a typo becomes a silent authorization or mapping failure.
+- Verifying that a constant landed in a built DLL is best done with `grep -a`; UTF-16 metadata literals defeat plain `strings`.
+- Docker image builds pack these packages automatically in a `common` stage, so a deployment does not need a pre-populated feed. A local `dotnet ef` run does.
 
-## Customizations Implemented
+---
 
-The following customizations have been implemented to meet TrackHub’s unique requirements:
+## Documentation
 
-- **Enhanced RBAC Authorization**: Securely manages access control by checking role-based permissions for each resource.
-- **Custom GraphQL Validation**: Applies validators specifically tailored to TrackHub’s GraphQL requests to ensure consistent query structure and validation.
-- **BCrypt Password Encryption and Server Certificates**: Enforces strong encryption for user data and sensitive secrets using robust standards.
+- **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
+- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
-## Domain Layer
-
-The Domain layer contains the core elements of the business logic, independent of other layers or external frameworks. This isolation helps keep the core logic testable and adaptable.
-
-- **Constants**: Defines key metadata for models and business logic throughout the application. This standardization helps maintain consistent data handling across all TrackHub services.
-- **Extensions**
-  - **Cryptographic**: Provides methods for encrypting and decrypting sensitive data, using BCrypt for user passwords and server certificates for secrets like third-party credentials. This separation ensures that each type of sensitive data is protected using the most suitable method, improving security and compliance.
-
-## Application Layer
-
-The Application layer orchestrates use cases and business logic without direct knowledge of the infrastructure. It manages data flow and applies business rules in a way that keeps logic portable and flexible.
-
-### Behaviors
-
-- **Authorization**: Checks access control through RBAC (Role-Based Access Control), authorizing or denying interaction with resources based on user roles. This centralizes access checks, enhancing security.
-- **Caching**: Checks if a cache policy exists for the request, allowing quick responses when data is available in the cache. This reduces external service calls, optimizing performance and resource use.
-- **GraphQL Validation**: Evaluates GraphQL requests for compliance with TrackHub’s standards, using validators to enforce structure and data requirements.
-- **General Validation**: Validates incoming HTTP requests to ensure data is complete and correctly formatted.
-- **Logging**: Records details of incoming requests to facilitate monitoring, audit trails, and issue tracking.
-- **Unhandled Exceptions**: Captures and logs unexpected errors, which helps the development team identify and resolve issues quickly.
-
-## Infrastructure Layer
-
-The Infrastructure layer contains implementations for technical specifics and dependencies on external frameworks, such as databases, external services, and security tools.
-
-- **Interceptors**: Automatically manages audit columns (created and modified dates) in database tables, reducing manual effort and ensuring consistency.
-- **GraphQL Client Factory**: Uses `HttpClientFactory` to manage connections to GraphQL services, centralizing configuration and control of clients.
-- **Identity Service**: Provides identity validation methods by interacting with the Security API, ensuring centralized and controlled authentication. This approach enhances security while allowing flexible integration with identity services.
-
-## Benefits of the Common Library
-
-The library’s modular design aligns with Clean Architecture principles, ensuring that core business logic remains independent from technical details. This separation:
-
-- **Improves Scalability**: Each service can scale independently, and changes in one layer do not cascade through the system.
-- **Facilitates Testing**: Layers are isolated, enabling unit and integration testing with minimal setup.
-- **Simplifies Maintenance**: Clear separation of concerns allows easier updates and minimizes the risk of unintended side effects.
-
-## Example Use Cases
-
-This library is particularly valuable in scenarios where reusable components and consistent security practices are crucial:
-
-- **Identity Management**: The Identity Service component is essential for handling secure logins across all TrackHub services.
-- **GraphQL Operations**: The GraphQL Client Factory standardizes API interactions, simplifying configuration and error handling.
+---
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
-
-
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.

@@ -39,6 +39,10 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
+            // Tenant scope is enforced immediately after authorization: the principal (and its
+            // permission grant) is established, and no other behavior or handler has yet acted on
+            // the account named by the request.
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AccountScopeBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AccountStatusBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(FeatureFlagBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));

@@ -21,6 +21,9 @@ namespace Common.Application.Exceptions;
 /// </summary>
 public class ConflictException : Exception
 {
+    /// <summary>The generic code used when a caller does not supply a specific one.</summary>
+    public const string DefaultCode = "CONFLICT";
+
     public ConflictException()
         : this("The resource already exists.")
     {
@@ -29,5 +32,33 @@ public class ConflictException : Exception
     public ConflictException(string message)
         : base(message)
     {
+        Code = DefaultCode;
     }
+
+    /// <summary>
+    /// A conflict carrying a SPECIFIC machine-readable code (<c>STOP_ALREADY_DEPARTED</c>,
+    /// <c>TRIP_DUPLICATE_CODE</c>, <c>TOLL_OVERLAPPING_TARIFF</c>, …).
+    /// <para>
+    /// The GraphQL error filter surfaces <see cref="Code"/> as the error code. Without this the
+    /// filter emitted a flat <c>CONFLICT</c> for every conflict and left the specific literal
+    /// buried in the message, so a client could not tell a duplicate trip code from a departed stop
+    /// and every per-code translation in the portal was unreachable.
+    /// </para>
+    /// </summary>
+    public ConflictException(string code, string message)
+        : base(message)
+    {
+        Code = code;
+    }
+
+    /// <summary>Machine-readable code; <see cref="DefaultCode"/> unless one was supplied.</summary>
+    public string Code { get; }
+
+    /// <summary>
+    /// A conflict whose code is also its message — the shape used where the backend emits a bare
+    /// code literal and the client owns the wording. Preferred over
+    /// <c>new ConflictException(code)</c>, which silently binds to the message-only constructor and
+    /// leaves <see cref="Code"/> at <see cref="DefaultCode"/>.
+    /// </summary>
+    public static ConflictException WithCode(string code) => new(code, code);
 }

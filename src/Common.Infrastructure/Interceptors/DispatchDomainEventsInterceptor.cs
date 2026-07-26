@@ -19,13 +19,41 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Common.Infrastructure.Interceptors;
 
-// This class represents an interceptor that dispatches domain events after saving changes to the database.
+/// <summary>
+/// Dispatches domain events after a successful save.
+/// <para>
+/// Events are COLLECTED before the save and PUBLISHED after it. Collecting afterwards (the original
+/// behaviour) silently dropped every event raised on a DELETED entity: EF detaches removed entries
+/// during <c>SaveChanges</c>, so by the time <c>SavedChanges</c> ran, the change tracker no longer
+/// held them. Nothing in the platform raised domain events at the time, so the defect was latent
+/// until spec 09 added the first producers — including a <c>DriverQualificationDeleted</c> event that
+/// never fired. Do not move collection back into the post-save hook.
+/// </para>
+/// </summary>
 public class DispatchDomainEventsInterceptor(IPublisher publisher) : SaveChangesInterceptor
 {
+    // Events snapshotted from the change tracker before the save, awaiting a successful commit. The
+    // interceptor is scoped per DbContext, and each save publishes and clears its own batch.
+    private readonly List<BaseEvent> _pending = [];
+
+    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
+    {
+        CollectDomainEvents(eventData.Context);
+
+        return base.SavingChanges(eventData, result);
+    }
+
+    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+    {
+        CollectDomainEvents(eventData.Context);
+
+        return base.SavingChangesAsync(eventData, result, cancellationToken);
+    }
+
     // Dispatches domain events after the database save completes successfully (synchronous path).
     public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
-        DispatchDomainEvents(eventData.Context).GetAwaiter().GetResult();
+        PublishPendingAsync().GetAwaiter().GetResult();
 
         return base.SavedChanges(eventData, result);
     }
@@ -33,27 +61,50 @@ public class DispatchDomainEventsInterceptor(IPublisher publisher) : SaveChanges
     // Dispatches domain events after the database save completes successfully (asynchronous path).
     public override async ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
     {
-        await DispatchDomainEvents(eventData.Context);
+        await PublishPendingAsync();
 
         return await base.SavedChangesAsync(eventData, result, cancellationToken);
     }
 
-    // This method dispatches domain events for entities that have pending domain events.
-    // It clears the domain events after dispatching them.
-    public async Task DispatchDomainEvents(DbContext? context)
+    // A failed save must not leave its events queued — they would otherwise be published by the next
+    // successful save on the same context, reporting changes that were rolled back.
+    public override void SaveChangesFailed(DbContextErrorEventData eventData)
+    {
+        _pending.Clear();
+        base.SaveChangesFailed(eventData);
+    }
+
+    public override Task SaveChangesFailedAsync(DbContextErrorEventData eventData, CancellationToken cancellationToken = default)
+    {
+        _pending.Clear();
+        return base.SaveChangesFailedAsync(eventData, cancellationToken);
+    }
+
+    /// <summary>
+    /// Snapshots pending domain events off the tracked entities (including Deleted ones, which are
+    /// still tracked at this point) and clears them so a subsequent save cannot re-publish them.
+    /// </summary>
+    public void CollectDomainEvents(DbContext? context)
     {
         if (context == null) return;
 
         var entities = context.ChangeTracker
             .Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Count != 0)
-            .Select(e => e.Entity);
-
-        var domainEvents = entities
-            .SelectMany(e => e.DomainEvents)
+            .Select(e => e.Entity)
             .ToList();
 
-        entities.ToList().ForEach(e => e.ClearDomainEvents());
+        _pending.AddRange(entities.SelectMany(e => e.DomainEvents));
+        entities.ForEach(e => e.ClearDomainEvents());
+    }
+
+    /// <summary>Publishes and drains everything collected for the save that just committed.</summary>
+    public async Task PublishPendingAsync()
+    {
+        if (_pending.Count == 0) return;
+
+        var domainEvents = _pending.ToList();
+        _pending.Clear();
 
         foreach (var domainEvent in domainEvents)
             await publisher.Publish(domainEvent);

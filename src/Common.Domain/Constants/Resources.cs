@@ -52,7 +52,10 @@ public abstract class Resources
     public const string ServiceClients = nameof(ServiceClients);
     public const string SynchronizedDevices = nameof(SynchronizedDevices);
     public const string SupportGrants = nameof(SupportGrants);
+    public const string TollCatalog = nameof(TollCatalog);
     public const string Transporters = nameof(Transporters);
     public const string TransporterType = nameof(TransporterType);
+    public const string Trips = nameof(Trips);
+    public const string TripTracking = nameof(TripTracking);
     public const string Users = nameof(Users);
 }

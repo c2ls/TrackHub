@@ -1,4 +1,4 @@
-# Common Library for TrackHub Services
+# TrackHub Common Library
 
 [English](README.en.md) | [Español](README.es.md)
 
@@ -10,22 +10,46 @@ We believe in the strength of community collaboration to create effective and ac
 
 ![Image](https://github.com/shernandezp/TrackHub.AuthorityServer/blob/master/src/Web/wwwroot/images/logo.png)
 
+---
+
+## Overview
+
+TrackHubCommon is the shared foundation every TrackHub backend service builds on, distributed as four local NuGet packages: `TrackHubCommon.Domain`, `.Application`, `.Infrastructure` and `.Web`.
+
+It provides the custom CQRS mediator and its behavior pipeline, the cross-service constant catalogs, OpenIddict JWT configuration, the GraphQL client factory, authorization and fail-closed tenant-scope enforcement, EF interceptors and conventions, and the single GraphQL server registration used by every service.
+
+---
+
+## Documentation
+
+| | |
+|---|---|
+| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library) and [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture) |
+| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
+| **Deployment** | [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) |
 
 ---
 
 ## Project Repositories
 
-| Service Name       | Repository Link                                             |
-|-----------------------------|----------------------------------------------------|
-| **Common Library**          | [https://github.com/shernandezp/TrackHubCommon](https://github.com/shernandezp/TrackHubCommon)    |
-| **Authorization Service**   | [https://github.com/shernandezp/TrackHub.AuthorityServer](https://github.com/shernandezp/TrackHub.AuthorityServer) |
-| **Security API**            | [https://github.com/shernandezp/TrackHubSecurity](https://github.com/shernandezp/TrackHubSecurity)  |
-| **Management API**          | [https://github.com/shernandezp/TrackHub.Manager](https://github.com/shernandezp/TrackHub.Manager)  |
-| **Router API**              | [https://github.com/shernandezp/TrackHubRouter](https://github.com/shernandezp/TrackHubRouter)    |
-| **Geofencing API**          | [https://github.com/shernandezp/TrackHub.Geofencing](https://github.com/shernandezp/TrackHub.Geofencing)    |
-| **TrackHub Web**            | [https://github.com/shernandezp/TrackHub](https://github.com/shernandezp/TrackHub)          |
-| **TrackHub Mobile**         | [https://github.com/shernandezp/TrackHubMobile](https://github.com/shernandezp/TrackHubMobile)          |
+| Repository | Purpose |
+|---|---|
+| [TrackHubCommon](https://github.com/shernandezp/TrackHubCommon) | Shared library, distributed as local NuGet packages |
+| [TrackHub.AuthorityServer](https://github.com/shernandezp/TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
+| [TrackHubSecurity](https://github.com/shernandezp/TrackHubSecurity) | Security API — users, roles, policies, permissions |
+| [TrackHub.Manager](https://github.com/shernandezp/TrackHub.Manager) | Management API — master data |
+| [TrackHubRouter](https://github.com/shernandezp/TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
+| [TrackHub.Telemetry](https://github.com/shernandezp/TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
+| [TrackHub.Geofencing](https://github.com/shernandezp/TrackHub.Geofencing) | Geofencing API |
+| [TrackHub.TripManagement](https://github.com/shernandezp/TrackHub.TripManagement) | Trip Management API |
+| [TrackHub.Reporting](https://github.com/shernandezp/TrackHub.Reporting) | Reporting API |
+| [TrackHub](https://github.com/shernandezp/TrackHub) | Web portal (React) |
+| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
+| [TrackHub.IntegrationTests](https://github.com/shernandezp/TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
+| [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) | Docker deployment for the whole stack |
 
+---
 
+## License
 
-
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.

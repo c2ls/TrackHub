@@ -1,132 +1,114 @@
-# Librería Común de TrackHub
+# TrackHub Common Library
 
-## Características Principales
+[← Volver a la página principal](README.md) · [English](README.en.md)
 
-- **Base Compartida de Arquitectura Limpia**: Capas de aplicación y dominio reutilizables basadas en la plantilla de Jason Taylor
-- **Autorización RBAC Mejorada**: Verificación centralizada de permisos basados en roles en todos los servicios
-- **Comportamientos de Validación GraphQL**: Validadores personalizados que aseguran estructura de consultas y integridad de datos consistentes
-- **Criptografía Segura**: BCrypt para hash de contraseñas, certificados de servidor para encriptación de secretos
-- **Pipeline de Caché**: Comportamiento de caché a nivel de solicitud para optimizar rendimiento y reducir llamadas a API
-- **Interceptores de Auditoría**: Gestión automática de marcas de tiempo de creación/modificación en entidades de base de datos, con eventos de dominio despachados después de persistencia exitosa
-- **Fábrica de Clientes GraphQL**: Gestión centralizada de clientes HTTP para comunicación entre servicios con políticas de reintento y circuit-breaker de Polly
-- **Integración de Servicio de Identidad**: Validación de autenticación unificada en todos los microservicios de TrackHub
-- **Manejo de Errores Robusto**: Manejo estructurado de excepciones con respuestas ProblemDetails y registro de errores sanitizado
+TrackHubCommon es la base compartida sobre la que se construye cada servicio backend de TrackHub. Se distribuye como **cuatro paquetes locales de NuGet**, no como referencias de proyecto.
 
----
+| Paquete | Contenido |
+|---|---|
+| `TrackHubCommon.Domain` | Constantes, enumeraciones, extensiones de criptografía, localización, primitivas de eventos de dominio |
+| `TrackHubCommon.Application` | El mediador CQRS personalizado, el pipeline de comportamientos, atributos, ayudantes de pruebas |
+| `TrackHubCommon.Infrastructure` | Convenciones e interceptores de EF, la fábrica de clientes GraphQL, `IdentityService` |
+| `TrackHubCommon.Web` | Registro del servidor GraphQL, filtros de error, transformadores del esquema de seguridad |
 
-## Inicio Rápido
+La estructura sigue la [plantilla de Arquitectura Limpia de Jason Taylor](https://github.com/jasontaylordev/CleanArchitecture), adaptada a las necesidades de TrackHub.
 
-### Requisitos Previos
-
-- .NET 10.0 SDK
-- Gestor de paquetes NuGet
-
-### Instalación
-
-1. **Agregar referencia del paquete** a su proyecto:
-   ```xml
-   <ItemGroup>
-     <ProjectReference Include="..\TrackHubCommon\src\Common.Application\Common.Application.csproj" />
-     <ProjectReference Include="..\TrackHubCommon\src\Common.Domain\Common.Domain.csproj" />
-     <ProjectReference Include="..\TrackHubCommon\src\Common.Infrastructure\Common.Infrastructure.csproj" />
-   </ItemGroup>
-   ```
-
-2. **Registrar servicios** en su `Program.cs` o `DependencyInjection.cs`:
-   ```csharp
-   services.AddCommonApplicationServices();
-   services.AddCommonInfrastructureServices(configuration);
-   ```
-
-3. **Configurar autorización** en su configuración GraphQL:
-   ```csharp
-   services.AddAuthorization(options =>
-   {
-       options.AddPolicy("RequireAdminRole", policy => 
-           policy.RequireRole("Administrator"));
-   });
-   ```
-
-### Uso de Comportamientos
-
-La librería registra automáticamente comportamientos de MediatR para:
-- Verificación de autorización
-- Validación de solicitudes
-- Caché
-- Registro de logs
-- Manejo de excepciones
+Detalle completo: **[Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library)** en el wiki.
 
 ---
 
-## Componentes y Recursos Utilizados
+## Qué proporciona
 
-| Componente                | Descripción                                             | Documentación                                                                 |
-|---------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------|
-| Hot Chocolate             | Servidor GraphQL para .Net        | [Documentación Hot Chocolate](https://chillicream.com/docs/hotchocolate/v13)                           |
-| GraphQL.Client            | Cliente Http para GraphQL        | [Documentación GraphQL.Client](https://github.com/graphql-dotnet/graphql-client)                           |
-| .NET Core                 | Plataforma de desarrollo para aplicaciones modernas     | [Documentación .NET Core](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
-| BCrypt                    | Librería para encripción de contraseñas                 | [Documentación BCrypt](https://github.com/BcryptNet/bcrypt.net)               |
-| Clean Architecture Template | Plantilla para arquitectura limpia en ASP.NET        | [GitHub - Clean Architecture Template](https://github.com/jasontaylordev/CleanArchitecture) |
+- **El mediador CQRS personalizado** (`Common.Mediator`) — `IRequest<TResult>`, `IRequestHandler<,>`, `MediatorDispatcher : ISender, IPublisher`. **MediatR no se usa y está prohibido.**
+- **El pipeline de comportamientos** — registro, validación, autorización, ámbito de tenant fail-closed, caché, limitación de tasa, manejo de excepciones no controladas
+- **Los catálogos de constantes entre servicios** — `Resources`, `Actions`, `Roles`, `Policies`, `Clients`, `FeatureKeys`, `BackgroundJobKeys`, `Reports`, y los metadatos de esquema/tabla/columna/vista
+- **Criptografía** — BCrypt para contraseñas de usuario, encriptación por certificado de servidor para secretos de terceros como las credenciales de proveedores GPS
+- **Localización** — `ResourceLocalizer`, la única primitiva para texto renderizado en el servidor a partir de `.resx`
+- **Interceptores y convenciones de EF** — columnas de auditoría, despacho de eventos de dominio tras el commit, `UseUtcTimestamps()`
+- **La fábrica de clientes GraphQL** — la única forma sancionada de registrar un cliente entre servicios, aplicando tiempos de espera, propagación de encabezados y una política de resiliencia explícita
+- **`AddTrackHubGraphQLServer<TQuery, TMutation>`** — la única definición de la configuración del servidor GraphQL de la plataforma
 
 ---
 
-## Descripción General
+## Inicio rápido
 
-La biblioteca común es un conjunto de componentes compartidos diseñados para estandarizar funcionalidades en los servicios de TrackHub, mejorando la reutilización, mantenibilidad y adherencia a los principios de Arquitectura Limpia. Basada en la [Plantilla de Arquitectura Limpia de Jason Taylor](https://github.com/jasontaylordev/CleanArchitecture), esta biblioteca organiza sus módulos en capas distintas, promoviendo una separación clara de responsabilidades y la independencia de dependencias. Este diseño no solo apoya la escalabilidad y facilidad de prueba, sino que también simplifica las actualizaciones y el mantenimiento en toda la plataforma.
+### Requisitos previos
 
-## Personalizaciones Implementadas
+- .NET 10 SDK
+- Un feed local de NuGet — los paquetes **no** se publican en nuget.org
 
-Las siguientes personalizaciones se han implementado para satisfacer los requisitos específicos de TrackHub:
+### Consumo de los paquetes
 
-- **Autorización RBAC Mejorada**: Gestiona el control de acceso de manera segura verificando los permisos basados en roles para cada recurso.
-- **Validación Personalizada de GraphQL**: Aplica validadores específicamente adaptados a las solicitudes GraphQL de TrackHub para asegurar una estructura y validación consistente.
-- **Encriptación de Contraseñas con BCrypt y Certificados de Servidor**: Refuerza la encriptación de datos de usuario y secretos sensibles utilizando estándares robustos.
+Agregar las referencias de paquete a través del `Directory.Packages.props` del repositorio, y luego referenciarlas por proyecto:
 
-## Capa de Dominio
+```xml
+<ItemGroup>
+  <PackageReference Include="TrackHubCommon.Domain" />
+  <PackageReference Include="TrackHubCommon.Application" />
+  <PackageReference Include="TrackHubCommon.Infrastructure" />
+  <PackageReference Include="TrackHubCommon.Web" />
+</ItemGroup>
+```
 
-La capa de Dominio contiene los elementos centrales de la lógica de negocio, independiente de otras capas o frameworks externos. Esta separación ayuda a mantener la lógica central testeable y adaptable.
+Registrar los servicios en el `DependencyInjection.cs` de cada capa:
 
-- **Constantes**: Define los metadatos clave para los modelos y la lógica de negocio en toda la aplicación. Esta estandarización ayuda a mantener un manejo de datos consistente en todos los servicios de TrackHub.
-- **Extensiones**
-  - **Criptográficas**: Proporciona métodos para la encriptación y desencriptación de datos sensibles, utilizando BCrypt para contraseñas de usuario y certificados de servidor para secretos como credenciales de terceros. Esta separación asegura que cada tipo de dato sensible esté protegido con el método más adecuado, mejorando la seguridad y el cumplimiento.
+```csharp
+// Application layer
+services.AddApplicationServices(typeof(SomeHandler).Assembly);
+services.AddDistributedMemoryCache();   // required — CachingBehavior resolves IDistributedCache
 
-## Capa de Aplicación
+// Web layer
+builder.Services
+    .AddTrackHubGraphQLServer<Query, Mutation>(builder.Environment.IsDevelopment());
+```
 
-La capa de Aplicación orquesta los casos de uso y la lógica de negocio sin conocimiento directo de la infraestructura. Gestiona el flujo de datos y aplica reglas de negocio de una manera que mantiene la lógica portátil y flexible.
+### Compilación de los paquetes
 
-### Comportamientos
+```bash
+dotnet build
+```
 
-- **Autorización**: Verifica el control de acceso mediante RBAC (Control de Acceso Basado en Roles), autorizando o denegando la interacción con recursos según los roles de usuario. Esto centraliza las verificaciones de acceso, mejorando la seguridad.
-- **Caché**: Verifica si existe una política de caché para la solicitud, permitiendo respuestas rápidas cuando los datos están disponibles en caché. Esto reduce las llamadas a servicios externos, optimizando el rendimiento y el uso de recursos.
-- **Validación de GraphQL**: Evalúa las solicitudes GraphQL para verificar que cumplan con los estándares de TrackHub, utilizando validadores para asegurar la estructura y los requisitos de datos.
-- **Validación General**: Valida las solicitudes HTTP entrantes para asegurar que los datos estén completos y en el formato correcto.
-- **Registro**: Graba detalles de las solicitudes entrantes para facilitar el monitoreo, el seguimiento de auditoría y la detección de problemas.
-- **Excepciones No Controladas**: Captura y registra errores inesperados, ayudando al equipo de desarrollo a identificar y resolver problemas rápidamente.
+**Usar `dotnet build`, no `dotnet pack`.** Los proyectos configuran `GeneratePackageOnBuild=true`, así que los paquetes se producen durante la compilación. `dotnet pack` puede empaquetar un DLL **obsoleto**, o fallar con NU5026 tras un clean — no recompila de forma confiable.
 
-## Capa de Infraestructura
+---
 
-La capa de Infraestructura contiene implementaciones para detalles técnicos específicos y dependencias de frameworks externos, como bases de datos, servicios externos y herramientas de seguridad.
+## Reempaquetado tras un cambio
 
-- **Interceptors**: Gestiona automáticamente las columnas de auditoría (fechas de creación y modificación) en las tablas de la base de datos, reduciendo el esfuerzo manual y asegurando consistencia.
-- **Fábrica de Clientes GraphQL**: Utiliza `HttpClientFactory` para gestionar las conexiones a servicios GraphQL, centralizando la configuración y el control de los clientes.
-- **Servicio de Identidad**: Proporciona métodos de validación de identidad mediante interacciones con la API de Seguridad, asegurando autenticación centralizada y controlada. Este enfoque mejora la seguridad al permitir una integración flexible con los servicios de identidad.
+Cuando cambia cualquier proyecto `TrackHubCommon.*` — una constante nueva, un comportamiento nuevo, un cambio de contrato — los paquetes deben reconstruirse y cada consumidor debe actualizarse.
 
-## Beneficios de la Librería Común
+1. **Incrementar `<Version>`** en `Directory.Build.props`. Es la fuente de verdad, aplicada en conjunto a los cuatro paquetes.
+2. **`dotnet build`** (ver arriba).
+3. **Copiar los archivos `.nupkg`** de cada `src/Common.*/bin/Debug/` al feed local y a `NugetPackages/`.
+4. **Purgar la caché global** al reempaquetar la *misma* versión:
 
-El diseño modular de la librería se alinea con los principios de Arquitectura Limpia, asegurando que la lógica central de negocio permanezca independiente de detalles técnicos. Esta separación:
+   ```bash
+   rm -rf ~/.nuget/packages/trackhubcommon.*/<version>
+   ```
 
-- **Mejora la Escalabilidad**: Cada servicio puede escalarse de forma independiente, y los cambios en una capa no afectan el resto del sistema.
-- **Facilita la Prueba**: Las capas están aisladas, permitiendo pruebas unitarias e integradas con mínima configuración.
-- **Simplifica el Mantenimiento**: La separación clara de responsabilidades permite actualizaciones fáciles y minimiza el riesgo de efectos secundarios no deseados.
+   De lo contrario los consumidores restauran la copia extraída previamente y se obtienen confusos errores `CS0117 'Resources' does not contain …` contra código recién escrito.
+5. **Actualizar y restaurar cada consumidor.**
 
-## Casos de Uso de Ejemplo
+---
 
-Esta biblioteca es particularmente valiosa en escenarios donde los componentes reutilizables y las prácticas de seguridad consistentes son fundamentales:
+## Notas específicas del proyecto
 
-- **Gestión de Identidad**: El componente de Servicio de Identidad es esencial para manejar inicios de sesión seguros en todos los servicios de TrackHub.
-- **Operaciones GraphQL**: La Fábrica de Clientes GraphQL estandariza las interacciones con API, simplificando la configuración y el manejo de errores.
+- **Cada consumidor debe avanzar junto con los demás, y ninguno puede quedar rezagado.** Los ocho repositorios de servicio siguen la versión a través de su `Directory.Packages.props` — y **el harness de ServiceContracts la sigue a través de una `PackageReference` directa** en `TrackHub.ServiceContracts.Harness.csproj`. No tiene `Directory.Packages.props`, así que un barrido basado solo en props lo pasa por alto y la suite de contratos falla al restaurar.
+- **`AccountScopeBehavior` es fail-closed; el `IFeatureFlagService` por defecto es fail-open.** Eso es deliberado: un ámbito de tenant faltante es una falla de seguridad, mientras que un registro de feature faltante es una falla de configuración del servicio que las propias pruebas del servicio deberían detectar. Un servicio que use `[RequireFeature]` **debe** registrar su propio `IFeatureFlagService`.
+- **`AddDistributedMemoryCache()` no es opcional.** `CachingBehavior` resuelve `IDistributedCache` para cada tipo de solicitud; un registro faltante hace fallar **toda** solicitud con un error de DI enmascarado.
+- **Agregar un recurso de autorización no es suficiente.** También debe agregarse a `DefaultResources` del `ApplicationDbContextInitializer` de `TrackHubSecurity`, y otorgarse en la matriz de cada rol — [dos pasos separados](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity#seeding-rules-that-bite).
+- **Los catálogos de constantes son el contrato.** Los nombres de recurso, acción, clave de feature, esquema y tabla nunca son literales de cadena en el sitio de llamada — un error de tipeo se convierte en una falla silenciosa de autorización o de mapeo.
+- Verificar que una constante llegó a un DLL compilado se hace mejor con `grep -a`; los literales de metadatos UTF-16 derrotan a un `strings` simple.
+- Las compilaciones de imagen Docker empaquetan estos paquetes automáticamente en una etapa `common`, así que un despliegue no necesita un feed prepoblado. Una ejecución local de `dotnet ef` sí lo necesita.
+
+---
+
+## Documentación
+
+- **Técnica** — el [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
+- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+
+---
 
 ## Licencia
 
-Este proyecto está bajo la Licencia Apache 2.0. Consulta el archivo [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.
-
+Licencia Apache 2.0. Consulte el [archivo LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.

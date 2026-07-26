@@ -24,5 +24,5 @@ public abstract class Clients
     public const string Router = nameof(Router);
     public const string Security = nameof(Security);
     public const string Telemetry = nameof(Telemetry);
-    public const string TripManagememt = nameof(TripManagememt);
+    public const string TripManagement = nameof(TripManagement);
 }
