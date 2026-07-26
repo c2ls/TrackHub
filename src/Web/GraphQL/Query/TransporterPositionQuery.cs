@@ -20,10 +20,10 @@ namespace TrackHub.Telemetry.Web.GraphQL.Query;
 public partial class Query
 {
 
-    public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionByOperator([Service] ISender sender, [AsParameters] GetTransporterPositionsByOperatorQuery query)
-        => await sender.Send(query);
+    public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionByOperator([Service] ISender sender, [AsParameters] GetTransporterPositionsByOperatorQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionsByOperators([Service] ISender sender, IReadOnlyCollection<Guid> operatorIds)
-        => await sender.Send(new GetTransporterPositionsByOperatorsQuery(operatorIds));
+    public async Task<IReadOnlyCollection<TransporterPositionVm>> GetTransporterPositionsByOperators([Service] ISender sender, IReadOnlyCollection<Guid> operatorIds, CancellationToken cancellationToken)
+        => await sender.Send(new GetTransporterPositionsByOperatorsQuery(operatorIds), cancellationToken);
 
 }

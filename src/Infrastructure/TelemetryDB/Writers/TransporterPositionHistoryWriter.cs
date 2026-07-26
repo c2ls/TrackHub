@@ -92,12 +92,4 @@ public sealed class TransporterPositionHistoryWriter(IApplicationDbContext conte
 
         return appended;
     }
-
-    public async Task<int> PurgeOlderThanAsync(Guid accountId, DateTimeOffset cutoff, CancellationToken cancellationToken)
-    {
-        var scoped = RequireAccountAccess(accountId);
-        return await Context.TransporterPositionHistory
-            .Where(x => x.AccountId == scoped && x.SourceTimestamp < cutoff)
-            .ExecuteDeleteAsync(cancellationToken);
-    }
 }

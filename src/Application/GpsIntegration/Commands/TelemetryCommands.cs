@@ -18,7 +18,10 @@ namespace TrackHub.Telemetry.Application.GpsIntegration.Commands;
 // Operator health is core: no feature gate. The handler
 // no longer writes the denormalized operator health-summary columns (Telemetry has read-only access
 // to the operator master row); the summary is derived from the telemetry tables at read time.
+// The account is nested in OperatorHealthCheckDto, so this was invisible to the tenant guard until
+// TrackHubCommon 1.0.7. ServiceClient-only, and the only service client that calls it is global.
 [Authorize(Resource = Resources.OperatorHealth, Action = Actions.Write, PrincipalTypes = "ServiceClient")]
+[AllowCrossAccount("Router/SyncWorker operator-health loop: one global router_client/syncworker_client identity probes every account's operators and records the result for whichever account owns the operator. The token carries no account claim.")]
 public readonly record struct RecordOperatorHealthCommand(OperatorHealthCheckDto Check) : IRequest<OperatorHealthCheckVm>;
 
 public class RecordOperatorHealthCommandHandler(IOperatorHealthCheckWriter writer)

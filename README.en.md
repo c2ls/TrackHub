@@ -1,36 +1,51 @@
 # TrackHub Telemetry API
 
-## Key Features
+[← Back to the landing page](README.md) · [Español](README.es.md)
 
-- **Latest-Position Projection**: Stores the freshest fix per transporter that backs the live map
-- **Position History**: Append-only track store with idempotent batch append and reverse-geocoded address write-back
-- **Operator Sync Runs**: One record per device/position sync attempt (counts, result, error)
-- **Operator Health Checks**: Connectivity/health probes; the operator health and sync summary is derived from these tables at read time
-- **Retention Purge**: Scheduled in-host background job that deletes expired history per account, honoring each account's retention days
-- **Group-Scoped Visibility**: Administrator/Manager roles read account-wide; other users are scoped to their group membership
-- **Schema-per-Owner**: Owns the `telemetry` schema with read-only, cross-schema access to the `app`-schema scoping tables
-- **GraphQL Interface**: Efficient, flexible querying with Hot Chocolate GraphQL server
-- **Clean Architecture**: Layered architecture ensuring maintainability and testability
+The Telemetry API owns TrackHub's **high-volume, append-heavy** data. It stores and serves positions and operator telemetry; it never talks to GPS providers — that is the [Router](https://github.com/shernandezp/TrackHubRouter)'s role.
+
+Built on .NET 10 with a HotChocolate GraphQL endpoint, following the platform's Clean Architecture and CQRS conventions.
 
 ---
 
-## Quick Start
+## What it owns
+
+| Table | Purpose |
+|---|---|
+| `telemetry.transporter_position` | The latest-position projection — the freshest fix per transporter, backing the live map |
+| `telemetry.transporter_position_history` | The append-only track store, deduplicated by an idempotency key |
+| `telemetry.operator_sync_runs` | One row per device or position sync attempt: counts, result, error |
+| `telemetry.operator_health_checks` | Operator connectivity and health probe results |
+
+Operator health and sync summaries are **derived at read time** from the last two tables — the operator row carries no rollup columns.
+
+A scheduled in-host job (`PositionRetentionPurgeService`) deletes expired history per account, honouring each account's retention days.
+
+Full detail: **[Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry)** in the wiki.
+
+---
+
+## Quick start
 
 ### Prerequisites
 
-- .NET 10.0 SDK
+- .NET 10 SDK
 - PostgreSQL 14+
-- TrackHub Authority Server running (for authentication)
+- The `TrackHub` database with the `telemetry` schema **already created by the Manager migrations**
+- A running TrackHub AuthorityServer, for authentication
+- The `TrackHubCommon.*` packages available from a local NuGet feed
 
-### Installation
+### Steps
 
-1. **Clone the repository**:
+1. **Clone**
+
    ```bash
    git clone https://github.com/shernandezp/TrackHub.Telemetry.git
    cd TrackHub.Telemetry
    ```
 
-2. **Configure the database connection** in `appsettings.json`:
+2. **Configure the database connection** in `src/Web/appsettings.json` — it must point at the **same** `TrackHub` database as the Manager:
+
    ```json
    {
      "ConnectionStrings": {
@@ -39,73 +54,43 @@
    }
    ```
 
-3. **Start the application**:
+3. **Run**
+
    ```bash
    dotnet run --project src/Web
    ```
 
-4. **Access GraphQL Playground** at `https://localhost:5001/graphql`
+4. **Open the GraphQL endpoint** at `https://localhost:<port>/graphql`.
 
-> The telemetry tables live in the `telemetry` schema and are created/migrated by the Manager service; the Telemetry API maps and serves them. In production, connect with a role that has read/write on `telemetry` and read-only on the `app`-schema scoping tables.
-
----
-
-## Components and Resources
-
-| Component                | Description                                           | Documentation                                                                 |
-|--------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------|
-| Hot Chocolate            | GraphQL server for .NET                               | [Hot Chocolate Documentation](https://chillicream.com/docs/hotchocolate/v13)  |
-| .NET Core                | Development platform for modern applications          | [.NET Core Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
-| Postgres                 | Relational database management system                 | [Postgres Documentation](https://www.postgresql.org/)                         |
+In production, connect with a role that has read/write on `telemetry` and **read-only** on the `app`-schema scoping tables.
 
 ---
 
-## Overview
+## Project-specific notes
 
-The **TrackHub Telemetry API** owns TrackHub's high-volume, append-heavy position and operator-telemetry data. It stores and serves this data; it never talks to GPS providers (that is the Router's role). It adheres to the project's **Clean Architecture** principles, using **GraphQL** for API interactions and **Postgres** for storage.
+- **This service has no migrations of its own — do not add any.** The `telemetry` tables are created and migrated by the [Management API](https://github.com/shernandezp/TrackHub.Manager). That is why `DB_CONNECTION_TELEMETRY` must point at the same `TrackHub` database. Adding a telemetry column means adding a *Manager* migration.
+- **The `app`-schema tables are mapped read-only** and excluded from migrations. They exist so the service can enforce account scoping and group visibility without a network hop per request: users, groups, user–group and transporter–group links, transporters, device assignments, devices, operators and account features.
+- **`attributes` is a PostgreSQL `json` column.** `json` has no equality operator, so `Distinct()`, `GroupBy()` or set operations over an entity or projection including it fail at runtime with `42883`. De-duplicate with `EXISTS` or key-based predicates — **EF InMemory will not catch this.**
+- **`PlatformSyncActivityReader` is deliberately unscoped.** It is a documented platform-wide read gated by `[Authorize(Administrative, Read)]`, returning timestamps and counts only, never an account id. It backs the public status page's SyncWorker tile.
+- **Feature gating**: latest-position and health writes are core (authorization only); history writes and replay reads are gated by `gps.positionHistory`.
+- **Visibility**: Administrator and Manager roles read account-wide; other users are scoped to their group membership. Service clients read on behalf of already-authorized users.
+- The retention purge is an **on-work-only recorder** — an old `BackgroundJobRun` timestamp for it is the healthy steady state, not a stuck job.
+- After changing any GraphQL surface, run the contract tests:
 
----
-
-## Entities
-
-### Telemetry (schema `telemetry`, owned)
-
-- **TransporterPosition**: The latest position projection — the freshest fix per transporter.
-- **TransporterPositionHistory**: The append-only position track store, deduplicated by an idempotency key.
-- **OperatorSyncRun**: One row per device/position sync attempt, with device and position counts, result, and error.
-- **OperatorHealthCheck**: Operator connectivity/health probe results.
-
-### Scoping (schema `app`, read-only)
-
-Minimal, read-only projections of the master-data tables the service needs for account scoping and group visibility: users, groups, user–group and transporter–group links, transporters, device–transporter assignments, devices, operators, and account features.
+  ```bash
+  dotnet test ../TrackHub.IntegrationTests/TrackHub.IntegrationTests.slnx
+  ```
 
 ---
 
-## GraphQL Operations
+## Documentation
 
-### Queries
+- **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Router](https://github.com/shernandezp/TrackHub/wiki/Router), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture)
+- **User** — in the app: the Help button or **F1** on any screen
+- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
-- **transporterPositionByOperator**: Latest positions for an operator, scoped to the caller's visibility.
-- **positionHistory**: Stored position history, filtered by account/transporter/device.
-- **positionHistoryRange**: Replay read over a time range (ordered, point-capped), gated by `gps.positionHistory`.
-- **operatorSyncRuns**: Recorded sync-run telemetry.
-- **operatorHealth**: Current operator health snapshot, derived from the health-check and sync-run tables.
-- **operatorHealthHistory**: Recent health-check records for an operator.
-- **operatorHealthSummary**: Aggregated uptime/latency/failure counts over a lookback window.
-
-### Mutations
-
-- **bulkTransporterPosition**: Upsert the latest-position projection (freshest fix per transporter).
-- **appendPositionHistory** / **appendPositionHistoryBatch**: Append history rows (idempotent; feature-gated by `gps.positionHistory`).
-- **persistResolvedAddress**: Write reverse-geocoded address back onto stored position rows.
-- **recordOperatorSyncRun**: Record a sync-run attempt.
-- **recordOperatorHealth**: Record an operator health check.
-- **purgeExpiredPositionHistory**: Delete history older than a cutoff for an account.
-
-### Why GraphQL?
-
-The use of **GraphQL** enables efficient, customizable queries, letting clients request only the data they need to minimize bandwidth and enhance app performance.
+---
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.

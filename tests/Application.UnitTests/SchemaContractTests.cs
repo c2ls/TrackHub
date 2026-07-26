@@ -36,7 +36,7 @@ public class SchemaContractTests
     private static readonly string[] ExpectedMutations =
     [
         "bulkTransporterPosition", "appendPositionHistory", "appendPositionHistoryBatch",
-        "persistResolvedAddress", "recordOperatorSyncRun", "recordOperatorHealth", "purgeExpiredPositionHistory",
+        "persistResolvedAddress", "recordOperatorSyncRun", "recordOperatorHealth",
     ];
 
     [Test]
