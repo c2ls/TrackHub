@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public abstract class Clients
+public static partial class Clients
 {
     public const string Hub = nameof(Hub);
     public const string Geofence = nameof(Geofence);

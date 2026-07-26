@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public abstract class Policies
+public static partial class Policies
 {
     public const string AccessPosition = nameof(AccessPosition);
     public const string FullAccess = nameof(FullAccess);

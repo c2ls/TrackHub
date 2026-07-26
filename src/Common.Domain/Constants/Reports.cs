@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public abstract class Reports
+public static partial class Reports
 {
     public const string LiveReport = nameof(LiveReport);
     public const string PositionRecord = nameof(PositionRecord);

@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public static class FeatureKeys
+public static partial class FeatureKeys
 {
     public const string Geofencing = "geofencing";
     public const string TripManagement = "trip-management";

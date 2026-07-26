@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public static class TableMetadata
+public static partial class TableMetadata
 {
     public const string Account = "accounts";
     public const string AccountFeature = "account_features";

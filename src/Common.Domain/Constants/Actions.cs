@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public abstract class Actions
+public static partial class Actions
 {
     public const string Edit = nameof(Edit);
     public const string Execute = nameof(Execute);

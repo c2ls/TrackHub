@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public static class SchemaMetadata
+public static partial class SchemaMetadata
 {
     public const string Application = "app";
     public const string Geofencing = "geofencing";
