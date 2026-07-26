@@ -620,6 +620,13 @@ echo ""
 
 SERVICES=("authority" "security" "manager" "router" "geofencing" "tripmanagement" "telemetry" "reporting" "syncworker")
 
+# Optional extension point: a sibling generate-appsettings.edition.sh can append
+# services and define their templates for a specific deployment. No such file ships
+# with this repository.
+if [ -f "$SCRIPT_DIR/generate-appsettings.edition.sh" ]; then
+    source "$SCRIPT_DIR/generate-appsettings.edition.sh"
+fi
+
 if [ -n "$SERVICE_FILTER" ]; then
     process_service "$SERVICE_FILTER"
 else

@@ -48,7 +48,7 @@ GITHUB_OWNER="${GITHUB_OWNER:-shernandezp}"
 GITHUB_REPO_SUFFIX="${GITHUB_REPO_SUFFIX:-}"
 GITHUB_BRANCH="${GITHUB_BRANCH:-master}"
 
-# Full repository name, suffix applied (TrackHubCommon -> TrackHubCommon.Commercial)
+# Full repository name, suffix applied (TrackHubCommon -> TrackHubCommon${GITHUB_REPO_SUFFIX})
 repo_name() {
     echo "${1}${GITHUB_REPO_SUFFIX}"
 }
@@ -78,3 +78,11 @@ repo_clone_or_update() {
         git -C "$target" remote set-url origin "$(repo_url_clean "$repo")"
     fi
 }
+
+# Optional extension point: a sibling repo-config.edition.sh can extend the repository
+# list or adjust the helpers for a specific deployment. No such file ships with this
+# repository.
+_repo_config_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_repo_config_dir/repo-config.edition.sh" ]; then
+    source "$_repo_config_dir/repo-config.edition.sh"
+fi
