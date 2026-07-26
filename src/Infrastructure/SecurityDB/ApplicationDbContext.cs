@@ -20,7 +20,7 @@ using Action = TrackHub.Security.Infrastructure.Entities.Action;
 
 namespace TrackHub.Security.Infrastructure;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
+public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {
     public DbSet<Action> Actions { get; set; }
     public DbSet<Client> Clients { get; set; }

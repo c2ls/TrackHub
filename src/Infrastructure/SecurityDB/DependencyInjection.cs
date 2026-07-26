@@ -21,6 +21,7 @@ using TrackHub.Security.Infrastructure.Identity;
 using TrackHub.Security.Infrastructure.Interfaces;
 using TrackHub.Security.Infrastructure.Readers;
 using TrackHub.Security.Infrastructure.Writers;
+using Common.Application.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -65,6 +66,10 @@ public static class DependencyInjection
         services.AddScoped<IUserReader, UserReader>();
         services.AddScoped<IUserRoleWriter, UserRoleWriter>();
         services.AddScoped<IUserRoleReader, UserRoleReader>();
+
+        // Module discovery seam: registers any IServiceModule implementations shipped in
+        // this assembly (none in this repository).
+        services.AddDiscoveredModules(typeof(ApplicationDbContext).Assembly, configuration);
 
         return services;
     }

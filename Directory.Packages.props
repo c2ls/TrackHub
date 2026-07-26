@@ -2,16 +2,17 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <TrackHubCommonVersion>1.0.13</TrackHubCommonVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="GraphQL.Client" Version="6.1.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
-    <PackageVersion Include="TrackHubCommon.Application" Version="1.0.12" />
-    <PackageVersion Include="TrackHubCommon.Domain" Version="1.0.12" />
-    <PackageVersion Include="TrackHubCommon.Infrastructure" Version="1.0.12" />
-    <PackageVersion Include="TrackHubCommon.Web" Version="1.0.12" />
+    <PackageVersion Include="TrackHubCommon.Application" Version="$(TrackHubCommonVersion)" />
+    <PackageVersion Include="TrackHubCommon.Domain" Version="$(TrackHubCommonVersion)" />
+    <PackageVersion Include="TrackHubCommon.Infrastructure" Version="$(TrackHubCommonVersion)" />
+    <PackageVersion Include="TrackHubCommon.Web" Version="$(TrackHubCommonVersion)" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="HotChocolate.AspNetCore" Version="16.5.0" />
     <PackageVersion Include="HotChocolate.AspNetCore.Authorization" Version="16.5.0" />
@@ -26,4 +27,7 @@
     <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
   </ItemGroup>
+  <!-- Local override point: restores pick up property overrides (e.g. TrackHubCommonVersion) from an
+       optional sibling file that is not part of this repository. -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Packages.Edition.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Packages.Edition.props')" />
 </Project>
