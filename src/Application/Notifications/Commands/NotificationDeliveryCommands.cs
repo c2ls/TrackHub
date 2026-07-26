@@ -5,6 +5,9 @@ namespace TrackHub.Manager.Application.Notifications.Commands;
 
 [Authorize(Resource = Resources.Notifications, Action = Actions.Edit)]
 [RequireFeature(FeatureKeys.Notifications)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct RetryNotificationDeliveryCommand(Guid NotificationDeliveryId) : IRequest;
 public class RetryNotificationDeliveryCommandHandler(INotificationWriter writer) : IRequestHandler<RetryNotificationDeliveryCommand>
 {
@@ -13,6 +16,9 @@ public class RetryNotificationDeliveryCommandHandler(INotificationWriter writer)
 
 // Receiving in-app notifications is not feature-gated: mark-read stays ungated.
 [Authorize(Resource = Resources.Notifications, Action = Actions.Edit, PrincipalTypes = "User,Driver")]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct MarkNotificationReadCommand(Guid NotificationDeliveryId) : IRequest;
 public class MarkNotificationReadCommandHandler(INotificationWriter writer) : IRequestHandler<MarkNotificationReadCommand>
 {

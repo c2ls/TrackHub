@@ -13,6 +13,7 @@ public class CreatePlatformAnnouncementCommandValidator : AbstractValidator<Crea
 }
 
 [Authorize(Resource = Resources.Administrative, Action = Actions.Write)]
+[PlatformScoped("SVD-10 platform status announcements: platform-owned operational notices, Administrative-gated; no tenant owns a row.")]
 public readonly record struct UpdatePlatformAnnouncementCommand(Guid PlatformAnnouncementId, PlatformAnnouncementDto Announcement) : IRequest;
 public class UpdatePlatformAnnouncementCommandHandler(IPlatformAnnouncementWriter writer) : IRequestHandler<UpdatePlatformAnnouncementCommand>
 {
@@ -25,6 +26,7 @@ public class UpdatePlatformAnnouncementCommandValidator : AbstractValidator<Upda
 }
 
 [Authorize(Resource = Resources.Administrative, Action = Actions.Write)]
+[PlatformScoped("SVD-10 platform status announcements: platform-owned operational notices, Administrative-gated; no tenant owns a row.")]
 public readonly record struct DeletePlatformAnnouncementCommand(Guid PlatformAnnouncementId) : IRequest<Guid>;
 public class DeletePlatformAnnouncementCommandHandler(IPlatformAnnouncementWriter writer) : IRequestHandler<DeletePlatformAnnouncementCommand, Guid>
 {

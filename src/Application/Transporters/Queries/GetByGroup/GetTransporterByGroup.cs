@@ -13,14 +13,26 @@
 //  limitations under the License.
 //
 
+using Common.Application.Paging;
+
 namespace TrackHub.Manager.Application.Transporters.Queries.GetByGroup;
 
 [Authorize(Resource = Resources.Transporters, Action = Actions.Read)]
-public readonly record struct GetTransporterByGroupQuery(long GroupId) : IRequest<IReadOnlyCollection<TransporterVm>>;
+// Enforcement: TransporterReader.GetTransportersByGroupAsync resolves the group's owning account
+// and checks it with RequireAccountAccess before returning rows.
+[AccountScopeEnforcedInHandler]
+public readonly record struct GetTransporterByGroupQuery(
+    long GroupId,
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<TransportersPageVm>;
 
-public class GetTransportersQueryHandler(ITransporterReader reader) : IRequestHandler<GetTransporterByGroupQuery, IReadOnlyCollection<TransporterVm>>
+public class GetTransportersQueryHandler(ITransporterReader reader) : IRequestHandler<GetTransporterByGroupQuery, TransportersPageVm>
 {
-    public async Task<IReadOnlyCollection<TransporterVm>> Handle(GetTransporterByGroupQuery request, CancellationToken cancellationToken)
-        => await reader.GetTransportersByGroupAsync(request.GroupId, cancellationToken);
+    public async Task<TransportersPageVm> Handle(GetTransporterByGroupQuery request, CancellationToken cancellationToken)
+    {
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetTransportersByGroupAsync(request.GroupId, skip, take, request.Search, cancellationToken);
+    }
 
 }

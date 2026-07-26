@@ -14,24 +14,50 @@
 //
 
 using Common.Application.Interfaces;
+using Common.Application.Paging;
 using Common.Domain.Helpers;
+using TrackHub.Manager.Application.Lookups;
 
 namespace TrackHub.Manager.Application.Operators.Queries.GetByAccount;
 
 [Authorize(Resource = Resources.Operators, Action = Actions.Read)]
-public readonly record struct GetOperatorByCurrentAccountQuery() : IRequest<IReadOnlyCollection<OperatorVm>>;
+public readonly record struct GetOperatorByCurrentAccountQuery(
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<OperatorsPageVm>;
 
-public class GetOperatorsCurrentAccountQueryHandler(IOperatorReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetOperatorByCurrentAccountQuery, IReadOnlyCollection<OperatorVm>>
+public class GetOperatorsCurrentAccountQueryHandler(IOperatorReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetOperatorByCurrentAccountQuery, OperatorsPageVm>
 {
     private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
 
-    public async Task<IReadOnlyCollection<OperatorVm>> Handle(GetOperatorByCurrentAccountQuery request, CancellationToken cancellationToken)
+    public async Task<OperatorsPageVm> Handle(GetOperatorByCurrentAccountQuery request, CancellationToken cancellationToken)
     {
         // Get the account associated with the current user
         var user = await userReader.GetUserAsync(UserId, cancellationToken);
         // Get the operators associated with the account
         var filters = new Filters(new Dictionary<string, object> {{ "AccountId", user.AccountId }});
-        return await reader.GetOperatorsAsync(filters, cancellationToken);
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetOperatorsPageAsync(filters, skip, take, request.Search, cancellationToken);
     }
 
+}
+
+/// <summary>
+/// Operator picker feed for the caller's account: id and name only, unpaged, capped by
+/// <see cref="LookupLimits.Ceiling"/>.
+/// </summary>
+[Authorize(Resource = Resources.Operators, Action = Actions.Read)]
+public readonly record struct GetOperatorLookupByAccountQuery() : IRequest<IReadOnlyCollection<OperatorLookupVm>>;
+
+public class GetOperatorLookupByAccountQueryHandler(IOperatorReader reader, IUserReader userReader, IUser user)
+    : IRequestHandler<GetOperatorLookupByAccountQuery, IReadOnlyCollection<OperatorLookupVm>>
+{
+    private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
+
+    public async Task<IReadOnlyCollection<OperatorLookupVm>> Handle(GetOperatorLookupByAccountQuery request, CancellationToken cancellationToken)
+    {
+        var user = await userReader.GetUserAsync(UserId, cancellationToken);
+        var rows = await reader.GetOperatorLookupByAccountAsync(user.AccountId, LookupLimits.FetchSize, cancellationToken);
+        return LookupLimits.EnsureWithinCeiling(rows, "operatorLookup");
+    }
 }

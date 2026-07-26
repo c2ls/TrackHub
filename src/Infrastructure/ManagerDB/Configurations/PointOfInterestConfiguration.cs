@@ -14,6 +14,7 @@
 //
 
 using Common.Domain.Constants;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrackHub.Manager.Infrastructure.Entities;
 
@@ -23,13 +24,17 @@ public sealed class PointOfInterestConfiguration : IEntityTypeConfiguration<Poin
     public void Configure(EntityTypeBuilder<PointOfInterest> builder)
     {
         //Table name
-        builder.ToTable(name: TableMetadata.PointOfInterest, schema: SchemaMetadata.Map);
+        builder.ToTable(
+            name: TableMetadata.PointOfInterest,
+            schema: SchemaMetadata.Map,
+            t => t.HasCheckConstraint("ck_pointsofinterest_type", EnumColumn.Check<PointOfInterestType>("type")));
 
         //Column names
         builder.Property(x => x.PointOfInterestId).HasColumnName("id");
         builder.Property(x => x.Name).HasColumnName("name");
         builder.Property(x => x.Description).HasColumnName("description");
-        builder.Property(x => x.Type).HasColumnName("type");
+        builder.Property(x => x.Type).HasColumnName("type")
+            .HasComment(EnumColumn.Comment<PointOfInterestType>("Category of the point of interest."));
         builder.Property(x => x.Latitude).HasColumnName("latitude");
         builder.Property(x => x.Longitude).HasColumnName("longitude");
         builder.Property(x => x.Address).HasColumnName("address");

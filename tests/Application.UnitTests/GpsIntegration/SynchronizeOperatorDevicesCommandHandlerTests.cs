@@ -38,8 +38,9 @@ public class SynchronizeOperatorDevicesCommandHandlerTests
         _deviceReader.Setup(x => x.FindDuplicateSerialsAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
         // No existing groups -> the default "General" group is created on first use.
-        _groupReader.Setup(x => x.GetGroupsByAccountAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
+        _groupReader.Setup(x => x.GetGroupsByAccountAsync(
+                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GroupsPageVm([], 0));
         _groupWriter.Setup(x => x.CreateGroupAsync(It.IsAny<GroupDto>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GroupDto dto, Guid accountId, CancellationToken _) => new GroupVm(DefaultGroupId, dto.Name, dto.Description, dto.Active, accountId));
         _transporterGroupWriter.Setup(x => x.CreateTransporterGroupAsync(It.IsAny<TransporterGroupDto>(), It.IsAny<CancellationToken>()))
@@ -182,5 +183,67 @@ public class SynchronizeOperatorDevicesCommandHandlerTests
 
         _transporterWriter.Verify(x => x.CreateTransporterAsync(It.IsAny<TransporterDto>(), It.IsAny<CancellationToken>()), Times.Never);
         _assignmentWriter.Verify(x => x.AssignAsync(It.IsAny<TransporterDeviceAssignmentDto>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // The default-group resolution used to SCAN the account's groups for one named "General". Now
+    // that groupsByAccount is paged, a scan would only ever see page 1 — so an account whose default
+    // group sat past the window would fail to find it and create a SECOND "General" on every sync.
+    // The resolution must therefore go to the database by name, not filter a page in memory.
+    [Test]
+    public async Task Handle_ResolvesDefaultGroupByNameRatherThanScanningAPageOfGroups()
+    {
+        var accountId = Guid.NewGuid();
+        var operatorId = Guid.NewGuid();
+        var deviceId = Guid.NewGuid();
+        var transporterId = Guid.NewGuid();
+        const long existingGroupId = 777L;
+
+        var device = new DeviceDto(
+            accountId, operatorId, "SER-9", "Device 9", 109, "Truck 109",
+            (short)DeviceType.OBDScanner, null, "hash", "ACTIVE");
+
+        _deviceWriter.Setup(x => x.UpsertSynchronizedDeviceAsync(device, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeviceVm(
+                deviceId, accountId, operatorId, device.Serial, device.Name, device.Identifier,
+                device.ProviderDisplayName, DeviceType.OBDScanner, device.DeviceTypeId, device.Description,
+                device.ProviderMetadataHash, device.ProviderStatus, DetectedStatus.New,
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null, null));
+
+        _transporterWriter.Setup(x => x.CreateTransporterAsync(It.IsAny<TransporterDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TransporterVm(transporterId, "Truck 109", TransporterType.FleetVehicle, (short)TransporterType.FleetVehicle));
+
+        _assignmentWriter.Setup(x => x.AssignAsync(It.IsAny<TransporterDeviceAssignmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TransporterDeviceAssignmentDto dto, CancellationToken _) => new TransporterDeviceAssignmentVm(
+                Guid.NewGuid(), dto.AccountId, dto.TransporterId, dto.DeviceId, DateTimeOffset.UtcNow, null,
+                dto.Priority, dto.IsPrimary, AssignmentStatus.Active, dto.AssignmentReason, "ServiceClient", "syncworker_client"));
+
+        // The store answers the NAME-FILTERED read only. A handler that instead asked for an
+        // unfiltered first page would get nothing back and wrongly create a duplicate group.
+        _groupReader
+            .Setup(x => x.GetGroupsByAccountAsync(
+                accountId,
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.Is<string?>(s => s == Common.Domain.Constants.GroupMetadata.DefaultGroupName),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GroupsPageVm(
+                [new GroupVm(existingGroupId, Common.Domain.Constants.GroupMetadata.DefaultGroupName, "d", true, accountId)], 1));
+
+        await CreateHandler().Handle(
+            new SynchronizeOperatorDevicesCommand(accountId, operatorId, [device], "corr-3", "MANUAL"),
+            CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            _groupWriter.Verify(
+                x => x.CreateGroupAsync(It.IsAny<GroupDto>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+                Times.Never,
+                "the existing default group was not found, so the sync created a duplicate");
+            _transporterGroupWriter.Verify(
+                x => x.CreateTransporterGroupAsync(
+                    It.Is<TransporterGroupDto>(dto => dto.GroupId == existingGroupId),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        });
     }
 }

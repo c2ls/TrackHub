@@ -34,6 +34,7 @@ public sealed class RouterSyncDispatcher(IGraphQLClientFactory graphQLClient)
     public async Task<bool> DispatchManualSyncAsync(
         Guid accountId,
         Guid operatorId,
+        string correlationId,
         bool resetDeviceCatalog,
         bool? autoAssignNewDevices,
         CancellationToken cancellationToken)
@@ -48,7 +49,7 @@ public sealed class RouterSyncDispatcher(IGraphQLClientFactory graphQLClient)
                     accountId,
                     operatorId,
                     triggerType = "MANUAL",
-                    correlationId = Guid.NewGuid().ToString(),
+                    correlationId,
                     resetDeviceCatalog,
                     autoAssignNewDevices
                 }

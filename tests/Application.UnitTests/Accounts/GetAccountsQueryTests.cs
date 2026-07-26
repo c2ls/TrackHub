@@ -19,13 +19,32 @@ public class GetAccountsQueryTests
     }
 
     [Test]
-    public async Task Handle_ReturnsAccounts()
+    public async Task Handle_ReturnsAccountsPage()
     {
         var list = new List<AccountVm> { new(Guid.NewGuid(), "A", null, default, 1, Common.Domain.Enums.AccountStatus.Active, 2, true, DateTimeOffset.UtcNow) };
-        _readerMock.Setup(r => r.GetAccountsAsync(CancellationToken.None)).ReturnsAsync(list);
+        var page = new AccountsPageVm(list, 1);
+        _readerMock.Setup(r => r.GetAccountsAsync(0, 50, null, CancellationToken.None)).ReturnsAsync(page);
 
-        var result = await _handler.Handle(new GetAccountsQuery(), CancellationToken.None);
+        var result = await _handler.Handle(new GetAccountsQuery(null, null, null), CancellationToken.None);
 
-        Assert.That(result, Is.EqualTo(list));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Items, Is.EqualTo(list));
+            Assert.That(result.TotalCount, Is.EqualTo(1));
+        });
+    }
+
+    // An omitted page window must not mean "everything": it resolves to the shared default, and an
+    // over-large take is clamped rather than honoured.
+    [Test]
+    public async Task Handle_ClampsPageWindow()
+    {
+        _readerMock
+            .Setup(r => r.GetAccountsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), CancellationToken.None))
+            .ReturnsAsync(new AccountsPageVm([], 0));
+
+        await _handler.Handle(new GetAccountsQuery(-5, 10_000, "acme"), CancellationToken.None);
+
+        _readerMock.Verify(r => r.GetAccountsAsync(0, 500, "acme", CancellationToken.None), Times.Once);
     }
 }

@@ -16,6 +16,9 @@
 namespace TrackHub.Manager.Application.PointsOfInterest.Commands.Delete;
 
 [Authorize(Resource = Resources.PointsOfInterest, Action = Actions.Delete)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct DeletePointOfInterestCommand(Guid Id) : IRequest;
 
 public class DeletePointOfInterestCommandHandler(IPointOfInterestWriter writer) : IRequestHandler<DeletePointOfInterestCommand>

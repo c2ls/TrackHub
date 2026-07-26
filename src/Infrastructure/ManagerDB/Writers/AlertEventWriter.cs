@@ -42,6 +42,13 @@ public sealed class AlertEventWriter(IApplicationDbContext context, ICurrentPrin
 
     // The source resource must belong to the event's account. Resource types without a
     // mapping in this context (e.g. Geofence, owned by the Geofencing service) pass through.
+    //
+    // DESIGN NOTE — "Trip" (spec 11 §12) deliberately falls through the `_ => true` default and MUST
+    // NOT be "fixed" into a cross-service call. Manager does not store trips, so verifying one would
+    // mean calling TripManagement from Manager, inverting the dependency direction for every alert
+    // write. The check is not load-bearing here: the emitter is a trusted service identity
+    // (`trip_client`) that has already resolved the trip and its account before emitting. The same
+    // reasoning already covers "Geofence". Only resource types Manager actually owns get verified.
     private async Task RequireResourceInAccountAsync(Guid accountId, string resourceType, string resourceId, CancellationToken cancellationToken)
     {
         var belongs = resourceType switch

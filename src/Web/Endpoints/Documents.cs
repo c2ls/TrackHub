@@ -157,11 +157,33 @@ public sealed class Documents : Common.Web.Infrastructure.EndpointGroupBase
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
 
-        var storageKey = await context.Documents.Where(x => x.DocumentId == documentId).Select(x => x.StorageKey).FirstOrDefaultAsync(cancellationToken);
-        if (string.IsNullOrEmpty(storageKey))
+        // The scan verdict that matters is the CURRENT VERSION's — those are the bytes about to be
+        // served. The document-level column is a denormalisation of it and is checked above; this
+        // second read is the authoritative one, so a document row whose verdict disagrees with its
+        // current version (however it got that way) cannot serve unscanned or infected bytes.
+        var target = await context.Documents
+            .Where(x => x.DocumentId == documentId)
+            .Select(x => new
+            {
+                x.StorageKey,
+                VersionScanStatus = context.DocumentVersions
+                    .Where(v => v.DocumentId == x.DocumentId && v.VersionNumber == x.CurrentVersion)
+                    .Select(v => v.ScanStatus)
+                    .FirstOrDefault()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (target is null || string.IsNullOrEmpty(target.StorageKey))
         {
             return Results.NotFound();
         }
+
+        if (!string.Equals(target.VersionScanStatus, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        var storageKey = target.StorageKey;
 
         // Sensitive-classification downloads are audited.
         if (DocumentClassifications.IsSensitive(vm.Classification))
@@ -210,6 +232,18 @@ public sealed class Documents : Common.Web.Infrastructure.EndpointGroupBase
 
         var document = await context.Documents.FirstOrDefaultAsync(x => x.DocumentId == documentId && x.AccountId == accountId, cancellationToken);
         if (document is null || !string.Equals(document.ScanStatus, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.NotFound();
+        }
+
+        // Same authoritative check as the authenticated Download path — and it matters more here,
+        // because this route is anonymous: a public link is exactly how infected bytes would reach
+        // someone outside the account.
+        var publicVersionScanStatus = await context.DocumentVersions
+            .Where(v => v.DocumentId == document.DocumentId && v.VersionNumber == document.CurrentVersion)
+            .Select(v => v.ScanStatus)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (!string.Equals(publicVersionScanStatus, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase))
         {
             return Results.NotFound();
         }

@@ -1,117 +1,109 @@
 # TrackHub Management API
 
-## Key Features
+[← Back to the landing page](README.md) · [Español](README.es.md)
 
-- **Account & Organization Management**: Multi-tenant support with account-based resource isolation
-- **Transporter & Device Management**: Complete CRUD for vehicles, personnel, pets, and GPS devices
-- **Operator Integration**: Manage credentials and connections to external GPS service providers
-- **Group-Based Access Control**: Organize transporters and users into logical groups for permission management
-- **User & Role Administration**: Comprehensive user management with customizable roles and permissions
-- **Settings Personalization**: Account-level and user-level configuration options
-- **GraphQL API**: Efficient, flexible queries using Hot Chocolate server
-- **Clean Architecture**: Maintainable, testable codebase following SOLID principles
+The Management API is TrackHub's **master-data service** — the largest backend service in the platform, and the one most other services read from.
+
+Built on .NET 10 with a HotChocolate GraphQL endpoint, following the platform's Clean Architecture and CQRS conventions.
 
 ---
 
-## Quick Start
+## What it owns
+
+| Module | Contents |
+|---|---|
+| **Accounts** | Accounts and lifecycle status, settings, features, branding, support grants |
+| **Identity (portal side)** | Users, user settings, groups, user–group and transporter–group membership |
+| **Assets** | Transporters, transporter types, devices, transporter–device assignments |
+| **GPS integration** | Operators, encrypted provider credentials, the device-synchronization command surface |
+| **Geospatial reference** | Geocoding providers, points of interest |
+| **Documents** | Documents, versions, types, signatures, sharing, retention |
+| **Workforce** | Drivers, qualifications, driver–transporter assignment history |
+| **Alerts & notifications** | Alert events, notification rules, deliveries, templates, subscriptions |
+| **Platform** | Announcements, audit events, background job runs, public link grants, the report catalog |
+
+It owns the `app` and `map` schemas, plus the **DDL for the `telemetry` schema** that the Telemetry service serves. High-volume position data itself belongs to Telemetry.
+
+Full detail: **[Manager](https://github.com/shernandezp/TrackHub/wiki/Manager)** in the wiki.
+
+---
+
+## Quick start
 
 ### Prerequisites
 
-- .NET 10.0 SDK
-- PostgreSQL 14+
-- TrackHub Authority Server running (for authentication)
+- .NET 10 SDK
+- PostgreSQL 14+ (with PostGIS, since the `TrackHub` database is shared with the Geofencing and TripManagement schemas)
+- A running TrackHub AuthorityServer, for authentication
+- The `TrackHubCommon.*` packages available from a local NuGet feed — they are **not** on nuget.org
 
-### Installation
+### Steps
 
-1. **Clone the repository**:
+1. **Clone**
+
    ```bash
    git clone https://github.com/shernandezp/TrackHub.Manager.git
    cd TrackHub.Manager
    ```
 
-2. **Configure the database connection** in `appsettings.json`:
+2. **Configure the database connection** in `src/Web/appsettings.json`:
+
    ```json
    {
      "ConnectionStrings": {
-       "ManagerConnection": "Host=localhost;Database=trackhub_manager;Username=postgres;Password=yourpassword"
+       "DefaultConnection": "Host=localhost;Database=TrackHub;Username=postgres;Password=yourpassword"
      }
    }
    ```
 
-3. **Run database migrations**:
+3. **Apply migrations** — this creates the `app`, `map` **and `telemetry`** schemas:
+
    ```bash
-   dotnet ef database update
+   dotnet ef database update --project src/Infrastructure --startup-project src/Web
    ```
 
-4. **Seed initial data** (optional):
+4. **Seed initial data** (report catalog, reference data):
+
    ```bash
    dotnet run --project src/DBInitializer
    ```
 
-5. **Start the application**:
+5. **Run**
+
    ```bash
    dotnet run --project src/Web
    ```
 
-6. **Access GraphQL Playground** at `https://localhost:5001/graphql`
+6. **Open the GraphQL endpoint** at `https://localhost:<port>/graphql`.
 
 ---
 
-## Components and Resources
+## Project-specific notes
 
-| Component                | Description                                           | Documentation                                                                 |
-|--------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------|
-| Hot Chocolate            | GraphQL server for .NET                               | [Hot Chocolate Documentation](https://chillicream.com/docs/hotchocolate/v13)  |
-| .NET Core                | Development platform for modern applications          | [.NET Core Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
-| Postgres                 | Relational database management system                 | [Postgres Documentation](https://www.postgresql.org/)                         |
+- **This service migrates the `telemetry` schema.** The Telemetry service has no migrations of its own and must point at the same `TrackHub` database. Adding a telemetry table means adding a Manager migration.
+- **`ApplicationDbContext` is `NoTracking` by default.** A row fetched for mutation must be `Attach`ed, or its changes are silently discarded at `SaveChangesAsync`. EF InMemory defaults to `TrackAll`, so a unit test will not catch the omission.
+- **Do not add `Common.Domain.Enums` to the Infrastructure `GlobalUsings`.** Its `TransporterType` collides with the `Infrastructure.Entities` table entity of the same name — import it per file instead.
+- **`transporter_position.attributes` is a PostgreSQL `json` column.** `json` has no equality operator, so `Distinct()`, `GroupBy()` or set operations over an entity or projection including it fail at runtime with `42883`. EF InMemory will not catch this.
+- **The report catalog is re-seeded on every start.** Code is the source of truth for the seeded metadata — a SuperAdministrator's edits to Description, Category, RequiredFeatureKey, ManagerOnly, SupportsPdf or SortOrder revert on restart. Only `Active` persists. That is intentional.
+- **Manager → Router uses a 120 s client timeout**, because the manual-sync dispatch awaits the provider fetch. Every other client is 30 s.
+- **The announcements REST endpoint is anonymous and bypasses the mediator** — the pipeline's behaviours all assume a principal. It runs behind 60 s output caching and a per-client-IP rate limit, which is why the service also runs `UseForwardedHeaders`.
+- **Localized text never lives in the database.** Notification default texts come from `.resx` resources; account-authored template overrides and announcement text are user content, stored per language.
+- After changing any GraphQL surface, run the contract tests:
 
----
-
-## Overview
-
-The **TrackHub Management API** provides a robust, modular service for managing core tracking and resource data in TrackHub's ecosystem. Built on **Clean Architecture** principles, this **GraphQL**-based API is designed for flexibility, maintainability, and scalability, ensuring seamless integration and easy adaptability as your business evolves.
-
-## Key Features
-
-This API offers:
-- Streamlined account and resource management, providing precise access control and role management.
-- Detailed access control with role-based and user-based policies for optimal security and compliance.
-- Personalizable settings for both accounts and individual users to enhance user experience.
+  ```bash
+  dotnet test ../TrackHub.IntegrationTests/TrackHub.IntegrationTests.slnx
+  ```
 
 ---
 
-## Entities
+## Documentation
 
-### Account and Configuration Entities
-
-- **Account**: Serves as the main organizational unit, linking users, groups, and operators for each client’s TrackHub operations.
-- **AccountSettings**: Stores settings unique to an account, including map configurations and operational intervals for smoother client experiences.
-- **Credential**: Manages secure access to external services through encrypted authentication details and tokens, ensuring safe, compliant integrations.
-
-### User and Role Entities
-
-- **User**: A person accessing the system, possibly with multiple group affiliations and a direct link to an account. Each user can have customized access roles.
-- **UserGroup**: Defines associations between users and groups to streamline access control and permission assignments.
-- **UserSettings**: Stores user preferences, such as theme, language, and notification settings, personalizing the user experience.
-- **Operator**: Represents a third-party administrator managing devices, with the credentials to access related external services and monitor assets.
-
-### Tracking and Grouping Entities
-
-- **Transporter**: Represents an entity (e.g., vehicle, person, or pet) equipped with a GPS device, linked to groups and devices, and trackable in real-time. Each transporter has a direct `AccountId` foreign key for tenant-level isolation.
-- **TransporterGroup**: Establishes a relationship between transporters and groups, enabling structured management and permission control.
-- **Device**: A tracking device within the system associated with both a transporter and an operator, supplying real-time location and status data. Each device has a direct `AccountId` foreign key for tenant-level isolation.
-- **TransporterPosition**: Records and timestamps the location of a transporter for route history and monitoring.
-- **Group**: A collection of users and transporters within the system, simplifying permission management and enhancing security protocols.
-- **Report**: Represents the list of available reports for the system account, including report types, formats, and generation details.
+- **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
+- **User** — in the app: the Help button or **F1** on any screen
+- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
 ---
-
-### Why GraphQL?
-
-The use of **GraphQL** enables efficient, customizable queries, letting clients request only the data they need to minimize bandwidth and enhance app performance. With GraphQL, applications can retrieve specific details about users, transporters, or devices, optimizing both operational efficiency and user experience.
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
-
-
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.

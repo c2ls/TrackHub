@@ -19,6 +19,7 @@ using Common.Application.GraphQL.Inputs;
 namespace TrackHub.Manager.Application.Operators.Queries.GetMaster;
 
 [Authorize(Resource = Resources.OperatorsMaster, Action = Actions.Read)]
+[AllowCrossAccount("Master surface: the Router/SyncWorker global service identity (no account claim) enumerates operators across every account to drive the device-sync loop; the portal systemadmin console shares it. The OperatorsMaster resource gates access.")]
 public readonly record struct GetOperatorMasterQuery(FiltersInput Filter) : IRequest<IReadOnlyCollection<OperatorVm>>;
 
 public class GetOperatorsMasterQueryHandler(IOperatorReader reader) : IRequestHandler<GetOperatorMasterQuery, IReadOnlyCollection<OperatorVm>>

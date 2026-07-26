@@ -14,6 +14,7 @@
 //
 
 using Common.Domain.Constants;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrackHub.Manager.Infrastructure.Entities;
 
@@ -24,7 +25,10 @@ public sealed class OperatorConfiguration : IEntityTypeConfiguration<Operator>
     public void Configure(EntityTypeBuilder<Operator> builder)
     {
         //Table name
-        builder.ToTable(name: TableMetadata.Operator, schema: SchemaMetadata.Application);
+        builder.ToTable(
+            name: TableMetadata.Operator,
+            schema: SchemaMetadata.Application,
+            t => t.HasCheckConstraint("ck_operators_protocoltype", EnumColumn.Check<ProtocolType>("protocoltype")));
 
         //Column names
         builder.Property(x => x.OperatorId).HasColumnName("id");
@@ -34,7 +38,8 @@ public sealed class OperatorConfiguration : IEntityTypeConfiguration<Operator>
         builder.Property(x => x.EmailAddress).HasColumnName("emailaddress");
         builder.Property(x => x.Address).HasColumnName("address");
         builder.Property(x => x.ContactName).HasColumnName("contactname");
-        builder.Property(x => x.ProtocolType).HasColumnName("protocoltype");
+        builder.Property(x => x.ProtocolType).HasColumnName("protocoltype")
+            .HasComment(EnumColumn.Comment<ProtocolType>("Telematics protocol this operator speaks; selects the Router provider client."));
         builder.Property(x => x.AccountId).HasColumnName("accountid");
         builder.Property(x => x.Enabled).HasColumnName("enabled").HasDefaultValue(true);
         builder.Property(x => x.SyncIntervalMinutes).HasColumnName("syncintervalminutes").HasDefaultValue(60);

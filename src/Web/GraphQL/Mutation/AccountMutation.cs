@@ -17,32 +17,40 @@ using TrackHub.Manager.Application.Accounts.Commands.ChangeStatus;
 using TrackHub.Manager.Application.Accounts.Commands.Create;
 using TrackHub.Manager.Application.Accounts.Commands.Update;
 using TrackHub.Manager.Application.Accounts.Commands.UpdateBranding;
+using TrackHub.Manager.Application.Accounts.Commands.UpdateMaster;
 using TrackHub.Manager.Application.Accounts.Commands.UpdateSettings;
 
 namespace TrackHub.Manager.Web.GraphQL.Mutation;
 
 public partial class Mutation
 {
-    public async Task<AccountVm> CreateAccount([Service] ISender sender, CreateAccountCommand command)
-        => await sender.Send(command);
+    public async Task<AccountVm> CreateAccount([Service] ISender sender, CreateAccountCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<AccountVm> ChangeAccountStatus([Service] ISender sender, ChangeAccountStatusCommand command)
-        => await sender.Send(command);
+    public async Task<AccountVm> ChangeAccountStatus([Service] ISender sender, ChangeAccountStatusCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<AccountBrandingVm> UpdateAccountBranding([Service] ISender sender, UpdateAccountBrandingCommand command)
-        => await sender.Send(command);
+    public async Task<AccountBrandingVm> UpdateAccountBranding([Service] ISender sender, UpdateAccountBrandingCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> UpdateAccount([Service] ISender sender, Guid id, UpdateAccountCommand command)
+    public async Task<bool> UpdateAccount([Service] ISender sender, Guid id, UpdateAccountCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Account.AccountId) return false;
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<bool> UpdateAccountSettings([Service] ISender sender, Guid id, UpdateAccountSettingsCommand command)
+    public async Task<bool> UpdateAccountMaster([Service] ISender sender, Guid id, UpdateAccountMasterCommand command, CancellationToken cancellationToken)
+    {
+        if (id != command.Account.AccountId) return false;
+        await sender.Send(command, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> UpdateAccountSettings([Service] ISender sender, Guid id, UpdateAccountSettingsCommand command, CancellationToken cancellationToken)
     {
         if (id != command.AccountSettings.AccountId) return false;
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 }

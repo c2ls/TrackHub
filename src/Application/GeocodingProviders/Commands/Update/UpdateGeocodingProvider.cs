@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 namespace TrackHub.Manager.Application.GeocodingProviders.Commands.Update;
 
 [Authorize(Resource = Resources.GeocodingProviders, Action = Actions.Edit)]
+[PlatformScoped("Platform geocoding-provider registry: one active provider serves every tenant, administered from the Administrator console; no tenant owns a row.")]
 public readonly record struct UpdateGeocodingProviderCommand(Guid Id, UpdateGeocodingProviderDto GeocodingProvider) : IRequest;
 
 public class UpdateGeocodingProviderCommandHandler(IGeocodingProviderWriter writer, IConfiguration configuration) : IRequestHandler<UpdateGeocodingProviderCommand>

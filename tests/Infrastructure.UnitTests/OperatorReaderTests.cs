@@ -2,6 +2,7 @@ using TrackHub.Manager.Infrastructure.Interfaces;
 using TrackHub.Manager.Infrastructure.ManagerDB.Readers;
 using TrackHub.Manager.Infrastructure;
 using Common.Domain.Helpers;
+using Common.Application.Exceptions;
 using Common.Application.Interfaces;
 using Common.Domain.Constants;
 using Moq;
@@ -14,11 +15,16 @@ public class OperatorReaderTests
     private static ApplicationDbContext NewContext(string name)
         => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(name).Options);
 
-    private static ICurrentPrincipal Principal(PrincipalType principalType = PrincipalType.User, Guid? userId = null)
+    // accountId is what RequireAccountAccess authorizes the by-id read against. Tests that are about
+    // credential redaction (not tenant isolation) must place the principal in the operator's own
+    // account, exactly as a real caller would be — otherwise the reader correctly refuses before the
+    // redaction logic is ever reached.
+    private static ICurrentPrincipal Principal(PrincipalType principalType = PrincipalType.User, Guid? userId = null, Guid? accountId = null)
     {
         var principal = new Mock<ICurrentPrincipal>();
         principal.SetupGet(p => p.PrincipalType).Returns(principalType);
         principal.SetupGet(p => p.UserId).Returns(userId);
+        principal.SetupGet(p => p.AccountId).Returns(accountId);
         return principal.Object;
     }
 
@@ -69,7 +75,7 @@ public class OperatorReaderTests
         await context.Credentials.AddAsync(credential);
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var reader = new OperatorReader(context as IApplicationDbContext, Principal(userId: Guid.NewGuid()), IdentityService().Object);
+        var reader = new OperatorReader(context as IApplicationDbContext, Principal(userId: Guid.NewGuid(), accountId: accountId), IdentityService().Object);
         var result = await reader.GetOperatorAsync(@operator.OperatorId, CancellationToken.None);
 
         Assert.That(result.OperatorId, Is.EqualTo(@operator.OperatorId));
@@ -93,13 +99,39 @@ public class OperatorReaderTests
 
         var reader = new OperatorReader(
             context as IApplicationDbContext,
-            Principal(userId: userId),
+            Principal(userId: userId, accountId: accountId),
             IdentityService(credentialsAuthorized: true).Object);
         var result = await reader.GetOperatorAsync(@operator.OperatorId, CancellationToken.None);
 
         Assert.That(result.OperatorId, Is.EqualTo(@operator.OperatorId));
         Assert.That(result.Credential.HasValue, Is.True);
         Assert.That(result.Credential!.Value.Username, Is.EqualTo(credential.Username));
+    }
+
+    [Test]
+    public async Task GetOperatorAsync_RefusesAnOperatorOwnedByAnotherAccount()
+    {
+        // The by-id read takes a caller-supplied GUID and its query carries no top-level AccountId,
+        // so AccountScopeBehavior has nothing to bind and this reader is the only tenant control.
+        // Without it a Manager-role principal could read any account's operator — including, for a
+        // principal holding Credentials/Custom, its decrypted credential material.
+        await using var context = NewContext(nameof(GetOperatorAsync_RefusesAnOperatorOwnedByAnotherAccount));
+
+        var victimAccountId = Guid.NewGuid();
+        var attackerAccountId = Guid.NewGuid();
+        var @operator = new Operator("victim-op", null, null, null, null, null, 1, victimAccountId);
+
+        await context.Operators.AddAsync(@operator);
+        await context.SaveChangesAsync(CancellationToken.None);
+
+        var reader = new OperatorReader(
+            context as IApplicationDbContext,
+            Principal(userId: Guid.NewGuid(), accountId: attackerAccountId),
+            IdentityService(credentialsAuthorized: true).Object);
+
+        Assert.That(
+            async () => await reader.GetOperatorAsync(@operator.OperatorId, CancellationToken.None),
+            Throws.TypeOf<ForbiddenAccessException>());
     }
 
     [Test]

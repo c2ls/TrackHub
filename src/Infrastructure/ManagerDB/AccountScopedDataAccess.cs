@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Common.Application.Exceptions;
 using Common.Application.Interfaces;
 using Common.Domain.Constants;
@@ -144,5 +145,16 @@ public abstract class AccountScopedDataAccess(IApplicationDbContext context, ICu
            && Context.Users.Any(x => x.UserId == Principal.UserId.Value && x.AccountId == accountId);
 
     protected static string Quote(DateTimeOffset? value) => value.HasValue ? Quote(value.Value.ToString("O")) : "null";
-    protected static string Quote(string? value) => value == null ? "null" : $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+
+    /// <summary>
+    /// Serializes a value as a JSON string literal for the hand-built audit payloads.
+    /// <para>
+    /// Uses <see cref="JsonSerializer"/> rather than manual escaping: the previous implementation
+    /// escaped only <c>\</c> and <c>"</c>, so any control character — a newline in a free-text field
+    /// such as a driver qualification's Notes — produced a raw U+000A inside a JSON string and made
+    /// <c>audit_events.newvaluesjson</c> unparseable. Every audit payload in this service flows
+    /// through here, so fixing it once fixes them all.
+    /// </para>
+    /// </summary>
+    protected static string Quote(string? value) => value == null ? "null" : JsonSerializer.Serialize(value);
 }

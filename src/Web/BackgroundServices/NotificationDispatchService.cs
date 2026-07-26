@@ -31,7 +31,8 @@ namespace TrackHub.Manager.Web.BackgroundServices;
 // through the INotificationChannelProvider implementations. Retries with exponential backoff
 // (1/5/15/60 min, max 5 attempts), then marks Failed with the provider error and raises a
 // NotificationDeliveryFailed alert event. A Sending in-flight status prevents double-send on
-// overlapping cycles; the delivery row itself is the idempotency record. Channel entitlements are
+// overlapping cycles; the delivery row itself is the idempotency record, and a row left in Sending
+// by a crashed cycle is reclaimed after AppSettings:NotificationSendingReclaimMinutes. Channel entitlements are
 // re-checked here: deliveries on a disabled billable channel are held (left Pending) so disabling
 // the feature stops sends immediately without deleting configuration.
 public sealed class NotificationDispatchService(
@@ -42,6 +43,7 @@ public sealed class NotificationDispatchService(
     private const string JobKey = BackgroundJobKeys.NotificationDispatch;
     private const int MaxAttempts = 5;
     private const int BatchSize = 100;
+    private const int DefaultSendingReclaimMinutes = 10;
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan StartupDelay = TimeSpan.FromMinutes(1);
 
@@ -70,6 +72,8 @@ public sealed class NotificationDispatchService(
             .ToDictionary(p => p.Channel, StringComparer.Ordinal);
 
         var now = DateTimeOffset.UtcNow;
+
+        await ReclaimStrandedAsync(context, now, cancellationToken);
 
         // Backoff eligibility is derived from LastModified (updated on every save): a delivery that
         // failed attempt N waits backoff(N) before the next try. Manual retries clear Error and are
@@ -158,6 +162,41 @@ public sealed class NotificationDispatchService(
             await context.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Notification dispatch cycle: {Processed} delivery(ies) processed, {Failed} permanently failed.", processed, failed);
         }
+    }
+
+    // Crash recovery. A delivery is flipped to Sending and committed BEFORE the provider call, and no
+    // other code path moves it back: the eligibility query above only sees Pending, retention only
+    // deletes Sent/Failed/Digested, and a manual retry refuses anything that is not Failed. An
+    // in-process exception unwinds through ApplyFailure, but a hard stop — a crash, or the
+    // cancellation rethrow during graceful shutdown — does not, so without this the in-flight
+    // delivery of every restart is stranded forever. Anything sitting in Sending past the reclaim
+    // window is put back through the ordinary failure path, which counts the attempt so the backoff
+    // ladder applies and MaxAttempts still terminates a delivery that keeps killing the process.
+    private async Task ReclaimStrandedAsync(ApplicationDbContext context, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var reclaimMinutes = Math.Max(1, configuration.GetValue<int?>("AppSettings:NotificationSendingReclaimMinutes") ?? DefaultSendingReclaimMinutes);
+        var cutoff = now.AddMinutes(-reclaimMinutes);
+
+        var stranded = await context.NotificationDeliveries
+            .Where(d => d.Status == DeliveryStatuses.Sending && d.LastModified <= cutoff)
+            .OrderBy(d => d.LastModified)
+            .Take(BatchSize)
+            .ToListAsync(cancellationToken);
+
+        if (stranded.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var delivery in stranded)
+        {
+            context.NotificationDeliveries.Attach(delivery);
+            ApplyFailure(context, delivery, $"Dispatch was interrupted: the delivery stayed in {DeliveryStatuses.Sending} for more than {reclaimMinutes} minute(s).");
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+        logger.LogWarning("Reclaimed {Count} delivery(ies) stranded in {Status} for more than {Minutes} minute(s).",
+            stranded.Count, DeliveryStatuses.Sending, reclaimMinutes);
     }
 
     // Domain events: a publish failure must never disturb the dispatch loop.

@@ -16,6 +16,7 @@
 namespace TrackHub.Manager.Application.TransporterType.Queries.Get;
 
 [Authorize(Resource = Resources.TransporterType, Action = Actions.Read)]
+[PlatformScoped("Platform transporter-type catalog: one seeded set of vehicle types serves every tenant, read by Router's device adapters under global service identities. No tenant owns a row.")]
 public readonly record struct GetTransporterTypeQuery(short TransporterTypeId) : IRequest<TransporterTypeVm>;
 
 public class GetTransporterTypeQueryHandler(ITransporterTypeReader reader) : IRequestHandler<GetTransporterTypeQuery, TransporterTypeVm>

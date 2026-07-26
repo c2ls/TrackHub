@@ -21,9 +21,12 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 public partial class Query
 {
 
-    public async Task<DeviceVm> GetDevice([Service] ISender sender, [AsParameters] GetDeviceQuery query)
-        => await sender.Send(query);
+    public async Task<DeviceVm> GetDevice([Service] ISender sender, [AsParameters] GetDeviceQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<DeviceVm>> GetDevicesByAccount([Service] ISender sender)
-        => await sender.Send(new GetDevicesByAccountQuery());
+    public async Task<DevicesPageVm> GetDevicesByAccount([Service] ISender sender, [AsParameters] GetDevicesByAccountQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
+
+    public async Task<IReadOnlyCollection<DeviceLookupVm>> GetDeviceLookup([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetDeviceLookupByAccountQuery(), cancellationToken);
 }

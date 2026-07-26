@@ -1,9 +1,11 @@
 using System.Text.Json;
+using Common.Application.Paging;
 using Microsoft.Extensions.Logging;
 
 namespace TrackHub.Manager.Application.GpsIntegration.Commands;
 
 [Authorize(Resource = Resources.SynchronizedDevices, Action = Actions.Write, PrincipalTypes = "User,ServiceClient")]
+[AllowCrossAccount("SyncWorker's device-sync loop enumerates every account via accountSettingsMaster and pushes the synchronized device catalog per account under one global router_client/syncworker_client identity.")]
 public readonly record struct SynchronizeOperatorDevicesCommand(
     Guid AccountId,
     Guid OperatorId,
@@ -218,8 +220,11 @@ public class SynchronizeOperatorDevicesCommandHandler(
     // Resolves the account's default group by name, creating it (Active) on first use.
     private async Task<long> ResolveDefaultGroupIdAsync(Guid accountId, CancellationToken cancellationToken)
     {
-        var groups = await groupReader.GetGroupsByAccountAsync(accountId, cancellationToken);
-        var existing = groups.FirstOrDefault(g =>
+        // Search by name rather than scanning the account's groups: the account read is paged, and a
+        // scan of page 1 would miss an existing default group and create a duplicate every sync.
+        var groups = await groupReader.GetGroupsByAccountAsync(
+            accountId, 0, PageRequest.MaxPageSize, GroupMetadata.DefaultGroupName, cancellationToken);
+        var existing = groups.Items.FirstOrDefault(g =>
             string.Equals(g.Name, GroupMetadata.DefaultGroupName, StringComparison.OrdinalIgnoreCase));
         if (existing.GroupId != 0)
         {

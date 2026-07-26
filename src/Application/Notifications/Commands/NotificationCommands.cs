@@ -45,6 +45,9 @@ public class UpdateNotificationRuleCommandValidator : AbstractValidator<UpdateNo
 
 [Authorize(Resource = Resources.Notifications, Action = Actions.Delete)]
 [RequireFeature(FeatureKeys.Notifications)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct DisableNotificationRuleCommand(Guid NotificationRuleId) : IRequest;
 public class DisableNotificationRuleCommandHandler(INotificationWriter writer) : IRequestHandler<DisableNotificationRuleCommand>
 {

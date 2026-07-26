@@ -13,9 +13,11 @@
 //  limitations under the License.
 //
 
+using Common.Infrastructure;
+
 namespace TrackHub.Manager.Infrastructure.Entities;
 
-public class UserSettings(Guid userId)
+public class UserSettings(Guid userId) : BaseAuditableEntity
 {
     private User? _user;
 

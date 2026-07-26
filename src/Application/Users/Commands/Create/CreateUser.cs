@@ -18,6 +18,7 @@ using TrackHub.Manager.Application.Users.Events;
 namespace TrackHub.Manager.Application.Users.Commands.Create;
 
 [Authorize(Resource = Resources.Users, Action = Actions.Write)]
+[AllowCrossAccount("Security replicates user provisioning here under the ORIGINATING caller's token. The ordinary path is same-account; the cross-account case is the Administrator onboarding a NEW tenant (Security's createManager relay), whose token names the platform operator's account while the replica row belongs to the new tenant. Tenant callers are NOT unguarded by this: UserWriter.RequireReplicaAccess checks the row's account (same-account / global service / Administrator only).")]
 public readonly record struct CreateUserCommand(UserDto User) : IRequest<UserVm>;
 
 public class CreateUserCommandHandler(IUserWriter writer, IPublisher publisher) : IRequestHandler<CreateUserCommand, UserVm>

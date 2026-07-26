@@ -20,12 +20,12 @@ namespace TrackHub.Manager.Web.GraphQL.Mutation;
 
 public partial class Mutation
 {
-    public async Task<UserGroupVm> CreateUserGroup([Service] ISender sender, CreateUserGroupCommand command)
-        => await sender.Send(command);
+    public async Task<UserGroupVm> CreateUserGroup([Service] ISender sender, CreateUserGroupCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<Guid> DeleteUserGroup([Service] ISender sender, Guid UserId, long GroupId)
+    public async Task<Guid> DeleteUserGroup([Service] ISender sender, Guid UserId, long GroupId, CancellationToken cancellationToken)
     {
-        await sender.Send(new DeleteUserGroupCommand(UserId, GroupId));
+        await sender.Send(new DeleteUserGroupCommand(UserId, GroupId), cancellationToken);
         return UserId;
     }
 }

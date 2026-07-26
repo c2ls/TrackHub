@@ -38,6 +38,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<DocumentSignature> DocumentSignatures { get; set; }
     public DbSet<DocumentType> DocumentTypes { get; set; }
     public DbSet<Driver> Drivers { get; set; }
+    public DbSet<DriverQualification> DriverQualifications { get; set; }
+    public DbSet<DriverTransporterAssignment> DriverTransporterAssignments { get; set; }
     public DbSet<GeocodingProvider> GeocodingProviders { get; set; }
     public DbSet<PointOfInterest> PointsOfInterest { get; set; }
     public DbSet<Transporter> Transporters { get; set; }

@@ -18,6 +18,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace TrackHub.Manager.Application.Credentials.Command.UpdateToken;
 
+// ServiceClient-only, mirroring its read twin GetTokenQuery: every Router flow that refreshes a
+// provider token (interactive provider reads and the SyncWorker alike) sends this under the
+// Router's own identity, which holds the seeded Credentials/Write grant.
+[Authorize(Resource = Resources.Credentials, Action = Actions.Write, PrincipalTypes = "ServiceClient")]
+[AllowCrossAccount("Router persists refreshed provider session tokens under its global service identity with no account claim (ServiceClient-only surface). CredentialWriter.UpdateTokenAsync still loads the credential and RequireAccountWriteAccess checks its operator's owning account, so a tenant-bound service client stays confined to its own account.")]
 public readonly record struct UpdateTokenCommand(UpdateTokenDto Credential) : IRequest;
 
 public class UpdateCommandHandler(ICredentialWriter writer, IConfiguration configuration) : IRequestHandler<UpdateTokenCommand>

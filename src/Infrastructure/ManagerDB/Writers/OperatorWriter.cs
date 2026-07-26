@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Common.Application.Interfaces;
 using Common.Domain.Enums;
 using TrackHub.Manager.Infrastructure.Entities;
 using TrackHub.Manager.Infrastructure.Interfaces;
@@ -20,7 +21,8 @@ using TrackHub.Manager.Infrastructure.Interfaces;
 namespace TrackHub.Manager.Infrastructure.ManagerDB.Writers;
 
 // OperatorWriter class responsible for creating, updating, and deleting operators
-public sealed class OperatorWriter(IApplicationDbContext context) : IOperatorWriter
+public sealed class OperatorWriter(IApplicationDbContext context, ICurrentPrincipal principal)
+    : AccountScopedDataAccess(context, principal), IOperatorWriter
 {
     // CreateOperatorAsync method creates a new operator
     public async Task<OperatorVm> CreateOperatorAsync(OperatorDto operatorDto, Guid accountId, CancellationToken cancellationToken)
@@ -38,8 +40,8 @@ public sealed class OperatorWriter(IApplicationDbContext context) : IOperatorWri
             SyncIntervalMinutes = operatorDto.SyncIntervalMinutes
         };
 
-        await context.Operators.AddAsync(@operator, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.Operators.AddAsync(@operator, cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
 
         return new OperatorVm(
             @operator.OperatorId,
@@ -70,10 +72,11 @@ public sealed class OperatorWriter(IApplicationDbContext context) : IOperatorWri
     // UpdateOperatorAsync method updates an existing operator
     public async Task UpdateOperatorAsync(UpdateOperatorDto operatorDto, CancellationToken cancellationToken)
     {
-        var @operator = await context.Operators.FindAsync([operatorDto.OperatorId], cancellationToken)
+        var @operator = await Context.Operators.FindAsync([operatorDto.OperatorId], cancellationToken)
             ?? throw new NotFoundException(nameof(Operator), $"{operatorDto.OperatorId}");
+        RequireAccountWriteAccess(@operator.AccountId);
 
-        context.Operators.Attach(@operator);
+        Context.Operators.Attach(@operator);
 
         @operator.Name = operatorDto.Name;
         @operator.Description = operatorDto.Description;
@@ -84,38 +87,41 @@ public sealed class OperatorWriter(IApplicationDbContext context) : IOperatorWri
         @operator.ProtocolType = operatorDto.ProtocolTypeId;
         @operator.SyncIntervalMinutes = operatorDto.SyncIntervalMinutes;
 
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
     // DeleteOperatorAsync method deletes an existing operator
     public async Task DeleteOperatorAsync(Guid operatorId, CancellationToken cancellationToken)
     {
-        var @operator = await context.Operators.FindAsync([operatorId], cancellationToken)
+        var @operator = await Context.Operators.FindAsync([operatorId], cancellationToken)
             ?? throw new NotFoundException(nameof(Operator), $"{operatorId}");
+        RequireAccountWriteAccess(@operator.AccountId);
 
-        context.Operators.Attach(@operator);
+        Context.Operators.Attach(@operator);
 
-        context.Operators.Remove(@operator);
-        await context.SaveChangesAsync(cancellationToken);
+        Context.Operators.Remove(@operator);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task SetEnabledAsync(Guid operatorId, bool enabled, CancellationToken cancellationToken)
     {
-        var @operator = await context.Operators.FindAsync([operatorId], cancellationToken)
+        var @operator = await Context.Operators.FindAsync([operatorId], cancellationToken)
             ?? throw new NotFoundException(nameof(Operator), $"{operatorId}");
+        RequireAccountWriteAccess(@operator.AccountId);
 
-        context.Operators.Attach(@operator);
+        Context.Operators.Attach(@operator);
         @operator.Enabled = enabled;
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task MarkManualSyncTriggeredAsync(Guid operatorId, DateTimeOffset triggeredAt, CancellationToken cancellationToken)
     {
-        var @operator = await context.Operators.FindAsync([operatorId], cancellationToken)
+        var @operator = await Context.Operators.FindAsync([operatorId], cancellationToken)
             ?? throw new NotFoundException(nameof(Operator), $"{operatorId}");
-        context.Operators.Attach(@operator);
+        RequireAccountWriteAccess(@operator.AccountId);
+        Context.Operators.Attach(@operator);
         @operator.LastManualSyncAt = triggeredAt;
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
     // Stamps the successful device-sync timestamps the schedulers gate on. Failure detail,
@@ -123,9 +129,10 @@ public sealed class OperatorWriter(IApplicationDbContext context) : IOperatorWri
     // health checks), not row state.
     public async Task UpdateSyncSummaryAsync(Guid operatorId, DateTimeOffset finishedAt, SyncTriggerType trigger, CancellationToken cancellationToken)
     {
-        var @operator = await context.Operators.FindAsync([operatorId], cancellationToken)
+        var @operator = await Context.Operators.FindAsync([operatorId], cancellationToken)
             ?? throw new NotFoundException(nameof(Operator), $"{operatorId}");
-        context.Operators.Attach(@operator);
+        RequireAccountWriteAccess(@operator.AccountId);
+        Context.Operators.Attach(@operator);
 
         @operator.LastSuccessfulSyncAt = finishedAt;
         @operator.LastDeviceSyncAt = finishedAt;
@@ -134,6 +141,6 @@ public sealed class OperatorWriter(IApplicationDbContext context) : IOperatorWri
             @operator.LastManualSyncAt = finishedAt;
         }
 
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 }

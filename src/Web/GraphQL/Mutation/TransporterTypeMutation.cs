@@ -19,10 +19,10 @@ namespace TrackHub.Manager.Web.GraphQL.Mutation;
 
 public partial class Mutation
 {
-    public async Task<bool> UpdateTransporterType([Service] ISender sender, short id, UpdateTransporterTypeCommand command)
+    public async Task<bool> UpdateTransporterType([Service] ISender sender, short id, UpdateTransporterTypeCommand command, CancellationToken cancellationToken)
     {
         if (id != command.TransporterType.TransporterTypeId) return false;
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 

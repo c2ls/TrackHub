@@ -73,7 +73,17 @@ public sealed class DeviceTransporterReader(IApplicationDbContext context, ICurr
     }
 
     public async Task<DeviceTransporterVm> GetDeviceTransporterAsync(Guid transporterId, CancellationToken cancellationToken)
-        => await Context.TransporterDeviceAssignments
+    {
+        // Authorize against the transporter's owning account before returning device identifiers.
+        var transporterAccountId = await Context.Transporters
+            .Where(t => t.TransporterId == transporterId)
+            .Select(t => (Guid?)t.AccountId)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException(nameof(Entities.Transporter), transporterId.ToString());
+
+        RequireAccountAccess(transporterAccountId);
+
+        return await Context.TransporterDeviceAssignments
             .Where(a => a.TransporterId == transporterId && a.Status == (int)AssignmentStatus.Active)
             .OrderByDescending(a => a.IsPrimary)
             .ThenBy(a => a.Priority)
@@ -85,4 +95,5 @@ public sealed class DeviceTransporterReader(IApplicationDbContext context, ICurr
                 (TransporterType)a.Transporter.TransporterTypeId,
                 a.Transporter.TransporterTypeId))
             .FirstAsync(cancellationToken);
+    }
 }

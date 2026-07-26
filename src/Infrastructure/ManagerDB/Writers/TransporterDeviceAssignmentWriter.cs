@@ -32,7 +32,6 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
 
         var now = DateTimeOffset.UtcNow;
         var actorType = Principal.PrincipalType.ToString();
-        var actorId = Principal.UserId?.ToString() ?? Principal.DriverId?.ToString() ?? Principal.ClientId ?? Principal.SubjectId ?? "unknown";
 
         var existingActive = await Context.TransporterDeviceAssignments
             .Where(a => a.TransporterId == dto.TransporterId && a.DeviceId == dto.DeviceId && a.Status == (int)AssignmentStatus.Active)
@@ -63,8 +62,7 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
             dto.IsPrimary,
             (int)AssignmentStatus.Active,
             dto.AssignmentReason,
-            actorType,
-            actorId);
+            actorType);
 
         await Context.TransporterDeviceAssignments.AddAsync(entity, cancellationToken);
         device.LastAssignedAt = now;
@@ -81,7 +79,7 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
         return new TransporterDeviceAssignmentVm(
             entity.TransporterDeviceAssignmentId, entity.AccountId, entity.TransporterId, entity.DeviceId,
             entity.EffectiveFrom, entity.EffectiveTo, entity.Priority, entity.IsPrimary,
-            (AssignmentStatus)entity.Status, entity.AssignmentReason, entity.CreatedByPrincipalType, entity.CreatedByPrincipalId);
+            (AssignmentStatus)entity.Status, entity.AssignmentReason, entity.CreatedByPrincipalType, entity.CreatedBy ?? string.Empty);
     }
 
     public async Task EndAssignmentAsync(Guid assignmentId, string? reason, CancellationToken cancellationToken)

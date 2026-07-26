@@ -17,21 +17,28 @@ using TrackHub.Manager.Application.Transporters.Queries.Get;
 using TrackHub.Manager.Application.Transporters.Queries.GetByAccount;
 using TrackHub.Manager.Application.Transporters.Queries.GetByGroup;
 using TrackHub.Manager.Application.Transporters.Queries.GetByUser;
+using TrackHub.Manager.Application.Transporters.Queries.GetLookup;
 
 namespace TrackHub.Manager.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<TransporterVm> GetTransporter([Service] ISender sender, [AsParameters] GetTransporterQuery query)
-        => await sender.Send(query);
+    public async Task<TransporterVm> GetTransporter([Service] ISender sender, [AsParameters] GetTransporterQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TransporterVm>> GetTransportersByAccount([Service] ISender sender)
-        => await sender.Send(new GetTransportersByAccountQuery());
+    public async Task<TransportersPageVm> GetTransportersByAccount([Service] ISender sender, [AsParameters] GetTransportersByAccountQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TransporterVm>> GetTransportersByGroup([Service] ISender sender, [AsParameters] GetTransporterByGroupQuery query)
-        => await sender.Send(query);
+    public async Task<TransportersPageVm> GetTransportersByGroup([Service] ISender sender, [AsParameters] GetTransporterByGroupQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TransporterVm>> GetTransportersByUser([Service] ISender sender)
-        => await sender.Send(new GetTransporterByUserQuery());
+    public async Task<TransportersPageVm> GetTransportersByUser([Service] ISender sender, [AsParameters] GetTransporterByUserQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
+
+    public async Task<IReadOnlyCollection<TransporterLookupVm>> GetTransporterLookupByAccount([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetTransporterLookupByAccountQuery(), cancellationToken);
+
+    public async Task<IReadOnlyCollection<TransporterLookupVm>> GetTransporterLookupByUser([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetTransporterLookupByUserQuery(), cancellationToken);
 
 }

@@ -21,19 +21,19 @@ namespace TrackHub.Manager.Web.GraphQL.Mutation;
 
 public partial class Mutation
 {
-    public async Task<TransporterVm> CreateTransporter([Service] ISender sender, CreateTransporterCommand command)
-        => await sender.Send(command);
+    public async Task<TransporterVm> CreateTransporter([Service] ISender sender, CreateTransporterCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> UpdateTransporter([Service] ISender sender, Guid id, UpdateTransporterCommand command)
+    public async Task<bool> UpdateTransporter([Service] ISender sender, Guid id, UpdateTransporterCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Transporter.TransporterId) return false;
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<Guid> DeleteTransporter([Service] ISender sender, Guid id)
+    public async Task<Guid> DeleteTransporter([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new DeleteTransporterCommand(id));
+        await sender.Send(new DeleteTransporterCommand(id), cancellationToken);
         return id;
     }
 }

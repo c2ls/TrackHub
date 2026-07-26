@@ -45,7 +45,57 @@ public sealed class PointOfInterestReader(IApplicationDbContext context, ICurren
 
     // When visibleToUserId is set, POIs restricted to a Group outside that user's groups
     // are excluded; POIs with no Group are visible to every account user with read access.
-    public async Task<IReadOnlyCollection<PointOfInterestVm>> GetPointsOfInterestByAccountAsync(Guid accountId, Guid? visibleToUserId, CancellationToken cancellationToken)
+    public async Task<PointsOfInterestPageVm> GetPointsOfInterestByAccountAsync(Guid accountId, Guid? visibleToUserId, int skip, int take, string? search, CancellationToken cancellationToken)
+    {
+        var query = ApplySearch(Visible(accountId, visibleToUserId), search);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        // POI names repeat freely (every depot may hold several "Gate"), so the primary key is what
+        // makes the ordering total and the page window stable.
+        var items = await query
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.PointOfInterestId)
+            .Skip(skip)
+            .Take(take)
+            .Select(p => new PointOfInterestVm(
+                p.PointOfInterestId,
+                p.AccountId,
+                p.Name,
+                p.Description,
+                p.Type,
+                p.Latitude,
+                p.Longitude,
+                p.Address,
+                p.Color,
+                p.GroupId,
+                p.Active))
+            .ToListAsync(cancellationToken);
+
+        return new PointsOfInterestPageVm(items, totalCount);
+    }
+
+    // Picker projection. Carries what the map overlays draw — coordinates, pin colour and the
+    // popup's type/description/address — so the dashboard and route planner render from this feed
+    // instead of draining the paged read. Honours the same group-visibility narrowing as the paged
+    // read; AccountId and GroupId stay off it because nothing renders them.
+    public async Task<IReadOnlyCollection<PointOfInterestLookupVm>> GetPointOfInterestLookupAsync(Guid accountId, Guid? visibleToUserId, int fetchSize, CancellationToken cancellationToken)
+        => await Visible(accountId, visibleToUserId)
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.PointOfInterestId)
+            .Take(fetchSize)
+            .Select(p => new PointOfInterestLookupVm(
+                p.PointOfInterestId,
+                p.Name,
+                p.Latitude,
+                p.Longitude,
+                p.Color,
+                p.Type,
+                p.Description,
+                p.Address,
+                p.Active))
+            .ToListAsync(cancellationToken);
+
+    private IQueryable<Entities.PointOfInterest> Visible(Guid accountId, Guid? visibleToUserId)
     {
         var scopedAccountId = RequireAccountAccess(accountId);
 
@@ -61,20 +111,11 @@ public sealed class PointOfInterestReader(IApplicationDbContext context, ICurren
             query = query.Where(p => p.GroupId == null || userGroupIds.Contains(p.GroupId.Value));
         }
 
-        return await query
-            .OrderBy(p => p.Name)
-            .Select(p => new PointOfInterestVm(
-                p.PointOfInterestId,
-                p.AccountId,
-                p.Name,
-                p.Description,
-                p.Type,
-                p.Latitude,
-                p.Longitude,
-                p.Address,
-                p.Color,
-                p.GroupId,
-                p.Active))
-            .ToListAsync(cancellationToken);
+        return query;
     }
+
+    private static IQueryable<Entities.PointOfInterest> ApplySearch(IQueryable<Entities.PointOfInterest> query, string? search)
+        => string.IsNullOrWhiteSpace(search)
+            ? query
+            : query.Where(p => EF.Functions.ILike(p.Name, SearchPattern.Contains(search), SearchPattern.Escape));
 }

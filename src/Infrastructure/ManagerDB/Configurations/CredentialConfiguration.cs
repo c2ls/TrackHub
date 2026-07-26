@@ -30,8 +30,10 @@ public sealed class CredentialConfiguration : IEntityTypeConfiguration<Credentia
         builder.Property(x => x.Uri).HasColumnName("uri");
         builder.Property(x => x.Username).HasColumnName("username");
         builder.Property(x => x.Password).HasColumnName("password");
-        builder.Property(x => x.Key).HasColumnName("key");
-        builder.Property(x => x.Key2).HasColumnName("key2");
+        builder.Property(x => x.Key).HasColumnName("key")
+            .HasComment("Provider-specific auxiliary credential field 1. GpsGate: application id. Unused by every other protocol.");
+        builder.Property(x => x.Key2).HasColumnName("key2")
+            .HasComment("Provider-specific auxiliary credential field 2. GpsGate: user id, consumed only by TrackHubRouter GpsGateReaderBase.Init. Unused by every other protocol.");
         builder.Property(x => x.Salt).HasColumnName("salt");
         builder.Property(x => x.Token).HasColumnName("token");
         builder.Property(x => x.TokenExpiration).HasColumnName("tokenexpiration");

@@ -32,6 +32,9 @@ public class UpdateNotificationTemplateCommandValidator : AbstractValidator<Upda
 
 [Authorize(Resource = Resources.Notifications, Action = Actions.Delete)]
 [RequireFeature(FeatureKeys.Notifications)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct DeleteNotificationTemplateCommand(Guid NotificationTemplateId) : IRequest<Guid>;
 public class DeleteNotificationTemplateCommandHandler(INotificationTemplateWriter writer) : IRequestHandler<DeleteNotificationTemplateCommand, Guid>
 {

@@ -19,8 +19,8 @@ public class TransporterDeviceAssignmentConfiguration : IEntityTypeConfiguration
         builder.Property(x => x.IsPrimary).HasColumnName("isprimary").HasDefaultValue(false);
         builder.Property(x => x.Status).HasColumnName("status").HasDefaultValue(0);
         builder.Property(x => x.AssignmentReason).HasColumnName("assignmentreason").HasMaxLength(ColumnMetadata.DefaultDescriptionLength);
-        builder.Property(x => x.CreatedByPrincipalType).HasColumnName("createdbyprincipaltype").HasMaxLength(ColumnMetadata.DefaultNameLength).IsRequired();
-        builder.Property(x => x.CreatedByPrincipalId).HasColumnName("createdbyprincipalid").HasMaxLength(ColumnMetadata.DefaultNameLength).IsRequired();
+        builder.Property(x => x.CreatedByPrincipalType).HasColumnName("createdbyprincipaltype").HasMaxLength(ColumnMetadata.DefaultNameLength).IsRequired()
+            .HasComment("Kind of principal that created the assignment; the principal identity is in CreatedBy.");
 
         builder
             .HasOne(e => e.Transporter)

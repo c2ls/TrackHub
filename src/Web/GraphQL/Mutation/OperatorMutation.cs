@@ -22,28 +22,28 @@ namespace TrackHub.Manager.Web.GraphQL.Mutation;
 
 public partial class Mutation
 {
-    public async Task<OperatorVm> CreateOperator([Service] ISender sender, CreateOperatorCommand command)
-        => await sender.Send(command);
+    public async Task<OperatorVm> CreateOperator([Service] ISender sender, CreateOperatorCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<bool> UpdateOperator([Service] ISender sender, Guid id, UpdateOperatorCommand command)
+    public async Task<bool> UpdateOperator([Service] ISender sender, Guid id, UpdateOperatorCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Operator.OperatorId) return false;
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 
-    public async Task<Guid> DeleteOperator([Service] ISender sender, Guid id)
+    public async Task<Guid> DeleteOperator([Service] ISender sender, Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new DeleteOperatorCommand(id));
+        await sender.Send(new DeleteOperatorCommand(id), cancellationToken);
         return id;
     }
 
-    public async Task<bool> SetOperatorEnabled([Service] ISender sender, SetOperatorEnabledCommand command)
+    public async Task<bool> SetOperatorEnabled([Service] ISender sender, SetOperatorEnabledCommand command, CancellationToken cancellationToken)
     { 
-        await sender.Send(command); 
+        await sender.Send(command, cancellationToken); 
         return true; 
     }
 
-    public async Task<bool> TriggerOperatorDeviceSync([Service] ISender sender, TriggerOperatorDeviceSyncCommand command)
-        => await sender.Send(command);
+    public async Task<bool> TriggerOperatorDeviceSync([Service] ISender sender, TriggerOperatorDeviceSyncCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 }

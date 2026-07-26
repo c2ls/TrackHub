@@ -21,10 +21,10 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 public partial class Query
 {
 
-    public async Task<IReadOnlyCollection<ReportVm>> GetReports([Service] ISender sender)
-        => await sender.Send(new GetReportsQuery());
+    public async Task<IReadOnlyCollection<ReportVm>> GetReports([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetReportsQuery(), cancellationToken);
 
-    public async Task<ReportVm?> GetReportByCode([Service] ISender sender, string code)
-        => await sender.Send(new GetReportByCodeQuery(code));
+    public async Task<ReportVm?> GetReportByCode([Service] ISender sender, string code, CancellationToken cancellationToken)
+        => await sender.Send(new GetReportByCodeQuery(code), cancellationToken);
 
 }

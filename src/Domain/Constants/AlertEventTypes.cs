@@ -30,11 +30,29 @@ public static class AlertEventTypes
     public const string DocumentExpiring = nameof(DocumentExpiring);
     public const string DocumentExpired = nameof(DocumentExpired);
     public const string NotificationDeliveryFailed = nameof(NotificationDeliveryFailed);
+    public const string DriverQualificationExpiring = nameof(DriverQualificationExpiring);
+    public const string DriverQualificationExpired = nameof(DriverQualificationExpired);
+
+    // Trip management (spec 11 §12), emitted by TrackHub.TripManagement under `trip_client`.
+    // Severity is assigned by the emitter, not here: Info for all of these EXCEPT
+    // TripDelayed, TripRouteDeviation and TripCancelled, which are Warning.
+    public const string TripAssigned = nameof(TripAssigned);
+    public const string TripStarted = nameof(TripStarted);
+    public const string TripStopArrived = nameof(TripStopArrived);
+    public const string TripStopDeparted = nameof(TripStopDeparted);
+    public const string TripDelayed = nameof(TripDelayed);
+    public const string TripRouteDeviation = nameof(TripRouteDeviation);
+    public const string TripPodSubmitted = nameof(TripPodSubmitted);
+    public const string TripCompleted = nameof(TripCompleted);
+    public const string TripCancelled = nameof(TripCancelled);
+    public const string TripStartDue = nameof(TripStartDue);
 
     public static readonly IReadOnlyCollection<string> All =
     [
         GeofenceEntered, GeofenceExited, GeofenceDwellExceeded, CommunicationLoss,
         GpsCredentialExpiring, GpsOperatorPositionSyncFailed, DocumentExpiring, DocumentExpired,
-        NotificationDeliveryFailed
+        NotificationDeliveryFailed, DriverQualificationExpiring, DriverQualificationExpired,
+        TripAssigned, TripStarted, TripStopArrived, TripStopDeparted, TripDelayed,
+        TripRouteDeviation, TripPodSubmitted, TripCompleted, TripCancelled, TripStartDue
     ];
 }

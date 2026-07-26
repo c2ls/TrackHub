@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,14 +13,36 @@
 //  limitations under the License.
 //
 
+using Common.Application.Exceptions;
+using Common.Application.Interfaces;
+using Common.Domain.Constants;
 using TrackHub.Manager.Infrastructure.Entities;
 using TrackHub.Manager.Infrastructure.Interfaces;
 
 namespace TrackHub.Manager.Infrastructure.ManagerDB.Writers;
 
-// UserWriter class for handling user-related operations
-public sealed class UserWriter(IApplicationDbContext context) : IUserWriter
+// Writer for the user REPLICA rows Security forwards here (UserCreated/UserUpdated/UserDeleted).
+// Every mutation checks the row's owning account against the caller with SECURITY-PARITY policy:
+// same account, a global service identity, or the platform Administrator (who provisions and
+// maintains tenant users cross-account through Security, whose own writers apply the same
+// Administrator bypass). This is the enforcement point the scope markers on the user replica
+// commands cite. Deliberately NOT the shared AccountScopedDataAccess rule: support grants do not
+// extend to identity replication, and the Administrator bypass exists here only to keep the
+// replica in lockstep with what Security already allowed.
+public sealed class UserWriter(IApplicationDbContext context, ICurrentPrincipal principal) : IUserWriter
 {
+    private void RequireReplicaAccess(Guid accountId)
+    {
+        if ((principal.PrincipalType == PrincipalType.ServiceClient && !principal.AccountId.HasValue)
+            || principal.AccountId == accountId
+            || string.Equals(principal.Role, Roles.Administrator, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        throw new ForbiddenAccessException($"Insufficient permissions. Required account access: {accountId}.");
+    }
+
     /// <summary>
     /// Creates a new user asynchronously
     /// </summary>
@@ -29,6 +51,8 @@ public sealed class UserWriter(IApplicationDbContext context) : IUserWriter
     /// <returns>The created user view model</returns>
     public async Task<UserVm> CreateUserAsync(UserDto userDto, CancellationToken cancellationToken)
     {
+        RequireReplicaAccess(userDto.AccountId);
+
         var user = new User(
             userDto.UserId,
             userDto.Username,
@@ -56,6 +80,7 @@ public sealed class UserWriter(IApplicationDbContext context) : IUserWriter
     {
         var user = await context.Users.FindAsync([userDto.UserId], cancellationToken)
             ?? throw new NotFoundException(nameof(User), $"{userDto.UserId}");
+        RequireReplicaAccess(user.AccountId);
 
         context.Users.Attach(user);
 
@@ -76,6 +101,7 @@ public sealed class UserWriter(IApplicationDbContext context) : IUserWriter
     {
         var user = await context.Users.FindAsync([userId], cancellationToken)
             ?? throw new NotFoundException(nameof(User), $"{userId}");
+        RequireReplicaAccess(user.AccountId);
 
         context.Users.Attach(user);
 

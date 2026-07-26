@@ -13,15 +13,23 @@
 //  limitations under the License.
 //
 
+using Common.Application.Paging;
+
 namespace TrackHub.Manager.Application.Accounts.Queries.GetAll;
 
 [Authorize(Resource = Resources.Administrative, Action = Actions.Read)]
-public readonly record struct GetAccountsQuery() : IRequest<IReadOnlyCollection<AccountVm>>;
+public readonly record struct GetAccountsQuery(
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<AccountsPageVm>;
 
-public class GetAccountsQueryHandler(IAccountReader reader) : IRequestHandler<GetAccountsQuery, IReadOnlyCollection<AccountVm>>
+public class GetAccountsQueryHandler(IAccountReader reader) : IRequestHandler<GetAccountsQuery, AccountsPageVm>
 {
-    // This method handles the GetAccountsQuery by retrieving the accounts from the reader asynchronously
-    public async Task<IReadOnlyCollection<AccountVm>> Handle(GetAccountsQuery request, CancellationToken cancellationToken)
-        => await reader.GetAccountsAsync(cancellationToken);
+    // This method handles the GetAccountsQuery by retrieving a page of accounts from the reader asynchronously
+    public async Task<AccountsPageVm> Handle(GetAccountsQuery request, CancellationToken cancellationToken)
+    {
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetAccountsAsync(skip, take, request.Search, cancellationToken);
+    }
 
 }

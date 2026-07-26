@@ -50,6 +50,9 @@ builder.Services.AddHostedService<DocumentScanService>();
 builder.Services.AddHostedService<DocumentExpirationService>();
 builder.Services.AddHostedService<DocumentRetentionCleanupService>();
 
+// Workforce job: daily 30/15/7/0-day driver-qualification expiration scan (workforce-gated accounts).
+builder.Services.AddHostedService<WorkforceExpirationService>();
+
 // Alerts/notifications jobs: 30 s delivery dispatch, 5 min alert evaluation
 // (communication loss + escalation + daily credential-expiry emission), hourly digest fold, and
 // daily delivery retention.
@@ -57,6 +60,10 @@ builder.Services.AddHostedService<NotificationDispatchService>();
 builder.Services.AddHostedService<AlertEvaluationService>();
 builder.Services.AddHostedService<NotificationDigestService>();
 builder.Services.AddHostedService<DeliveryRetentionService>();
+
+// Platform-table retention: daily purge of aged background job runs (latest row per JobKey preserved
+// for the status page) and resolved alert events.
+builder.Services.AddHostedService<PlatformRetentionService>();
 
 // Add HealthChecks
 builder.Services.AddHealthChecks()

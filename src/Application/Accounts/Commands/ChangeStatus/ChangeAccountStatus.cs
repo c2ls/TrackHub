@@ -24,6 +24,7 @@ namespace TrackHub.Manager.Application.Accounts.Commands.ChangeStatus;
 // non-operational account can be reinstated/cancelled/archived.
 [Authorize(Resource = Resources.Administrative, Action = Actions.Write)]
 [AllowSuspendedAccount]
+[AllowCrossAccount("SuperAdministrator account lifecycle: suspending/reinstating/cancelling an account is by definition performed on an account other than the platform operator's own. Gated by the Administrative/Write platform permission.")]
 public readonly record struct ChangeAccountStatusCommand(Guid AccountId, AccountStatus TargetStatus, string? Reason)
     : IRequest<AccountVm>;
 

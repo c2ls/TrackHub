@@ -53,47 +53,24 @@ public sealed class DocumentScanService(
 
     private async Task RunOnceAsync(CancellationToken cancellationToken)
     {
-        using var scope = scopeFactory.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var scanner = scope.ServiceProvider.GetRequiredService<IDocumentScanner>();
-
-        var pending = await context.Documents
-            .Where(d => d.ScanStatus == DocumentScanStatuses.Quarantined && d.Status != DocumentStatuses.Deleted)
-            .OrderBy(d => d.LastModified)
-            .Take(BatchSize)
-            .ToListAsync(cancellationToken);
+        List<Document> pending;
+        using (var scope = scopeFactory.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            pending = await context.Documents
+                .Where(d => d.ScanStatus == DocumentScanStatuses.Quarantined && d.Status != DocumentStatuses.Deleted)
+                .OrderBy(d => d.LastModified)
+                .Take(BatchSize)
+                .ToListAsync(cancellationToken);
+        }
 
         foreach (var document in pending)
         {
             var idempotencyKey = $"scan:{document.DocumentId:N}:{document.CurrentVersion}";
-            var already = await context.BackgroundJobRuns.AnyAsync(
-                r => r.JobKey == JobKey && r.IdempotencyKey == idempotencyKey && r.Status == "Succeeded", cancellationToken);
-            if (already)
-            {
-                continue;
-            }
-
             var startedAt = DateTimeOffset.UtcNow;
             try
             {
-                var result = await scanner.ScanAsync(document.StorageKey, cancellationToken);
-                context.Documents.Attach(document);
-                document.ScanStatus = result;
-                if (string.Equals(result, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase) && document.Status == DocumentStatuses.Uploaded)
-                {
-                    document.Status = DocumentStatuses.Active;
-                }
-
-                await SyncCurrentVersionScanAsync(context, document, result, cancellationToken);
-
-                if (string.Equals(result, DocumentScanStatuses.Infected, StringComparison.OrdinalIgnoreCase))
-                {
-                    RaiseInfectedAlert(context, document);
-                }
-
-                context.AuditEvents.Add(new AuditEvent(document.AccountId, "System", JobKey, "DocumentScanCompleted", "Document", document.DocumentId.ToString(), "Succeeded", null, $$"""{"scanStatus":"{{result}}"}""", null, null, null, null));
-                context.BackgroundJobRuns.Add(new BackgroundJobRun(JobKey, document.AccountId, document.DocumentId.ToString(), idempotencyKey, "Succeeded", 1, startedAt) { CompletedAt = DateTimeOffset.UtcNow });
-                await context.SaveChangesAsync(cancellationToken);
+                await ScanAsync(document, idempotencyKey, startedAt, cancellationToken);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -106,6 +83,44 @@ public sealed class DocumentScanService(
         {
             logger.LogInformation("Document scan cycle processed {Count} quarantined document(s).", pending.Count);
         }
+    }
+
+    // One scope per document, not one per batch. A failed document leaves its mutations — the document's
+    // ScanStatus, the version row, any alert event — tracked on the context; sharing that context with the
+    // rest of the batch flushed them under the NEXT document's save, committing changes for an item that
+    // never scanned. RecordFailureAsync already opens its own scope to dodge exactly that; disposing the
+    // context with the item makes the whole path consistent.
+    private async Task ScanAsync(Document document, string idempotencyKey, DateTimeOffset startedAt, CancellationToken cancellationToken)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var scanner = scope.ServiceProvider.GetRequiredService<IDocumentScanner>();
+
+        var already = await context.BackgroundJobRuns.AnyAsync(
+            r => r.JobKey == JobKey && r.IdempotencyKey == idempotencyKey && r.Status == "Succeeded", cancellationToken);
+        if (already)
+        {
+            return;
+        }
+
+        var result = await scanner.ScanAsync(document.StorageKey, cancellationToken);
+        context.Documents.Attach(document);
+        document.ScanStatus = result;
+        if (string.Equals(result, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase) && document.Status == DocumentStatuses.Uploaded)
+        {
+            document.Status = DocumentStatuses.Active;
+        }
+
+        await SyncCurrentVersionScanAsync(context, document, result, cancellationToken);
+
+        if (string.Equals(result, DocumentScanStatuses.Infected, StringComparison.OrdinalIgnoreCase))
+        {
+            RaiseInfectedAlert(context, document);
+        }
+
+        context.AuditEvents.Add(new AuditEvent(document.AccountId, "System", JobKey, "DocumentScanCompleted", "Document", document.DocumentId.ToString(), "Succeeded", null, $$"""{"scanStatus":"{{result}}"}""", null, null, null, null));
+        context.BackgroundJobRuns.Add(new BackgroundJobRun(JobKey, document.AccountId, document.DocumentId.ToString(), idempotencyKey, "Succeeded", 1, startedAt) { CompletedAt = DateTimeOffset.UtcNow });
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private static async Task SyncCurrentVersionScanAsync(ApplicationDbContext context, Document document, string result, CancellationToken cancellationToken)

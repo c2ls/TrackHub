@@ -14,6 +14,7 @@
 //
 
 using Common.Domain.Constants;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrackHub.Manager.Infrastructure.Entities;
 
@@ -23,16 +24,27 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
     public void Configure(EntityTypeBuilder<Account> builder)
     {
         //Table name
-        builder.ToTable(name: TableMetadata.Account, schema: SchemaMetadata.Application);
+        builder.ToTable(
+            name: TableMetadata.Account,
+            schema: SchemaMetadata.Application,
+            t =>
+            {
+                t.HasCheckConstraint("ck_accounts_type", EnumColumn.Check<AccountType>("type"));
+                t.HasCheckConstraint("ck_accounts_status", EnumColumn.Check<AccountStatus>("status"));
+            });
 
         //Column names
         builder.Property(x => x.AccountId).HasColumnName("id");
         builder.Property(x => x.Name).HasColumnName("name");
         builder.Property(x => x.Description).HasColumnName("description");
-        builder.Property(x => x.Type).HasColumnName("type");
-        builder.Property(x => x.Active).HasColumnName("active");
-        builder.Property(x => x.Status).HasColumnName("status");
-        builder.Property(x => x.StatusChangedAt).HasColumnName("statuschangedat");
+        builder.Property(x => x.Type).HasColumnName("type")
+            .HasComment(EnumColumn.Comment<AccountType>("Commercial classification of the tenant."));
+        builder.Property(x => x.Active).HasColumnName("active")
+            .HasComment("Legacy on/off flag derived from status; true exactly when status is Trial or Active.");
+        builder.Property(x => x.Status).HasColumnName("status")
+            .HasComment(EnumColumn.Comment<AccountStatus>("Authoritative operational state of the tenant."));
+        builder.Property(x => x.StatusChangedAt).HasColumnName("statuschangedat")
+            .HasComment("Timestamp of the last status transition; null until the first transition.");
 
         builder.Property(t => t.Name)
             .HasMaxLength(ColumnMetadata.DefaultNameLength)
