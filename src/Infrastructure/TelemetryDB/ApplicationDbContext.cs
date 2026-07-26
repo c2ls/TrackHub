@@ -19,7 +19,7 @@ using TrackHub.Telemetry.Infrastructure.TelemetryDB.Interfaces;
 
 namespace TrackHub.Telemetry.Infrastructure.TelemetryDB;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
+public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {
     public DbSet<TransporterPosition> TransporterPositions { get; set; }
     public DbSet<TransporterPositionHistory> TransporterPositionHistory { get; set; }
