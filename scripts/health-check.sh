@@ -180,6 +180,7 @@ check_service_container "security"
 check_service_container "manager"
 check_service_container "router"
 check_service_container "geofencing"
+check_service_container "tripmanagement"
 check_service_container "telemetry"
 check_service_container "reporting"
 check_service_container "syncworker"
@@ -194,6 +195,7 @@ check_service_endpoint "security"   "Security"   "$PROTOCOL://$DOMAIN/health/sec
 check_service_endpoint "manager"    "Manager"    "$PROTOCOL://$DOMAIN/health/manager"
 check_service_endpoint "router"     "Router"     "$PROTOCOL://$DOMAIN/health/router"
 check_service_endpoint "geofencing" "Geofencing" "$PROTOCOL://$DOMAIN/health/geofencing"
+check_service_endpoint "tripmanagement" "Trip Management" "$PROTOCOL://$DOMAIN/health/trip"
 check_service_endpoint "telemetry"  "Telemetry"  "$PROTOCOL://$DOMAIN/health/telemetry"
 check_service_endpoint "reporting"  "Reporting"  "$PROTOCOL://$DOMAIN/health/reporting"
 
@@ -204,6 +206,7 @@ check_service_endpoint "security"   "Security GraphQL"  "$PROTOCOL://$DOMAIN/Sec
 check_service_endpoint "manager"    "Manager GraphQL"   "$PROTOCOL://$DOMAIN/Manager/graphql/"
 check_service_endpoint "router"     "Router GraphQL"    "$PROTOCOL://$DOMAIN/Router/graphql/"
 check_service_endpoint "geofencing" "Geofence GraphQL"  "$PROTOCOL://$DOMAIN/Geofence/graphql/"
+check_service_endpoint "tripmanagement" "Trip GraphQL"  "$PROTOCOL://$DOMAIN/Trip/graphql/"
 check_service_endpoint "telemetry"  "Telemetry GraphQL" "$PROTOCOL://$DOMAIN/Telemetry/graphql/"
 
 echo ""

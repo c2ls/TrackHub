@@ -30,7 +30,7 @@ COPY TrackHubRouter/src/Infrastructure/Geotab/Geotab.csproj src/Infrastructure/G
 COPY TrackHubRouter/src/Infrastructure/GpsGate/GpsGate.csproj src/Infrastructure/GpsGate/
 COPY TrackHubRouter/src/Infrastructure/ManagerApi/ManagerApi.csproj src/Infrastructure/ManagerApi/
 COPY TrackHubRouter/src/Infrastructure/Navixy/Navixy.csproj src/Infrastructure/Navixy/
-COPY TrackHubRouter/src/Infrastructure/Protack/Protrack.csproj src/Infrastructure/Protack/
+COPY TrackHubRouter/src/Infrastructure/Protrack/Protrack.csproj src/Infrastructure/Protrack/
 COPY TrackHubRouter/src/Infrastructure/Samsara/Samsara.csproj src/Infrastructure/Samsara/
 COPY TrackHubRouter/src/Infrastructure/TelemetryApi/TelemetryApi.csproj src/Infrastructure/TelemetryApi/
 COPY TrackHubRouter/src/Infrastructure/Traccar/Traccar.csproj src/Infrastructure/Traccar/

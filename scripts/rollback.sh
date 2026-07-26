@@ -33,7 +33,7 @@ print_error() { echo -e "${RED}✗ $1${NC}"; }
 print_info() { echo -e "${BLUE}ℹ $1${NC}"; }
 
 # Service names
-SERVICES=("frontend" "authority" "security" "manager" "router" "geofencing" "telemetry" "reporting" "syncworker")
+SERVICES=("frontend" "authority" "security" "manager" "router" "geofencing" "tripmanagement" "telemetry" "reporting" "syncworker")
 
 # -----------------------------------------------------------------------------
 # Compose file selection

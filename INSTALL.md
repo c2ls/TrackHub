@@ -36,6 +36,7 @@ TrackHub is a GPS tracking and monitoring platform consisting of:
 | **TrackHub.Manager** | Asset management | .NET 10, GraphQL |
 | **TrackHubRouter** | Device routing | .NET 10, GraphQL |
 | **TrackHub.Geofencing** | Geofence management | .NET 10, GraphQL |
+| **TrackHub.TripManagement** | Trip planning, route planning & tolls | .NET 10, GraphQL |
 | **TrackHub.Telemetry** | Position & telemetry store | .NET 10, GraphQL |
 | **TrackHub.Reporting** | Reports generation | .NET 10, REST API |
 | **SyncWorker** | Background data-sync service | .NET 10, Worker (no HTTP) |
@@ -69,9 +70,9 @@ outside PostgreSQL: back it up separately.
 │  │   (React)          (:8080)      (:8080)      (:8080)       │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │  ┌────────────────────────────────────────────────────────────┐  │
-│  │  /Router    /Geofence   /Telemetry   /Reporting            │  │
-│  │  Router     Geofencing  Telemetry    Reporting             │  │
-│  │  (:8080)    (:8080)     (:8080)      (:8080)               │  │
+│  │  /Router    /Geofence   /Trip        /Telemetry  /Reporting│  │
+│  │  Router     Geofencing  TripMgmt     Telemetry   Reporting │  │
+│  │  (:8080)    (:8080)     (:8080)      (:8080)     (:8080)   │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │  SyncWorker (background worker — no HTTP endpoint)          │  │
@@ -139,6 +140,105 @@ outside PostgreSQL: back it up separately.
 - Registered domain name (or static IP for internal deployments)
 - PostgreSQL 14+ database server (external, already installed and operational)
 - SSL certificate (Let's Encrypt recommended for production)
+- **An OpenRouteService API key or a self-hosted ORS instance** — required by
+  TripManagement, see [OpenRouteService Provisioning](#openrouteservice-provisioning-required)
+
+#### OpenRouteService Provisioning (required)
+
+TripManagement plans routes through **OpenRouteService**. An **API key or a self-hosted ORS
+instance is a REQUIRED per-deployment dependency** and must be provisioned before this module
+can be released. It is the module's only hard external prerequisite and is obtainable
+**same-day** from the free public plan at <https://openrouteservice.org/dev/#/signup>;
+self-hosting is supported by pointing `ORS_BASE_URL` at your own instance.
+
+**Absence of configuration is a deployment error, not a supported operating mode.** At
+runtime it degrades rather than blocks: route planning returns `RoutePlan.Failed` +
+`ROUTING_NOT_CONFIGURED`, ETAs fall back to `EtaSource = Planned`, and trips remain fully
+usable — they simply never receive a planned route, distance, duration or corridor. Do not
+treat that degraded state as "working".
+
+Configure it in `.env` (see the ROUTE PLANNING block in `.env.example`):
+
+```bash
+ROUTING_PROVIDER=OpenRouteService
+ORS_BASE_URL=https://api.openrouteservice.org   # or http://ors:8080/ors when self-hosted
+ORS_API_KEY=your-openrouteservice-api-key
+ORS_PROFILE=driving-hgv
+ORS_REQUESTS_PER_SECOND=2
+ORS_TIMEOUT_SECONDS=30
+ORS_MAX_WAYPOINTS=50
+```
+
+> **The ORS key is deliberately configured in two places.** One vendor account serves two
+> consumers, and they read the credential from two different stores (spec 11 §7.2 / §18.7):
+>
+> | Consumer | Store | Purpose |
+> |---|---|---|
+> | TripManagement | `AppSettings:Routing` (the `ORS_*` env vars above) | Directions / matrix — route planning |
+> | Router | a Manager **`GeocodingProvider`** row, entered in the systemAdmin panel | Reverse geocoding of incoming positions |
+>
+> This duplication is intentional, not an oversight. `GeocodingProvider` has a
+> **single-active-row** model that cannot express "Nominatim for addresses, ORS for routes",
+> it is Router-owned, and route planning must not depend on which geocoder an operator
+> happens to have activated. Nominatim remains the default reverse-geocoder; adding an ORS
+> `GeocodingProvider` row is optional and independent of route planning.
+
+#### Toll Catalog Bootstrap (empty by design)
+
+The platform ships with **zero toll stations, zero tariffs and zero vehicle classes**. This
+is a deliberate product decision, not missing seed data: there is no external toll API and no
+licensed dataset behind this feature. Each deployment enters its own catalog through the
+admin UI or the CSV import surface.
+
+Until you do, toll estimation returns a **null estimate** — never a fabricated or
+zero-defaulted number. Reports expose the gap explicitly through the `PartialNoTariff` column
+on `trip-toll-cost`, so partial coverage is visible rather than silently netted to zero.
+An empty catalog does not block trip creation, planning or execution.
+
+##### Colombia: loading the catalog from the INVÍAS open data
+
+`scripts/fetch-toll-catalog.mjs` turns the official INVÍAS publication
+([datos.gov.co/Transporte/Peajes/68qj-5xux](https://www.datos.gov.co/Transporte/Peajes/68qj-5xux),
+"Peajes registrados sobre La Red Vial Nacional", covering INVÍAS and ANI-concession
+stations) into a single SQL script:
+
+```bash
+node scripts/fetch-toll-catalog.mjs --effective-from 2026-01-01 --out toll-catalog.sql
+psql -h localhost -U postgres -d TrackHub -f toll-catalog.sql
+```
+
+That loads the 7 vehicle classes, ~173 stations and ~1 026 tariffs in one transaction.
+The skipped records are listed in the script's header comment.
+
+Before running it:
+
+- **Clear any test data first.** `SELECT count(*) FROM trip.toll_stations;` should be 0.
+  The trip smoke tests create real stations and vehicle classes (`SMK*`, `smoke-*`), and
+  the catalog is platform-wide, so they are visible to every account.
+- **The script is one transaction and is not idempotent.** Running it twice fails on the
+  unique indexes and rolls back rather than duplicating — which is the behaviour you
+  want, because a duplicated station is matched twice by `ST_DWithin` and charges its
+  toll twice in every estimate.
+- **Use the admin UI or CSV import for later rate changes, not this script.**
+  `createTollTariff` closes the open tariff row and inserts a new one, so a past trip's
+  estimate stays reproducible against the rate it was priced with. Re-running the SQL
+  would not.
+
+Two caveats on the data itself:
+
+- **The source's scalar `latitud`/`longitud` columns are corrupt for a large minority of
+  records** — both hold the latitude. The script reads the GeoJSON `point` instead and
+  rejects anything outside Colombia's bounding box. This is not cosmetic: a mislocated
+  station never matches `ST_DWithin`, so it vanishes from every estimate silently
+  rather than failing.
+- **Verify the figures against the resolution in force** before relying on them
+  commercially. This is published reference data, not a contractual source, and tariffs
+  change by resolution (INVÍAS raised them 5.10% by IPC in January 2026). Categories
+  **VI and VII** are priced at 88 of the 179 stations but their descriptions are left as
+  `CONFIRMAR` — the axle rules vary by concession and are not published with the dataset.
+
+Stations with no priced category (decommissioned, `NO OPERATIVO`) are skipped rather than
+loaded at zero.
 
 ### Database Server Requirements
 
@@ -147,7 +247,7 @@ The deployment assumes an existing PostgreSQL server. Two databases are required
 | Database | Purpose |
 |----------|---------|
 | `TrackHubSecurity` | Identity, users, roles, policies |
-| `TrackHub` | Assets, transporters, devices, geofences, positions |
+| `TrackHub` | Assets, transporters, devices, geofences, trips, positions |
 
 The PostgreSQL server must be accessible from the application server(s) over the network.
 
@@ -230,8 +330,24 @@ nano .env
 > alter tables (see [Database Setup](#database-setup)). Deploying against empty databases
 > makes the `db-init` container fail.
 
-Apply migrations for the three services that own them (Telemetry has none — its `telemetry`
+Apply migrations for the **five** projects that own them (Telemetry has none — its `telemetry`
 schema is created by the Manager migrations).
+
+> ⚠️ **AuthorityServer is one of them.** Its `AuthorityDbContext` owns the four `OpenIddict*` tables
+> and lives in the **Security** database. Without this step the platform cannot issue tokens.
+>
+> **Upgrading a deployment created before this step existed?** Its OpenIddict tables are already
+> present but carry no `__EFMigrationsHistory` row, so `database update` fails with
+> *relation "OpenIddictApplications" already exists*. **Baseline it instead** — insert the
+> InitialCreate row so EF adopts the existing tables:
+>
+> ```sql
+> INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+> SELECT '20260722030751_InitialCreate', '10.0.10'
+> WHERE NOT EXISTS (SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260722030751_InitialCreate');
+> ```
+>
+> Fresh installs need none of that — just run the command below with the others.
 
 **Prerequisites on the host running the migrations:**
 
@@ -261,17 +377,29 @@ export MANAGER_CONN="server=db.example.com;port=5432;database=TrackHub;user id=t
 ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
   --project TrackHubSecurity/src/Infrastructure/SecurityDB --startup-project TrackHubSecurity/src/Web
 
+# OpenIddict tables (applications/authorizations/scopes/tokens). Same database as Security, and it
+# MUST run after the Security migration above. Skip on an existing deployment — baseline it instead
+# (see the note above). --context is required: this project also carries a SecurityDbContext, whose
+# migration is deliberately empty (TrackHubSecurity owns those tables; DM-05 convention).
+ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
+  --project TrackHub.AuthorityServer/src/Infrastructure --startup-project TrackHub.AuthorityServer/src/Web \
+  --context AuthorityDbContext
+
 ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
   --project TrackHub.Manager/src/Infrastructure/ManagerDB --startup-project TrackHub.Manager/src/Web
 
 ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
   --project TrackHub.Geofencing/src/Infrastructure/ManagerDB --startup-project TrackHub.Geofencing/src/Web
 
+ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
+  --project TrackHub.TripManagement/src/Infrastructure/TripDB --startup-project TrackHub.TripManagement/src/Web
+
 cd /opt/trackhub/TrackHub.Deployment
 ```
 
-Geofencing requires the `postgis` extension in the `TrackHub` database (see
-[Database Setup](#database-setup)).
+Geofencing and TripManagement both require the `postgis` extension in the `TrackHub`
+database (see [Database Setup](#database-setup)). TripManagement's `trip` schema lives in
+the same `TrackHub` database, so it uses the same `${DB_CONNECTION_MANAGER}` connection.
 
 ### 5. Set Up Certificates
 
@@ -418,6 +546,10 @@ SYNCWORKER_CLIENT_SECRET=your-syncworker-client-secret
 ROUTER_CLIENT_SECRET=your-router-client-secret
 SECURITY_CLIENT_SECRET=your-security-client-secret
 GEOFENCE_CLIENT_SECRET=your-geofence-client-secret
+TRIP_CLIENT_SECRET=your-trip-client-secret
+
+# Route planning (spec 11) — REQUIRED before the trip module can be released
+ORS_API_KEY=your-openrouteservice-api-key
 
 # Update all REACT_APP_ URLs with your domain
 REACT_APP_AUTHORIZATION_ENDPOINT=https://trackhub.example.com/Identity/authorize
@@ -538,15 +670,26 @@ Edit `config/clients.json`:
     {"clientId": "syncworker_client", "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
     {"clientId": "router_client",     "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
     {"clientId": "security_client",   "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
-    {"clientId": "geofence_client",   "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"}
+    {"clientId": "geofence_client",   "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
+    {"clientId": "trip_client",       "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"}
   ]
 }
 ```
 
+> **Tenant-bound (partner) service clients:** the five clients above are **platform-internal** —
+> their permission rows are seeded with `allowcrossaccount = true`, they receive a token with **no**
+> `account_id` claim, and they legitimately operate across every account. A partner/TMS client is
+> the opposite: seed its rows in `security.service_client_permissions` **with** an `accountid` and
+> **without** `allowcrossaccount`, and the token endpoint will bind its tokens to that account
+> automatically. If a partner client ends up holding grants on **several** accounts, its token
+> requests must add an `account_id=<account-guid>` form parameter to pick the tenant — otherwise the
+> token endpoint answers `invalid_request`, by design, rather than guessing a customer. See
+> *Client Credentials Flow* in `TrackHub.AuthorityServer/README.en.md` for the full claim rules.
+
 > **Important:** The `resource` for every scope must be `trackhub_api` (this is the
 > token audience the APIs validate). Each service client's `clientSecret` must match the
 > `${SYNCWORKER_CLIENT_SECRET}` / `${ROUTER_CLIENT_SECRET}` / `${SECURITY_CLIENT_SECRET}` /
-> `${GEOFENCE_CLIENT_SECRET}` values in your `.env`, and `OPENIDDICT_SCOPES` in `.env` must
+> `${GEOFENCE_CLIENT_SECRET}` / `${TRIP_CLIENT_SECRET}` values in your `.env`, and `OPENIDDICT_SCOPES` in `.env` must
 > list the same scopes (`mobile_scope,driver_mobile_scope,web_scope,service_scope`).
 
 ### Step 8: Deploy
@@ -689,7 +832,7 @@ The master template at `config/appsettings.template.json` shows all configurable
 | `${ALLOWED_CORS_ORIGINS}` | All services | CORS allowed origins |
 | `${AUTHORITY_URL}` | All except Authority | Identity provider URL |
 | `${DB_CONNECTION_SECURITY}` | Authority, Security | Security database (`TrackHubSecurity`) |
-| `${DB_CONNECTION_MANAGER}` | Manager, Geofencing | Manager database (`TrackHub`) |
+| `${DB_CONNECTION_MANAGER}` | Manager, Geofencing, TripManagement | Manager database (`TrackHub`) |
 | `${DB_CONNECTION_TELEMETRY}` | Telemetry | Telemetry DB — **must be the same `TrackHub` database** (schema `telemetry`) |
 | `${DB_CONNECTION_LOGGING}` | All backend services | Centralized logging database |
 | `${CERTIFICATE_PATH}` | All services | Path to OpenIddict certificate |
@@ -699,10 +842,14 @@ The master template at `config/appsettings.template.json` shows all configurable
 | `${ROUTER_CLIENT_ID}` / `${ROUTER_CLIENT_SECRET}` | Router | `router_client` service credentials |
 | `${SYNCWORKER_CLIENT_ID}` / `${SYNCWORKER_CLIENT_SECRET}` | SyncWorker | `syncworker_client` service credentials |
 | `${GEOFENCE_CLIENT_ID}` / `${GEOFENCE_CLIENT_SECRET}` | Geofencing | `geofence_client` service credentials (alert emission + dwell-evaluator job runs toward Manager) |
+| `${TRIP_CLIENT_ID}` / `${TRIP_CLIENT_SECRET}` | TripManagement | `trip_client` service credentials (alerts, job runs, public links, driver/transporter validation toward Manager; position history toward Telemetry) |
+| `${ROUTING_PROVIDER}` / `${ORS_BASE_URL}` / `${ORS_API_KEY}` / `${ORS_PROFILE}` / `${ORS_REQUESTS_PER_SECOND}` / `${ORS_TIMEOUT_SECONDS}` / `${ORS_MAX_WAYPOINTS}` | TripManagement | `AppSettings:Routing` — OpenRouteService directions/matrix. **Required per deployment**, see [OpenRouteService provisioning](#openrouteservice-provisioning-required) |
+| `${ORS_INTERACTIVE_TIMEOUT_SECONDS}` / `${ORS_BACKGROUND_REQUESTS_PER_WINDOW}` / `${ORS_BACKGROUND_WINDOW_SECONDS}` | TripManagement | `AppSettings:Routing` admission control — how long an interactive caller waits for a slot (default 15s) and the background ETA-refresh budget per rolling window (defaults 250 per 300s) |
 | `${DOCUMENT_STORAGE_PROVIDER}` / `${DOCUMENT_STORAGE_LOCAL_ROOT}` / `${DOCUMENT_RETENTION_DAYS}` | Manager | Document management storage |
-| `${SMTP_*}` / `${WHATSAPP_*}` / `${PORTAL_BASE_URL}` / `${NOTIFICATION_DELIVERY_RETENTION_DAYS}` | Manager | Alerts & notifications delivery channels |
-| `${GRAPHQL_*_SERVICE}` | Various | Internal service URLs (includes `GRAPHQL_TELEMETRY_SERVICE`) |
-| `AppSettings__Reporting__MaxExportRows` / `__MaxPdfRows` / `__PreviewRows` | Reporting | Report export/preview row limits. Defaults 100000 / 500 / 100 are baked into the template; override at runtime with these env vars — no rebuild needed. |
+| `${SMTP_*}` / `${WHATSAPP_*}` / `${PORTAL_BASE_URL}` / `${NOTIFICATION_DELIVERY_RETENTION_DAYS}` / `${NOTIFICATION_SENDING_RECLAIM_MINUTES}` | Manager | Alerts & notifications delivery channels, retention, and stuck-delivery reclaim (default 10 min) |
+| `${BACKGROUND_JOB_RUN_RETENTION_DAYS}` / `${ALERT_EVENT_RETENTION_DAYS}` | Manager | Platform retention sweep (`platform-retention` job) — job-run history and alert events purge windows (defaults 90 / 180 days) |
+| `${GRAPHQL_*_SERVICE}` | Various | Internal service URLs (includes `GRAPHQL_TELEMETRY_SERVICE` and `GRAPHQL_TRIP_SERVICE`) |
+| `${REPORTING_MAX_EXPORT_ROWS}` / `${REPORTING_MAX_PDF_ROWS}` / `${REPORTING_PREVIEW_ROWS}` | Reporting | `AppSettings:Reporting` — report export/preview row limits. Defaults 100000 / 500 / 100 come from `ReportingLimitsOptions`; set these in `.env` and compose passes them as `AppSettings__Reporting__*` (`generate-appsettings.sh` writes the same block into `appsettings.reporting.json`) — no rebuild needed. |
 
 ### When to Regenerate
 
@@ -740,13 +887,20 @@ Regenerate appsettings when you change:
 | `SECURITY_CLIENT_SECRET` | Security OAuth client secret | `your-secret` |
 | `GEOFENCE_CLIENT_ID` | Geofencing OAuth client ID | `geofence_client` |
 | `GEOFENCE_CLIENT_SECRET` | Geofencing OAuth client secret | `your-secret` |
+| `TRIP_CLIENT_ID` | TripManagement OAuth client ID | `trip_client` |
+| `TRIP_CLIENT_SECRET` | TripManagement OAuth client secret | `your-secret` |
+| `ROUTING_PROVIDER` | Routing provider name (`AppSettings:Routing:Provider`) | `OpenRouteService` |
+| `ORS_BASE_URL` | ORS base URL — public API or your self-hosted instance | `https://api.openrouteservice.org` |
+| `ORS_API_KEY` | ORS API key. **Required**; empty ⇒ `RoutePlan.Failed` + `ROUTING_NOT_CONFIGURED` | `your-ors-key` |
+| `ORS_PROFILE` | Routing profile (`driving-hgv` honours truck weight/dimensions) | `driving-hgv` |
+| `ORS_REQUESTS_PER_SECOND` / `ORS_TIMEOUT_SECONDS` / `ORS_MAX_WAYPOINTS` | Client-side throttle, HTTP timeout, and max stops per directions call | `2` / `30` / `50` |
 | `GRAPHQL_IDENTITY_SERVICE` / `GRAPHQL_SECURITY_SERVICE` | Internal URL of the Security service (both point at the same container) | `http://security:8080/graphql/` |
-| `GRAPHQL_MANAGER_SERVICE` / `GRAPHQL_TELEMETRY_SERVICE` / `GRAPHQL_ROUTER_SERVICE` / `GRAPHQL_GEOFENCE_SERVICE` | Internal Docker-network GraphQL URLs for service-to-service calls | `http://manager:8080/graphql/` |
+| `GRAPHQL_MANAGER_SERVICE` / `GRAPHQL_TELEMETRY_SERVICE` / `GRAPHQL_ROUTER_SERVICE` / `GRAPHQL_GEOFENCE_SERVICE` / `GRAPHQL_TRIP_SERVICE` | Internal Docker-network GraphQL URLs for service-to-service calls | `http://manager:8080/graphql/` |
 | `REACT_APP_DEFAULT_LAT` / `REACT_APP_DEFAULT_LNG` | Default map center when the user denies location permission | `4.624335` / `-74.063644` |
 | `REACT_APP_CLIENT_ID` | Frontend OAuth client id (PKCE client in `clients.json`) | `web_client` |
 | `REACT_APP_AUTHORIZATION_ENDPOINT` / `REACT_APP_TOKEN_ENDPOINT` / `REACT_APP_REVOKE_TOKEN_ENDPOINT` / `REACT_APP_LOGOUT_ENDPOINT` | Public OAuth endpoints on the Authority server | `https://domain.com/Identity/authorize` etc. |
 | `REACT_APP_CALLBACK_ENDPOINT` | OAuth redirect URI — must match the `web_client` `uri` in `clients.json` | `https://domain.com/authentication/callback` |
-| `REACT_APP_MANAGER_ENDPOINT` / `REACT_APP_ROUTER_ENDPOINT` / `REACT_APP_SECURITY_ENDPOINT` / `REACT_APP_GEOFENCING_ENDPOINT` / `REACT_APP_TELEMETRY_ENDPOINT` | Public GraphQL API URLs per service | `https://domain.com/Manager/graphql` |
+| `REACT_APP_MANAGER_ENDPOINT` / `REACT_APP_ROUTER_ENDPOINT` / `REACT_APP_SECURITY_ENDPOINT` / `REACT_APP_GEOFENCING_ENDPOINT` / `REACT_APP_TRIPMANAGEMENT_ENDPOINT` / `REACT_APP_TELEMETRY_ENDPOINT` | Public GraphQL API URLs per service | `https://domain.com/Manager/graphql` |
 | `REACT_APP_REPORTING_ENDPOINT` | Public Reporting REST API base URL | `https://domain.com/Reporting/` |
 | `DOCUMENT_STORAGE_PROVIDER` | Manager document store (`LocalFileSystem`/`S3`/`AzureBlob`) | `LocalFileSystem` |
 | `DOCUMENT_STORAGE_LOCAL_ROOT` | Path inside the container (LocalFileSystem only) | `/app/documents` |
@@ -792,6 +946,7 @@ Switching provider does **not** migrate existing documents — move the contents
 | Manager | 8080 |
 | Router | 8080 |
 | Geofencing | 8080 |
+| TripManagement | 8080 |
 | Telemetry | 8080 |
 | Reporting | 8080 |
 | SyncWorker | - (background) |
@@ -809,6 +964,7 @@ Switching provider does **not** migrate existing documents — move the contents
 | `/Manager/*` | Manager API | Bearer token, **except** `/Manager/api/PlatformStatus/announcements` |
 | `/Router/*` | Router API | Bearer token |
 | `/Geofence/*` | Geofencing API | Bearer token |
+| `/Trip/*` | Trip Management API | Bearer token, **except** the anonymous public-link resolution surface |
 | `/Telemetry/*` | Telemetry API | Bearer token |
 | `/Reporting/*` | Reporting API | Bearer token |
 
@@ -920,8 +1076,9 @@ nano .env
 
 - PostgreSQL 14+
 - Two databases: `TrackHubSecurity` and `TrackHub`
-- The **`postgis`** extension in the `TrackHub` database (required by Geofencing —
-  its migrations declare `HasPostgresExtension("postgis")`)
+- The **`postgis`** extension in the `TrackHub` database (required by Geofencing and by
+  TripManagement — their migrations declare `HasPostgresExtension("postgis")`). One
+  `CREATE EXTENSION` covers both; they share the database.
 - Must be installed and operational before deploying TrackHub
 
 ### The Schema Is Created by EF Migrations — Not by `db-init`
@@ -964,7 +1121,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 ### Applying Migrations
 
-Three services own migrations. **Telemetry has none** — its `telemetry` schema is created by
+Four services own migrations. **Telemetry has none** — its `telemetry` schema is created by
 the Manager migrations.
 
 | Service | Migrations project | Startup project | Target DB |
@@ -972,6 +1129,7 @@ the Manager migrations.
 | Security | `TrackHubSecurity/src/Infrastructure/SecurityDB` | `TrackHubSecurity/src/Web` | `TrackHubSecurity` |
 | Manager | `TrackHub.Manager/src/Infrastructure/ManagerDB` | `TrackHub.Manager/src/Web` | `TrackHub` |
 | Geofencing | `TrackHub.Geofencing/src/Infrastructure/ManagerDB` | `TrackHub.Geofencing/src/Web` | `TrackHub` |
+| TripManagement | `TrackHub.TripManagement/src/Infrastructure/TripDB` | `TrackHub.TripManagement/src/Web` | `TrackHub` (schema `trip`, **requires `postgis`**) |
 
 Pack `TrackHubCommon.*` into a local feed once (they are not on nuget.org), then set the
 connection strings explicitly — the services'
@@ -999,7 +1157,18 @@ ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
 
 ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
   --project TrackHub.Geofencing/src/Infrastructure/ManagerDB --startup-project TrackHub.Geofencing/src/Web
+
+ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
+  --project TrackHub.TripManagement/src/Infrastructure/TripDB --startup-project TrackHub.TripManagement/src/Web
 ```
+
+> **Existing deployments: re-run `db-init` after adding TripManagement.** The trip
+> authorization surface depends on seeded data — the `trip_client` service-client
+> registration and its permissions, and the `Trips` / `TripTracking` / `TollCatalog`
+> resources plus their role matrix. Migrations alone do **not** seed any of it. Until
+> `db-init` has run again, **every trip call returns `FORBIDDEN`**, including for
+> administrators, and the service itself looks healthy. See
+> [Upgrading From a Previous Version](#upgrading-from-a-previous-version).
 
 ### Running Seeders Manually
 
@@ -1043,8 +1212,9 @@ Steps 1–3 are idempotent: they upsert or skip anything that already exists, so
 > schema already exists. EF Core **schema migrations ("DB updates") are applied separately**
 > from `db-init` (see README → *Database Migrations*, applied with your EF migration
 > process, e.g. `dotnet ef database update`). Apply migrations for **all** stateful
-> services — Security, Manager, **Geofencing** (`geofencing` schema) and the `telemetry`
-> schema (owned by Manager migrations) — before or alongside a deploy.
+> services — Security, Manager, **Geofencing** (`geofencing` schema), **TripManagement**
+> (`trip` schema) and the `telemetry` schema (owned by Manager migrations) — before or
+> alongside a deploy.
 
 Steps 1–3 are safe to re-run, but **step 4 is a one-time destructive ID sync gated by a
 flag file that lives in a volume**. When you move to a *new* server the flag volume starts
@@ -1070,7 +1240,7 @@ nano .env  # Set DB_CONNECTION_SECURITY and DB_CONNECTION_MANAGER
 
 # Build images (cached; source changes are detected automatically) and deploy without db-init
 docker compose build
-docker compose up -d --force-recreate --no-build --no-deps nginx frontend authority security manager router geofencing telemetry reporting syncworker
+docker compose up -d --force-recreate --no-build --no-deps nginx frontend authority security manager router geofencing tripmanagement telemetry reporting syncworker
 ```
 
 ### Option 3: Pre-create the Initialization Flag
@@ -1295,6 +1465,10 @@ Keys that are **new or changed** and required by this release:
 | `OPENIDDICT_SCOPES` | **Change** to `mobile_scope,driver_mobile_scope,web_scope,service_scope`. |
 | `SYNCWORKER_CLIENT_ID` | **Change** to `syncworker_client`. |
 | `GEOFENCE_CLIENT_ID` / `GEOFENCE_CLIENT_SECRET` | **Add**. Geofencing now emits alert events and job runs to Manager; must match the `geofence_client` in `clients.json`. |
+| `TRIP_CLIENT_ID` / `TRIP_CLIENT_SECRET` | **Add**. TripManagement calls Manager (alerts, job runs, public links, driver/transporter validation) and Telemetry; must match the `trip_client` in `clients.json`. |
+| `GRAPHQL_TRIP_SERVICE` | **Add** (`http://tripmanagement:8080/graphql/`). Consumed by Router (`processTripPositions`) and Reporting (trip report data). |
+| `REACT_APP_TRIPMANAGEMENT_ENDPOINT` | **Add** (`https://<domain>/Trip/graphql`). Baked in at frontend build time. |
+| `ROUTING_PROVIDER` / `ORS_BASE_URL` / `ORS_API_KEY` / `ORS_PROFILE` / `ORS_REQUESTS_PER_SECOND` / `ORS_TIMEOUT_SECONDS` / `ORS_MAX_WAYPOINTS` | **Add.** Required before releasing the trip module — see [OpenRouteService Provisioning](#openrouteservice-provisioning-required). |
 
 ### 4. Reconcile `config/clients.json`
 
@@ -1302,14 +1476,18 @@ Bring your `clients.json` in line with `config/clients.json.example`:
 
 - **scopes:** add `driver_mobile_scope` and `service_scope` (`resource: trackhub_api`); remove any `sec_scope`.
 - **PKCEClients:** add `mobile_client` and `driver_mobile_client` if you run the mobile/driver apps.
-- **serviceClients:** add `router_client`, `security_client`, and `geofence_client`, and give **every** service client `"scope": "service_scope"`. Each `clientSecret` must equal the matching `*_CLIENT_SECRET` in `.env`.
+- **serviceClients:** add `router_client`, `security_client`, `geofence_client`, and `trip_client`, and give **every** service client `"scope": "service_scope"`. Each `clientSecret` must equal the matching `*_CLIENT_SECRET` in `.env`.
+
+> After changing `clients.json` you must **re-run `db-init`** — it is what registers the
+> clients and seeds the resource/role matrix. Skipping it leaves `trip_client` unregistered
+> and every trip call answering `FORBIDDEN`.
 
 ### 5. Apply database migrations
 
 `db-init` seeds data only — it does **not** create or alter the schema. Apply the EF
 Core migrations for every stateful service against your existing databases **before**
-starting the new images (Security → `TrackHubSecurity`; Manager and Geofencing →
-`TrackHub`; the `telemetry` schema is created by the Manager migrations). Use your
+starting the new images (Security → `TrackHubSecurity`; Manager, Geofencing and
+TripManagement → `TrackHub`; the `telemetry` schema is created by the Manager migrations). Use your
 standard migration process (e.g. `dotnet ef database update` per service, or an EF
 migration bundle). This step is required on every upgrade that adds migrations.
 
@@ -1317,13 +1495,33 @@ migration bundle). This step is required on every upgrade that adds migrations.
 
 | Migration | Service | Adds | If not applied |
 |-----------|---------|------|----------------|
-| `AddPlatformAnnouncements` | Manager | `app.platform_announcements` (platform status page announcements) | `GET /Manager/api/PlatformStatus/announcements` returns 500 and the announcement banner never appears. The status page itself still works — tiles are probed directly and do not touch this table. |
+| `AddWorkforceQualificationsAndAssignments` | Manager | `app.driver_qualifications` and `app.driver_transporter_assignments` (workforce qualifications and driver/transporter assignment history). | Every workforce call fails; qualification expiration scanning and the workforce reports return errors. |
+| `InitialCreate` (TripDB) | TripManagement | The `trip` schema: trips, stops, route plans, tracking events, PODs, public-link grants, the toll catalog, plus two views. **Requires the `postgis` extension** in `TrackHub` — already present if Geofencing is deployed, since they share the database. | TripManagement crash-loops at startup; every `/Trip/*` call fails. |
+| `AddTripDetectionState` (TripDB) | TripManagement | `trip.trips.consecutiveoutsidefixes` and `trip.trip_stops.outsidesinceat` — the persisted arrival/departure detection state. | Trip tracking ingestion fails; automatic stop arrival/departure detection never advances. |
+| `AddPublicShareDisclosureAndTollIntegrity` (TripDB) | TripManagement | `trip.trip_stops.city` and `trip.trip_shares.includeroute` (public-share disclosure control), plus the toll-catalog integrity constraints: unique `toll_vehicle_classes.code`, the reworked `transporter_toll_classes` uniqueness/XOR check, and the `toll_tariffs` / `transporter_toll_classes` foreign keys to the vehicle-class code. | Public share links ignore the route/city disclosure settings; the toll catalog accepts duplicate and orphaned class rows. |
+| `AddTollStationNameUniqueness` (TripDB) | TripManagement | Replaces the `(name, code)` unique index on `trip.toll_stations` with two partial indexes — one for coded stations, one for code-less ones. `code` is nullable and PostgreSQL treats NULLs as distinct, so the original index allowed unlimited duplicate code-less stations. | An operator can enter the same code-less station twice; route matching then finds both and charges its toll twice in every estimate. |
+| `AddServiceClientPermissionAllowCrossAccount` | Security | `security.service_client_permissions.allowcrossaccount`, and back-fills it to `TRUE` for every account-less (`accountid IS NULL`) permission row. | **Every Security permission read fails** — the column is mapped by EF, so the query errors out. Service-to-service authorization breaks platform-wide, not just for the trip module. |
+
+> **`db-init` must be re-run after this migration, on existing deployments too.** The
+> migration creates the `trip` schema but seeds nothing. The `trip_client` service-client
+> registration, its permissions, and the `Trips` / `TripTracking` / `TollCatalog` resources
+> and role matrix all come from the seeders. Until `db-init` runs again, **every trip call
+> returns `FORBIDDEN`** — for administrators as well — while the container reports healthy
+> and the schema looks complete. This is the single most likely trip-module deployment
+> failure.
+
+> **`AddServiceClientPermissionAllowCrossAccount` is the one migration you cannot skip.**
+> Apply it to `TrackHubSecurity` **before** starting the new images. The new Security code
+> maps `security.service_client_permissions.allowcrossaccount`; against a database that
+> lacks the column **every permission read throws**, so *all* service-to-service
+> authorization fails — Router, Reporting, Geofencing and TripManagement alike — and the
+> containers still report healthy. This is not scoped to the trip module.
 
 > **This matters on the code-only paths.** `update-service.sh` and the zero-downtime
-> procedure do **not** run migrations. Deploying a Manager image that expects
-> `app.platform_announcements` onto a database without it will 500 on the announcements
-> endpoint until you run the migration. Verify afterwards with
-> `./scripts/health-check.sh <domain>`, which now probes that endpoint.
+> procedure do **not** run migrations. Deploying a Security image that expects
+> `security.service_client_permissions.allowcrossaccount`, or a Manager image that expects
+> the workforce tables, onto a database without them fails at request time until you run the
+> migration. Verify afterwards with `./scripts/health-check.sh <domain>`.
 
 ### 6. Rebuild and deploy
 
@@ -1377,7 +1575,7 @@ containers, and the frontend refreshes its static assets on every start. You do
 ```bash
 # Pull latest code for every repository
 cd /opt/trackhub
-for repo in TrackHub TrackHub.AuthorityServer TrackHubSecurity TrackHub.Manager TrackHubRouter TrackHub.Geofencing TrackHub.Telemetry TrackHub.Reporting TrackHubCommon TrackHub.Deployment; do
+for repo in TrackHub TrackHub.AuthorityServer TrackHubSecurity TrackHub.Manager TrackHubRouter TrackHub.Geofencing TrackHub.TripManagement TrackHub.Telemetry TrackHub.Reporting TrackHubCommon TrackHub.Deployment; do
   cd /opt/trackhub/$repo && git pull
 done
 
@@ -1407,6 +1605,7 @@ For production environments, update services one at a time:
 ./scripts/update-service.sh manager
 ./scripts/update-service.sh router
 ./scripts/update-service.sh geofencing
+./scripts/update-service.sh tripmanagement   # alias: ./scripts/update-service.sh trip
 ./scripts/update-service.sh telemetry
 ./scripts/update-service.sh reporting
 ./scripts/update-service.sh syncworker
@@ -1446,11 +1645,12 @@ curl -k https://your-domain.com/health/security
 curl -k https://your-domain.com/health/manager
 curl -k https://your-domain.com/health/router
 curl -k https://your-domain.com/health/geofencing
+curl -k https://your-domain.com/health/trip
 curl -k https://your-domain.com/health/telemetry
 curl -k https://your-domain.com/health/reporting
 ```
 
-Manager, Telemetry, Security, Geofencing and AuthorityServer health checks include a database
+Manager, Telemetry, Security, Geofencing, TripManagement and AuthorityServer health checks include a database
 probe; Reporting and Router are liveness-only. The SyncWorker has no HTTP listener — its liveness is
 derived from the rows it writes, and it is surfaced on the platform status page rather than here.
 
@@ -1698,7 +1898,7 @@ docker system prune -a
 1. **Never commit `.env` files** to version control
 2. **Use strong passwords** for database and certificates
 3. **Rotate the seeded OAuth client secrets** (`syncworker_client`, `router_client`,
-   `security_client`, `geofence_client`) before
+   `security_client`, `geofence_client`, `trip_client`) before
    exposing any environment beyond local development
 4. **Keep Docker and OS updated** with security patches
 5. **Use Let's Encrypt** for production SSL certificates

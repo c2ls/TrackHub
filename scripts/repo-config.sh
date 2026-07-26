@@ -20,6 +20,7 @@ TRACKHUB_REPOS=(
     "TrackHub.Manager"
     "TrackHubRouter"
     "TrackHub.Geofencing"
+    "TrackHub.TripManagement"
     "TrackHub.Telemetry"
     "TrackHub.Reporting"
     "TrackHubCommon"
