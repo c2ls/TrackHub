@@ -22,6 +22,7 @@ using TrackHub.TripManagement.Infrastructure.TripDB.Interfaces;
 using TrackHub.TripManagement.Infrastructure.TripDB.Readers;
 using TrackHub.TripManagement.Infrastructure.TripDB.Services;
 using TrackHub.TripManagement.Infrastructure.TripDB.Writers;
+using Common.Application.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -85,6 +86,10 @@ public static class DependencyInjection
         // DB-backed implementation is the one resolved - without it every [RequireFeature] in this
         // module silently passes for accounts that do not have trip-management.
         services.AddScoped<Common.Application.Interfaces.IFeatureFlagService, FeatureFlagService>();
+
+        // Module discovery seam: registers any IServiceModule implementations shipped in
+        // this assembly (none in this repository).
+        services.AddDiscoveredModules(typeof(ApplicationDbContext).Assembly, configuration);
 
         return services;
     }
