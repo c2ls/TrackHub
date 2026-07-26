@@ -18,7 +18,7 @@ using Common.Infrastructure;
 
 namespace TrackHub.Geofencing.Infrastructure;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
+public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {
     public DbSet<Geofence> Geofences { get; set; }
     public DbSet<GeofenceEvent> GeofenceEvents { get; set; }
