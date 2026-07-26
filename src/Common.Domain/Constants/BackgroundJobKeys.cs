@@ -45,7 +45,7 @@ namespace Common.Domain.Constants;
 /// floor is daily — not per-cycle.
 /// </para>
 /// </summary>
-public static class BackgroundJobKeys
+public static partial class BackgroundJobKeys
 {
     public const string AlertEvaluation = "alert-evaluation";
     public const string NotificationDispatch = "notification-dispatch";
