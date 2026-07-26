@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Npgsql;
 using TrackHub.Telemetry.Infrastructure.TelemetryDB;
 using TrackHub.Telemetry.Infrastructure.TelemetryDB.Interfaces;
+using Common.Application.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -68,6 +69,10 @@ public static class DependencyInjection
         services.AddMemoryCache();
         services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusReader, AccountOperationalStatusReader>();
         services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusService, Common.Application.Services.CachedAccountOperationalStatusService>();
+
+        // Module discovery seam: registers any IServiceModule implementations shipped in
+        // this assembly (none in this repository).
+        services.AddDiscoveredModules(typeof(ApplicationDbContext).Assembly, configuration);
 
         return services;
     }
