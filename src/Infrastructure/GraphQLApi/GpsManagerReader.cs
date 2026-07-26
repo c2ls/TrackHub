@@ -17,115 +17,125 @@ using TrackHub.Reporting.Domain.Models.Manager;
 
 namespace TrackHub.Reporting.Infrastructure.GraphQLApi;
 
+// Feeds seven GPS reports. Each Manager read below is paged at the source and each report needs the
+// complete set, so every one drains its pages rather than taking the first.
 public class GpsManagerReader(IGraphQLClientFactory graphQLClient)
     : GraphQLService(graphQLClient.CreateClient(Clients.Manager)), IGpsManagerReader
 {
     // Single source of truth for the queries this reader sends; the
     // ServiceContracts tests validate these exact strings against the Manager schema.
     internal const string OperatorsByCurrentAccountQuery = @"
-                query {
-                    operatorsByCurrentAccount {
-                        operatorId
-                        name
-                        enabled
+                query($skip: Int!, $take: Int!) {
+                    operatorsByCurrentAccount(query: { skip: $skip, take: $take }) {
+                        items {
+                            operatorId
+                            name
+                            enabled
+                        }
+                        totalCount
                     }
                 }";
 
     internal const string SynchronizedDevicesQuery = @"
-                query($accountId: UUID!, $detectedStatus: DetectedStatus, $operatorId: UUID) {
-                    synchronizedDevices(query: { accountId: $accountId, detectedStatus: $detectedStatus, operatorId: $operatorId }) {
-                        deviceId
-                        accountId
-                        operatorId
-                        serial
-                        name
-                        identifier
-                        providerDisplayName
-                        providerStatus
-                        detectedStatus
-                        firstSeenAt
-                        lastSeenAt
-                        lastAssignedAt
-                        ignoredAt
+                query($accountId: UUID!, $detectedStatus: DetectedStatus, $operatorId: UUID, $skip: Int!, $take: Int!) {
+                    synchronizedDevices(query: { accountId: $accountId, detectedStatus: $detectedStatus, operatorId: $operatorId, skip: $skip, take: $take }) {
+                        items {
+                            deviceId
+                            accountId
+                            operatorId
+                            serial
+                            name
+                            identifier
+                            providerDisplayName
+                            providerStatus
+                            detectedStatus
+                            firstSeenAt
+                            lastSeenAt
+                            lastAssignedAt
+                            ignoredAt
+                        }
+                        totalCount
                     }
                 }";
 
     internal const string UnassignedSynchronizedDevicesQuery = @"
-                query($accountId: UUID!) {
-                    unassignedSynchronizedDevices(query: { accountId: $accountId }) {
-                        deviceId
-                        accountId
-                        operatorId
-                        serial
-                        name
-                        identifier
-                        providerDisplayName
-                        providerStatus
-                        detectedStatus
-                        firstSeenAt
-                        lastSeenAt
-                        lastAssignedAt
-                        ignoredAt
+                query($accountId: UUID!, $skip: Int!, $take: Int!) {
+                    unassignedSynchronizedDevices(query: { accountId: $accountId, skip: $skip, take: $take }) {
+                        items {
+                            deviceId
+                            accountId
+                            operatorId
+                            serial
+                            name
+                            identifier
+                            providerDisplayName
+                            providerStatus
+                            detectedStatus
+                            firstSeenAt
+                            lastSeenAt
+                            lastAssignedAt
+                            ignoredAt
+                        }
+                        totalCount
                     }
                 }";
 
     internal const string TransporterDeviceAssignmentsByAccountQuery = @"
-                query($accountId: UUID!, $activeOnly: Boolean!) {
-                    transporterDeviceAssignmentsByAccount(query: { accountId: $accountId, activeOnly: $activeOnly }) {
-                        transporterDeviceAssignmentId
-                        accountId
-                        transporterId
-                        deviceId
-                        effectiveFrom
-                        effectiveTo
-                        priority
-                        isPrimary
-                        status
-                        assignmentReason
+                query($accountId: UUID!, $activeOnly: Boolean!, $skip: Int!, $take: Int!) {
+                    transporterDeviceAssignmentsByAccount(query: { accountId: $accountId, activeOnly: $activeOnly, skip: $skip, take: $take }) {
+                        items {
+                            transporterDeviceAssignmentId
+                            accountId
+                            transporterId
+                            deviceId
+                            effectiveFrom
+                            effectiveTo
+                            priority
+                            isPrimary
+                            status
+                            assignmentReason
+                        }
+                        totalCount
                     }
                 }";
 
-    public async Task<IReadOnlyCollection<ManagerOperatorVm>> GetOperatorsAsync(CancellationToken cancellationToken)
-    {
-        var request = new GraphQLRequest
-        {
-            Query = OperatorsByCurrentAccountQuery
-        };
-        var data = await QueryAsync<List<ManagerOperatorVm>>(request, cancellationToken);
-        return data;
-    }
-    public async Task<IReadOnlyCollection<ManagerDeviceVm>> GetSynchronizedDevicesAsync(Guid accountId, string? detectedStatus, Guid? operatorId, CancellationToken cancellationToken)
-    {
-        var request = new GraphQLRequest
-        {
-            Query = SynchronizedDevicesQuery,
-            Variables = new
+    public Task<IReadOnlyCollection<ManagerOperatorVm>> GetOperatorsAsync(CancellationToken cancellationToken)
+        => ManagerPageDrain.FetchAllAsync<ManagerOperatorVm>(
+            (skip, take) => new GraphQLRequest { Query = OperatorsByCurrentAccountQuery, Variables = new { skip, take } },
+            (request, token) => QueryAsync<ManagerPage<ManagerOperatorVm>>(request, token),
+            "operatorsByCurrentAccount",
+            cancellationToken);
+
+    public Task<IReadOnlyCollection<ManagerDeviceVm>> GetSynchronizedDevicesAsync(Guid accountId, string? detectedStatus, Guid? operatorId, CancellationToken cancellationToken)
+        => ManagerPageDrain.FetchAllAsync<ManagerDeviceVm>(
+            (skip, take) => new GraphQLRequest
             {
-                accountId,
-                detectedStatus,
-                operatorId
-            }
-        };
-        return await QueryAsync<List<ManagerDeviceVm>>(request, cancellationToken);
-    }
+                Query = SynchronizedDevicesQuery,
+                Variables = new { accountId, detectedStatus, operatorId, skip, take }
+            },
+            (request, token) => QueryAsync<ManagerPage<ManagerDeviceVm>>(request, token),
+            "synchronizedDevices",
+            cancellationToken);
 
-    public async Task<IReadOnlyCollection<ManagerDeviceVm>> GetUnassignedDevicesAsync(Guid accountId, CancellationToken cancellationToken)
-    {
-        var request = new GraphQLRequest
-        {
-            Query = UnassignedSynchronizedDevicesQuery,
-            Variables = new { accountId }
-        };
-        return await QueryAsync<List<ManagerDeviceVm>>(request, cancellationToken);
-    }
+    public Task<IReadOnlyCollection<ManagerDeviceVm>> GetUnassignedDevicesAsync(Guid accountId, CancellationToken cancellationToken)
+        => ManagerPageDrain.FetchAllAsync<ManagerDeviceVm>(
+            (skip, take) => new GraphQLRequest
+            {
+                Query = UnassignedSynchronizedDevicesQuery,
+                Variables = new { accountId, skip, take }
+            },
+            (request, token) => QueryAsync<ManagerPage<ManagerDeviceVm>>(request, token),
+            "unassignedSynchronizedDevices",
+            cancellationToken);
 
-    public async Task<IReadOnlyCollection<ManagerTransporterDeviceAssignmentVm>> GetAssignmentsByAccountAsync(Guid accountId, bool activeOnly, CancellationToken cancellationToken)
-    {
-        var request = new GraphQLRequest
-        {
-            Query = TransporterDeviceAssignmentsByAccountQuery,
-            Variables = new { accountId, activeOnly }
-        };
-        return await QueryAsync<List<ManagerTransporterDeviceAssignmentVm>>(request, cancellationToken);
-    }
+    public Task<IReadOnlyCollection<ManagerTransporterDeviceAssignmentVm>> GetAssignmentsByAccountAsync(Guid accountId, bool activeOnly, CancellationToken cancellationToken)
+        => ManagerPageDrain.FetchAllAsync<ManagerTransporterDeviceAssignmentVm>(
+            (skip, take) => new GraphQLRequest
+            {
+                Query = TransporterDeviceAssignmentsByAccountQuery,
+                Variables = new { accountId, activeOnly, skip, take }
+            },
+            (request, token) => QueryAsync<ManagerPage<ManagerTransporterDeviceAssignmentVm>>(request, token),
+            "transporterDeviceAssignmentsByAccount",
+            cancellationToken);
 }

@@ -1,87 +1,98 @@
-# API de Reportes para TrackHub
+# TrackHub Reporting API
 
-## Características Principales
+[← Volver a la página principal](README.md) · [English](README.en.md)
 
-- **Generación de Reportes Excel**: Exportar datos operacionales en formato Excel para análisis fácil
-- **Reportes de Posición en Vivo**: Listado en tiempo real de todos los transportadores con sus ubicaciones actuales
-- **Registros Históricos de Posición**: Consultar historial de posiciones de transportadores en rangos de tiempo específicos
-- **Reportes de Geocercas**: Identificar transportadores actualmente dentro de límites geográficos definidos
-- **Reportes de Eventos de Geocercas**: Rastrear historial de entrada/salida de geocercas con marcas de tiempo, duraciones y coordenadas
-- **Filtrado por Grupos**: Reportes filtrados automáticamente por los grupos asignados al usuario
-- **Interfaz API REST**: Endpoints simples y directos para recuperación de reportes
-- **Arquitectura Escalable**: Diseñada para integrar tipos de reportes adicionales y fuentes de datos
+La Reporting API convierte los datos de la plataforma en archivos. Es **solo REST** (.NET 10 Minimal APIs) y **no tiene base de datos propia**: cada dataset se compone a partir de los servicios que son dueños de los datos.
 
 ---
 
-## Inicio Rápido
+## Qué hace
 
-### Requisitos Previos
+- Ofrece un **catálogo gobernado de 30 reportes** en seis categorías: Operations, GPS, Documents, Workforce, Trips y Administration
+- Renderiza cada reporte como una **vista previa** dentro del portal, una exportación a **Excel** o — cuando el catálogo lo permite — un **PDF**
+- Filtra cada reporte según las features, el rol y la visibilidad de grupo del llamador
+- Compone sus datasets a partir de las APIs de Management, Router, Telemetry, Geofencing y Trip Management
 
-- .NET 10.0 SDK
-- PostgreSQL 14+
-- TrackHub Authority Server ejecutándose (para autenticación)
-- TrackHub Manager y Router APIs (para acceso a datos)
+Detalle completo, incluyendo el catálogo completo: **[Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting)** en el wiki.
 
-### Instalación
+---
 
-1. **Clonar el repositorio**:
+## Inicio rápido
+
+### Requisitos previos
+
+- .NET 10 SDK
+- Un TrackHub AuthorityServer y una Management API en ejecución (allí vive el catálogo)
+- Los demás servicios productores accesibles para los reportes que se planee ejecutar
+- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet
+
+### Pasos
+
+1. **Clonar**
+
    ```bash
    git clone https://github.com/shernandezp/TrackHub.Reporting.git
    cd TrackHub.Reporting
    ```
 
-2. **Configurar las conexiones** en `appsettings.json`:
+2. **Configurar los endpoints de los productores y los límites** en `src/Web/appsettings.json`:
+
    ```json
    {
-     "ConnectionStrings": {
-       "ManagerConnection": "Host=localhost;Database=trackhub_manager;Username=postgres;Password=yourpassword"
-     },
-     "GraphQL": {
-       "RouterEndpoint": "https://localhost:5001/graphql"
+     "AppSettings": {
+       "GraphQLManagerService": "https://localhost:5001/graphql",
+       "GraphQLRouterService": "https://localhost:5003/graphql",
+       "GraphQLTelemetryService": "https://localhost:5011/graphql",
+       "GraphQLGeofenceService": "https://localhost:5004/graphql",
+       "GraphQLTripManagementService": "https://localhost:5006/graphql",
+       "Reporting": {
+         "MaxExportRows": 100000,
+         "MaxPdfRows": 500,
+         "PreviewRows": 100
+       }
      }
    }
    ```
 
-3. **Iniciar la aplicación**:
+3. **Ejecutar**
+
    ```bash
    dotnet run --project src/Web
    ```
 
-4. **Acceder a la documentación de la API** en `https://localhost:5001/swagger`
+4. **Invocar un reporte** con un token bearer:
 
-### Ejemplo de Llamada a la API
-
-```bash
-# Obtener reporte en vivo de todos los transportadores
-curl -X GET "https://localhost:5001/api/reports/live" \
-  -H "Authorization: Bearer {tu_token}" \
-  -o reporte_vivo.xlsx
-```
+   ```bash
+   curl -X GET "https://localhost:<port>/api/BasicReports/live-report" \
+     -H "Authorization: Bearer {your_token}" \
+     -o live_report.xlsx
+   ```
 
 ---
 
-## Componentes y Recursos Utilizados
+## Notas específicas del proyecto
 
-| Componente                | Descripción                                             | Documentación                                                                 |
-|---------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------|
-| .NET Core                 | Plataforma de desarrollo para aplicaciones modernas     | [Documentación .NET Core](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
+- **El catálogo vive en la Management API, no aquí.** Cada reporte tiene una fila en `app.reports` que lleva `Category`, `RequiredFeatureKey`, `ManagerOnly`, `SupportsPdf`, `SortOrder` y `Active`. Agregar un reporte implica agregar **tanto** la implementación de `IReport` aquí **como** la fila de catálogo sembrada allá.
+- **La gobernanza se aplica dos veces.** El `getReports` de Manager filtra la lista que muestra el portal; este servicio vuelve a aplicar los mismos metadatos en tiempo de ejecución vía `reportByCode` (cacheado 60 s). Un reporte oculto invocado directamente por código recibe 403 o 404 — el filtro del portal es una comodidad, no el control.
+- **El catálogo se resiembra en cada arranque de Manager**, por lo que las ediciones de metadatos sembrados hechas desde la UI de administración se revierten. Solo `Active` persiste. Eso es intencional.
+- **El PDF rechaza un dataset que exceda el límite; nunca trunca.** `MaxPdfRows` es 500 por defecto, y solo las filas de catálogo marcadas `SupportsPdf` ofrecen PDF. El techo de Excel es `MaxExportRows` (100 000).
+- **Los encabezados de columna se resuelven por el nombre de propiedad del VM** a través del ResourceManager de `Resources` — **renombrar una propiedad del VM requiere renombrar las claves resx correspondientes**, o el encabezado recae en el nombre crudo de la propiedad.
+- **Vista previa, Excel y PDF se renderizan todos a partir de un mismo `ReportDataset`** (cada `IReport` provee `GetDatasetAsync`), por lo que no hay una ruta de datos distinta por formato que pueda desalinearse.
+- **Los clientes de Router, Geofence y Telemetry de este servicio están registrados `WithRetry`** — son de solo consulta, así que un reintento es seguro. Todos los demás clientes de la plataforma usan `NoRetry` por defecto, porque GraphQL siempre es POST y una mutación reintentada es una mutación duplicada.
+- Los feeds paginados de origen se drenan a 500 filas por página con un tope defensivo de 100 000 filas.
+- **Este servicio no aloja ningún servidor GraphQL**, por lo que el endurecimiento GraphQL de la plataforma (profundidad máxima de ejecución, detalle de error solo en desarrollo) no le aplica.
+- Las exportaciones a PDF obtienen el branding de la cuenta desde Manager (caché de 60 s, tolerante a fallos — un error de branding nunca hace fallar una exportación). El nombre de la cuenta se renderiza; los bytes del logo aún no se incrustan.
 
 ---
 
-## Descripción General
+## Documentación
 
-## Características Clave
+- **Técnica** — el [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting), [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager#report-catalog), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
+- **De usuario** — en la app: el botón de Ayuda o **F1** en cualquier pantalla
+- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
-La API de Reportes para TrackHub es una API REST que proporciona una interfaz para que TrackHub Web acceda a los datos de reportes. Está diseñada para ser escalable y flexible, permitiendo la integración de reportes adicionales de diferentes fuentes dentro del sistema. Los reportes se generan en formato Excel.
-
-## Reportes Disponibles
-
-- **Reporte en Línea**: Lista las unidades junto con su ubicación actual. Se filtra en función de los grupos asignados al usuario. 
-- **Reporte de Posiciones**: Proporciona un registro de las posiciones de las unidades en un período especificado.
-- **Unidades en Geocercas**: Identifica las unidades que se encuentran actualmente dentro de una geocerca.
-- **Eventos de Geocercas**: Lista los eventos de entrada/salida de geocercas dentro de un rango de fechas especificado. Incluye nombre del transportador, nombre de la geocerca, marcas de tiempo de entrada/salida, tiempo total y coordenadas. Soporta filtrado opcional por transportador.
+---
 
 ## Licencia
 
-Este proyecto está bajo la Licencia Apache 2.0. Consulta el archivo [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.
-
+Licencia Apache 2.0. Consulte el [archivo LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.

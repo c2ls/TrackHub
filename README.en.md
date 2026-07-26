@@ -1,88 +1,98 @@
 # TrackHub Reporting API
 
-## Key Features
+[← Back to the landing page](README.md) · [Español](README.es.md)
 
-- **Excel Report Generation**: Export operational data in Excel format for easy analysis
-- **Live Position Reports**: Real-time listing of all transporters with their current locations
-- **Historical Position Records**: Query transporter position history within specified time ranges
-- **Geofence Reports**: Identify transporters currently within defined geographic boundaries
-- **Geofence Event Reports**: Track transporter geofence entry/exit history with timestamps, durations, and coordinates
-- **Group-Based Filtering**: Reports automatically filtered by user's assigned groups
-- **REST API Interface**: Simple, straightforward endpoints for report retrieval
-- **Scalable Architecture**: Designed to integrate additional report types and data sources
+The Reporting API turns platform data into files. It is **REST-only** (.NET 10 Minimal APIs) and has **no database of its own** — every dataset is composed from the services that own the data.
 
 ---
 
-## Quick Start
+## What it does
+
+- Serves a **governed catalog of 30 reports** across six categories: Operations, GPS, Documents, Workforce, Trips and Administration
+- Renders each report as an in-portal **preview**, an **Excel** export, or — where the catalog allows it — a **PDF**
+- Filters every report by the caller's account features, role and group visibility
+- Composes its datasets from the Management, Router, Telemetry, Geofencing and Trip Management APIs
+
+Full detail, including the complete catalog: **[Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting)** in the wiki.
+
+---
+
+## Quick start
 
 ### Prerequisites
 
-- .NET 10.0 SDK
-- PostgreSQL 14+
-- TrackHub Authority Server running (for authentication)
-- TrackHub Manager and Router APIs (for data access)
+- .NET 10 SDK
+- A running TrackHub AuthorityServer and Management API (the catalog lives there)
+- The other producer services reachable for the reports you intend to run
+- The `TrackHubCommon.*` packages available from a local NuGet feed
 
-### Installation
+### Steps
 
-1. **Clone the repository**:
+1. **Clone**
+
    ```bash
    git clone https://github.com/shernandezp/TrackHub.Reporting.git
    cd TrackHub.Reporting
    ```
 
-2. **Configure the connections** in `appsettings.json`:
+2. **Configure the producer endpoints and limits** in `src/Web/appsettings.json`:
+
    ```json
    {
-     "ConnectionStrings": {
-       "ManagerConnection": "Host=localhost;Database=trackhub_manager;Username=postgres;Password=yourpassword"
-     },
-     "GraphQL": {
-       "RouterEndpoint": "https://localhost:5001/graphql"
+     "AppSettings": {
+       "GraphQLManagerService": "https://localhost:5001/graphql",
+       "GraphQLRouterService": "https://localhost:5003/graphql",
+       "GraphQLTelemetryService": "https://localhost:5011/graphql",
+       "GraphQLGeofenceService": "https://localhost:5004/graphql",
+       "GraphQLTripManagementService": "https://localhost:5006/graphql",
+       "Reporting": {
+         "MaxExportRows": 100000,
+         "MaxPdfRows": 500,
+         "PreviewRows": 100
+       }
      }
    }
    ```
 
-3. **Start the application**:
+3. **Run**
+
    ```bash
    dotnet run --project src/Web
    ```
 
-4. **Access the API documentation** at `https://localhost:5001/swagger`
+4. **Call a report** with a bearer token:
 
-### Example API Call
-
-```bash
-# Get live report for all transporters
-curl -X GET "https://localhost:5001/api/reports/live" \
-  -H "Authorization: Bearer {your_token}" \
-  -o live_report.xlsx
-```
+   ```bash
+   curl -X GET "https://localhost:<port>/api/BasicReports/live-report" \
+     -H "Authorization: Bearer {your_token}" \
+     -o live_report.xlsx
+   ```
 
 ---
 
-## Components and Resources
+## Project-specific notes
 
-| Component                | Description                                           | Documentation                                                                 |
-|--------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------|
-| .NET Core                | Development platform for modern applications          | [.NET Core Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
+- **The catalog lives in the Management API, not here.** Each report has an `app.reports` row carrying `Category`, `RequiredFeatureKey`, `ManagerOnly`, `SupportsPdf`, `SortOrder` and `Active`. Adding a report means adding **both** the `IReport` implementation here and the seeded catalog row there.
+- **Governance is enforced twice.** Manager's `getReports` filters the list the portal shows; this service re-enforces the same metadata at execution time via `reportByCode` (cached 60 s). A hidden report invoked directly by code gets 403 or 404 — the portal filter is convenience, not the control.
+- **The catalog is re-seeded on every Manager start**, so seeded metadata edits made through the admin UI revert. Only `Active` persists. That is intentional.
+- **PDF refuses an over-limit dataset; it never truncates.** `MaxPdfRows` defaults to 500, and only catalog rows flagged `SupportsPdf` offer PDF at all. Excel's ceiling is `MaxExportRows` (100 000).
+- **Column headers are resolved by VM property name** through the `Resources` ResourceManager — **renaming a VM property requires renaming the matching resx keys**, or the header falls back to the raw property name.
+- **Preview, Excel and PDF all render from one shared `ReportDataset`** (each `IReport` supplies `GetDatasetAsync`), so there is no per-format data path to drift.
+- **This service's Router, Geofence and Telemetry clients are registered `WithRetry`** — they are query-only, so a retry is safe. Every other client on the platform defaults to `NoRetry`, because GraphQL is always POST and a retried mutation is a duplicated mutation.
+- Paged upstream feeds are drained at 500 rows per page with a 100 000-row defensive cap.
+- **This service hosts no GraphQL server**, so the platform's GraphQL hardening (max execution depth, dev-only error detail) does not apply to it.
+- PDF exports fetch account branding from Manager (60 s cache, failure-tolerant — a branding error never fails an export). The account name is rendered; logo bytes are not embedded yet.
 
 ---
 
-## Overview
+## Documentation
 
-## Key Features
+- **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting), [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager#report-catalog), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
+- **User** — in the app: the Help button or **F1** on any screen
+- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
-The Reporting API for TrackHub is a REST API that provides an interface for TrackHub Web to access reporting data. It is designed to be scalable and flexible, allowing the integration of additional reports from different sources within the system. Reports are generated in Excel format.
-
-## Available Reports
-
-- **LiveReport**: Lists transporters (units) along with their current location. It is filtered based on the groups assigned to the user.
-- **PositionRecord**: Provides a record of transporter (unit) positions within a specified period.
-- **TransportersInGeofence**: Identifies transporters (units) that are currently within a geofence.
-- **GeofenceEvents**: Lists geofence entry/exit events within a specified date range. Includes transporter name, geofence name, entry/exit timestamps, total time, and coordinates. Supports optional filtering by transporter.
+---
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
-
-
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.

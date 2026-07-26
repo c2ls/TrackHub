@@ -10,17 +10,11 @@
     <PackageVersion Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Moq" Version="4.20.72" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.13.18" />
-    <PackageVersion Include="TrackHubCommon.Application" Version="1.0.1" />
-    <PackageVersion Include="TrackHubCommon.Domain" Version="1.0.1" />
-    <PackageVersion Include="TrackHubCommon.Infrastructure" Version="1.0.1" />
-    <PackageVersion Include="TrackHubCommon.Web" Version="1.0.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
+    <PackageVersion Include="TrackHubCommon.Application" Version="1.0.12" />
+    <PackageVersion Include="TrackHubCommon.Domain" Version="1.0.12" />
+    <PackageVersion Include="TrackHubCommon.Infrastructure" Version="1.0.12" />
+    <PackageVersion Include="TrackHubCommon.Web" Version="1.0.12" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="NUnit" Version="4.6.1" />
