@@ -426,4 +426,193 @@
   <data name="PageOf" xml:space="preserve">
     <value>de</value>
   </data>
+  <data name="DriverName" xml:space="preserve">
+    <value>Conductor</value>
+  </data>
+  <data name="EmployeeCode" xml:space="preserve">
+    <value>Código de Empleado</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>Tipo de Documento</value>
+  </data>
+  <data name="DocumentNumber" xml:space="preserve">
+    <value>Número de Documento</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="LicenseNumber" xml:space="preserve">
+    <value>Número de Licencia</value>
+  </data>
+  <data name="LicenseExpiresAt" xml:space="preserve">
+    <value>Vencimiento de Licencia</value>
+  </data>
+  <data name="DefaultTransporterId" xml:space="preserve">
+    <value>Unidad Predeterminada</value>
+  </data>
+  <data name="LicenseCategory" xml:space="preserve">
+    <value>Categoría de Licencia</value>
+  </data>
+  <data name="QualificationType" xml:space="preserve">
+    <value>Tipo de Habilitación</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>Número</value>
+  </data>
+  <data name="IssuingAuthority" xml:space="preserve">
+    <value>Entidad Emisora</value>
+  </data>
+  <data name="IssuedAt" xml:space="preserve">
+    <value>Fecha de Expedición</value>
+  </data>
+  <data name="DaysRemaining" xml:space="preserve">
+    <value>Días Restantes</value>
+  </data>
+  <data name="StartsAt" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
+  <data name="EndsAt" xml:space="preserve">
+    <value>Fin</value>
+  </data>
+  <data name="DurationDays" xml:space="preserve">
+    <value>Duración (días)</value>
+  </data>
+  <data name="CreatedByPrincipal" xml:space="preserve">
+    <value>Creado por</value>
+  </data>
+  <data name="TripCode" xml:space="preserve">
+    <value>Código de Viaje</value>
+  </data>
+  <data name="TripStatus" xml:space="preserve">
+    <value>Estado del Viaje</value>
+  </data>
+  <data name="PlannedStartAt" xml:space="preserve">
+    <value>Inicio Planificado</value>
+  </data>
+  <data name="ActualStartAt" xml:space="preserve">
+    <value>Inicio Real</value>
+  </data>
+  <data name="PlannedEndAt" xml:space="preserve">
+    <value>Fin Planificado</value>
+  </data>
+  <data name="ActualEndAt" xml:space="preserve">
+    <value>Fin Real</value>
+  </data>
+  <data name="PlannedDistanceKm" xml:space="preserve">
+    <value>Distancia Planificada (km)</value>
+  </data>
+  <data name="ActualDistanceKm" xml:space="preserve">
+    <value>Distancia Real (km)</value>
+  </data>
+  <data name="StopCount" xml:space="preserve">
+    <value>Paradas</value>
+  </data>
+  <data name="OnTime" xml:space="preserve">
+    <value>A Tiempo</value>
+  </data>
+  <data name="EstimatedTollAmount" xml:space="preserve">
+    <value>Peaje Estimado</value>
+  </data>
+  <data name="TollCurrency" xml:space="preserve">
+    <value>Moneda</value>
+  </data>
+  <data name="StopSequence" xml:space="preserve">
+    <value>Secuencia</value>
+  </data>
+  <data name="StopName" xml:space="preserve">
+    <value>Nombre de la Parada</value>
+  </data>
+  <data name="CustomerName" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="PlannedArrivalFrom" xml:space="preserve">
+    <value>Ventana Desde</value>
+  </data>
+  <data name="PlannedArrivalTo" xml:space="preserve">
+    <value>Ventana Hasta</value>
+  </data>
+  <data name="ActualArrivalAt" xml:space="preserve">
+    <value>Llegada</value>
+  </data>
+  <data name="ActualDepartureAt" xml:space="preserve">
+    <value>Salida</value>
+  </data>
+  <data name="DwellMinutes" xml:space="preserve">
+    <value>Permanencia (min)</value>
+  </data>
+  <data name="StopStatus" xml:space="preserve">
+    <value>Estado de la Parada</value>
+  </data>
+  <data name="DeliveryCount" xml:space="preserve">
+    <value>Cantidad de Entregas</value>
+  </data>
+  <data name="DeliveredCount" xml:space="preserve">
+    <value>Entregadas</value>
+  </data>
+  <data name="FailedDeliveryCount" xml:space="preserve">
+    <value>Entregas Fallidas</value>
+  </data>
+  <data name="PartialDeliveryCount" xml:space="preserve">
+    <value>Entregas Parciales</value>
+  </data>
+  <data name="EvaluatedStopCount" xml:space="preserve">
+    <value>Paradas Evaluadas</value>
+  </data>
+  <data name="OnTimeStopCount" xml:space="preserve">
+    <value>Paradas a Tiempo</value>
+  </data>
+  <data name="DelayedStopCount" xml:space="preserve">
+    <value>Paradas con Retraso</value>
+  </data>
+  <data name="OnTimePercent" xml:space="preserve">
+    <value>Puntualidad %</value>
+  </data>
+  <data name="AverageDelayMinutes" xml:space="preserve">
+    <value>Retraso Prom. (min)</value>
+  </data>
+  <data name="MaxDelayMinutes" xml:space="preserve">
+    <value>Retraso Máx. (min)</value>
+  </data>
+  <data name="VisitCount" xml:space="preserve">
+    <value>Visitas</value>
+  </data>
+  <data name="AverageDwellMinutes" xml:space="preserve">
+    <value>Permanencia Prom. (min)</value>
+  </data>
+  <data name="MinDwellMinutes" xml:space="preserve">
+    <value>Permanencia Mín. (min)</value>
+  </data>
+  <data name="MaxDwellMinutes" xml:space="preserve">
+    <value>Permanencia Máx. (min)</value>
+  </data>
+  <data name="TotalDwellMinutes" xml:space="preserve">
+    <value>Permanencia Total (min)</value>
+  </data>
+  <data name="RoutePlanId" xml:space="preserve">
+    <value>Plan de Ruta</value>
+  </data>
+  <data name="TollStationName" xml:space="preserve">
+    <value>Estación de Peaje</value>
+  </data>
+  <data name="RoadName" xml:space="preserve">
+    <value>Vía</value>
+  </data>
+  <data name="Direction" xml:space="preserve">
+    <value>Sentido</value>
+  </data>
+  <data name="TollVehicleClass" xml:space="preserve">
+    <value>Clase de Vehículo</value>
+  </data>
+  <data name="PartialNoTariff" xml:space="preserve">
+    <value>Parcial (Sin Tarifa)</value>
+  </data>
+  <data name="ReceiverName" xml:space="preserve">
+    <value>Nombre del Receptor</value>
+  </data>
+  <data name="ReceiverDocument" xml:space="preserve">
+    <value>Documento del Receptor</value>
+  </data>
+  <data name="CapturedAt" xml:space="preserve">
+    <value>Capturado el</value>
+  </data>
 </root>

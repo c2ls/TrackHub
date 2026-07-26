@@ -426,4 +426,193 @@
   <data name="PageOf" xml:space="preserve">
     <value>of</value>
   </data>
+  <data name="DriverName" xml:space="preserve">
+    <value>Driver</value>
+  </data>
+  <data name="EmployeeCode" xml:space="preserve">
+    <value>Employee Code</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>Document Type</value>
+  </data>
+  <data name="DocumentNumber" xml:space="preserve">
+    <value>Document Number</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="LicenseNumber" xml:space="preserve">
+    <value>License Number</value>
+  </data>
+  <data name="LicenseExpiresAt" xml:space="preserve">
+    <value>License Expires At</value>
+  </data>
+  <data name="DefaultTransporterId" xml:space="preserve">
+    <value>Default Transporter</value>
+  </data>
+  <data name="LicenseCategory" xml:space="preserve">
+    <value>License Category</value>
+  </data>
+  <data name="QualificationType" xml:space="preserve">
+    <value>Qualification Type</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="IssuingAuthority" xml:space="preserve">
+    <value>Issuing Authority</value>
+  </data>
+  <data name="IssuedAt" xml:space="preserve">
+    <value>Issued At</value>
+  </data>
+  <data name="DaysRemaining" xml:space="preserve">
+    <value>Days Remaining</value>
+  </data>
+  <data name="StartsAt" xml:space="preserve">
+    <value>Starts At</value>
+  </data>
+  <data name="EndsAt" xml:space="preserve">
+    <value>Ends At</value>
+  </data>
+  <data name="DurationDays" xml:space="preserve">
+    <value>Duration (Days)</value>
+  </data>
+  <data name="CreatedByPrincipal" xml:space="preserve">
+    <value>Created By</value>
+  </data>
+  <data name="TripCode" xml:space="preserve">
+    <value>Trip Code</value>
+  </data>
+  <data name="TripStatus" xml:space="preserve">
+    <value>Trip Status</value>
+  </data>
+  <data name="PlannedStartAt" xml:space="preserve">
+    <value>Planned Start</value>
+  </data>
+  <data name="ActualStartAt" xml:space="preserve">
+    <value>Actual Start</value>
+  </data>
+  <data name="PlannedEndAt" xml:space="preserve">
+    <value>Planned End</value>
+  </data>
+  <data name="ActualEndAt" xml:space="preserve">
+    <value>Actual End</value>
+  </data>
+  <data name="PlannedDistanceKm" xml:space="preserve">
+    <value>Planned Distance (km)</value>
+  </data>
+  <data name="ActualDistanceKm" xml:space="preserve">
+    <value>Actual Distance (km)</value>
+  </data>
+  <data name="StopCount" xml:space="preserve">
+    <value>Stops</value>
+  </data>
+  <data name="OnTime" xml:space="preserve">
+    <value>On Time</value>
+  </data>
+  <data name="EstimatedTollAmount" xml:space="preserve">
+    <value>Estimated Toll</value>
+  </data>
+  <data name="TollCurrency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="StopSequence" xml:space="preserve">
+    <value>Sequence</value>
+  </data>
+  <data name="StopName" xml:space="preserve">
+    <value>Stop Name</value>
+  </data>
+  <data name="CustomerName" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="PlannedArrivalFrom" xml:space="preserve">
+    <value>Window From</value>
+  </data>
+  <data name="PlannedArrivalTo" xml:space="preserve">
+    <value>Window To</value>
+  </data>
+  <data name="ActualArrivalAt" xml:space="preserve">
+    <value>Arrival</value>
+  </data>
+  <data name="ActualDepartureAt" xml:space="preserve">
+    <value>Departure</value>
+  </data>
+  <data name="DwellMinutes" xml:space="preserve">
+    <value>Dwell (min)</value>
+  </data>
+  <data name="StopStatus" xml:space="preserve">
+    <value>Stop Status</value>
+  </data>
+  <data name="DeliveryCount" xml:space="preserve">
+    <value>Delivery Count</value>
+  </data>
+  <data name="DeliveredCount" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="FailedDeliveryCount" xml:space="preserve">
+    <value>Failed Deliveries</value>
+  </data>
+  <data name="PartialDeliveryCount" xml:space="preserve">
+    <value>Partial Deliveries</value>
+  </data>
+  <data name="EvaluatedStopCount" xml:space="preserve">
+    <value>Evaluated Stops</value>
+  </data>
+  <data name="OnTimeStopCount" xml:space="preserve">
+    <value>On Time Stops</value>
+  </data>
+  <data name="DelayedStopCount" xml:space="preserve">
+    <value>Delayed Stops</value>
+  </data>
+  <data name="OnTimePercent" xml:space="preserve">
+    <value>Punctuality %</value>
+  </data>
+  <data name="AverageDelayMinutes" xml:space="preserve">
+    <value>Avg Delay (min)</value>
+  </data>
+  <data name="MaxDelayMinutes" xml:space="preserve">
+    <value>Max Delay (min)</value>
+  </data>
+  <data name="VisitCount" xml:space="preserve">
+    <value>Visits</value>
+  </data>
+  <data name="AverageDwellMinutes" xml:space="preserve">
+    <value>Avg Dwell (min)</value>
+  </data>
+  <data name="MinDwellMinutes" xml:space="preserve">
+    <value>Min Dwell (min)</value>
+  </data>
+  <data name="MaxDwellMinutes" xml:space="preserve">
+    <value>Max Dwell (min)</value>
+  </data>
+  <data name="TotalDwellMinutes" xml:space="preserve">
+    <value>Total Dwell (min)</value>
+  </data>
+  <data name="RoutePlanId" xml:space="preserve">
+    <value>Route Plan</value>
+  </data>
+  <data name="TollStationName" xml:space="preserve">
+    <value>Toll Station</value>
+  </data>
+  <data name="RoadName" xml:space="preserve">
+    <value>Road</value>
+  </data>
+  <data name="Direction" xml:space="preserve">
+    <value>Direction</value>
+  </data>
+  <data name="TollVehicleClass" xml:space="preserve">
+    <value>Vehicle Class</value>
+  </data>
+  <data name="PartialNoTariff" xml:space="preserve">
+    <value>Partial (No Tariff)</value>
+  </data>
+  <data name="ReceiverName" xml:space="preserve">
+    <value>Receiver Name</value>
+  </data>
+  <data name="ReceiverDocument" xml:space="preserve">
+    <value>Receiver Document</value>
+  </data>
+  <data name="CapturedAt" xml:space="preserve">
+    <value>Captured At</value>
+  </data>
 </root>

@@ -1,4 +1,4 @@
-# Router API for TrackHub
+# TrackHub Reporting API
 
 [English](README.en.md) | [Español](README.es.md)
 
@@ -10,27 +10,46 @@ We believe in the strength of community collaboration to create effective and ac
 
 ![Image](https://github.com/shernandezp/TrackHub.AuthorityServer/blob/master/src/Web/wwwroot/images/logo.png)
 
+---
+
+## Overview
+
+The Reporting API turns platform data into files. It is REST-only and has no database of its own: every dataset is composed from the services that own it — master data and GPS integration from the **Management API**, live and stored positions from the **Router** and **Telemetry APIs**, geofences and visit events from the **Geofencing API**, and trip, stop, toll and proof-of-delivery data from the **Trip Management API**.
+
+Reports are governed by a catalog held in the Management API, and rendered as preview, Excel or PDF.
+
+---
+
+## Documentation
+
+| | |
+|---|---|
+| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting) |
+| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
+| **Deployment** | [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) |
 
 ---
 
 ## Project Repositories
 
-| Service Name       | Repository Link                                             |
-|-----------------------------|----------------------------------------------------|
-| **Common Library**          | [https://github.com/shernandezp/TrackHubCommon](https://github.com/shernandezp/TrackHubCommon)    |
-| **Authorization Service**   | [https://github.com/shernandezp/TrackHub.AuthorityServer](https://github.com/shernandezp/TrackHub.AuthorityServer) |
-| **Security API**            | [https://github.com/shernandezp/TrackHubSecurity](https://github.com/shernandezp/TrackHubSecurity)  |
-| **Management API**          | [https://github.com/shernandezp/TrackHub.Manager](https://github.com/shernandezp/TrackHub.Manager)  |
-| **Router API**              | [https://github.com/shernandezp/TrackHub.Reporting](https://github.com/shernandezp/TrackHub.Reporting)    |
-| **Telemetry API**           | [https://github.com/shernandezp/TrackHub.Telemetry](https://github.com/shernandezp/TrackHub.Telemetry)    |
-| **Geofencing API**          | [https://github.com/shernandezp/TrackHub.Geofencing](https://github.com/shernandezp/TrackHub.Geofencing)    |
-| **Reporting API**           | [https://github.com/shernandezp/TrackHub.Reporting](https://github.com/shernandezp/TrackHub.Reporting)    |
-| **Telemetry API**           | [https://github.com/shernandezp/TrackHub.Telemetry](https://github.com/shernandezp/TrackHub.Telemetry)    |
-| **TrackHub Web**            | [https://github.com/shernandezp/TrackHub](https://github.com/shernandezp/TrackHub)          |
+| Repository | Purpose |
+|---|---|
+| [TrackHubCommon](https://github.com/shernandezp/TrackHubCommon) | Shared library, distributed as local NuGet packages |
+| [TrackHub.AuthorityServer](https://github.com/shernandezp/TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
+| [TrackHubSecurity](https://github.com/shernandezp/TrackHubSecurity) | Security API — users, roles, policies, permissions |
+| [TrackHub.Manager](https://github.com/shernandezp/TrackHub.Manager) | Management API — master data |
+| [TrackHubRouter](https://github.com/shernandezp/TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
+| [TrackHub.Telemetry](https://github.com/shernandezp/TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
+| [TrackHub.Geofencing](https://github.com/shernandezp/TrackHub.Geofencing) | Geofencing API |
+| [TrackHub.TripManagement](https://github.com/shernandezp/TrackHub.TripManagement) | Trip Management API |
+| [TrackHub.Reporting](https://github.com/shernandezp/TrackHub.Reporting) | Reporting API |
+| [TrackHub](https://github.com/shernandezp/TrackHub) | Web portal (React) |
+| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
+| [TrackHub.IntegrationTests](https://github.com/shernandezp/TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
+| [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) | Docker deployment for the whole stack |
 
+---
 
+## License
 
-
-## Overview
-
-The Reporting API generates Excel reports by composing data from the other services: master data and GPS integration from the **Management API**, live/stored positions from the **Router API**, geofences from the **Geofencing API**, and position history, operator health, and sync-run telemetry from the **Telemetry API**.
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
