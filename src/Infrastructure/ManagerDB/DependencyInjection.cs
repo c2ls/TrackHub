@@ -29,6 +29,7 @@ using TrackHub.Manager.Infrastructure.ManagerDB.Notifications;
 using TrackHub.Manager.Infrastructure.ManagerDB.Storage;
 using TrackHub.Manager.Infrastructure.Readers;
 using TrackHub.Manager.Infrastructure.Writers;
+using Common.Application.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -152,6 +153,10 @@ public static class DependencyInjection
         services.AddScoped<IAccountBrandingWriter, AccountBrandingWriter>();
         services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusReader, AccountOperationalStatusReader>();
         services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusService, Common.Application.Services.CachedAccountOperationalStatusService>();
+
+        // Module discovery seam: registers any IServiceModule implementations shipped in
+        // this assembly (none in this repository).
+        services.AddDiscoveredModules(typeof(ApplicationDbContext).Assembly, configuration);
 
         return services;
     }
