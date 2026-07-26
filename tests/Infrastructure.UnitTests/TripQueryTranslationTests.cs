@@ -13,7 +13,9 @@
 //  limitations under the License.
 //
 
+using System.Net.Sockets;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TrackHub.TripManagement.Domain.Models;
 using TrackHub.TripManagement.Infrastructure.TripDB;
 using TrackHub.TripManagement.Infrastructure.TripDB.Readers;
@@ -65,11 +67,42 @@ public class TripQueryTranslationTests
             ex.Message.Contains("could not be translated", StringComparison.OrdinalIgnoreCase))
         {
             Assert.Fail($"The query cannot be translated to SQL and would fail at runtime:{Environment.NewLine}{ex.Message}");
+            return;
         }
-        catch (Exception)
+        catch (Exception ex) when (IsConnectionFailure(ex))
         {
-            // Anything else (a connection failure) means translation succeeded — all this asserts.
+            // The ONLY outcome that proves translation succeeded: EF built the SQL, then the
+            // provider tried to open a socket to a host that is not listening.
+            return;
         }
+        catch (Exception ex)
+        {
+            // A guard clause, an ArgumentException or an EF wording change used to land in a bare
+            // `catch (Exception) { }` and score a free pass, so the test asserted nothing at all.
+            Assert.Fail(
+                $"The query failed before it reached the database, so nothing was translated: " +
+                $"{ex.GetType().FullName}: {ex.Message}");
+            return;
+        }
+
+        // Returning normally means the reader never opened a connection — an early return or a null
+        // guard short-circuited it, and no SQL was ever generated.
+        Assert.Fail("The query completed without attempting a connection, so no SQL was translated.");
+    }
+
+    /// <summary>
+    /// A failure to reach 127.0.0.1:1. Npgsql wraps the socket error, and the shape of the wrapping
+    /// differs by platform and version, so the whole inner chain is inspected.
+    /// </summary>
+    private static bool IsConnectionFailure(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is NpgsqlException or SocketException or TimeoutException)
+                return true;
+        }
+
+        return false;
     }
 
     // The group-scoped overload (userId non-null) joins vw_visible_transporter, which is the path

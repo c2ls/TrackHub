@@ -26,6 +26,9 @@ namespace TrackHub.TripManagement.Application.Trips.Commands.Assign;
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct AssignTripCommand(Guid TripId, Guid DriverId, Guid? TransporterId) : IRequest<TripAssignmentVm>;
 
 public sealed class AssignTripCommandHandler(

@@ -624,6 +624,11 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
             // table is created, altered or dropped by this migration.
             migrationBuilder.Sql(Views.vw_users);
             migrationBuilder.Sql(Views.vw_visible_transporter);
+
+            // Toll matching calls ST_DWithin on the geography cast of point, which the GEOMETRY
+            // GiST index above cannot answer. EF cannot express a functional index, so it is raw SQL.
+            migrationBuilder.Sql(
+                "CREATE INDEX ix_toll_stations_point_geography_gist ON trip.toll_stations USING gist ((point::geography));");
         }
 
         /// <inheritdoc />

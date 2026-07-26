@@ -25,6 +25,7 @@ namespace TrackHub.TripManagement.Application.Trips.Queries.GetTripReportData;
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Export, PrincipalTypes = "User,ServiceClient")]
 [RequireFeature(FeatureKeys.TripManagement)]
+[AllowCrossAccount("Reporting drains this feed under a service identity that carries no account claim (spec 11 design: the account travels on the request), naming the target account explicitly. User callers are NOT unguarded by this: TripVisibility.ResolveReportScopeAsync forbids a user whose account differs from the requested one.")]
 public readonly record struct GetTripReportDataQuery(
     Guid AccountId,
     DateTimeOffset From,

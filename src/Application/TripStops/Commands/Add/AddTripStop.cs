@@ -21,6 +21,9 @@ namespace TrackHub.TripManagement.Application.TripStops.Commands.Add;
 /// <summary>Appends a stop; the writer re-normalizes sequences server-side.</summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Write)]
 [RequireFeature(FeatureKeys.TripManagement)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct AddTripStopCommand(Guid TripId, TripStopDto Stop) : IRequest<TripStopVm>;
 
 public sealed class AddTripStopCommandHandler(

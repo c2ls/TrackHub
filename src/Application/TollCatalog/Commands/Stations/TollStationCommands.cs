@@ -21,6 +21,7 @@ namespace TrackHub.TripManagement.Application.TollCatalog.Commands.Stations;
 
 /// <summary>Registers a toll station with its coordinates.</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Write)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct CreateTollStationCommand(TollStationDto Station) : IRequest<TollStationVm>;
 
 public sealed class CreateTollStationCommandHandler(ITollCatalogWriter writer)
@@ -37,6 +38,7 @@ public sealed class CreateTollStationValidator : AbstractValidator<CreateTollSta
 }
 
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Edit)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct UpdateTollStationCommand(Guid TollStationId, TollStationDto Station) : IRequest;
 
 public sealed class UpdateTollStationCommandHandler(ITollCatalogWriter writer)
@@ -57,6 +59,7 @@ public sealed class UpdateTollStationValidator : AbstractValidator<UpdateTollSta
 
 /// <summary>Deactivates rather than deletes: historical estimates cite the station.</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Delete)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct DeactivateTollStationCommand(Guid TollStationId) : IRequest<Guid>;
 
 public sealed class DeactivateTollStationCommandHandler(ITollCatalogWriter writer)

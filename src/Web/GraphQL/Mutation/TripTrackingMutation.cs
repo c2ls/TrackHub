@@ -27,12 +27,12 @@ namespace TrackHub.TripManagement.Web.GraphQL.Mutation;
 /// </summary>
 public partial class Mutation
 {
-    public async Task<TripProcessingResultVm> ProcessTripPositions([Service] ISender sender, ProcessTripPositionsCommand command)
-        => await sender.Send(command);
+    public async Task<TripProcessingResultVm> ProcessTripPositions([Service] ISender sender, ProcessTripPositionsCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TripImportResultVm>> ImportTrips([Service] ISender sender, ImportTripsCommand command)
-        => await sender.Send(command);
+    public async Task<IReadOnlyCollection<TripImportResultVm>> ImportTrips([Service] ISender sender, ImportTripsCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TripImportResultVm>> UpdateTripStatus([Service] ISender sender, UpdateTripStatusCommand command)
-        => await sender.Send(command);
+    public async Task<IReadOnlyCollection<TripImportResultVm>> UpdateTripStatus([Service] ISender sender, UpdateTripStatusCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 }

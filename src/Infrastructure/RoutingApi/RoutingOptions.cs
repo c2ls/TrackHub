@@ -42,6 +42,24 @@ public sealed class RoutingOptions
 
     public int TimeoutSeconds { get; set; } = 30;
 
+    /// <summary>
+    /// How long an interactive route request will wait for its turn at the rate limit before failing.
+    /// The wait is bounded so a dispatcher planning a route gets a fast <c>ROUTING_UNAVAILABLE</c>
+    /// instead of sitting behind whatever the ETA job has queued.
+    /// </summary>
+    public int InteractiveTimeoutSeconds { get; set; } = 15;
+
+    /// <summary>
+    /// Ceiling on background (ETA-refresh) requests per <see cref="BackgroundWindowSeconds"/>. The ETA
+    /// job walks every enabled account and up to <c>MaxTripsPerCycle</c> trips in each, which at the
+    /// default rate is far more provider time than a refresh interval contains; the budget is what
+    /// stops one busy account monopolising the provider and overlapping cycles for ever.
+    /// </summary>
+    public int BackgroundRequestsPerWindow { get; set; } = 250;
+
+    /// <summary>Length of the rolling window <see cref="BackgroundRequestsPerWindow"/> is measured over.</summary>
+    public int BackgroundWindowSeconds { get; set; } = 300;
+
     /// <summary>Waypoint ceiling; a larger request is rejected before any call goes out.</summary>
     public int MaxWaypoints { get; set; } = 50;
 }

@@ -21,9 +21,9 @@ namespace TrackHub.TripManagement.Web.GraphQL.Mutation;
 /// <summary>Public tracking links. The plaintext token is returned only by <c>shareTrip</c>.</summary>
 public partial class Mutation
 {
-    public async Task<TripShareVm> ShareTrip([Service] ISender sender, ShareTripCommand command)
-        => await sender.Send(command);
+    public async Task<TripShareVm> ShareTrip([Service] ISender sender, ShareTripCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 
-    public async Task<Guid> RevokeTripShare([Service] ISender sender, RevokeTripShareCommand command)
-        => await sender.Send(command);
+    public async Task<Guid> RevokeTripShare([Service] ISender sender, RevokeTripShareCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 }

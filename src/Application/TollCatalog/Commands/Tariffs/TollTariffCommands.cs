@@ -24,6 +24,7 @@ namespace TrackHub.TripManagement.Application.TollCatalog.Commands.Tariffs;
 /// An overlapping window for the same pair is a conflict (409), not a merge.
 /// </summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Write)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct CreateTollTariffCommand(TollTariffDto Tariff) : IRequest<TollTariffVm>;
 
 public sealed class CreateTollTariffCommandHandler(ITollCatalogWriter writer)
@@ -46,6 +47,7 @@ public sealed class CreateTollTariffValidator : AbstractValidator<CreateTollTari
 }
 
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Edit)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct UpdateTollTariffCommand(Guid TollTariffId, TollTariffDto Tariff) : IRequest;
 
 public sealed class UpdateTollTariffCommandHandler(ITollCatalogWriter writer, ITollCatalogReader reader)
@@ -74,6 +76,7 @@ public sealed class UpdateTollTariffValidator : AbstractValidator<UpdateTollTari
 }
 
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Delete)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct DeleteTollTariffCommand(Guid TollTariffId) : IRequest<Guid>;
 
 public sealed class DeleteTollTariffCommandHandler(ITollCatalogWriter writer)

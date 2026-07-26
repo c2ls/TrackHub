@@ -24,6 +24,7 @@ namespace TrackHub.TripManagement.Application.TollCatalog.Commands.VehicleClasse
 
 /// <summary>Defines an axle/weight category tariffs are priced by. The platform ships no rows.</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Write)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct CreateTollVehicleClassCommand(TollVehicleClassDto VehicleClass) : IRequest<TollVehicleClassVm>;
 
 public sealed class CreateTollVehicleClassCommandHandler(ITollCatalogWriter writer)
@@ -40,6 +41,7 @@ public sealed class CreateTollVehicleClassValidator : AbstractValidator<CreateTo
 }
 
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Edit)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct UpdateTollVehicleClassCommand(Guid TollVehicleClassId, TollVehicleClassDto VehicleClass) : IRequest;
 
 public sealed class UpdateTollVehicleClassCommandHandler(ITollCatalogWriter writer)
@@ -60,6 +62,7 @@ public sealed class UpdateTollVehicleClassValidator : AbstractValidator<UpdateTo
 
 /// <summary>Deactivates rather than deletes: historical tariffs still reference the class.</summary>
 [Authorize(Resource = Resources.TollCatalog, Action = Actions.Delete)]
+[PlatformScoped("SVD-12 toll catalog: stations, tariffs and vehicle classes are platform-owned reference data administered by the platform operator; no tenant owns a row.")]
 public readonly record struct DeactivateTollVehicleClassCommand(Guid TollVehicleClassId) : IRequest<Guid>;
 
 public sealed class DeactivateTollVehicleClassCommandHandler(ITollCatalogWriter writer)

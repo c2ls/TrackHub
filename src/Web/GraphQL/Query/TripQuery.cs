@@ -28,32 +28,32 @@ namespace TrackHub.TripManagement.Web.GraphQL.Query;
 /// <summary>Trip read surface. Resolvers only dispatch — every rule lives in the handler.</summary>
 public partial class Query
 {
-    public async Task<TripsPageVm> GetTrips([Service] ISender sender, [AsParameters] GetTripsQuery query)
-        => await sender.Send(query);
+    public async Task<TripsPageVm> GetTrips([Service] ISender sender, [AsParameters] GetTripsQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<TripDetailVm> GetTripDetail([Service] ISender sender, [AsParameters] GetTripDetailQuery query)
-        => await sender.Send(query);
+    public async Task<TripDetailVm> GetTripDetail([Service] ISender sender, [AsParameters] GetTripDetailQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TripVm>> GetActiveTrips([Service] ISender sender)
-        => await sender.Send(new GetActiveTripsQuery());
+    public async Task<IReadOnlyCollection<TripVm>> GetActiveTrips([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetActiveTripsQuery(), cancellationToken);
 
-    public async Task<TripTimelinePageVm> GetTripTimeline([Service] ISender sender, [AsParameters] GetTripTimelineQuery query)
-        => await sender.Send(query);
+    public async Task<TripTimelinePageVm> GetTripTimeline([Service] ISender sender, [AsParameters] GetTripTimelineQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<RouteReplayVm> GetTripRouteReplay([Service] ISender sender, [AsParameters] GetTripRouteReplayQuery query)
-        => await sender.Send(query);
+    public async Task<RouteReplayVm> GetTripRouteReplay([Service] ISender sender, [AsParameters] GetTripRouteReplayQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
     // The four Reporting export feeds (spec 11 §13). Trip-, stop-, station- and POD-level, because
     // the six catalogued reports live at four different grains.
-    public async Task<TripReportPageVm> GetTripReportData([Service] ISender sender, [AsParameters] GetTripReportDataQuery query)
-        => await sender.Send(query);
+    public async Task<TripReportPageVm> GetTripReportData([Service] ISender sender, [AsParameters] GetTripReportDataQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<TripStopReportPageVm> GetTripStopReportData([Service] ISender sender, [AsParameters] GetTripStopReportDataQuery query)
-        => await sender.Send(query);
+    public async Task<TripStopReportPageVm> GetTripStopReportData([Service] ISender sender, [AsParameters] GetTripStopReportDataQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<TripTollReportPageVm> GetTripTollReportData([Service] ISender sender, [AsParameters] GetTripTollReportDataQuery query)
-        => await sender.Send(query);
+    public async Task<TripTollReportPageVm> GetTripTollReportData([Service] ISender sender, [AsParameters] GetTripTollReportDataQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<TripPodReportPageVm> GetTripPodReportData([Service] ISender sender, [AsParameters] GetTripPodReportDataQuery query)
-        => await sender.Send(query);
+    public async Task<TripPodReportPageVm> GetTripPodReportData([Service] ISender sender, [AsParameters] GetTripPodReportDataQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 }

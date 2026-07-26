@@ -31,6 +31,9 @@ namespace TrackHub.TripManagement.Application.Trips.Queries.GetTripRouteReplay;
 [Authorize(Resource = Resources.Trips, Action = Actions.Read)]
 [RequireFeature(FeatureKeys.TripManagement)]
 [RequireFeature(FeatureKeys.GpsPositionHistory)]
+// Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
+// which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetTripRouteReplayQuery(Guid TripId, int? MaxPoints) : IRequest<RouteReplayVm>;
 
 public sealed class GetTripRouteReplayQueryHandler(

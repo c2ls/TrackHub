@@ -1,55 +1,62 @@
-# API de Gestión de Viajes de TrackHub
+# TrackHub Trip Management API
 
-## Características Principales
+[← Volver a la página principal](README.md) · [English](README.en.md)
 
-- **Gestión del Ciclo de Vida del Viaje**: Máquina de estados gobernada (`Created → InProgress → Paused → Completed / Cancelled / Aborted`) con una única matriz de transiciones como fuente de verdad
-- **Planificación de Paradas y Entregas**: Paradas ordenadas con operaciones de alta/actualización/eliminación/reordenamiento, progreso de llegada y salida, omisión de paradas y resultados de entrega por parada
-- **Planificación de Rutas**: Geometría de ruta y corredores de tolerancia calculados mediante OpenRouteService y almacenados como geometrías PostGIS
-- **Estimación de Peajes**: Catálogo de estaciones de peaje, tarifas y clases de vehículo con estimación de costo basada en la ruta e informe explícito de cobertura parcial
-- **Prueba de Entrega**: Captura de firmas, fotografías y documentos vinculados al servicio de documentos con validación de escaneo limpio
-- **Enlaces Públicos de Seguimiento**: Endpoint REST anónimo, revocable y con limitación de tasa para compartir el avance de un viaje con un destinatario
-- **Interfaz GraphQL**: Consultas eficientes y flexibles con servidor GraphQL Hot Chocolate
-- **Arquitectura Limpia**: Arquitectura en capas que asegura mantenibilidad y capacidad de prueba
-- **PostgreSQL + PostGIS**: Capacidades de base de datos espacial de nivel empresarial usando geometría NetTopologySuite (SRID 4326)
+La Trip Management API planifica, despacha y hace seguimiento de viajes: paradas ordenadas, entregas, geometría de ruta con un corredor de desviación, estimación de peajes, prueba de entrega y enlaces públicos de seguimiento compartibles.
+
+Construida sobre .NET 10 con un endpoint GraphQL de HotChocolate y geometría NetTopologySuite en SRID 4326. Es dueña del esquema **`trip`** en la base de datos compartida `TrackHub`, y toda su superficie multi-tenant está condicionada por la característica de cuenta `trip-management`.
 
 ---
 
-## Inicio Rápido
+## Qué hace
 
-### Requisitos Previos
+- **Ciclo de vida del viaje** — una máquina de estados gobernada (`Created → InProgress → Paused → Completed / Cancelled / Aborted`) con una única matriz de transiciones como fuente de verdad
+- **Planificación de paradas y entregas** — paradas ordenadas con alta/actualización/eliminación/reordenamiento, progreso de llegada y salida, manejo de omisiones y resultados de entrega por parada
+- **Planificación de rutas** — geometría de ruta y corredores de tolerancia a partir de OpenRouteService, almacenados como geometría PostGIS
+- **Estimación de peajes** — un catálogo de estaciones de peaje, tarifas y clases de vehículo con estimación de costo basada en la ruta e informe explícito de cobertura parcial
+- **Detección** — llegadas a paradas, salidas, retrasos y desviaciones del corredor, calculados a partir de posiciones de telemetría
+- **Prueba de entrega** — captura de firma, fotografía y documento vinculada al servicio de documentos, con validación de escaneo limpio
+- **Enlaces públicos de seguimiento** — anónimos, revocables, con limitación de tasa y control de divulgación por enlace compartido
 
-- .NET 10.0 SDK
-- PostgreSQL 14+ con extensión PostGIS habilitada
-- TrackHub Authority Server ejecutándose (para autenticación)
-- APIs de Manager y Telemetry accesibles (datos maestros, posiciones, alertas, concesiones de enlaces públicos)
-- Una clave de API de OpenRouteService (para planificación de rutas)
+Detalle completo: **[Trip Management](https://github.com/shernandezp/TrackHub/wiki/Trip-Management)** en el wiki.
 
-### Instalación
+---
 
-1. **Clonar el repositorio**:
+## Inicio rápido
+
+### Requisitos previos
+
+- .NET 10 SDK
+- PostgreSQL 14+ **con PostGIS habilitado**
+- Un TrackHub AuthorityServer, Management API y Telemetry API en ejecución
+- Una clave de API de OpenRouteService, para la planificación de rutas
+- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet
+
+### Pasos
+
+1. **Clonar**
+
    ```bash
    git clone https://github.com/shernandezp/TrackHub.TripManagement.git
    cd TrackHub.TripManagement
    ```
 
-2. **Habilitar extensión PostGIS** en PostgreSQL:
+2. **Habilitar PostGIS** en la base de datos `TrackHub` (un solo `CREATE EXTENSION` cubre también el esquema `geofencing`):
+
    ```sql
-   CREATE EXTENSION postgis;
+   CREATE EXTENSION IF NOT EXISTS postgis;
    ```
 
-3. **Configurar la conexión a la base de datos** en `appsettings.json`:
+3. **Configurar la conexión a la base de datos y el proveedor de rutas** en `src/Web/appsettings.json`:
+
    ```json
    {
      "ConnectionStrings": {
-       "DefaultConnection": "server=localhost;user id=postgres;password=yourpassword;database=TrackHub;port=5432"
-     }
-   }
-   ```
-
-4. **Configurar el proveedor de rutas** en `appsettings.json`:
-   ```json
-   {
+       "DefaultConnection": "Host=localhost;Database=TrackHub;Username=postgres;Password=yourpassword"
+     },
      "AppSettings": {
+       "GraphQLManagerService": "https://localhost:5001/graphql",
+       "GraphQLTelemetryService": "https://localhost:5011/graphql",
        "Routing": {
          "Provider": "OpenRouteService",
          "BaseUrl": "https://api.openrouteservice.org",
@@ -60,129 +67,53 @@
    }
    ```
 
-5. **Ejecutar las migraciones de la base de datos**:
+4. **Aplicar las migraciones** — esto crea el esquema `trip`:
+
    ```bash
-   dotnet ef database update
+   dotnet ef database update --project src/Infrastructure --startup-project src/Web
    ```
 
-6. **Iniciar la aplicación**:
+5. **Ejecutar**
+
    ```bash
    dotnet run --project src/Web
    ```
 
-7. **Acceder al Playground GraphQL** en `https://localhost:5006/graphql`
+6. **Abrir el endpoint GraphQL** en `https://localhost:5006/graphql`.
+
+En desarrollo el servicio escucha en `https://localhost:5006` y `http://localhost:5007`; detrás de nginx se ubica en `/Trip/`.
 
 ---
 
-## Componentes y Recursos Utilizados
+## Notas específicas del proyecto
 
-| Componente                | Descripción                                             | Documentación                                                                 |
-|---------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------|
-| Hot Chocolate             | Servidor GraphQL para .Net        | [Documentación Hot Chocolate](https://chillicream.com/docs/hotchocolate/v13)                           |
-| .NET Core                 | Development platform for modern applications          | [.NET Core Documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview) |
-| Postgres                  | Sistema de gestión de bases de datos relacional         | [Documentación Postgres](https://www.postgresql.org/)                         |
-| OpenRouteService          | Proveedor de rutas usado para geometría de ruta y ETAs   | [Documentación OpenRouteService](https://openrouteservice.org/dev/#/api-docs) |
+- **Volver a ejecutar `db-init` tras desplegar este servicio en una instalación existente.** La migración crea el esquema pero no siembra nada. Sin el registro de `trip_client` ni el sembrado de recursos y roles de `Trips` / `TripTracking` / `TollCatalog`, **toda llamada de viaje devuelve `FORBIDDEN` mientras el servicio se reporta saludable.**
+- **Este servicio registra su propio `IFeatureFlagService`** (`Infrastructure/TripDB/DependencyInjection.cs`). El valor por defecto de Common es fail-**open** (`AlwaysEnabledFeatureFlagService`, `TryAddScoped`), así que eliminar ese registro deshabilitaría silenciosamente cada verificación `[RequireFeature]`.
+- **`Resources.TollCatalog` deliberadamente no está condicionado por feature.** El catálogo de peajes es información de referencia de la plataforma mantenida por el Administrador, sin `AccountId`; condicionarlo a una feature de tenant lo clasificaría mal.
+- **El estado de detección se persiste, nunca se mantiene en memoria.** El Router envía **una posición por transportador por llamada**, así que cualquier debounce o duración de ejecución mantenida en memoria nunca podría transcurrir. Una prueba que alimenta un escenario completo en una sola llamada no prueba nada sobre el comportamiento en producción — refleje la realidad de una posición por llamada.
+- **La geometría de llegada se toma como instantánea en `StartTrip`.** El polígono de la geocerca vinculada se lee una sola vez, en `TripStop.ArrivalGeom`, así que editar esa geocerca en medio del viaje no puede mover el área de llegada de un viaje en curso. Esta lectura va directo a `geofencing.geofences` como una proyección de solo lectura — **no existe llamada de servicio de TripManagement hacia Geofencing.**
+- **El endpoint público de seguimiento deliberadamente no tiene caché de salida.** Un acierto de caché nunca llegaría al resolver de Manager, por lo que no contaría el acceso ni escribiría el evento de auditoría `PublicLinkAccessed` — y seguiría sirviendo un enlace revocado. Además devuelve **404, no `FEATURE_DISABLED`**, cuando la feature está apagada: la página no debe revelar que el viaje existe.
+- **Las banderas de divulgación fallan cerradas.** Lo que ve un destinatario público está determinado por las banderas de campo de `trip_shares`, que por defecto son todas `false` — nunca por filtrado del lado del cliente.
+- **Las estimaciones de peaje son explicables, nunca subestimadas en silencio.** Una estación coincidente sin tarifa para la clase del viaje aporta 0 y establece `TollStatus = PartialNoTariff`; un catálogo vacío produce `NoStations` y una estimación **nula** en lugar de un número fabricado. Las tarifas son temporales, así que la estimación de un viaje histórico se mantiene explicable.
+- **Un fallo de ORS degrada a `RoutePlan.Status = Failed` — nunca bloquea un comando de viaje.**
+- Ambos trabajos en segundo plano (`trip-eta-refresh`, `trip-schedule-reminder`) son **registradores de solo cuando hay trabajo**: una marca de tiempo antigua en `BackgroundJobRun` es el estado saludable normal, no un trabajo atascado.
+- Nota de rendimiento: el predicado de geografía `ST_DWithin(..., TRUE)` usado para la coincidencia de estaciones de peaje no puede usar el índice GiST de geometría.
+- Después de cambiar cualquier superficie GraphQL, ejecutar las pruebas de contrato:
 
----
-
-## Descripción General
-
-La **API de Gestión de Viajes de TrackHub** proporciona servicios para planificar, despachar y hacer seguimiento de viajes. Sigue los principios de la **Arquitectura Limpia** del proyecto, aprovechando **GraphQL** para las interacciones de la API y **Postgres** para la gestión de la base de datos. Sus tablas residen en el esquema `trip` de la base de datos compartida `TrackHub` y sus capacidades están habilitadas mediante la característica de cuenta `trip-management`.
-
-### Características Principales
-
-La API ofrece las siguientes funcionalidades:
-- Planificación de viajes con paradas ordenadas, entregas y asignaciones de conductor/transportador.
-- Planificación de rutas y generación de corredores mediante un proveedor de rutas externo.
-- Administración del catálogo de peajes y estimación de costos de peaje basada en la ruta.
-- Detección de llegadas, salidas, retrasos y desviaciones de ruta a partir de posiciones de telemetría.
-- Captura de pruebas de entrega y publicación de enlaces públicos de seguimiento de solo lectura.
-- Provisión de los conjuntos de datos que respaldan los informes de viajes servidos por la API de Reporting.
+  ```bash
+  dotnet test ../TrackHub.IntegrationTests/TrackHub.IntegrationTests.slnx
+  ```
 
 ---
 
-## Entidades
+## Documentación
 
-### Gestión de Viajes
-
-- **Trip**: La unidad de despacho, con su código, referencia externa, programación, estado y la cuenta a la que pertenece.
-- **TripStop**: Una parada ordenada del viaje con su ubicación, ventana planificada, ETA y estado de progresión (`Pending`, `Arrived`, `Departed`, `Skipped`).
-- **Delivery**: Una entrega asociada a una parada, con su resultado (`Pending`, `Delivered`, `PartiallyDelivered`, `Rejected`).
-- **ProofOfDelivery**: La evidencia de firma, fotografía o documento registrada al cerrar una entrega.
-- **TripAssignment**: Vincula un viaje con el conductor y el transportador que lo ejecutan, con estado `Active`, `Ended` o `Cancelled`.
-- **RoutePlan**: La geometría de ruta planificada y su corredor para un viaje, producida por un proveedor (`OpenRouteService` o `Manual`) y almacenada como geometría PostGIS.
-- **TripEvent**: El registro incremental de todo lo ocurrido en un viaje, indicando el origen (`Portal`, `Driver`, `Detection`, `Job`, `ServiceClient`).
-- **TripShare**: Un enlace público de seguimiento revocable para un viaje, respaldado por una concesión de enlace público en la API de Manager.
-- **TripDocument**: Un documento adjunto a un viaje o entrega (firma, fotografía, manifiesto, carta de porte, recibo).
-- **TollStation**, **TollTariff**, **TollVehicleClass**, **TransporterTollClass**: El catálogo de peajes y la asignación de clase por transportador utilizada para la estimación de costos.
-- **VwUser**, **VwVisibleTransporter**: Vistas utilizadas para limitar los datos de viajes a la cuenta y los grupos del usuario que llama.
+- **Técnica** — el [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Trip Management](https://github.com/shernandezp/TrackHub/wiki/Trip-Management), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication), [Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting)
+- **De usuario** — en la app: el botón de Ayuda o **F1** en cualquier pantalla
+- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
 ---
-
-## Operaciones GraphQL
-
-### Mutaciones
-
-- **createTrip**, **updateTrip**, **deleteTrip**: CRUD de viajes.
-- **assignTrip**: Asigna un conductor y un transportador a un viaje.
-- **planTripRoute**: Solicita un plan de ruta al proveedor de rutas y almacena su geometría y corredor.
-- **startTrip**, **pauseTrip**, **resumeTrip**, **completeTrip**, **cancelTrip**, **abortTrip**: Transiciones de ciclo de vida, validadas contra la matriz de transiciones.
-- **addTripStop**, **updateTripStop**, **removeTripStop**, **reorderTripStops**: Planificación de paradas.
-- **recordStopArrival**, **recordStopDeparture**, **skipStop**: Progresión de paradas.
-- **createDelivery**, **updateDelivery**, **updateDeliveryOutcome**, **deleteDelivery**: Gestión de entregas.
-- **recordProofOfDelivery**: Registra la evidencia de prueba de entrega de una entrega.
-- **shareTrip**, **revokeTripShare**: Emite y revoca enlaces públicos de seguimiento.
-- **processTripPositions**: Procesa posiciones de transportadores para detectar llegadas, salidas, retrasos y desviaciones del corredor.
-- **importTrips**, **updateTripStatus**: Puntos de entrada de integración para sistemas de despacho externos.
-- **createTollVehicleClass**, **updateTollVehicleClass**, **deactivateTollVehicleClass**, **createTollStation**, **updateTollStation**, **deactivateTollStation**, **createTollTariff**, **updateTollTariff**, **deleteTollTariff**, **importTollCatalog**, **setTransporterTollClass**: Administración del catálogo de peajes.
-
-### Consultas
-
-- **trips**: Listado paginado de viajes de la cuenta del usuario que llama, con filtros.
-- **tripDetail**: Un viaje individual con sus paradas, entregas, asignación y plan de ruta.
-- **activeTrips**: Viajes actualmente en curso, para el mapa en vivo.
-- **tripTimeline**: Registro de eventos paginado de un viaje.
-- **tripRouteReplay**: Ruta planificada y posiciones registradas para reproducción.
-- **tripReportData**, **tripStopReportData**, **tripTollReportData**, **tripPodReportData**: Conjuntos de datos paginados consumidos por la API de Reporting.
-- **tollStations**, **tollStationDetail**, **tollVehicleClasses**, **transporterTollClasses**: Lecturas del catálogo de peajes.
-- **estimateTolls**: Estima el costo de peajes sobre una ruta para una clase de vehículo dada.
-
-### Endpoints REST
-
-- **GET `~/public/trips/{publicLinkGrantId}`**: Endpoint público de seguimiento anónimo. Limitado por IP del cliente y deliberadamente sin caché para que las revocaciones surtan efecto de inmediato y cada resolución quede auditada.
-- **GET `/health`**: Sonda de salud, incluyendo verificación del contexto de base de datos.
-
----
-
-## Servicios en Segundo Plano
-
-| Servicio                      | Clave de Trabajo         | Intervalo   | Propósito                                                                 |
-|-------------------------------|--------------------------|-------------|---------------------------------------------------------------------------|
-| `TripEtaRefreshService`       | `trip-eta-refresh`       | 5 minutos   | Recalcula los ETA de las paradas de viajes en curso y genera eventos de retraso |
-| `TripScheduleReminderService` | `trip-schedule-reminder` | 15 minutos  | Señala los viajes cuyo inicio programado ya venció pero que aún no han comenzado |
-
-Ambos trabajos registran una ejecución solo cuando realizaron trabajo, por lo que un registro antiguo para estas claves es el estado saludable esperado y no un trabajo atascado.
-
----
-
-## Configuración
-
-| Clave                                       | Propósito                                                    |
-|---------------------------------------------|--------------------------------------------------------------|
-| `ConnectionStrings:DefaultConnection`       | Conexión PostgreSQL para el esquema `trip`                   |
-| `AuthorityServer:ClientId` (`trip_client`)  | Cliente de servicio usado para llamadas entre servicios      |
-| `AppSettings:GraphQLIdentityService`        | Endpoint GraphQL de la API de Security                       |
-| `AppSettings:GraphQLManagerService`         | Endpoint GraphQL de la API de Manager                        |
-| `AppSettings:GraphQLTelemetryService`       | Endpoint GraphQL de la API de Telemetry                      |
-| `AppSettings:Routing`                       | Configuración del proveedor de rutas (proveedor, URL base, clave de API, perfil, límite de tasa, tiempo de espera, máximo de waypoints) |
-| `AllowedCorsOrigins`                        | Orígenes autorizados para llamar la API desde el navegador   |
-
-El portal accede a este servicio mediante `REACT_APP_TRIPMANAGEMENT_ENDPOINT`; los demás servicios backend lo hacen mediante `AppSettings:GraphQLTripManagementService`. En desarrollo el servicio escucha en `https://localhost:5006` y `http://localhost:5007`.
-
-### ¿Por qué GraphQL?
-
-El uso de **GraphQL** permite consultas eficientes y personalizables, permitiendo a los clientes solicitar solo los datos que necesitan para minimizar el ancho de banda y mejorar el rendimiento de la aplicación. Con GraphQL, las aplicaciones pueden recuperar detalles específicos sobre viajes, paradas, entregas o peajes, optimizando tanto la eficiencia operativa como la experiencia del usuario.
 
 ## Licencia
 
-Este proyecto está bajo la Licencia Apache 2.0. Consulta el archivo [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.
+Licencia Apache 2.0. Consulte el [archivo LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.

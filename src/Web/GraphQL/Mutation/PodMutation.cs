@@ -23,6 +23,6 @@ namespace TrackHub.TripManagement.Web.GraphQL.Mutation;
 /// </summary>
 public partial class Mutation
 {
-    public async Task<ProofOfDeliveryVm> RecordProofOfDelivery([Service] ISender sender, RecordProofOfDeliveryCommand command)
-        => await sender.Send(command);
+    public async Task<ProofOfDeliveryVm> RecordProofOfDelivery([Service] ISender sender, RecordProofOfDeliveryCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 }
