@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ using Microsoft.Extensions.Configuration;
 namespace TrackHub.Manager.Application.Credentials.Queries.GetByOperator;
 
 [Authorize(Resource = Resources.Credentials, Action = Actions.Write)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetCredentialByOperatorQuery(Guid OperatorId) : IRequest<CredentialVm>;
 
 public class GetCredentialsByOperatorQueryHandler(ICredentialReader reader, IConfiguration configuration) : IRequestHandler<GetCredentialByOperatorQuery, CredentialVm>

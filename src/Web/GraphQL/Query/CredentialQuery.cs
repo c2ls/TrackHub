@@ -21,12 +21,12 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<CredentialVm> GetCredential([Service] ISender sender, [AsParameters] GetCredentialQuery query)
-        => await sender.Send(query);
+    public async Task<CredentialVm> GetCredential([Service] ISender sender, [AsParameters] GetCredentialQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<CredentialVm> GetCredentialByOperator([Service] ISender sender, [AsParameters] GetCredentialByOperatorQuery query)
-        => await sender.Send(query);
+    public async Task<CredentialVm> GetCredentialByOperator([Service] ISender sender, [AsParameters] GetCredentialByOperatorQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<TokenVm> GetToken([Service] ISender sender, [AsParameters] GetTokenQuery query)
-        => await sender.Send(query);
+    public async Task<TokenVm> GetToken([Service] ISender sender, [AsParameters] GetTokenQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 }

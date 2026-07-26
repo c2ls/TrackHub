@@ -20,10 +20,10 @@ namespace TrackHub.Manager.Web.GraphQL.Mutation;
 public partial class Mutation
 {
 
-    public async Task<bool> UpdateReport([Service] ISender sender, Guid id, UpdateReportCommand command)
+    public async Task<bool> UpdateReport([Service] ISender sender, Guid id, UpdateReportCommand command, CancellationToken cancellationToken)
     {
         if (id != command.Report.ReportId) return false;
-        await sender.Send(command);
+        await sender.Send(command, cancellationToken);
         return true;
     }
 }

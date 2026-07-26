@@ -22,5 +22,7 @@ public interface IOperatorReader
     Task<OperatorVm> GetOperatorAsync(Guid id, CancellationToken cancellationToken);
     Task<OperatorVm> GetOperatorByTransporterAsync(Guid transporterId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<OperatorVm>> GetOperatorsAsync(Filters filters, CancellationToken cancellationToken);
+    Task<OperatorsPageVm> GetOperatorsPageAsync(Filters filters, int skip, int take, string? search, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<OperatorVm>> GetOperatorsByUserAsync(Guid userId, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<OperatorLookupVm>> GetOperatorLookupByAccountAsync(Guid accountId, int fetchSize, CancellationToken cancellationToken);
 }

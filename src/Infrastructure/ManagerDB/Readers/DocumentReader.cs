@@ -92,6 +92,9 @@ public sealed class DocumentReader(IApplicationDbContext context, ICurrentPrinci
 
         return await Context.DocumentVersions
             .Where(v => v.DocumentId == documentId)
+            // total-order: (DocumentId, VersionNumber) is a unique index and DocumentId is fixed by
+            // the filter above, so VersionNumber alone already totally orders this result and no
+            // tiebreaker is possible.
             .OrderByDescending(v => v.VersionNumber)
             .Skip(Offset(skip)).Take(PageSize(take))
             .Select(v => new DocumentVersionVm(v.DocumentVersionId, v.DocumentId, v.AccountId, v.VersionNumber, v.ContentType, v.FileName, v.SizeBytes, v.Sha256Hash, v.ScanStatus, v.ReplacedByPrincipalType, v.ReplacedByPrincipalId, v.Reason, v.CreatedAt))

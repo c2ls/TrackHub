@@ -1,3 +1,5 @@
+using Common.Application.Interfaces;
+using Moq;
 using TrackHub.Manager.Domain.Enums;
 using TrackHub.Manager.Infrastructure;
 using TrackHub.Manager.Infrastructure.Interfaces;
@@ -20,7 +22,7 @@ public class OperatorWriterTests
         await context.Operators.AddAsync(op);
         await context.SaveChangesAsync();
 
-        var writer = new OperatorWriter(context as IApplicationDbContext);
+        var writer = new OperatorWriter(context as IApplicationDbContext, ServicePrincipal());
 
         await writer.SetEnabledAsync(op.OperatorId, true, CancellationToken.None);
         var saved = await context.Operators.SingleAsync(x => x.OperatorId == op.OperatorId);
@@ -40,7 +42,7 @@ public class OperatorWriterTests
         await context.Operators.AddAsync(op);
         await context.SaveChangesAsync();
 
-        var writer = new OperatorWriter(context as IApplicationDbContext);
+        var writer = new OperatorWriter(context as IApplicationDbContext, ServicePrincipal());
         var finishedAt = DateTimeOffset.UtcNow;
 
         await writer.UpdateSyncSummaryAsync(op.OperatorId, finishedAt, SyncTriggerType.Manual, CancellationToken.None);
@@ -63,7 +65,7 @@ public class OperatorWriterTests
         await context.Operators.AddAsync(op);
         await context.SaveChangesAsync();
 
-        var writer = new OperatorWriter(context as IApplicationDbContext);
+        var writer = new OperatorWriter(context as IApplicationDbContext, ServicePrincipal());
 
         await writer.UpdateSyncSummaryAsync(op.OperatorId, DateTimeOffset.UtcNow, SyncTriggerType.Automatic, CancellationToken.None);
 
@@ -84,7 +86,7 @@ public class OperatorWriterTests
         await context.Operators.AddAsync(op);
         await context.SaveChangesAsync();
 
-        var writer = new OperatorWriter(context as IApplicationDbContext);
+        var writer = new OperatorWriter(context as IApplicationDbContext, ServicePrincipal());
         var triggeredAt = DateTimeOffset.UtcNow;
 
         await writer.MarkManualSyncTriggeredAsync(op.OperatorId, triggeredAt, CancellationToken.None);
@@ -96,5 +98,14 @@ public class OperatorWriterTests
             Assert.That(saved.LastSuccessfulSyncAt, Is.Null);
             Assert.That(saved.LastDeviceSyncAt, Is.Null);
         });
+    }
+    // Account-transparent global service identity: these tests exercise sync stamping, while the
+    // by-id account guard is pinned by AccountScopeGuardTests.
+    private static ICurrentPrincipal ServicePrincipal()
+    {
+        var principal = new Mock<ICurrentPrincipal>();
+        principal.SetupGet(p => p.PrincipalType).Returns(PrincipalType.ServiceClient);
+        principal.SetupGet(p => p.AccountId).Returns((Guid?)null);
+        return principal.Object;
     }
 }

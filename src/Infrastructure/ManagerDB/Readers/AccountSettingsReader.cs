@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Common.Application.Interfaces;
 using Common.Domain.Helpers;
 using TrackHub.Manager.Infrastructure.Entities;
 using TrackHub.Manager.Infrastructure.Interfaces;
@@ -20,7 +21,8 @@ using TrackHub.Manager.Infrastructure.Interfaces;
 namespace TrackHub.Manager.Infrastructure.ManagerDB.Readers;
 
 // AccountSettingsReader class for reading account settings data
-public sealed class AccountSettingsReader(IApplicationDbContext context) : IAccountSettingsReader
+public sealed class AccountSettingsReader(IApplicationDbContext context, ICurrentPrincipal principal)
+    : AccountScopedDataAccess(context, principal), IAccountSettingsReader
 {
     /// <summary>
     /// Retrieves an account settings by ID
@@ -30,7 +32,11 @@ public sealed class AccountSettingsReader(IApplicationDbContext context) : IAcco
     /// <returns>Returns an AccountSettingsVm object</returns>
     public async Task<AccountSettingsVm> GetAccountSettingsAsync(Guid id, CancellationToken cancellationToken)
     {
-        var accountSettings = await context.AccountSettings
+        // By-id tenant guard ([AccountScopeEnforcedInHandler] on GetAccountSettingsQuery cites
+        // this); the master path is the Filters overload below (accountSettingsMaster surface).
+        RequireAccountAccess(id);
+
+        var accountSettings = await Context.AccountSettings
             .Where(a => a.AccountId.Equals(id))
             .FirstAsync(cancellationToken);
 
@@ -45,7 +51,7 @@ public sealed class AccountSettingsReader(IApplicationDbContext context) : IAcco
     /// <returns>Returns a collection of AccountSettingsVm objects</returns>
     public async Task<IReadOnlyCollection<AccountSettingsVm>> GetAccountSettingsAsync(Filters filters, CancellationToken cancellationToken)
     {
-        var query = context.AccountSettings.AsQueryable();
+        var query = Context.AccountSettings.AsQueryable();
         query = filters.Apply(query);
 
         var settings = await query.ToListAsync(cancellationToken);

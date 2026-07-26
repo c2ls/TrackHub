@@ -23,18 +23,21 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<OperatorVm> GetOperator([Service] ISender sender, [AsParameters] GetOperatorQuery query)
-        => await sender.Send(query);
+    public async Task<OperatorVm> GetOperator([Service] ISender sender, [AsParameters] GetOperatorQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<OperatorVm>> GetOperatorsMaster([Service] ISender sender, [AsParameters] GetOperatorMasterQuery query)
-        => await sender.Send(query);
+    public async Task<IReadOnlyCollection<OperatorVm>> GetOperatorsMaster([Service] ISender sender, [AsParameters] GetOperatorMasterQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<OperatorVm>> GetOperatorsByCurrentAccount([Service] ISender sender)
-        => await sender.Send(new GetOperatorByCurrentAccountQuery());
+    public async Task<OperatorsPageVm> GetOperatorsByCurrentAccount([Service] ISender sender, [AsParameters] GetOperatorByCurrentAccountQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<OperatorVm>> GetOperatorsByUser([Service] ISender sender)
-        => await sender.Send(new GetOperatorByUserQuery());
+    public async Task<IReadOnlyCollection<OperatorLookupVm>> GetOperatorLookup([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetOperatorLookupByAccountQuery(), cancellationToken);
 
-    public async Task<OperatorVm> GetOperatorByTransporter([Service] ISender sender, [AsParameters] GetOperatorByTransporterQuery query)
-        => await sender.Send(query);
+    public async Task<IReadOnlyCollection<OperatorVm>> GetOperatorsByUser([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetOperatorByUserQuery(), cancellationToken);
+
+    public async Task<OperatorVm> GetOperatorByTransporter([Service] ISender sender, [AsParameters] GetOperatorByTransporterQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 }

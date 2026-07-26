@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Common.Application.Interfaces;
 using Common.Domain.Enums;
 using TrackHub.Manager.Infrastructure.Entities;
 using TrackHub.Manager.Infrastructure.Interfaces;
@@ -20,7 +21,8 @@ using TransporterType = Common.Domain.Enums.TransporterType;
 
 namespace TrackHub.Manager.Infrastructure.ManagerDB.Writers;
 // This class represents a writer for the Transporter entity
-public sealed class TransporterWriter(IApplicationDbContext context) : ITransporterWriter
+public sealed class TransporterWriter(IApplicationDbContext context, ICurrentPrincipal principal)
+    : AccountScopedDataAccess(context, principal), ITransporterWriter
 {
     // Creates a new transporter asynchronously
     // Parameters:
@@ -35,8 +37,8 @@ public sealed class TransporterWriter(IApplicationDbContext context) : ITranspor
             transporterDto.TransporterTypeId,
             transporterDto.AccountId);
 
-        await context.Transporters.AddAsync(transporter, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.Transporters.AddAsync(transporter, cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
 
         return new TransporterVm(
             transporter.TransporterId,
@@ -51,15 +53,16 @@ public sealed class TransporterWriter(IApplicationDbContext context) : ITranspor
     // - cancellationToken: The cancellation token
     public async Task UpdateTransporterAsync(UpdateTransporterDto transporterDto, CancellationToken cancellationToken)
     {
-        var transporter = await context.Transporters.FindAsync(transporterDto.TransporterId, cancellationToken)
+        var transporter = await Context.Transporters.FindAsync(transporterDto.TransporterId, cancellationToken)
             ?? throw new NotFoundException(nameof(Transporter), $"{transporterDto.TransporterId}");
+        RequireAccountWriteAccess(transporter.AccountId);
 
-        context.Transporters.Attach(transporter);
+        Context.Transporters.Attach(transporter);
 
         transporter.Name = transporterDto.Name;
         transporter.TransporterTypeId = transporterDto.TransporterTypeId;
 
-        await context.SaveChangesAsync(cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
     // Deletes a transporter asynchronously
@@ -68,13 +71,14 @@ public sealed class TransporterWriter(IApplicationDbContext context) : ITranspor
     // - cancellationToken: The cancellation token
     public async Task DeleteTransporterAsync(Guid transporterId, CancellationToken cancellationToken)
     {
-        var transporter = await context.Transporters.FindAsync(transporterId, cancellationToken)
+        var transporter = await Context.Transporters.FindAsync(transporterId, cancellationToken)
             ?? throw new NotFoundException(nameof(Transporter), $"{transporterId}");
+        RequireAccountWriteAccess(transporter.AccountId);
 
-        context.Transporters.Attach(transporter);
+        Context.Transporters.Attach(transporter);
 
-        context.Transporters.Remove(transporter);
-        await context.SaveChangesAsync(cancellationToken);
+        Context.Transporters.Remove(transporter);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 
 }

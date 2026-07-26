@@ -14,6 +14,7 @@
 //
 
 using Common.Domain.Constants;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrackHub.Manager.Infrastructure.Entities;
 
@@ -23,12 +24,16 @@ public sealed class GeocodingProviderConfiguration : IEntityTypeConfiguration<Ge
     public void Configure(EntityTypeBuilder<GeocodingProvider> builder)
     {
         //Table name
-        builder.ToTable(name: TableMetadata.GeocodingProvider, schema: SchemaMetadata.Map);
+        builder.ToTable(
+            name: TableMetadata.GeocodingProvider,
+            schema: SchemaMetadata.Map,
+            t => t.HasCheckConstraint("ck_geocoding_providers_type", EnumColumn.Check<GeocodingProviderType>("type")));
 
         //Column names
         builder.Property(x => x.GeocodingProviderId).HasColumnName("id");
         builder.Property(x => x.Name).HasColumnName("name");
-        builder.Property(x => x.Type).HasColumnName("type");
+        builder.Property(x => x.Type).HasColumnName("type")
+            .HasComment(EnumColumn.Comment<GeocodingProviderType>("Geocoding backend this provider row configures."));
         builder.Property(x => x.EndpointUri).HasColumnName("endpointuri");
         builder.Property(x => x.ApiKey).HasColumnName("apikey");
         builder.Property(x => x.Salt).HasColumnName("salt");

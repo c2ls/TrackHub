@@ -17,6 +17,6 @@ namespace TrackHub.Manager.Domain.Interfaces;
 public interface IGroupReader
 {
     Task<GroupVm> GetGroupAsync(long id, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<GroupVm>> GetGroupsByAccountAsync(Guid accountId, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<GroupVm>> GetGroupsByUserAsync(Guid userId, CancellationToken cancellationToken);
+    Task<GroupsPageVm> GetGroupsByAccountAsync(Guid accountId, int skip, int take, string? search, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<GroupLookupVm>> GetGroupLookupByAccountAsync(Guid accountId, int fetchSize, CancellationToken cancellationToken);
 }

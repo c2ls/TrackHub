@@ -13,11 +13,13 @@
 //  limitations under the License.
 //
 
+using Microsoft.Extensions.Configuration;
+
 namespace TrackHub.Manager.Application.Credentials.Command.Update;
 
 public sealed class UpdateCredentialValidator : AbstractValidator<UpdateCredentialCommand>
 {
-    public UpdateCredentialValidator()
+    public UpdateCredentialValidator(IConfiguration configuration)
     {
         RuleFor(v => v.Credential)
             .NotEmpty();
@@ -25,8 +27,6 @@ public sealed class UpdateCredentialValidator : AbstractValidator<UpdateCredenti
         RuleFor(v => v.Credential.CredentialId)
             .NotEmpty();
 
-        RuleFor(v => v.Credential.Uri)
-            .NotEmpty();
-
+        CredentialUriRules.Apply(this, v => v.Credential.Uri, configuration);
     }
 }

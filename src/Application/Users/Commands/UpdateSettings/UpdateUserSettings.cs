@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 namespace TrackHub.Manager.Application.Users.Commands.UpdateSettings;
 
 [Authorize(Resource = Resources.Profile, Action = Actions.Edit)]
+// Enforcement: UserSettingsWriter.RequireSelf binds the caller to their own settings row.
+[AccountScopeEnforcedInHandler]
 public readonly record struct UpdateUserSettingsCommand(UserSettingsDto UserSettings) : IRequest;
 
 public class UpdateUserSettingsCommandHandler(IUserSettingsWriter writer) : IRequestHandler<UpdateUserSettingsCommand>

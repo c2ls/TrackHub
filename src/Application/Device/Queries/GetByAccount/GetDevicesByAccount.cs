@@ -14,19 +14,46 @@
 //
 
 using Common.Application.Interfaces;
+using Common.Application.Paging;
+using TrackHub.Manager.Application.Lookups;
 
 namespace TrackHub.Manager.Application.Device.Queries.GetByAccount;
 
 [Authorize(Resource = Resources.Devices, Action = Actions.Read)]
-public readonly record struct GetDevicesByAccountQuery() : IRequest<IReadOnlyCollection<DeviceVm>>;
+public readonly record struct GetDevicesByAccountQuery(
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<DevicesPageVm>;
 
-public class GetDevicesByAccountQueryHandler(IDeviceReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetDevicesByAccountQuery, IReadOnlyCollection<DeviceVm>>
+public class GetDevicesByAccountQueryHandler(IDeviceReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetDevicesByAccountQuery, DevicesPageVm>
 {
     private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
-    public async Task<IReadOnlyCollection<DeviceVm>> Handle(GetDevicesByAccountQuery request, CancellationToken cancellationToken)
+    public async Task<DevicesPageVm> Handle(GetDevicesByAccountQuery request, CancellationToken cancellationToken)
     {
         var user = await userReader.GetUserAsync(UserId, cancellationToken);
-        return await reader.GetDevicesByAccountAsync(user.AccountId, cancellationToken);
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetDevicesByAccountAsync(user.AccountId, skip, take, request.Search, cancellationToken);
     }
 
+}
+
+/// <summary>
+/// Device picker feed for the caller's account: id and name only, unpaged, capped by
+/// <see cref="LookupLimits.Ceiling"/> so an oversized fleet raises instead of silently shortening
+/// the list a control binds.
+/// </summary>
+[Authorize(Resource = Resources.Devices, Action = Actions.Read)]
+public readonly record struct GetDeviceLookupByAccountQuery() : IRequest<IReadOnlyCollection<DeviceLookupVm>>;
+
+public class GetDeviceLookupByAccountQueryHandler(IDeviceReader reader, IUserReader userReader, IUser user)
+    : IRequestHandler<GetDeviceLookupByAccountQuery, IReadOnlyCollection<DeviceLookupVm>>
+{
+    private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
+
+    public async Task<IReadOnlyCollection<DeviceLookupVm>> Handle(GetDeviceLookupByAccountQuery request, CancellationToken cancellationToken)
+    {
+        var user = await userReader.GetUserAsync(UserId, cancellationToken);
+        var rows = await reader.GetDeviceLookupByAccountAsync(user.AccountId, LookupLimits.FetchSize, cancellationToken);
+        return LookupLimits.EnsureWithinCeiling(rows, "deviceLookup");
+    }
 }

@@ -19,6 +19,7 @@ using Common.Application.GraphQL.Inputs;
 namespace TrackHub.Manager.Application.DeviceTransporter.Queries.GetMaster;
 
 [Authorize(Resource = Resources.DevicesMaster, Action = Actions.Read)]
+[AllowCrossAccount("Master surface: the Router/SyncWorker global service identity (no account claim) reads device-transporter pairs across every account for position routing; the portal systemadmin console shares it. The DevicesMaster resource gates access.")]
 public readonly record struct GetDeviceTransporterMasterQuery(FiltersInput Filter) : IRequest<IReadOnlyCollection<DeviceTransporterVm>>;
 
 public class GetDeviceTransporterQueryHandler(IDeviceTransporterReader reader) : IRequestHandler<GetDeviceTransporterMasterQuery, IReadOnlyCollection<DeviceTransporterVm>>

@@ -14,13 +14,26 @@
 //
 
 using Common.Web.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using TrackHub.Manager.Infrastructure;
-using TrackHub.Manager.Infrastructure.Entities;
-using TrackHub.Manager.Infrastructure.ManagerDB;
+using TrackHub.Manager.Domain.Enums;
+using TrackHub.Manager.Domain.Interfaces;
 
 namespace TrackHub.Manager.Web.Endpoints;
 
+/// <summary>
+/// Anonymous public-link resolution. The HTTP contract is fixed: same route, same query parameters,
+/// same 400/404/410/200 semantics and the same JSON body shape.
+/// <para>
+/// This endpoint calls <see cref="IPublicLinkGrantResolver"/> DIRECTLY rather than sending
+/// <c>ResolvePublicLinkGrantCommand</c> through the mediator. That is the point of extracting the
+/// logic behind an interface instead of behind the command alone: the request is anonymous, so there
+/// is no principal for <c>AuthorizationBehavior</c> (or <c>AccountStatusBehavior</c>) to evaluate.
+/// Routing it through the pipeline would mean either widening the command's <c>PrincipalTypes</c> to
+/// admit unauthenticated callers — which would also expose it to real unauthenticated GraphQL
+/// traffic — or bolting a bypass onto the pipeline itself. Calling the shared service keeps the
+/// anonymity local to this one endpoint while still guaranteeing one implementation of hashing,
+/// scope checking, access counting and the `PublicLinkAccessed` audit event.
+/// </para>
+/// </summary>
 public sealed class PublicLinks : EndpointGroupBase
 {
     public override void Map(WebApplication app)
@@ -35,7 +48,7 @@ public sealed class PublicLinks : EndpointGroupBase
         string resourceId,
         string scope,
         string token,
-        ApplicationDbContext context,
+        IPublicLinkGrantResolver resolver,
         CancellationToken cancellationToken)
     {
         if (accountId == Guid.Empty
@@ -47,44 +60,21 @@ public sealed class PublicLinks : EndpointGroupBase
             return Results.BadRequest();
         }
 
-        var tokenHash = PublicLinkTokenHasher.Hash(token);
-        var grant = await context.PublicLinkGrants
-            .FirstOrDefaultAsync(x =>
-                x.PublicLinkGrantId == publicLinkGrantId
-                && x.AccountId == accountId
-                && x.ResourceType == resourceType
-                && x.ResourceId == resourceId
-                && x.SubjectTokenIdHash == tokenHash,
-                cancellationToken);
+        var result = await resolver.ResolvePublicLinkGrantAsync(
+            publicLinkGrantId, accountId, resourceType, resourceId, scope, token, cancellationToken);
 
-        if (grant == null || grant.RevokedAt.HasValue || !HasScope(grant.Scopes, scope))
-        {
-            return Results.NotFound();
-        }
-
-        if (grant.ExpiresAt <= DateTimeOffset.UtcNow)
+        if (result.Resolution == PublicLinkResolution.Expired)
         {
             return Results.StatusCode(StatusCodes.Status410Gone);
         }
 
-        grant.AccessCount++;
-        grant.LastAccessedAt = DateTimeOffset.UtcNow;
-        context.AuditEvents.Add(new AuditEvent(
-            grant.AccountId,
-            "PublicLink",
-            grant.PublicLinkGrantId.ToString(),
-            "PublicLinkAccessed",
-            "PublicLinkGrant",
-            grant.PublicLinkGrantId.ToString(),
-            "Succeeded",
-            null,
-            $$"""{"resourceType":"{{grant.ResourceType}}","resourceId":"{{grant.ResourceId}}","scope":"{{scope}}","accessCount":{{grant.AccessCount}}}""",
-            null,
-            null,
-            null,
-            null));
-        await context.SaveChangesAsync(cancellationToken);
+        // NotFound covers "no such grant", "revoked" and "scope not granted" alike — non-disclosure.
+        if (result.Resolution != PublicLinkResolution.Found || result.Grant is not { } grant)
+        {
+            return Results.NotFound();
+        }
 
+        // Body shape is the pre-existing contract; the grant's Token is never included here.
         return Results.Ok(new
         {
             grant.PublicLinkGrantId,
@@ -98,9 +88,4 @@ public sealed class PublicLinks : EndpointGroupBase
             grant.LastAccessedAt
         });
     }
-
-    private static bool HasScope(string scopes, string requestedScope)
-        => scopes
-            .Split([' ', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Any(scope => string.Equals(scope, requestedScope, StringComparison.OrdinalIgnoreCase));
 }

@@ -19,6 +19,9 @@ namespace TrackHub.Manager.Application.Operators.Queries.GetByTransporter;
 // position read/replay flows (operatorByTransporter). Removed by mistake in the telemetry
 // refactor; the ServiceContracts Layer A tests now guard this call.
 [Authorize(Resource = Resources.Operators, Action = Actions.Read)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetOperatorByTransporterQuery(Guid TransporterId) : IRequest<OperatorVm>;
 
 public class GetOperatorByTransporterQueryHandler(IOperatorReader reader) : IRequestHandler<GetOperatorByTransporterQuery, OperatorVm>

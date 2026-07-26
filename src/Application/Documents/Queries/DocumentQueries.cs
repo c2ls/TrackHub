@@ -11,6 +11,7 @@ public class GetDocumentsForOwnerQueryHandler(IDocumentReader reader) : IRequest
 
 // Drivers download their assigned documents via this query (assignment enforced in the reader).
 [Authorize(Resource = Resources.Documents, Action = Actions.Read, PrincipalTypes = "User,Driver,ServiceClient")]
+[AllowCrossAccount("TripManagement's DocumentClient fetches POD documents under the global trip_client identity with no account claim. User/driver callers are NOT unguarded by this: DocumentReader.GetDocumentAsync loads the row and RequireAccountAccess checks its owning account (drivers additionally by assignment).")]
 public readonly record struct GetDocumentQuery(Guid DocumentId) : IRequest<DocumentVm>;
 public class GetDocumentQueryHandler(IDocumentReader reader) : IRequestHandler<GetDocumentQuery, DocumentVm>
 {
@@ -18,6 +19,9 @@ public class GetDocumentQueryHandler(IDocumentReader reader) : IRequestHandler<G
 }
 
 [Authorize(Resource = Resources.Documents, Action = Actions.Read)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetDocumentVersionsQuery(Guid DocumentId, int Skip = 0, int Take = 50) : IRequest<IReadOnlyCollection<DocumentVersionVm>>;
 public class GetDocumentVersionsQueryHandler(IDocumentReader reader) : IRequestHandler<GetDocumentVersionsQuery, IReadOnlyCollection<DocumentVersionVm>>
 {
@@ -32,6 +36,9 @@ public class GetActiveDocumentByCategoryQueryHandler(IDocumentReader reader) : I
 }
 
 [Authorize(Resource = Resources.Documents, Action = Actions.Read)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetDocumentSignaturesQuery(Guid DocumentId) : IRequest<IReadOnlyCollection<DocumentSignatureVm>>;
 public class GetDocumentSignaturesQueryHandler(IDocumentReader reader) : IRequestHandler<GetDocumentSignaturesQuery, IReadOnlyCollection<DocumentSignatureVm>>
 {
@@ -57,6 +64,9 @@ public class GetExpiringDocumentsQueryHandler(IDocumentReader reader) : IRequest
 
 [Authorize(Resource = Resources.Documents, Action = Actions.Read)]
 [RequireFeature(FeatureKeys.Documents)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetDocumentSharesQuery(Guid DocumentId) : IRequest<IReadOnlyCollection<PublicLinkGrantVm>>;
 public class GetDocumentSharesQueryHandler(IDocumentReader reader) : IRequestHandler<GetDocumentSharesQuery, IReadOnlyCollection<PublicLinkGrantVm>>
 {

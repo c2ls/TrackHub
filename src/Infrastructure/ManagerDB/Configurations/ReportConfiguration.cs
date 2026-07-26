@@ -14,6 +14,7 @@
 //
 
 using Common.Domain.Constants;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrackHub.Manager.Infrastructure.Entities;
 
@@ -24,13 +25,17 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
     public void Configure(EntityTypeBuilder<Report> builder)
     {
         //Table name
-        builder.ToTable(name: TableMetadata.Report, schema: SchemaMetadata.Application);
+        builder.ToTable(
+            name: TableMetadata.Report,
+            schema: SchemaMetadata.Application,
+            t => t.HasCheckConstraint("ck_reports_type", EnumColumn.Check<ReportType>("type")));
 
         //Column names
         builder.Property(x => x.ReportId).HasColumnName("id");
         builder.Property(x => x.Code).HasColumnName("code");
         builder.Property(x => x.Description).HasColumnName("description");
-        builder.Property(x => x.Type).HasColumnName("type");
+        builder.Property(x => x.Type).HasColumnName("type")
+            .HasComment(EnumColumn.Comment<ReportType>("Provenance of the report definition."));
         builder.Property(x => x.Active).HasColumnName("active");
         builder.Property(x => x.Category).HasColumnName("category").HasMaxLength(ColumnMetadata.DefaultFieldLength).IsRequired();
         builder.Property(x => x.RequiredFeatureKey).HasColumnName("requiredfeaturekey").HasMaxLength(ColumnMetadata.DefaultNameLength);

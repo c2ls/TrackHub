@@ -4,5 +4,5 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<CurrentPrincipalVm> GetCurrentPrincipal([Service] ISender sender) => await sender.Send(new GetCurrentPrincipalQuery());
+    public async Task<CurrentPrincipalVm> GetCurrentPrincipal([Service] ISender sender, CancellationToken cancellationToken) => await sender.Send(new GetCurrentPrincipalQuery(), cancellationToken);
 }

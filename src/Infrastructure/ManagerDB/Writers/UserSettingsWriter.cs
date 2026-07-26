@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -13,14 +13,31 @@
 //  limitations under the License.
 //
 
+using Common.Application.Exceptions;
+using Common.Application.Interfaces;
 using TrackHub.Manager.Infrastructure.Entities;
 using TrackHub.Manager.Infrastructure.Interfaces;
 
 namespace TrackHub.Manager.Infrastructure.ManagerDB.Writers;
 
-// UserSettingsWriter class for handling user settings-related operations
-public sealed class UserSettingsWriter(IApplicationDbContext context) : IUserSettingsWriter
+// UserSettingsWriter class for handling user settings-related operations. UpdateUserSettingsAsync
+// is the [Authorize(Profile/Edit)] SELF surface: the row key is a UserId off the wire, so the
+// caller is bound to their own row here (the enforcement point UpdateUserSettingsCommand's
+// [AccountScopeEnforcedInHandler] marker cites). Create/Delete run inside the user provisioning
+// and deletion flows, which are guarded upstream by the user replica writer.
+public sealed class UserSettingsWriter(IApplicationDbContext context, ICurrentPrincipal principal) : IUserSettingsWriter
 {
+    private void RequireSelf(Guid userId)
+    {
+        if ((principal.PrincipalType == PrincipalType.ServiceClient && !principal.AccountId.HasValue)
+            || principal.UserId == userId)
+        {
+            return;
+        }
+
+        throw new ForbiddenAccessException("Insufficient permissions. Settings may only be changed for the calling user.");
+    }
+
     /// <summary>
     /// Creates a new user setting asynchronously
     /// </summary>
@@ -50,6 +67,8 @@ public sealed class UserSettingsWriter(IApplicationDbContext context) : IUserSet
     /// <exception cref="NotFoundException"></exception>
     public async Task UpdateUserSettingsAsync(UserSettingsDto userSettingsDto, CancellationToken cancellationToken)
     {
+        RequireSelf(userSettingsDto.UserId);
+
         var userSettings = await context.UserSettings.FindAsync([userSettingsDto.UserId], cancellationToken)
             ?? throw new NotFoundException(nameof(UserSettings), $"{userSettingsDto.UserId}");
 

@@ -9,7 +9,9 @@ public sealed class DriverWriter(IApplicationDbContext context, ICurrentPrincipa
 {
     public async Task<DriverVm> CreateDriverAsync(DriverDto driver, CancellationToken cancellationToken)
     {
-        var entity = new Driver(RequireAccountWriteAccess(driver.AccountId), driver.Name, driver.Phone, driver.DocumentType, driver.DocumentNumber, driver.Active, driver.EmployeeCode, driver.LicenseNumber, driver.LicenseExpiresAt, driver.DefaultTransporterId);
+        var accountId = RequireAccountWriteAccess(driver.AccountId);
+        await RequireTransporterInAccountAsync(driver.DefaultTransporterId, accountId, cancellationToken);
+        var entity = new Driver(accountId, driver.Name, driver.Phone, driver.DocumentType, driver.DocumentNumber, driver.Active, driver.EmployeeCode, driver.LicenseNumber, driver.LicenseExpiresAt, driver.DefaultTransporterId);
         await Context.Drivers.AddAsync(entity, cancellationToken);
         AddAuditEvent(entity.AccountId, "CreateDriver", "Driver", entity.DriverId.ToString(), null, AuditValues(entity));
         await Context.SaveChangesAsync(cancellationToken);
@@ -23,6 +25,8 @@ public sealed class DriverWriter(IApplicationDbContext context, ICurrentPrincipa
         {
             throw new ForbiddenAccessException();
         }
+
+        await RequireTransporterInAccountAsync(driver.DefaultTransporterId, entity.AccountId, cancellationToken);
 
         Context.Drivers.Attach(entity);
         var oldValues = AuditValues(entity);
@@ -49,6 +53,27 @@ public sealed class DriverWriter(IApplicationDbContext context, ICurrentPrincipa
         await Context.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Spec 09 §5: cross-account transporter references must fail. Without this, a driver in account A
+    /// could be pointed at a transporter in account B, and because <c>ValidateDriverAssignment</c>
+    /// accepts the default-transporter match, <c>DocumentAccessPolicy</c> would then grant that driver
+    /// access to account B's documents. The assignment path always checked this; the default-transporter
+    /// scalar did not.
+    /// </summary>
+    private async Task RequireTransporterInAccountAsync(Guid? transporterId, Guid accountId, CancellationToken cancellationToken)
+    {
+        if (!transporterId.HasValue)
+        {
+            return;
+        }
+
+        var exists = await Context.Transporters.AnyAsync(x => x.TransporterId == transporterId.Value && x.AccountId == accountId, cancellationToken);
+        if (!exists)
+        {
+            throw new NotFoundException(nameof(Transporter), transporterId.Value.ToString());
+        }
+    }
+
     private async Task<Driver> GetDriverForWriteAsync(Guid driverId, CancellationToken cancellationToken)
     {
         var entity = await Context.Drivers.FirstAsync(x => x.DriverId == driverId, cancellationToken);
@@ -59,5 +84,5 @@ public sealed class DriverWriter(IApplicationDbContext context, ICurrentPrincipa
     private static DriverVm ToVm(Driver x) => new(x.DriverId, x.AccountId, x.Name, x.Phone, x.DocumentType, x.DocumentNumber, x.Active, x.EmployeeCode, x.LicenseNumber, x.LicenseExpiresAt, x.DefaultTransporterId, x.LastModified);
 
     private static string AuditValues(Driver driver)
-        => $$"""{"name":{{Quote(driver.Name)}},"phone":{{Quote(driver.Phone)}},"documentType":{{Quote(driver.DocumentType)}},"documentNumber":{{Quote(driver.DocumentNumber)}},"active":{{(driver.Active ? "true" : "false")}},"employeeCode":{{Quote(driver.EmployeeCode)}},"licenseNumber":{{Quote(driver.LicenseNumber)}},"defaultTransporterId":{{Quote(driver.DefaultTransporterId?.ToString())}}}""";
+        => $$"""{"name":{{Quote(driver.Name)}},"phone":{{Quote(driver.Phone)}},"documentType":{{Quote(driver.DocumentType)}},"documentNumber":{{Quote(driver.DocumentNumber)}},"active":{{(driver.Active ? "true" : "false")}},"employeeCode":{{Quote(driver.EmployeeCode)}},"licenseNumber":{{Quote(driver.LicenseNumber)}},"licenseExpiresAt":{{Quote(driver.LicenseExpiresAt?.ToString("O"))}},"defaultTransporterId":{{Quote(driver.DefaultTransporterId?.ToString())}}}""";
 }

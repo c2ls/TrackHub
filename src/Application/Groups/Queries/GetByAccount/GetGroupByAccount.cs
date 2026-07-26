@@ -14,20 +14,46 @@
 //
 
 using Common.Application.Interfaces;
+using Common.Application.Paging;
+using TrackHub.Manager.Application.Lookups;
 
 namespace TrackHub.Manager.Application.Groups.Queries.GetByAccount;
 
 [Authorize(Resource = Resources.Groups, Action = Actions.Read)]
-public readonly record struct GetGroupByAccountQuery() : IRequest<IReadOnlyCollection<GroupVm>>;
+public readonly record struct GetGroupByAccountQuery(
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<GroupsPageVm>;
 
-public class GetGroupsQueryHandler(IGroupReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetGroupByAccountQuery, IReadOnlyCollection<GroupVm>>
+public class GetGroupsQueryHandler(IGroupReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetGroupByAccountQuery, GroupsPageVm>
 {
     private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
 
-    public async Task<IReadOnlyCollection<GroupVm>> Handle(GetGroupByAccountQuery request, CancellationToken cancellationToken)
+    public async Task<GroupsPageVm> Handle(GetGroupByAccountQuery request, CancellationToken cancellationToken)
     {
         var user = await userReader.GetUserAsync(UserId, cancellationToken);
-        return await reader.GetGroupsByAccountAsync(user.AccountId, cancellationToken); 
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetGroupsByAccountAsync(user.AccountId, skip, take, request.Search, cancellationToken);
     }
 
+}
+
+/// <summary>
+/// Group picker feed for the caller's account: id and name only, unpaged, capped by
+/// <see cref="LookupLimits.Ceiling"/>.
+/// </summary>
+[Authorize(Resource = Resources.Groups, Action = Actions.Read)]
+public readonly record struct GetGroupLookupByAccountQuery() : IRequest<IReadOnlyCollection<GroupLookupVm>>;
+
+public class GetGroupLookupByAccountQueryHandler(IGroupReader reader, IUserReader userReader, IUser user)
+    : IRequestHandler<GetGroupLookupByAccountQuery, IReadOnlyCollection<GroupLookupVm>>
+{
+    private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
+
+    public async Task<IReadOnlyCollection<GroupLookupVm>> Handle(GetGroupLookupByAccountQuery request, CancellationToken cancellationToken)
+    {
+        var user = await userReader.GetUserAsync(UserId, cancellationToken);
+        var rows = await reader.GetGroupLookupByAccountAsync(user.AccountId, LookupLimits.FetchSize, cancellationToken);
+        return LookupLimits.EnsureWithinCeiling(rows, "groupLookup");
+    }
 }

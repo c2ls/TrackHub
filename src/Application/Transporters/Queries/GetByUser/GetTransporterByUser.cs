@@ -14,17 +14,24 @@
 //
 
 using Common.Application.Interfaces;
+using Common.Application.Paging;
 
 namespace TrackHub.Manager.Application.Transporters.Queries.GetByUser;
 
 [Authorize(Resource = Resources.Transporters, Action = Actions.Read)]
-public readonly record struct GetTransporterByUserQuery() : IRequest<IReadOnlyCollection<TransporterVm>>;
+public readonly record struct GetTransporterByUserQuery(
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<TransportersPageVm>;
 
-public class GetTransportersQueryHandler(ITransporterReader reader, IUser user) : IRequestHandler<GetTransporterByUserQuery, IReadOnlyCollection<TransporterVm>>
+public class GetTransportersQueryHandler(ITransporterReader reader, IUser user) : IRequestHandler<GetTransporterByUserQuery, TransportersPageVm>
 {
     private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
 
-    public async Task<IReadOnlyCollection<TransporterVm>> Handle(GetTransporterByUserQuery request, CancellationToken cancellationToken)
-        => await reader.GetTransportersByUserAsync(UserId, cancellationToken);
+    public async Task<TransportersPageVm> Handle(GetTransporterByUserQuery request, CancellationToken cancellationToken)
+    {
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetTransportersByUserAsync(UserId, skip, take, request.Search, cancellationToken);
+    }
 
 }

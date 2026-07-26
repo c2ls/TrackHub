@@ -25,31 +25,31 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<AccountVm> GetAccount([Service] ISender sender, [AsParameters] GetAccountQuery query)
-        => await sender.Send(query);
+    public async Task<AccountVm> GetAccount([Service] ISender sender, [AsParameters] GetAccountQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<AccountBrandingVm> GetAccountBranding([Service] ISender sender, [AsParameters] GetAccountBrandingQuery query)
-        => await sender.Send(query);
+    public async Task<AccountBrandingVm> GetAccountBranding([Service] ISender sender, [AsParameters] GetAccountBrandingQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<AccountContextVm> GetAccountContext([Service] ISender sender)
-        => await sender.Send(new GetAccountContextQuery());
+    public async Task<AccountContextVm> GetAccountContext([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetAccountContextQuery(), cancellationToken);
 
-    public async Task<short> GetAccountStatus([Service] ISender sender, [AsParameters] GetAccountStatusQuery query)
-        => await sender.Send(query);
+    public async Task<short> GetAccountStatus([Service] ISender sender, [AsParameters] GetAccountStatusQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<AccountVm> GetAccountByUser([Service] ISender sender)
-        => await sender.Send(new GetAccountByUserQuery());
+    public async Task<AccountVm> GetAccountByUser([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetAccountByUserQuery(), cancellationToken);
 
-    public async Task<AccountSettingsVm> GetAccountSettings([Service] ISender sender, [AsParameters] GetAccountSettingsQuery query)
-        => await sender.Send(query);
+    public async Task<AccountSettingsVm> GetAccountSettings([Service] ISender sender, [AsParameters] GetAccountSettingsQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<AccountSettingsVm>> GetAccountSettingsMaster([Service] ISender sender, [AsParameters] GetAccountSettingsMasterQuery query)
-        => await sender.Send(query);
+    public async Task<IReadOnlyCollection<AccountSettingsVm>> GetAccountSettingsMaster([Service] ISender sender, [AsParameters] GetAccountSettingsMasterQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<AccountSettingsVm> GetAccountSettingsByUser([Service] ISender sender)
-        => await sender.Send(new GetAccountSettingsByUserQuery());
+    public async Task<AccountSettingsVm> GetAccountSettingsByUser([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetAccountSettingsByUserQuery(), cancellationToken);
 
-    public async Task<IReadOnlyCollection<AccountVm>> GetAccounts([Service] ISender sender)
-        => await sender.Send(new GetAccountsQuery());
+    public async Task<AccountsPageVm> GetAccounts([Service] ISender sender, [AsParameters] GetAccountsQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
 }

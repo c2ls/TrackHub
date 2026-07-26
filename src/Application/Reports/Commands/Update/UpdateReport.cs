@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 namespace TrackHub.Manager.Application.Reports.Commands.Update;
 
 [Authorize(Resource = Resources.Reports, Action = Actions.Edit)]
+[PlatformScoped("Spec-06 governed report catalog: one platform-owned row set (code, category, feature and format metadata) serves every tenant; no tenant owns a row.")]
 public readonly record struct UpdateReportCommand(UpdateReportDto Report) : IRequest;
 
 public class UpdateReportCommandHandler(IReportWriter writer) : IRequestHandler<UpdateReportCommand>

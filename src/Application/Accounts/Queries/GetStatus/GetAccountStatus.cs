@@ -22,6 +22,7 @@ namespace TrackHub.Manager.Application.Accounts.Queries.GetStatus;
 // [AllowSuspendedAccount] so a suspended account's own status is still readable — otherwise the
 // cross-service status check would deadlock against itself. Returns 0 for an unknown account.
 [AllowSuspendedAccount]
+[AllowCrossAccount("Cross-service status probe. Router/SyncWorker and Reporting read it under their global service identity for the account they are about to act on — by definition not the caller's own. Returns a status code only, no tenant data.")]
 public readonly record struct GetAccountStatusQuery(Guid AccountId) : IRequest<short>;
 
 public class GetAccountStatusQueryHandler(IAccountOperationalStatusReader reader)

@@ -14,19 +14,24 @@
 //
 
 using Common.Application.Interfaces;
+using Common.Application.Paging;
 
 namespace TrackHub.Manager.Application.Transporters.Queries.GetByAccount;
 
 [Authorize(Resource = Resources.Transporters, Action = Actions.Read)]
-public readonly record struct GetTransportersByAccountQuery() : IRequest<IReadOnlyCollection<TransporterVm>>;
+public readonly record struct GetTransportersByAccountQuery(
+    int? Skip,
+    int? Take,
+    string? Search) : IRequest<TransportersPageVm>;
 
-public class GetTransportersByAccountQueryHandler(ITransporterReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetTransportersByAccountQuery, IReadOnlyCollection<TransporterVm>>
+public class GetTransportersByAccountQueryHandler(ITransporterReader reader, IUserReader userReader, IUser user) : IRequestHandler<GetTransportersByAccountQuery, TransportersPageVm>
 {
     private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
-    public async Task<IReadOnlyCollection<TransporterVm>> Handle(GetTransportersByAccountQuery request, CancellationToken cancellationToken)
+    public async Task<TransportersPageVm> Handle(GetTransportersByAccountQuery request, CancellationToken cancellationToken)
     {
         var user = await userReader.GetUserAsync(UserId, cancellationToken);
-        return await reader.GetTransportersByAccountAsync(user.AccountId, cancellationToken);
+        var (skip, take) = PageRequest.Clamp(request.Skip, request.Take);
+        return await reader.GetTransportersByAccountAsync(user.AccountId, skip, take, request.Search, cancellationToken);
     }
 
 }

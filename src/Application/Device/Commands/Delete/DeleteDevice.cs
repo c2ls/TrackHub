@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 namespace TrackHub.Manager.Application.Device.Commands.Delete;
 
 [Authorize(Resource = Resources.Devices, Action = Actions.Delete)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct DeleteDeviceCommand(Guid DeviceId) : IRequest;
 
 public class DeleteDeviceCommandHandler(IDeviceWriter writer) : IRequestHandler<DeleteDeviceCommand>

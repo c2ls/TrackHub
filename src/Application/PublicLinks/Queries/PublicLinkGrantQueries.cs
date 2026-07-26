@@ -1,6 +1,9 @@
 namespace TrackHub.Manager.Application.PublicLinks.Queries;
 
 [Authorize(Resource = Resources.PublicLinks, Action = Actions.Read)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetPublicLinkGrantQuery(Guid PublicLinkGrantId) : IRequest<PublicLinkGrantVm>;
 public class GetPublicLinkGrantQueryHandler(IPublicLinkGrantReader reader) : IRequestHandler<GetPublicLinkGrantQuery, PublicLinkGrantVm>
 {

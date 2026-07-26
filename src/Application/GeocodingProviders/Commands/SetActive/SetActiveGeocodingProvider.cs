@@ -16,6 +16,7 @@
 namespace TrackHub.Manager.Application.GeocodingProviders.Commands.SetActive;
 
 [Authorize(Resource = Resources.GeocodingProviders, Action = Actions.Edit)]
+[PlatformScoped("Platform geocoding-provider registry: one active provider serves every tenant, administered from the Administrator console; no tenant owns a row.")]
 public readonly record struct SetActiveGeocodingProviderCommand(Guid Id) : IRequest;
 
 // Activation enforces the single-active rule: the writer deactivates every other

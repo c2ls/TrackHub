@@ -48,15 +48,33 @@ public sealed class DocumentWriter(IApplicationDbContext context, ICurrentPrinci
         => await UpdateDocumentAsync(documentId, "MarkDocumentUploaded", x => x.Status = status, cancellationToken);
 
     public async Task MarkDocumentScanResultAsync(Guid documentId, string scanStatus, CancellationToken cancellationToken)
-        => await UpdateDocumentAsync(documentId, "MarkDocumentScanResult", x =>
+    {
+        var entity = await Context.Documents.FirstOrDefaultAsync(x => x.DocumentId == documentId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Document), documentId.ToString());
+        RequireAccountWriteAccess(entity.AccountId);
+        Context.Documents.Attach(entity);
+        var oldValues = AuditValues(entity);
+
+        entity.ScanStatus = scanStatus;
+        // Clean bytes graduate a still-quarantined document to Active.
+        if (string.Equals(scanStatus, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase) && entity.Status == DocumentStatuses.Uploaded)
         {
-            x.ScanStatus = scanStatus;
-            // Clean bytes graduate a still-quarantined document to Active.
-            if (string.Equals(scanStatus, DocumentScanStatuses.Clean, StringComparison.OrdinalIgnoreCase) && x.Status == DocumentStatuses.Uploaded)
-            {
-                x.Status = DocumentStatuses.Active;
-            }
-        }, cancellationToken);
+            entity.Status = DocumentStatuses.Active;
+        }
+
+        // The verdict belongs to the BYTES, and the bytes are the current version's. Writing both
+        // keeps the document-level column a safe denormalisation of the version it describes.
+        var version = await Context.DocumentVersions
+            .FirstOrDefaultAsync(v => v.DocumentId == entity.DocumentId && v.VersionNumber == entity.CurrentVersion, cancellationToken);
+        if (version is not null)
+        {
+            Context.DocumentVersions.Attach(version);
+            version.ScanStatus = scanStatus;
+        }
+
+        AddAuditEvent(entity.AccountId, "MarkDocumentScanResult", "Document", entity.DocumentId.ToString(), oldValues, AuditValues(entity));
+        await Context.SaveChangesAsync(cancellationToken);
+    }
 
     public async Task ExpireDocumentAsync(Guid documentId, DateTimeOffset expiresAt, CancellationToken cancellationToken)
         => await UpdateDocumentAsync(documentId, "ExpireDocument", x => { x.ExpiresAt = expiresAt; x.Status = DocumentStatuses.Expired; }, cancellationToken);

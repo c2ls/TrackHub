@@ -87,25 +87,36 @@ public sealed class DocumentExpirationService(
 
         foreach (var doc in candidates)
         {
-            if (doc.ExpiresAt <= now)
+            // One bad document must not abandon the rest of the batch until the next tick.
+            try
             {
-                if (await TryRaiseAsync(context, evaluator, doc.DocumentId, doc.AccountId, doc.Category, "expired", doc.ExpiresAt, now, cancellationToken))
+                if (doc.ExpiresAt <= now)
                 {
-                    await MarkExpiredAsync(context, doc.DocumentId, cancellationToken);
-                    expiredRaised++;
+                    if (await TryRaiseAsync(context, evaluator, doc.DocumentId, doc.AccountId, doc.Category, "expired", doc.ExpiresAt, now, cancellationToken))
+                    {
+                        expiredRaised++;
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            // Raise only the nearest crossed threshold (smallest T with daysLeft <= T). Idempotency keeps
-            // it exactly-once; picking the nearest band means a document that enters the 7-day window
-            // never later back-fires the 15/30-day alerts.
-            var daysLeft = (doc.ExpiresAt - now).TotalDays;
-            var crossed = DocumentLimits.ExpirationThresholdsDays.Where(t => daysLeft <= t).ToList();
-            if (crossed.Count > 0
-                && await TryRaiseAsync(context, evaluator, doc.DocumentId, doc.AccountId, doc.Category, crossed.Min().ToString(), doc.ExpiresAt, now, cancellationToken))
+                // Raise only the nearest crossed threshold (smallest T with daysLeft <= T). Idempotency keeps
+                // it exactly-once; picking the nearest band means a document that enters the 7-day window
+                // never later back-fires the 15/30-day alerts.
+                var daysLeft = (doc.ExpiresAt - now).TotalDays;
+                var crossed = DocumentLimits.ExpirationThresholdsDays.Where(t => daysLeft <= t).ToList();
+                if (crossed.Count > 0
+                    && await TryRaiseAsync(context, evaluator, doc.DocumentId, doc.AccountId, doc.Category, crossed.Min().ToString(), doc.ExpiresAt, now, cancellationToken))
+                {
+                    expiringRaised++;
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                expiringRaised++;
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to raise the expiration alert for document {DocumentId}; continuing the batch.", doc.DocumentId);
             }
         }
 
@@ -114,6 +125,14 @@ public sealed class DocumentExpirationService(
     }
 
     // Idempotency key {documentId}:{threshold} guarantees exactly-once per (document, threshold).
+    //
+    // The marker is the LAST thing written, after the fan-out and the Active → Expired transition have
+    // both succeeded. Writing it first burned the key before the work was known to have happened, so a
+    // throw in between left the document Active with its "expired" alert already claimed — and, the key
+    // carrying no date, nothing ever retried it. The alert event is deduplicated on
+    // (AccountId, DeduplicationKey, Status != Resolved) the way AlertEventWriter does it, and the
+    // evaluator suppresses a repeat delivery for an alert event it has already fanned out, so a retry
+    // after a partial failure resumes rather than duplicating.
     private static async Task<bool> TryRaiseAsync(ApplicationDbContext context, IAlertRuleEvaluator evaluator, Guid documentId, Guid accountId, string category, string threshold, DateTimeOffset expiresAt, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var idempotencyKey = $"{documentId:N}:{threshold}";
@@ -127,27 +146,45 @@ public sealed class DocumentExpirationService(
         var isExpired = threshold == "expired";
         var eventType = isExpired ? "DocumentExpired" : "DocumentExpiring";
         var dedupKey = $"{eventType}:{documentId:N}:{threshold}";
-        var alertEvent = new AlertEvent(accountId, eventType, isExpired ? "High" : "Warning", "Documents", "Document", documentId.ToString(), "Open", $$"""{"threshold":"{{threshold}}","category":"{{category}}","expiresAt":"{{expiresAt:O}}"}""", dedupKey);
-        context.AlertEvents.Add(alertEvent);
-        context.BackgroundJobRuns.Add(new BackgroundJobRun(JobKey, accountId, documentId.ToString(), idempotencyKey, "Succeeded", 1, now) { CompletedAt = DateTimeOffset.UtcNow });
+        var payloadJson = $$"""{"threshold":"{{threshold}}","category":"{{category}}","expiresAt":"{{expiresAt:O}}"}""";
+
+        var alertEvent = await context.AlertEvents.FirstOrDefaultAsync(
+            e => e.AccountId == accountId && e.DeduplicationKey == dedupKey && e.Status != "Resolved", cancellationToken);
+        if (alertEvent is null)
+        {
+            alertEvent = new AlertEvent(accountId, eventType, isExpired ? "High" : "Warning", "Documents", "Document", documentId.ToString(), "Open", payloadJson, dedupKey);
+            context.AlertEvents.Add(alertEvent);
+        }
+        else
+        {
+            context.AlertEvents.Attach(alertEvent);
+            alertEvent.LastSeenAt = DateTimeOffset.UtcNow;
+            alertEvent.PayloadJson = payloadJson;
+        }
+
+        // Persisted before the fan-out: the deliveries the evaluator writes carry the alert event id.
         await context.SaveChangesAsync(cancellationToken);
 
-        // Notification fan-out for the document alert; the evaluator swallows nothing —
-        // callers of this job treat evaluation failure as non-fatal via the outer cycle handler.
         await evaluator.EvaluateAsync(new AlertEventVm(alertEvent.AlertEventId, alertEvent.AccountId, alertEvent.EventType,
             alertEvent.Severity, alertEvent.SourceModule, alertEvent.ResourceType, alertEvent.ResourceId, alertEvent.Status,
             alertEvent.FirstSeenAt, alertEvent.LastSeenAt, alertEvent.PayloadJson, alertEvent.DeduplicationKey, alertEvent.LastModified), cancellationToken);
+
+        if (isExpired)
+        {
+            MarkExpired(context, await context.Documents.FirstOrDefaultAsync(d => d.DocumentId == documentId, cancellationToken));
+        }
+
+        context.BackgroundJobRuns.Add(new BackgroundJobRun(JobKey, accountId, documentId.ToString(), idempotencyKey, "Succeeded", 1, now) { CompletedAt = DateTimeOffset.UtcNow });
+        await context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    private static async Task MarkExpiredAsync(ApplicationDbContext context, Guid documentId, CancellationToken cancellationToken)
+    private static void MarkExpired(ApplicationDbContext context, Document? document)
     {
-        var document = await context.Documents.FirstOrDefaultAsync(d => d.DocumentId == documentId, cancellationToken);
         if (document is not null && document.Status == DocumentStatuses.Active)
         {
             context.Documents.Attach(document);
             document.Status = DocumentStatuses.Expired;
-            await context.SaveChangesAsync(cancellationToken);
         }
     }
 }

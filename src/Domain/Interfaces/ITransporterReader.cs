@@ -19,8 +19,10 @@ public interface ITransporterReader
 {
     Task<TransporterVm> GetTransporterAsync(Guid id, CancellationToken cancellationToken);
     Task<TransporterVm> GetTransporterAsync(string name, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<TransporterVm>> GetTransportersByAccountAsync(Guid accountId, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<TransporterVm>> GetTransportersByGroupAsync(long groupId, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<TransporterVm>> GetTransportersByUserAsync(Guid userId, CancellationToken cancellationToken);
+    Task<TransportersPageVm> GetTransportersByAccountAsync(Guid accountId, int skip, int take, string? search, CancellationToken cancellationToken);
+    Task<TransportersPageVm> GetTransportersByGroupAsync(long groupId, int skip, int take, string? search, CancellationToken cancellationToken);
+    Task<TransportersPageVm> GetTransportersByUserAsync(Guid userId, int skip, int take, string? search, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<TransporterLookupVm>> GetTransporterLookupByAccountAsync(Guid accountId, int fetchSize, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<TransporterLookupVm>> GetTransporterLookupByUserAsync(Guid userId, int fetchSize, CancellationToken cancellationToken);
     Task<Guid?> GetAccountIdAsync(Guid transporterId, CancellationToken cancellationToken);
 }

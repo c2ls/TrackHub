@@ -20,10 +20,10 @@ namespace TrackHub.Manager.Web.GraphQL.Query;
 
 public partial class Query
 {
-    public async Task<TransporterTypeVm> GetTransporterType([Service] ISender sender, [AsParameters] GetTransporterTypeQuery query)
-        => await sender.Send(query);
+    public async Task<TransporterTypeVm> GetTransporterType([Service] ISender sender, [AsParameters] GetTransporterTypeQuery query, CancellationToken cancellationToken)
+        => await sender.Send(query, cancellationToken);
 
-    public async Task<IReadOnlyCollection<TransporterTypeVm>> GetTransporterTypes([Service] ISender sender)
-        => await sender.Send(new GetTransporterTypesQuery());
+    public async Task<IReadOnlyCollection<TransporterTypeVm>> GetTransporterTypes([Service] ISender sender, CancellationToken cancellationToken)
+        => await sender.Send(new GetTransporterTypesQuery(), cancellationToken);
 
 }

@@ -18,6 +18,7 @@ namespace TrackHub.Manager.Application.GeocodingProviders.Queries.GetActive;
 // Service-client surface for the Router geocoding adapter: the ApiKey stays encrypted
 // and travels with its Salt, mirroring the operator-credential consumption pattern.
 [Authorize(Resource = Resources.GeocodingProviders, Action = Actions.Read, PrincipalTypes = "ServiceClient")]
+[PlatformScoped("Platform geocoding-provider registry: one active provider serves every tenant, consumed by the Router geocoding adapter under its global service identity. No tenant owns a row.")]
 public readonly record struct GetActiveGeocodingProviderQuery() : IRequest<GeocodingProviderTokenVm?>;
 
 public class GetActiveGeocodingProviderQueryHandler(IGeocodingProviderReader reader) : IRequestHandler<GetActiveGeocodingProviderQuery, GeocodingProviderTokenVm?>

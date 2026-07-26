@@ -1,4 +1,5 @@
 using Common.Domain.Constants;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrackHub.Manager.Infrastructure.Entities;
 
@@ -8,13 +9,17 @@ internal class DeviceConfiguration : IEntityTypeConfiguration<Device>
 {
     public void Configure(EntityTypeBuilder<Device> builder)
     {
-        builder.ToTable(name: TableMetadata.Device, schema: SchemaMetadata.Application);
+        builder.ToTable(
+            name: TableMetadata.Device,
+            schema: SchemaMetadata.Application,
+            t => t.HasCheckConstraint("ck_devices_devicetypeid", EnumColumn.Check<DeviceType>("devicetypeid")));
 
         builder.Property(x => x.DeviceId).HasColumnName("id");
         builder.Property(x => x.Name).HasColumnName("name").HasMaxLength(ColumnMetadata.DefaultNameLength).IsRequired();
         builder.Property(x => x.Identifier).HasColumnName("identifier").IsRequired();
         builder.Property(x => x.Serial).HasColumnName("serial").HasMaxLength(ColumnMetadata.DefaultFieldLength).IsRequired();
-        builder.Property(x => x.DeviceTypeId).HasColumnName("devicetypeid");
+        builder.Property(x => x.DeviceTypeId).HasColumnName("devicetypeid")
+            .HasComment(EnumColumn.Comment<DeviceType>("Hardware class of the tracked device."));
         builder.Property(x => x.Description).HasColumnName("description").HasMaxLength(ColumnMetadata.DefaultDescriptionLength);
         builder.Property(x => x.ProviderDisplayName).HasColumnName("providerdisplayname").HasMaxLength(ColumnMetadata.DefaultNameLength);
         builder.Property(x => x.ProviderMetadataHash).HasColumnName("providermetadatahash").HasMaxLength(ColumnMetadata.DefaultTokenLength);

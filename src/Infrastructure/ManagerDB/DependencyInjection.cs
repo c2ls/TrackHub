@@ -82,6 +82,10 @@ public static class DependencyInjection
         services.AddScoped<IReportReader, ReportReader>();
         services.AddScoped<IDriverReader, DriverReader>();
         services.AddScoped<IDriverWriter, DriverWriter>();
+        services.AddScoped<IDriverQualificationReader, DriverQualificationReader>();
+        services.AddScoped<IDriverQualificationWriter, DriverQualificationWriter>();
+        services.AddScoped<IDriverAssignmentReader, DriverAssignmentReader>();
+        services.AddScoped<IDriverAssignmentWriter, DriverAssignmentWriter>();
         services.AddScoped<IGroupVisibilityReader, GroupVisibilityReader>();
         services.AddScoped<IVisibleTransporterReader, VisibleTransporterReader>();
         services.AddScoped<IAccountFeatureReader, AccountFeatureReader>();
@@ -124,6 +128,7 @@ public static class DependencyInjection
         services.AddScoped<IBackgroundJobRunWriter, BackgroundJobRunWriter>();
         services.AddScoped<IPublicLinkGrantReader, PublicLinkGrantReader>();
         services.AddScoped<IPublicLinkGrantWriter, PublicLinkGrantWriter>();
+        services.AddScoped<IPublicLinkGrantResolver, PublicLinkGrantResolver>();
         services.AddScoped<IAccountSupportGrantReader, AccountSupportGrantReader>();
         services.AddScoped<IAccountSupportGrantWriter, AccountSupportGrantWriter>();
         services.AddScoped<IUserWriter, UserWriter>();

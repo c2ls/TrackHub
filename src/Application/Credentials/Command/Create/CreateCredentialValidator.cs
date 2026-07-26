@@ -13,11 +13,13 @@
 //  limitations under the License.
 //
 
+using Microsoft.Extensions.Configuration;
+
 namespace TrackHub.Manager.Application.Credentials.Command.Create;
 
 public sealed class CreateCredentialValidator : AbstractValidator<CreateCredentialCommand>
 {
-    public CreateCredentialValidator()
+    public CreateCredentialValidator(IConfiguration configuration)
     {
         RuleFor(v => v.Credential)
             .NotEmpty();
@@ -25,8 +27,9 @@ public sealed class CreateCredentialValidator : AbstractValidator<CreateCredenti
         RuleFor(v => v.Credential.OperatorId)
             .NotEmpty();
 
+        CredentialUriRules.Apply(this, v => v.Credential.Uri, configuration);
+
         RuleFor(v => v.Credential.Uri)
-            .NotEmpty()
             .Must(uri => uri.EndsWith('/'))
             .WithMessage("Credential Uri must end with '/'");
     }

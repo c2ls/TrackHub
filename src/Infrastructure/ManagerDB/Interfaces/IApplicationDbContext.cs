@@ -35,6 +35,8 @@ public interface IApplicationDbContext
     DbSet<DocumentSignature> DocumentSignatures { get; set; }
     DbSet<DocumentType> DocumentTypes { get; set; }
     DbSet<Driver> Drivers { get; set; }
+    DbSet<DriverQualification> DriverQualifications { get; set; }
+    DbSet<DriverTransporterAssignment> DriverTransporterAssignments { get; set; }
     DbSet<GeocodingProvider> GeocodingProviders { get; set; }
     DbSet<PointOfInterest> PointsOfInterest { get; set; }
     DbSet<Transporter> Transporters { get; set; }

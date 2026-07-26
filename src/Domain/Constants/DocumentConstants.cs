@@ -71,6 +71,18 @@ public static class DocumentClassifications
 /// <summary>
 /// Owner entity types with a registered visibility resolver. Owner types not listed
 /// here are deny-by-default until their module ships a resolver.
+/// <para>
+/// DESIGN NOTE — there is deliberately NO <c>"Trip"</c> owner type (spec 11 §11/§18.6). Trip
+/// documents (manifests, bills of lading, POD signatures and photos) are created with
+/// <c>OwnerEntityType = Transporter</c> and <c>OwnerEntityId = trip.TransporterId</c>, and
+/// TripManagement keeps its own <c>TripDocument</c> link row. Registering a <c>"Trip"</c> owner type
+/// would force <c>DocumentAccessPolicy</c> to call TripManagement to resolve visibility, inverting
+/// the dependency direction (Manager must not depend on the services that depend on it). The
+/// transporter resolver already yields exactly the right audience — group visibility for portal
+/// users and <c>validateDriverAssignment</c> for drivers. Accepted consequence: trip documents also
+/// appear in the transporter's document list, filterable by <c>Category</c>. Do not "complete" this
+/// list with a Trip entry.
+/// </para>
 /// </summary>
 public static class DocumentOwnerTypes
 {

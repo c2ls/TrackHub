@@ -14,9 +14,12 @@
 //
 
 using Common.Application.Interfaces;
+using TrackHub.Manager.Application.Lookups;
 
 namespace TrackHub.Manager.Application.Operators.Queries.GetByUser;
 
+// Deliberately NOT paged: the Router iterates every operator this user can reach to build the live
+// map, so a window would silently drop whole providers from the map. Bounded instead.
 [Authorize(Resource = Resources.Operators, Action = Actions.Read)]
 public readonly record struct GetOperatorByUserQuery() : IRequest<IReadOnlyCollection<OperatorVm>>;
 
@@ -25,6 +28,8 @@ public class GetOperatorsByUserQueryHandler(IOperatorReader reader, IUser user) 
     private Guid UserId { get; } = Guid.TryParse(user.Id, out var userId) ? userId : throw new UnauthorizedAccessException();
 
     public async Task<IReadOnlyCollection<OperatorVm>> Handle(GetOperatorByUserQuery request, CancellationToken cancellationToken)
-        => await reader.GetOperatorsByUserAsync(UserId, cancellationToken);
+        => UnpagedReadLimits.EnsureWithinCeiling(
+            await reader.GetOperatorsByUserAsync(UserId, cancellationToken),
+            "operatorsByUser");
 
 }

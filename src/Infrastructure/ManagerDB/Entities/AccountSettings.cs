@@ -13,9 +13,11 @@
 //  limitations under the License.
 //
 
+using Common.Infrastructure;
+
 namespace TrackHub.Manager.Infrastructure.Entities;
 
-public class AccountSettings (Guid accountId)
+public class AccountSettings (Guid accountId) : BaseAuditableEntity
 {
     public Guid AccountId { get; set; } = accountId;
     public string Maps { get; set; } = "OSM";

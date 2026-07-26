@@ -16,6 +16,9 @@
 namespace TrackHub.Manager.Application.PointsOfInterest.Commands.Update;
 
 [Authorize(Resource = Resources.PointsOfInterest, Action = Actions.Edit)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct UpdatePointOfInterestCommand(Guid Id, UpdatePointOfInterestDto PointOfInterest) : IRequest;
 
 public class UpdatePointOfInterestCommandHandler(IPointOfInterestWriter writer) : IRequestHandler<UpdatePointOfInterestCommand>

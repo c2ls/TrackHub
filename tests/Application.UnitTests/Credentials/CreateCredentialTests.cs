@@ -22,7 +22,7 @@ public class CreateCredentialTests
     {
         _mockCredentialWriter = new Mock<ICredentialWriter>();
         _mockConfiguration = new Mock<IConfiguration>();
-        _validator = new CreateCredentialValidator();
+        _validator = new CreateCredentialValidator(_mockConfiguration.Object);
 
         _handler = new CreateCredentialCommandHandler(_mockCredentialWriter.Object, _mockConfiguration.Object);
     }

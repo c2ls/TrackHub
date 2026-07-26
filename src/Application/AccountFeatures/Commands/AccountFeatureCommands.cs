@@ -8,6 +8,9 @@ public class SetAccountFeatureCommandHandler(IAccountFeatureWriter writer) : IRe
 }
 
 [Authorize(Resource = Resources.AccountFeatures, Action = Actions.Delete)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct DisableAccountFeatureCommand(Guid AccountFeatureId) : IRequest;
 public class DisableAccountFeatureCommandHandler(IAccountFeatureWriter writer) : IRequestHandler<DisableAccountFeatureCommand>
 {
@@ -15,6 +18,9 @@ public class DisableAccountFeatureCommandHandler(IAccountFeatureWriter writer) :
 }
 
 [Authorize(Resource = Resources.AccountFeatures, Action = Actions.Edit)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct UpdateAccountFeatureConfigurationCommand(Guid AccountFeatureId, string? ConfigurationJson) : IRequest;
 public class UpdateAccountFeatureConfigurationCommandHandler(IAccountFeatureWriter writer) : IRequestHandler<UpdateAccountFeatureConfigurationCommand>
 {

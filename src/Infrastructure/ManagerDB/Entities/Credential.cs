@@ -25,7 +25,18 @@ public sealed class Credential(string uri, string username, string password, str
     public string Uri { get; set; } = uri;
     public string Username { get; set; } = username;
     public string Password { get; set; } = password;
+    /// <summary>
+    /// Provider-specific auxiliary credential field. The meaning is defined by the owning
+    /// operator's <c>ProtocolType</c>, not by this entity: GpsGate stores its application id here
+    /// (see <c>GpsGateReaderBase.Init</c> in TrackHubRouter). No other protocol reads it.
+    /// </summary>
     public string? Key { get; set; } = key;
+
+    /// <summary>
+    /// Second provider-specific auxiliary credential field, same contract as <see cref="Key"/>.
+    /// GpsGate stores its user id here and is the only consumer platform-wide
+    /// (<c>GpsGateReaderBase.Init</c> in TrackHubRouter). No other protocol reads it.
+    /// </summary>
     public string? Key2 { get; set; } = key2;
     public string Salt { get; set; } = salt;
     public string? Token { get; set; }

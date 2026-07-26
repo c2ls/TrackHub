@@ -16,6 +16,7 @@
 namespace TrackHub.Manager.Application.GeocodingProviders.Commands.Delete;
 
 [Authorize(Resource = Resources.GeocodingProviders, Action = Actions.Delete)]
+[PlatformScoped("Platform geocoding-provider registry: one active provider serves every tenant, administered from the Administrator console; no tenant owns a row.")]
 public readonly record struct DeleteGeocodingProviderCommand(Guid Id) : IRequest;
 
 public class DeleteGeocodingProviderCommandHandler(IGeocodingProviderWriter writer) : IRequestHandler<DeleteGeocodingProviderCommand>

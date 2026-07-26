@@ -16,6 +16,7 @@
 namespace TrackHub.Manager.Application.DeviceTransporter.Queries.GetById;
 
 [Authorize(Resource = Resources.Devices, Action = Actions.Read)]
+[AllowCrossAccount("Router resolves device→transporter pairs during position routing; from the SyncWorker host that call runs under the global router identity with no account claim. Tenant callers are NOT unguarded by this: DeviceTransporterReader.GetDeviceTransporterAsync resolves the transporter's owning account and RequireAccountAccess checks it before returning device identifiers.")]
 public readonly record struct GetDeviceTransporterByIdQuery(Guid TransporterId) : IRequest<DeviceTransporterVm>;
 
 public class GetDeviceByUserByOperatorQueryHandler(IDeviceTransporterReader reader) : IRequestHandler<GetDeviceTransporterByIdQuery, DeviceTransporterVm>

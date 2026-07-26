@@ -42,6 +42,9 @@ public class UpdateAlertSubscriptionCommandValidator : AbstractValidator<UpdateA
 
 [Authorize(Resource = Resources.Notifications, Action = Actions.Delete)]
 [RequireFeature(FeatureKeys.Notifications)]
+// Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
+// checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
+[AccountScopeEnforcedInHandler]
 public readonly record struct DeleteAlertSubscriptionCommand(Guid AlertSubscriptionId) : IRequest<Guid>;
 public class DeleteAlertSubscriptionCommandHandler(IAlertSubscriptionWriter writer) : IRequestHandler<DeleteAlertSubscriptionCommand, Guid>
 {
