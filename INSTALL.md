@@ -298,7 +298,7 @@ For a private deployment, point it at your own copies:
 
 ```bash
 GITHUB_OWNER=your-account
-GITHUB_REPO_SUFFIX=.Commercial
+GITHUB_REPO_SUFFIX=.Private
 GITHUB_USER=your-username
 GITHUB_PASSWORD=ghp_your_personal_access_token
 ```
