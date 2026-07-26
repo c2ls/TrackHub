@@ -71,10 +71,16 @@ repo_url() {
 # Clone if missing, otherwise fast-forward. Credentials stay out of the remote.
 repo_clone_or_update() {
     local repo="$1" target="$2"
+    local branch="$GITHUB_BRANCH"
+    # Not every repository uses the same default branch (most use master, some main);
+    # fall back to main when the configured branch does not exist on the remote.
+    if ! git ls-remote --exit-code --heads "$(repo_url "$repo")" "$branch" >/dev/null 2>&1; then
+        branch=main
+    fi
     if [ -d "$target/.git" ]; then
-        git -C "$target" pull --ff-only "$(repo_url "$repo")" "$GITHUB_BRANCH"
+        git -C "$target" pull --ff-only "$(repo_url "$repo")" "$branch"
     else
-        git clone --branch "$GITHUB_BRANCH" "$(repo_url "$repo")" "$target"
+        git clone --branch "$branch" "$(repo_url "$repo")" "$target"
         git -C "$target" remote set-url origin "$(repo_url_clean "$repo")"
     fi
 }
