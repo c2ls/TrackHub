@@ -104,8 +104,15 @@ See [INSTALL.md → Updating Services](INSTALL.md#updating-services) for the aut
 ./scripts/rollback.sh tag manager v1.0.0        # Tag a service's current image
 ./scripts/rollback.sh list                      # List versions
 ./scripts/rollback.sh history manager           # Show a service's image history
-./scripts/rollback.sh rollback manager v1.0.0   # Roll a service back
+./scripts/rollback.sh rollback manager previous # Undo the last update (:previous is
+                                                # tagged automatically by every update)
+./scripts/rollback.sh rollback manager v1.0.0   # Roll a service back to a named tag
 ```
+
+The portal reports its own build in the footer and on the public `/status` page — the only
+way to confirm which frontend a browser actually loaded. Backend services are identified by
+their image tags (`rollback.sh list`). Full procedure: `INSTALL.md` →
+*Version Management & Rollback*.
 
 ---
 

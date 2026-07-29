@@ -17,8 +17,8 @@ WORKDIR /src
 
 # Copy solution and project files
 COPY TrackHubSecurity/TrackHub.Security.slnx .
-COPY TrackHubSecurity/Directory.Build.props .
-COPY TrackHubSecurity/Directory.Packages.props .
+COPY TrackHubSecurity/Directory.Build*.props ./
+COPY TrackHubSecurity/Directory.Packages*.props ./
 COPY TrackHubSecurity/global.json .
 COPY TrackHubSecurity/src/Application/Application.csproj src/Application/
 COPY TrackHubSecurity/src/Domain/Domain.csproj src/Domain/

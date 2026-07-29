@@ -90,6 +90,21 @@ update_service() {
         exit 1
     fi
     
+    # Preserve the outgoing image BEFORE anything else touches it.
+    # The rebuild below overwrites "<project>-<service>:latest"; the image being replaced
+    # keeps no tag of its own and becomes dangling, so without this step the version
+    # running right now is unrecoverable and ./rollback.sh has nothing to roll back to.
+    # ":previous" is a one-step safety net — keep using "rollback.sh tag <service> <version>"
+    # for named releases you want to keep across several updates.
+    # rollback.sh owns the compose image-name resolution; call it instead of re-deriving
+    # the project name here. It exits non-zero when there is no :latest yet (first
+    # deployment of this service) and when the service uses an upstream image (nginx).
+    if [ "$service" != "nginx" ]; then
+        print_info "Preserving the current $service image as :previous (rollback point)..."
+        "$SCRIPT_DIR/rollback.sh" tag "$service" previous "$compose_file" \
+            || print_info "Nothing to preserve — first deployment of $service"
+    fi
+
     # Stop the service
     print_info "Stopping $service..."
     docker compose -f "$compose_file" stop "$service" || true

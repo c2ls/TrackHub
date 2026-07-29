@@ -1541,6 +1541,11 @@ User/Account ID sync is skipped because its flag already exists.
 ./scripts/health-check.sh your-domain.com
 ```
 
+Open `https://your-domain.com/status` and check the **Portal build** line: it is the only
+surface that proves which frontend build the browser actually loaded. If the upgrade has to
+be reversed, see [Version Management & Rollback](#version-management--rollback) — every
+image this deploy replaced was preserved as `:previous`.
+
 > **Note:** the per-service and [zero-downtime](#zero-downtime-updates) update paths below
 > do **not** run `db-init` and do **not** apply migrations. Use them for code-only updates.
 > Any upgrade that adds a migration, a new OAuth client, or a new scope must go through the
@@ -1556,6 +1561,10 @@ layer cache (source changes are detected automatically) and always force-recreat
 containers, and the frontend refreshes its static assets on every start. You do
 **not** need `--no-cache`, repeated executions, or manual volume/repo cleanup. Pass
 `--no-cache` only to force a full rebuild in exceptional cases.
+
+Every image an update overwrites is preserved as `:previous` first, so any of these paths
+can be reversed with a single command — see
+[Version Management & Rollback](#version-management--rollback).
 
 ### Update Single Service
 
@@ -1700,10 +1709,32 @@ docker run --rm -v <volume-name>:/data -v "$PWD/backups:/backup" alpine \
   tar czf /backup/documents-$(date +%F).tar.gz -C /data .
 ```
 
+### Which Build Is Deployed?
+
+The **portal** reports its own build, because it is served as static files from a volume —
+the image tag on disk cannot tell you what a browser actually loaded:
+
+- **Footer** (`v1.1.0`) on every screen that renders it.
+- **`https://your-domain.com/status`** — *"Portal build: v1.1.0 · 2026-07-28 14:32 UTC"*,
+  under the bookmark hint. This page needs **no sign-in**, which is what makes it the check
+  to use during an update window.
+
+The version comes from `TrackHub/package.json` and the timestamp from the moment
+`vite build` ran, so **two builds of the same version are still distinguishable** — you do
+not have to bump `package.json` to tell one deployment apart from another.
+
+**Backend services do not report a version.** They are identified by their image tags:
+`./scripts/rollback.sh list` and `docker compose ps` are the authority for what is running.
+
 ### Version Management & Rollback
 
+Rollback is **image-level**: it re-points a service's `:latest` tag at an older image and
+recreates the container. It does **not** touch the database — see the caveat at the end of
+this section.
+
 Both `tag` and `rollback` take a **service name** plus the tag. There is **no `delete`
-command**.
+command**. All four sub-commands accept an optional compose file as the last argument
+(`docker-compose.backend.yml` / `docker-compose.frontend.yml` on split deployments).
 
 ```bash
 # Tag a service's current image before making changes
@@ -1718,6 +1749,79 @@ command**.
 # Roll a service back to a previous tag
 ./scripts/rollback.sh rollback manager v1.0.0
 ```
+
+#### The `:previous` safety net
+
+`deploy.sh --build` and `update-service.sh` **rebuild `<project>-<service>:latest` in
+place**. The image being replaced keeps no tag of its own and becomes dangling, so an
+untagged deployment is unrecoverable. Both scripts therefore tag every image they are about
+to overwrite as **`:previous`** first, giving you a one-step rollback with no preparation:
+
+```bash
+./scripts/rollback.sh rollback frontend previous
+```
+
+`:previous` only ever holds **the last** deployment — the next update overwrites it. Tag a
+named version (`rollback.sh tag frontend v1.1.0`) for anything you want to keep across
+several updates.
+
+#### Rolling back an update — step by step
+
+The frontend is used here because the portal version makes each step visible; the same
+sequence applies to any service.
+
+```bash
+cd /opt/trackhub/TrackHub.Deployment
+
+# 1. Record what is running now. Note the portal build shown at /status.
+./scripts/rollback.sh history frontend
+curl -k https://your-domain.com/status      # or just open it in a browser
+
+# 2. Give the current image a name you will recognise later.
+#    (Optional — :previous is created automatically in step 3 — but a named tag
+#     survives further updates.)
+./scripts/rollback.sh tag frontend v1.1.0
+
+# 3. Update. The outgoing image is preserved as frontend:previous.
+./scripts/update-service.sh frontend
+
+# 4. Confirm the NEW build is live: hard-reload /status (Ctrl+Shift+R) and check that
+#    "Portal build" changed. The service worker-less SPA is cached by the browser, so a
+#    plain reload can still show the old assets.
+```
+
+Then roll back:
+
+```bash
+# 5. Roll back to either tag. The command prompts for confirmation and saves the
+#    version it is replacing as :pre-rollback-<timestamp>.
+./scripts/rollback.sh rollback frontend previous     # or: ... frontend v1.1.0
+
+# 6. Verify: /status must report the ORIGINAL build again (hard-reload), and the
+#    container must be up.
+docker compose ps frontend
+./scripts/health-check.sh your-domain.com
+```
+
+Notes that matter when the rolled-back service is the frontend:
+
+- nginx serves the SPA from the shared `trackhub-frontend` volume and is **not** restarted.
+  The frontend container's entrypoint re-copies the image's build output into that volume on
+  every start, so the rollback reaches nginx without any further action.
+- **Hard-reload the browser.** `index.html` is small and often cached; without a hard reload
+  you can see the old version string and conclude the rollback failed when it did not.
+
+#### What rollback does *not* cover
+
+- **The database is never rolled back.** Migrations are forward-only and `rollback.sh` does
+  not run any. Rolling code back **across a migration** puts an older binary on a newer
+  schema — usually tolerable (EF ignores columns it does not know) but not guaranteed. For a
+  release that added a migration, restore from `backup-database.sh` if the schema itself has
+  to go back.
+- **Configuration is not rolled back.** `generated/appsettings.*.json` are produced from
+  `.env` by `sync-config.sh`; an older image starting against newer config is still reading
+  the newer config.
+- **Seed data is not rolled back.** `db-init` seeds idempotently and only ever adds.
 
 ### SSL Certificate Renewal
 
