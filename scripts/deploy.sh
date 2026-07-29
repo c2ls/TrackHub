@@ -199,6 +199,26 @@ ensure_generated_config() {
     fi
 }
 
+tag_rollback_point() {
+    # Preserve every image this deployment is about to overwrite.
+    # "docker compose build" rebuilds "<project>-<service>:latest" in place; the outgoing
+    # image keeps no tag and becomes dangling, so without this step the deployment being
+    # replaced right now is unrecoverable and ./rollback.sh has nothing to roll back to.
+    # ":previous" is a one-step safety net — keep using "rollback.sh tag <service> <version>"
+    # for named releases you want to keep across several deployments.
+    # rollback.sh owns the compose image-name resolution; call it rather than re-deriving
+    # the project name here. It exits non-zero on a service with no :latest yet (first
+    # deployment), which is not an error. nginx is skipped: it runs an upstream image.
+    print_info "Preserving current images as :previous (rollback point)..."
+    local svc
+    while IFS= read -r svc; do
+        [ -z "$svc" ] && continue
+        [ "$svc" = "nginx" ] && continue
+        "$SCRIPT_DIR/rollback.sh" tag "$svc" previous "$COMPOSE_FILE" > /dev/null 2>&1 \
+            || print_warning "No current image for $svc — nothing to roll back to"
+    done < <(docker compose -f "$COMPOSE_FILE" config --services)
+}
+
 deploy() {
     print_info "Starting deployment..."
 
@@ -216,6 +236,7 @@ deploy() {
         if [ "$DEPLOYMENT_TYPE" != "frontend" ]; then
             ensure_trackhubcommon
         fi
+        tag_rollback_point
         if [ "$NO_CACHE" = true ]; then
             print_info "Building images without Docker layer cache (--no-cache)..."
             docker compose -f "$COMPOSE_FILE" build --no-cache

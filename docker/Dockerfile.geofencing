@@ -17,8 +17,8 @@ WORKDIR /src
 
 # Copy solution and project files
 COPY TrackHub.Geofencing/TrackHub.Geofencing.slnx .
-COPY TrackHub.Geofencing/Directory.Build.props .
-COPY TrackHub.Geofencing/Directory.Packages.props .
+COPY TrackHub.Geofencing/Directory.Build*.props ./
+COPY TrackHub.Geofencing/Directory.Packages*.props ./
 COPY TrackHub.Geofencing/global.json .
 COPY TrackHub.Geofencing/src/Application/Application.csproj src/Application/
 COPY TrackHub.Geofencing/src/Domain/Domain.csproj src/Domain/

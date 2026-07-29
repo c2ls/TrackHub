@@ -17,8 +17,8 @@ WORKDIR /src
 
 # Copy solution and project files
 COPY TrackHub.TripManagement/TrackHub.TripManagement.slnx .
-COPY TrackHub.TripManagement/Directory.Build.props .
-COPY TrackHub.TripManagement/Directory.Packages.props .
+COPY TrackHub.TripManagement/Directory.Build*.props ./
+COPY TrackHub.TripManagement/Directory.Packages*.props ./
 COPY TrackHub.TripManagement/global.json .
 COPY TrackHub.TripManagement/src/Application/Application.csproj src/Application/
 COPY TrackHub.TripManagement/src/Domain/Domain.csproj src/Domain/

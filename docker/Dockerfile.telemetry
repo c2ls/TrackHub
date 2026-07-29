@@ -17,8 +17,8 @@ WORKDIR /src
 
 # Copy solution and project files
 COPY TrackHub.Telemetry/TrackHub.Telemetry.slnx .
-COPY TrackHub.Telemetry/Directory.Build.props .
-COPY TrackHub.Telemetry/Directory.Packages.props .
+COPY TrackHub.Telemetry/Directory.Build*.props ./
+COPY TrackHub.Telemetry/Directory.Packages*.props ./
 COPY TrackHub.Telemetry/global.json .
 COPY TrackHub.Telemetry/src/Application/Application.csproj src/Application/
 COPY TrackHub.Telemetry/src/Domain/Domain.csproj src/Domain/

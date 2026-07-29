@@ -356,7 +356,9 @@ Valid service names: `frontend`, `authority`, `security`, `manager`, `router`,
 | Find the documents volume | `docker volume ls \| grep manager-documents` |
 | Back up uploaded documents | `docker run --rm -v <that-volume>:/d -v "$PWD/backups:/b" alpine tar czf /b/documents.tar.gz -C /d .` |
 | Tag a version | `./scripts/rollback.sh tag <service> v1.0.0` |
-| Rollback | `./scripts/rollback.sh rollback <service> v1.0.0` |
+| Undo the last update | `./scripts/rollback.sh rollback <service> previous` (`:previous` is tagged automatically by every update) |
+| Rollback to a named tag | `./scripts/rollback.sh rollback <service> v1.0.0` |
+| Which portal build is live? | Open `https://<domain>/status` — *Portal build* (no sign-in needed; hard-reload) |
 
 ---
 

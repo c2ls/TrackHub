@@ -17,8 +17,8 @@ WORKDIR /src
 
 # Copy solution and project files
 COPY TrackHub.Reporting/TrackHub.Reporting.slnx .
-COPY TrackHub.Reporting/Directory.Build.props .
-COPY TrackHub.Reporting/Directory.Packages.props .
+COPY TrackHub.Reporting/Directory.Build*.props ./
+COPY TrackHub.Reporting/Directory.Packages*.props ./
 COPY TrackHub.Reporting/global.json .
 COPY TrackHub.Reporting/src/Application/Application.csproj src/Application/
 COPY TrackHub.Reporting/src/Domain/Domain.csproj src/Domain/
