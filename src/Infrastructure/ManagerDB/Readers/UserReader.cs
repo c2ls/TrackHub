@@ -80,15 +80,13 @@ public sealed class UserReader(IApplicationDbContext context, ICurrentPrincipal 
             Context.Groups
                 .Where(g => g.GroupId == groupId)
                 .SelectMany(g => g.Users)
-                .Select(u => new UserVm(
-                    u.UserId,
-                    u.Username,
-                    u.Active,
-                    u.AccountId))
                 .Distinct(),
             search);
 
         var totalCount = await query.CountAsync(cancellationToken);
+        // Search, order and page on the ENTITY, project last. Ordering or filtering
+        // AFTER the Select keys off a member of the constructor-built UserVm, which
+        // Npgsql cannot translate — the query fails with "Unexpected Execution Error".
         // UserId is the tiebreaker: usernames are unique per account today, but the page window must
         // not depend on that invariant holding across accounts sharing a group.
         var items = await query
@@ -96,6 +94,11 @@ public sealed class UserReader(IApplicationDbContext context, ICurrentPrincipal 
             .ThenBy(u => u.UserId)
             .Skip(skip)
             .Take(take)
+            .Select(u => new UserVm(
+                u.UserId,
+                u.Username,
+                u.Active,
+                u.AccountId))
             .ToListAsync(cancellationToken);
 
         return new UsersPageVm(items, totalCount);
@@ -116,7 +119,7 @@ public sealed class UserReader(IApplicationDbContext context, ICurrentPrincipal 
             .ToListAsync(cancellationToken);
     }
 
-    private static IQueryable<UserVm> ApplySearch(IQueryable<UserVm> query, string? search)
+    private static IQueryable<Entities.User> ApplySearch(IQueryable<Entities.User> query, string? search)
         => string.IsNullOrWhiteSpace(search)
             ? query
             : query.Where(u => EF.Functions.ILike(u.Username, SearchPattern.Contains(search), SearchPattern.Escape));
