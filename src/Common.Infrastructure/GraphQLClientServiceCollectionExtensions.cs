@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Microsoft.Extensions.Http.Resilience;
 using Polly;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -60,6 +61,10 @@ public static class GraphQLClientServiceCollectionExtensions
             services.AddTrackHubHeaderPropagation();
         }
 
+        // Only load-bearing on the None path. AddStandardResilienceHandler replaces this with
+        // InfiniteTimeSpan so the pipeline is the single source of truth for timeouts — which is
+        // exactly why the pipeline has to be configured (ApplyTimeout) rather than left at its
+        // 10 s-per-attempt defaults.
         var builder = services.AddHttpClient(name,
             client => client.Timeout = TimeSpan.FromSeconds(timeoutSeconds));
 
@@ -72,15 +77,48 @@ public static class GraphQLClientServiceCollectionExtensions
         {
             case GraphQLClientResilience.NoRetry:
                 builder.AddStandardResilienceHandler(options =>
-                    options.Retry.ShouldHandle = static _ => PredicateResult.False());
+                {
+                    options.Retry.ShouldHandle = static _ => PredicateResult.False();
+                    ApplyTimeout(options, timeoutSeconds);
+                });
                 break;
             case GraphQLClientResilience.WithRetry:
-                builder.AddStandardResilienceHandler();
+                builder.AddStandardResilienceHandler(options => ApplyTimeout(options, timeoutSeconds));
                 break;
         }
 
         return builder;
     }
+
+    /// <summary>
+    /// Binds the resilience pipeline's timeouts to the caller's <paramref name="timeoutSeconds"/>.
+    /// <para>
+    /// WITHOUT this, <c>AddStandardResilienceHandler</c> keeps its defaults — a 10 s PER-ATTEMPT
+    /// timeout and a 30 s total — and those fire long before <c>HttpClient.Timeout</c> ever does,
+    /// because the pipeline sits inside it. A client registered with `timeoutSeconds: 120` was
+    /// therefore still cut off at 10 s, and the declared timeout was silently inert. That is what
+    /// killed Manager's sync dispatch to the Router (`Router-standard/Standard-AttemptTimeout`)
+    /// whenever the Router's app pool was cold, even though the provider answered in under a second.
+    /// </para>
+    /// <para>
+    /// The library validates these against each other, so they move together: the total must exceed
+    /// a single attempt, and the breaker's sampling window must cover at least two attempts.
+    /// </para>
+    /// </summary>
+    private static void ApplyTimeout(HttpStandardResilienceOptions options, int timeoutSeconds)
+    {
+        var attempt = TimeSpan.FromSeconds(timeoutSeconds);
+        options.AttemptTimeout.Timeout = attempt;
+        options.TotalRequestTimeout.Timeout = TotalFor(timeoutSeconds);
+        options.CircuitBreaker.SamplingDuration = attempt * 2;
+    }
+
+    /// <summary>
+    /// `timeoutSeconds` is the budget for ONE attempt. The total leaves room for the retry path's
+    /// extra attempts so a single knob configures both; the breaker's sampling window must cover at
+    /// least two attempts, which the library validates.
+    /// </summary>
+    private static TimeSpan TotalFor(int timeoutSeconds) => TimeSpan.FromSeconds(timeoutSeconds * 3);
 
     /// <summary>
     /// Registers the '{name}AsService' twin used by <c>IGraphQLClientFactory.CreateClient(name, asService: true)</c>:
