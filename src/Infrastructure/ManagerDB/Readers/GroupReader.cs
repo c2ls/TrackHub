@@ -60,6 +60,9 @@ public sealed class GroupReader(IApplicationDbContext context, ICurrentPrincipal
         var query = ApplySearch(ByAccount(accountId), search);
 
         var totalCount = await query.CountAsync(cancellationToken);
+        // Order and page on the ENTITY, project last. Ordering after the Select
+        // makes the key an expression over the GroupVm constructor, which EF
+        // cannot translate — the query fails with "Unexpected Execution Error".
         // Name alone is not unique within an account, so GroupId breaks the tie and gives Skip/Take a
         // total order; without it a page boundary repeats one group and hides another.
         var items = await query
@@ -67,6 +70,12 @@ public sealed class GroupReader(IApplicationDbContext context, ICurrentPrincipal
             .ThenBy(g => g.GroupId)
             .Skip(skip)
             .Take(take)
+            .Select(d => new GroupVm(
+                d.GroupId,
+                d.Name,
+                d.Description,
+                d.Active,
+                d.AccountId))
             .ToListAsync(cancellationToken);
 
         return new GroupsPageVm(items, totalCount);
@@ -84,17 +93,10 @@ public sealed class GroupReader(IApplicationDbContext context, ICurrentPrincipal
 
     // Filtered directly on Groups rather than joined through Accounts: the join was equivalent (a
     // group has exactly one account) but forced a Distinct to undo the fan-out it created.
-    private IQueryable<GroupVm> ByAccount(Guid accountId)
-        => Context.Groups
-            .Where(g => g.AccountId == accountId)
-            .Select(d => new GroupVm(
-                d.GroupId,
-                d.Name,
-                d.Description,
-                d.Active,
-                d.AccountId));
+    private IQueryable<Entities.Group> ByAccount(Guid accountId)
+        => Context.Groups.Where(g => g.AccountId == accountId);
 
-    private static IQueryable<GroupVm> ApplySearch(IQueryable<GroupVm> query, string? search)
+    private static IQueryable<Entities.Group> ApplySearch(IQueryable<Entities.Group> query, string? search)
         => string.IsNullOrWhiteSpace(search)
             ? query
             : query.Where(g => EF.Functions.ILike(g.Name, SearchPattern.Contains(search), SearchPattern.Escape));

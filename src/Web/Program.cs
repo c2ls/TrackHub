@@ -17,9 +17,7 @@ using Ardalis.GuardClauses;
 using Common.Application;
 using Common.Web.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.RateLimiting;
 using System.Reflection;
-using System.Threading.RateLimiting;
 using TrackHub.Manager.Infrastructure;
 using TrackHub.Manager.Web.BackgroundServices;
 using TrackHub.Manager.Web.Endpoints;
@@ -76,20 +74,13 @@ builder.Services.AddTrackHubGraphQLServer<Query, Mutation>(builder.Environment.I
 builder.Services.AddOutputCache(options =>
     options.AddPolicy(PlatformStatus.CachePolicy, policy => policy.Expire(TimeSpan.FromSeconds(60))));
 
-// Partitioned PER CLIENT IP, not a single global bucket: AddFixedWindowLimiter would share one
-// 60/minute budget across every caller, so the endpoint would start rejecting once a few dozen
-// portal sessions polled it — i.e. it would fail hardest during the incident it exists to report.
-builder.Services.AddRateLimiter(options =>
-    options.AddPolicy(PlatformStatus.RateLimitPolicy, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            // Requires UseForwardedHeaders (below) to see the real client rather than nginx.
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 60,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
-            })));
+// Partitioned PER CLIENT IP, not a single global bucket: one shared 60/minute budget across every
+// caller means the endpoint starts rejecting once a few dozen portal sessions poll it — i.e. it
+// would fail hardest during the incident it exists to report. The partitioning lives in Common.Web
+// so this and TripManagement's public trip links cannot drift apart; it also requires
+// UseForwardedHeaders (below) to see the real client rather than nginx.
+builder.Services.AddAnonymousEndpointRateLimiter(
+    PlatformStatus.RateLimitPolicy, permitLimit: 60, window: TimeSpan.FromMinutes(1));
 
 builder.Services.AddCors(options => options
     .AddPolicy("AllowFrontend",
