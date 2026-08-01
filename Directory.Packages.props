@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <TrackHubCommonVersion>1.0.13</TrackHubCommonVersion>
+    <TrackHubCommonVersion>1.0.15</TrackHubCommonVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
