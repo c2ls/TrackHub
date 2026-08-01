@@ -18,7 +18,7 @@ using Common.Infrastructure;
 
 namespace TrackHub.TripManagement.Infrastructure.TripDB;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
+public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {
     public DbSet<Trip> Trips { get; set; }
     public DbSet<TripStop> TripStops { get; set; }
