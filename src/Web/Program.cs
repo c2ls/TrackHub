@@ -16,9 +16,7 @@
 using Ardalis.GuardClauses;
 using Common.Application;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.RateLimiting;
 using System.Reflection;
-using System.Threading.RateLimiting;
 using TrackHub.TripManagement.Infrastructure.TripDB;
 using TrackHub.TripManagement.Web.BackgroundServices;
 using TrackHub.TripManagement.Web.Endpoints;
@@ -66,17 +64,10 @@ builder.Services.AddTrackHubGraphQLServer<Query, Mutation>(builder.Environment.I
 // Partitioned PER CLIENT IP, not one global bucket: a single shared limiter would start rejecting
 // as soon as a few dozen customers had a tracking page open, which is exactly when the endpoint
 // needs to work.
-builder.Services.AddRateLimiter(options =>
-    options.AddPolicy(PublicTrips.RateLimitPolicy, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            // Requires UseForwardedHeaders (below) to see the real client rather than nginx.
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 60,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
-            })));
+// The partitioning itself lives in Common.Web so this and Manager's platform-status feed cannot
+// drift apart; it also requires UseForwardedHeaders (below) to see the real client rather than nginx.
+builder.Services.AddAnonymousEndpointRateLimiter(
+    PublicTrips.RateLimitPolicy, permitLimit: 60, window: TimeSpan.FromMinutes(1));
 
 builder.Services.AddCors(options => options
     .AddPolicy("AllowFrontend",
