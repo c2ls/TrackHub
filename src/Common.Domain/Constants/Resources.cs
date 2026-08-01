@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public abstract class Resources
+public static partial class Resources
 {
     public const string Accounts = nameof(Accounts);
     public const string AccountsMaster = nameof(AccountsMaster);

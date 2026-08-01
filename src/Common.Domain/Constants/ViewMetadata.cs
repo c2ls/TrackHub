@@ -15,7 +15,7 @@
 
 namespace Common.Domain.Constants;
 
-public static class ViewMetadata
+public static partial class ViewMetadata
 {
     public const string VwGeofence = "vw_geofence";
     public const string VwTransporterPosition = "vw_transporter_position";

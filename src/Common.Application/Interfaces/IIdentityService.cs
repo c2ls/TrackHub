@@ -19,14 +19,23 @@ public interface IIdentityService
 {
     Task<string> GetUserNameAsync(Guid userId, CancellationToken token);
 
+    /// <summary>
+    /// Role path: the user holds a role granted this resource/action.
+    /// </summary>
     Task<bool> IsInRoleAsync(Guid userId, string resource, string action, CancellationToken token);
 
+    /// <summary>
+    /// Policy path: the user holds at least one POLICY granting this resource/action. Policies are
+    /// additive grants used to raise a single user above their role; a resource/action with no
+    /// policy attached returns false and leaves the role as the only path.
+    /// </summary>
     Task<bool> AuthorizeAsync(Guid userId, string resource, string action, CancellationToken token);
 
     /// <summary>
     /// Combined role + policy authorization decision for a user, evaluated by Security in a
-    /// single call. This is the method the authorization pipeline uses; <see cref="IsInRoleAsync"/>
-    /// and <see cref="AuthorizeAsync"/> remain as the underlying primitives.
+    /// single call: <see cref="IsInRoleAsync"/> OR <see cref="AuthorizeAsync"/>, either path alone
+    /// sufficient. This is the method the authorization pipeline uses; the two remain as the
+    /// underlying primitives.
     /// </summary>
     Task<bool> AuthorizeUserAsync(Guid userId, string resource, string action, CancellationToken token);
 
