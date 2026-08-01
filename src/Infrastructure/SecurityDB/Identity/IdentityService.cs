@@ -37,26 +37,40 @@ public class IdentityService(IUserReader userReader,
         return resourceActionRoles.Any(role => userRoles.Contains(role));
     }
 
-    // Authorizes the user with the given userId for the specified resource and action asynchronously.
-    // Policies are additive restrictions: a resource-action with NO policy rows imposes no policy
-    // requirement, so an empty set intentionally evaluates to true (roles remain the primary gate).
+    // Policies are additive GRANTS, not restrictions: true when the user holds AT LEAST ONE policy
+    // mapped to this resource/action. A resource-action with no policy rows grants nothing extra and
+    // returns false, so the role stays the only path unless a policy is deliberately attached.
+    //
+    // This is the per-user elevation lever: the role matrix stays a small set of coherent bundles,
+    // and a single user is raised above their role (e.g. one dispatcher who may delete trips) by
+    // attaching a policy instead of widening the role for everyone who holds it. It composes the
+    // other way too — a policy can grant an action no role has.
+    //
+    // Restriction semantics ("holding the policy is REQUIRED to reach the resource") were the prior
+    // reading, and they inverted the operator's intent: attaching a policy to a resource/action
+    // silently revoked it from every caller who did not hold that policy — Administrator's grant-all
+    // included, since nothing here bypasses the check. Nothing depended on that behaviour
+    // (resource_action_policy and user_policy were both empty), and GetAuthorizedActionsQuery already
+    // reported permissions as role UNION policy — grant semantics — so enforcement now matches the
+    // answer the platform was already giving.
     public async Task<bool> AuthorizeAsync(Guid userId, string resource, string action, CancellationToken token)
     {
         var resourceActionPolicies = await resourceActionPolicyReader.GetResourceActionPoliciesAsync(resource, action, token);
-        if (!resourceActionPolicies.Any())
+        if (resourceActionPolicies.Count == 0)
         {
-            return true;
+            return false;
         }
         var userPolicies = await userPolicyReader.GetUserPolicyNamesAsync(userId, token);
-        return resourceActionPolicies.All(policy => userPolicies.Contains(policy));
+        return resourceActionPolicies.Any(userPolicies.Contains);
     }
 
     // Combined role + policy decision in one in-process evaluation. This backs the
     // `authorizeUser` GraphQL query that every service's authorization pipeline calls,
     // replacing the former two-round-trip isInRole + authorize sequence.
+    // Role OR policy — either path alone is sufficient.
     public async Task<bool> AuthorizeUserAsync(Guid userId, string resource, string action, CancellationToken token)
         => await IsInRoleAsync(userId, resource, action, token)
-           && await AuthorizeAsync(userId, resource, action, token);
+           || await AuthorizeAsync(userId, resource, action, token);
 
     // Checks if the given client is valid asynchronously.
     public async Task<bool> IsValidServiceAsync(string? client, CancellationToken token)

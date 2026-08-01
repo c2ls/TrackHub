@@ -17,7 +17,11 @@ using Common.Application.Interfaces;
 
 namespace TrackHub.Security.Application.Users.Queries.GetPermission;
 
-[Authorize(Resource = Resources.Users, Action = Actions.Read)]
+// Profile, not Users: the query takes no subject and answers only about the CALLER (the handler
+// reads the token's own user id). Users/Read is the user-administration grant, which the User role
+// deliberately does not hold — so every ordinary user's shell bootstrap fired a guaranteed FORBIDDEN
+// here and relied on the caller swallowing it. Asking "what am I" is a Profile read.
+[Authorize(Resource = Resources.Profile, Action = Actions.Read)]
 public readonly record struct UserIsAdminQuery() : IRequest<bool>;
 
 public class UserIsAdminQueryHandler(IUserReader reader, IUser user) : IRequestHandler<UserIsAdminQuery, bool>
