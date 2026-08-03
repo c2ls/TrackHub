@@ -67,6 +67,7 @@ usage() {
     echo "  --no-cache  - Force a full rebuild ignoring the Docker layer cache"
     echo "                (rarely needed; normal builds already detect source changes)"
     echo "  --skip-init - Skip database initialization (for migrations)"
+    echo "  --skip-git-check - Deploy even if this checkout is behind its upstream"
     echo "  --help      - Show this help message"
     echo ""
     echo "Examples:"
@@ -99,6 +100,42 @@ check_prerequisites() {
         exit 1
     fi
     print_success "Docker daemon is running"
+}
+
+# The compose files and this script ARE deployment inputs: deploying from a stale
+# checkout silently recreates every container with outdated env mappings (a class of
+# failure that only surfaces at runtime, e.g. a service identity that was never
+# injected). Refuse to deploy when the checkout is behind its upstream.
+check_deployment_freshness() {
+    print_info "Checking deployment checkout freshness..."
+
+    if [ "$SKIP_GIT_CHECK" = true ]; then
+        print_warning "Skipping deployment checkout freshness check (--skip-git-check)"
+        return 0
+    fi
+
+    if [ ! -d "$PROJECT_DIR/.git" ] || ! command -v git &> /dev/null; then
+        print_warning "Deployment folder is not a git checkout; cannot verify it is current"
+        return 0
+    fi
+
+    # Never prompt for credentials here: an unreachable/unauthenticated remote is a
+    # warning, not a blocker (the server may deploy while offline).
+    if ! GIT_TERMINAL_PROMPT=0 git -C "$PROJECT_DIR" fetch --quiet 2>/dev/null; then
+        print_warning "Could not reach the deployment repo remote; skipping freshness check"
+        return 0
+    fi
+
+    local behind
+    behind="$(git -C "$PROJECT_DIR" rev-list --count 'HEAD..@{upstream}' 2>/dev/null || echo 0)"
+    if [ "${behind:-0}" -gt 0 ]; then
+        print_error "This deployment checkout is $behind commit(s) behind its upstream."
+        print_info "The compose files/scripts about to be used are OUTDATED. Update first:"
+        print_info "  git -C $PROJECT_DIR pull"
+        print_info "Or re-run with --skip-git-check to deploy the old configuration anyway."
+        exit 1
+    fi
+    print_success "Deployment checkout is up to date with its upstream"
 }
 
 check_configuration() {
@@ -347,6 +384,10 @@ while [[ $# -gt 0 ]]; do
             SKIP_INIT=true
             shift
             ;;
+        --skip-git-check)
+            SKIP_GIT_CHECK=true
+            shift
+            ;;
         --help|-h)
             usage
             exit 0
@@ -362,6 +403,7 @@ done
 # Main execution
 print_header
 check_prerequisites
+check_deployment_freshness
 check_configuration
 select_compose_file
 deploy
