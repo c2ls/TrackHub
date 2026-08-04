@@ -89,7 +89,12 @@ public class WorkforceReportsTests
         _reader.Setup(r => r.GetDriversAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportDriverVm>());
 
         await new DriverRegistryReport(_reader.Object).GetDatasetAsync(
-            _filters with { NumericFilter1 = 5, StringFilter1 = Guid.NewGuid().ToString() }, CancellationToken.None);
+            _filters with
+            {
+                Values = FilterValues.Of(
+                    (FilterNames.MaxRows, "5"),
+                    (FilterNames.Transporter, Guid.NewGuid().ToString()))
+            }, CancellationToken.None);
 
         _reader.Verify(r => r.GetDriversAsync(It.IsAny<CancellationToken>()), Times.Once);
         _reader.Verify(r => r.EnsureWorkforceFeatureAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -110,14 +115,14 @@ public class WorkforceReportsTests
     }
 
     [Test]
-    public async Task Expirations_UsesNumericFilter1AsWindow()
+    public async Task Expirations_UsesWithinDaysAsWindow()
     {
         _reader.Setup(r => r.GetDriverQualificationsAsync(null, 7, It.IsAny<CancellationToken>()))
             .ReturnsAsync(List<ReportDriverQualificationVm>())
             .Verifiable();
 
         await new QualificationExpirationsReport(_reader.Object).GetDatasetAsync(
-            _filters with { NumericFilter1 = 7 }, CancellationToken.None);
+            _filters with { Values = FilterValues.Of((FilterNames.WithinDays, "7")) }, CancellationToken.None);
 
         _reader.Verify();
     }
@@ -169,10 +174,9 @@ public class WorkforceReportsTests
 
     // ---- Assignment history ----
 
-    // StringFilter1 is the portal's transporter picker slot (filtersData.ts registers
-    // ['transporter','from','to'] for this code) — the report must read it as the transporter id.
+    // `transporterId` is the catalog's picker filter for this code — the report must read it.
     [Test]
-    public async Task AssignmentHistory_ReadsStringFilter1AsTransporterId()
+    public async Task AssignmentHistory_ReadsTransporterIdFilter()
     {
         var transporterId = Guid.NewGuid();
         var from = DateTimeOffset.UtcNow.AddDays(-30);
@@ -184,9 +188,10 @@ public class WorkforceReportsTests
 
         var filters = _filters with
         {
-            StringFilter1 = transporterId.ToString(),
-            DateTimeFilter1 = from,
-            DateTimeFilter2 = to
+            Values = FilterValues.Of(
+                (FilterNames.Transporter, transporterId.ToString()),
+                (FilterNames.From, from.ToString("O")),
+                (FilterNames.To, to.ToString("O")))
         };
         await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(filters, CancellationToken.None);
 
@@ -200,29 +205,29 @@ public class WorkforceReportsTests
             .ReturnsAsync(List<ReportDriverAssignmentVm>())
             .Verifiable();
 
-        var filters = _filters with { StringFilter1 = "not-a-guid" };
+        var filters = _filters with { Values = FilterValues.Of((FilterNames.Transporter, "not-a-guid")) };
         await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(filters, CancellationToken.None);
 
         _reader.Verify();
 
         _reader.Invocations.Clear();
         await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(
-            _filters with { StringFilter1 = Guid.Empty.ToString() }, CancellationToken.None);
+            _filters with { Values = FilterValues.Of((FilterNames.Transporter, Guid.Empty.ToString())) }, CancellationToken.None);
 
         _reader.Verify();
     }
 
-    // stringFilter2 is the portal's free-text "device" slot and is not part of this report's spec;
-    // whatever leaks into it must never become a filter.
+    // `deviceId` is not part of this report's catalog filter set; whatever leaks into the
+    // values map under an unrelated name must never become a filter.
     [Test]
-    public async Task AssignmentHistory_IgnoresStringFilter2()
+    public async Task AssignmentHistory_IgnoresUnrelatedFilterNames()
     {
         _reader.Setup(r => r.GetDriverAssignmentHistoryAsync(null, null, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(List<ReportDriverAssignmentVm>())
             .Verifiable();
 
         await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(
-            _filters with { StringFilter2 = Guid.NewGuid().ToString() }, CancellationToken.None);
+            _filters with { Values = FilterValues.Of((FilterNames.Device, Guid.NewGuid().ToString())) }, CancellationToken.None);
 
         _reader.Verify();
     }

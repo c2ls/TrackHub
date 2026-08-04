@@ -21,8 +21,8 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
 // Stop-level detail (spec 11 §13): every stop of every trip in the window with its planned window,
-// actual arrival/departure, dwell, status and delivery outcome counts. Filters: DateTimeFilter1/2 =
-// window, StringFilter1 = transporter id. Ordered by trip then stop sequence so a trip reads top to
+// actual arrival/departure, dwell, status and delivery outcome counts. Filters: from/to = window,
+// transporterId = optional unit. Ordered by trip then stop sequence so a trip reads top to
 // bottom. Excel only — a stop-level export routinely exceeds the 500-row PDF limit.
 public sealed class TripDetailReport(ITripReportReader reader) : IReport
 {
@@ -32,10 +32,10 @@ public sealed class TripDetailReport(ITripReportReader reader) : IReport
     {
         await reader.EnsureTripManagementFeatureAsync(cancellationToken);
 
-        var transporterId = TripReportSupport.ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var stops = await reader.GetTripStopsAsync(
-            filters.DateTimeFilter1, filters.DateTimeFilter2, transporterId, driverId: null, cancellationToken);
+            filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), transporterId, driverId: null, cancellationToken);
 
         var rows = stops
             .OrderBy(s => s.TripCode, StringComparer.OrdinalIgnoreCase)
@@ -44,6 +44,7 @@ public sealed class TripDetailReport(ITripReportReader reader) : IReport
                 s.TripCode,
                 s.Sequence,
                 s.Name,
+                s.Activity,
                 s.CustomerName.OrEmpty(),
                 s.PlannedArrivalFrom,
                 s.PlannedArrivalTo,

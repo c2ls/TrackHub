@@ -87,9 +87,9 @@ public sealed class ReportDataset
 
         return new ReportDataset
         {
-            Title = filters.Name ?? string.Empty,
-            FromDate = filters.DateTimeFilter1,
-            ToDate = filters.DateTimeFilter2,
+            Title = filters.Name,
+            FromDate = filters.GetDate(FilterNames.From),
+            ToDate = filters.GetDate(FilterNames.To),
             GeneratedAt = DateTimeOffset.UtcNow,
             Columns = columns,
             Rows = data,
@@ -99,45 +99,27 @@ public sealed class ReportDataset
         };
     }
 
+    // Echoes each provided filter as ("Filter" + PascalCase(name), value) — e.g.
+    // transporterId → FilterTransporterId — so PdfReportBuilder resolves the key as a resx
+    // label. Date-parseable values are normalized to "yyyy-MM-dd HH:mm"; everything else is
+    // echoed raw.
     private static IReadOnlyList<KeyValuePair<string, string>> BuildAppliedFilters(FilterDto filters)
     {
         var applied = new List<KeyValuePair<string, string>>();
-
-        void AddDate(string key, DateTimeOffset? value)
+        foreach (var (name, _) in filters.Values)
         {
-            if (value.HasValue)
+            var text = filters.GetText(name);
+            if (text is null)
             {
-                applied.Add(new KeyValuePair<string, string>(
-                    key, value.Value.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)));
+                continue;
             }
-        }
 
-        void AddText(string value)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                applied.Add(new KeyValuePair<string, string>("Filter", value));
-            }
+            var value = filters.GetDate(name) is { } date
+                ? date.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+                : text;
+            applied.Add(new KeyValuePair<string, string>(
+                $"Filter{char.ToUpperInvariant(name[0])}{name[1..]}", value));
         }
-
-        void AddNumber(double? value)
-        {
-            if (value.HasValue)
-            {
-                applied.Add(new KeyValuePair<string, string>(
-                    "Filter", value.Value.ToString(CultureInfo.InvariantCulture)));
-            }
-        }
-
-        AddDate("FilterFrom", filters.DateTimeFilter1);
-        AddDate("FilterTo", filters.DateTimeFilter2);
-        AddDate("Filter", filters.DateTimeFilter3);
-        AddText(filters.StringFilter1);
-        AddText(filters.StringFilter2);
-        AddText(filters.StringFilter3);
-        AddNumber(filters.NumericFilter1);
-        AddNumber(filters.NumericFilter2);
-        AddNumber(filters.NumericFilter3);
 
         return applied;
     }

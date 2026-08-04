@@ -20,15 +20,15 @@ public sealed class GpsPositionHistoryReport(
     public async Task<ReportDataset> GetDatasetAsync(FilterDto filters, CancellationToken cancellationToken)
     {
         var accountId = await GpsReportSupport.RequireAccountAsync(user, features, FeatureKeys.GpsPositionHistory, cancellationToken);
-        Guid? transporterId = Guid.TryParse(filters.StringFilter1, out var t) ? t : null;
-        Guid? deviceId = Guid.TryParse(filters.StringFilter2, out var d) ? d : null;
+        Guid? transporterId = filters.GetGuid(FilterNames.Transporter);
+        Guid? deviceId = filters.GetGuid(FilterNames.Device);
         var take = GpsReportSupport.ResolveTake(filters, limits);
         var history = await telemetry.GetPositionHistoryAsync(accountId, transporterId, deviceId, take, cancellationToken);
         IEnumerable<Domain.Models.Manager.ManagerTransporterPositionHistoryVm> filtered = history;
-        if (filters.DateTimeFilter1.HasValue)
-            filtered = filtered.Where(p => p.SourceTimestamp >= filters.DateTimeFilter1.Value);
-        if (filters.DateTimeFilter2.HasValue)
-            filtered = filtered.Where(p => p.SourceTimestamp <= filters.DateTimeFilter2.Value);
+        if (filters.GetDate(FilterNames.From) is { } from)
+            filtered = filtered.Where(p => p.SourceTimestamp >= from);
+        if (filters.GetDate(FilterNames.To) is { } to)
+            filtered = filtered.Where(p => p.SourceTimestamp <= to);
         var rows = filtered
             .OrderByDescending(p => p.SourceTimestamp)
             .Select(p => new GpsPositionHistoryRowVm(

@@ -123,9 +123,6 @@
   <data name="Altitude" xml:space="preserve">
     <value>Altitude</value>
   </data>
-  <data name="Attributes" xml:space="preserve">
-    <value>Attributes</value>
-  </data>
   <data name="City" xml:space="preserve">
     <value>City</value>
   </data>
@@ -417,8 +414,29 @@
   <data name="FilterTo" xml:space="preserve">
     <value>To</value>
   </data>
-  <data name="Filter" xml:space="preserve">
-    <value>Filter</value>
+  <data name="FilterTransporterId" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="FilterOperatorId" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="FilterGeofenceId" xml:space="preserve">
+    <value>Geofence</value>
+  </data>
+  <data name="FilterDeviceId" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="FilterStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="FilterMaxRows" xml:space="preserve">
+    <value>Max Rows</value>
+  </data>
+  <data name="FilterWithinDays" xml:space="preserve">
+    <value>Within Days</value>
+  </data>
+  <data name="FilterLookbackHours" xml:space="preserve">
+    <value>Lookback Hours</value>
   </data>
   <data name="Page" xml:space="preserve">
     <value>Page</value>
@@ -497,6 +515,24 @@
   </data>
   <data name="ActualEndAt" xml:space="preserve">
     <value>Actual End</value>
+  </data>
+  <data name="OriginArrivedAt" xml:space="preserve">
+    <value>At Origin</value>
+  </data>
+  <data name="OriginDepartedAt" xml:space="preserve">
+    <value>Left Origin</value>
+  </data>
+  <data name="LoadingMinutes" xml:space="preserve">
+    <value>Loading (min)</value>
+  </data>
+  <data name="TransitMinutes" xml:space="preserve">
+    <value>In Transit (min)</value>
+  </data>
+  <data name="TotalMinutes" xml:space="preserve">
+    <value>Total (min)</value>
+  </data>
+  <data name="StopActivity" xml:space="preserve">
+    <value>Activity</value>
   </data>
   <data name="PlannedDistanceKm" xml:space="preserve">
     <value>Planned Distance (km)</value>

@@ -21,14 +21,12 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 
 // Driver↔transporter assignment history (spec 09 §13). Time-bounded assignment rows, most recent
-// first. Filters: DateTimeFilter1/2 = window, StringFilter1 = transporter id (optional GUID;
-// unparseable values are ignored). Excel only.
+// first. Filters: from/to = window, transporterId = optional unit (unparseable values are
+// ignored). Excel only.
 //
-// StringFilter1 is the portal's only picker slot, and the transporter picker is the one list the
-// reports screen can populate (see TrackHub/src/layouts/reports/data/filtersData.ts) — the same
-// slot `gps.assignment-history` uses. A driver-scoped variant would need a driver picker source and
-// a second picker slot, neither of which exists; the reader still accepts a driverId so that
-// filter can be wired without touching this contract once the portal grows one.
+// A driver-scoped variant would need a driver picker source in the portal, which does not exist;
+// the reader still accepts a driverId so that filter can be wired — a `driverId` filter definition
+// in the catalog row plus a portal picker source — without touching this contract.
 public sealed class AssignmentHistoryReport(IWorkforceReportReader reader) : IReport
 {
     public string ReportCode => WorkforceReportCodes.AssignmentHistory;
@@ -37,10 +35,10 @@ public sealed class AssignmentHistoryReport(IWorkforceReportReader reader) : IRe
     {
         await reader.EnsureWorkforceFeatureAsync(cancellationToken);
 
-        var transporterId = ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var assignments = await reader.GetDriverAssignmentHistoryAsync(
-            driverId: null, transporterId, filters.DateTimeFilter1, filters.DateTimeFilter2, cancellationToken);
+            driverId: null, transporterId, filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         var rows = assignments
@@ -59,9 +57,4 @@ public sealed class AssignmentHistoryReport(IWorkforceReportReader reader) : IRe
 
         return ReportDataset.Create(filters, rows);
     }
-
-    // Optional GUID filter slots arrive as free text — an unparseable value means "no filter"
-    // rather than an error, matching the other catalog reports' filter tolerance.
-    private static Guid? ParseOptionalId(string? value)
-        => Guid.TryParse(value, out var id) && id != Guid.Empty ? id : null;
 }

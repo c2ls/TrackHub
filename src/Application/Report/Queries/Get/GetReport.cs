@@ -28,7 +28,11 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Queries.Get;
 
+// Filter values may carry entity ids (e.g. transporterId); scope is enforced by the data
+// feeds — every reader queries the source service under the caller's token, and the source
+// applies its own account/visibility scoping. A foreign id therefore yields no rows.
 [Authorize(Resource = Resources.Reports, Action = Actions.Read)]
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetReportQuery(string ReportCode, FilterDto Filters, string Format = "xlsx")
     : IRequest<ReportFileVm>
 {

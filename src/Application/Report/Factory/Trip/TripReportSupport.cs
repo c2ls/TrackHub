@@ -17,14 +17,9 @@ using TrackHub.Reporting.Domain.Models;
 
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
-// Shared filter parsing and punctuality/dwell math for the six spec 11 §13 trip reports.
+// Shared punctuality/dwell math for the six spec 11 §13 trip reports.
 internal static class TripReportSupport
 {
-    // Optional GUID filter slots arrive as free text — an unparseable value means "no filter" rather
-    // than an error, matching the other catalog reports' filter tolerance.
-    public static Guid? ParseOptionalId(string? value)
-        => Guid.TryParse(value, out var id) && id != Guid.Empty ? id : null;
-
     public static string OrEmpty(this string? value) => value ?? string.Empty;
 
     // Missing text groups under one explicit bucket rather than several empty-looking ones.

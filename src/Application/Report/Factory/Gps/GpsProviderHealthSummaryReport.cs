@@ -15,8 +15,8 @@ public sealed class GpsProviderHealthSummaryReport(
 
     public async Task<ReportDataset> GetDatasetAsync(FilterDto filters, CancellationToken cancellationToken)
     {
-        var lookbackHours = filters.NumericFilter1.HasValue && filters.NumericFilter1.Value > 0
-            ? (int)Math.Min(filters.NumericFilter1.Value, 24 * 90)
+        var lookbackHours = filters.GetNumber(FilterNames.LookbackHours) is { } hours && hours > 0
+            ? (int)Math.Min(hours, 24 * 90)
             : 24;
 
         var operators = await manager.GetOperatorsAsync(cancellationToken);

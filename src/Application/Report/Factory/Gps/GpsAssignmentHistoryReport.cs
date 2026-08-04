@@ -20,12 +20,12 @@ public sealed class GpsAssignmentHistoryReport(
         var accountId = await GpsReportSupport.RequireAccountAsync(user, features, FeatureKeys.GpsIntegration, cancellationToken);
         var assignments = await manager.GetAssignmentsByAccountAsync(accountId, false, cancellationToken);
         IEnumerable<Domain.Models.Manager.ManagerTransporterDeviceAssignmentVm> filtered = assignments;
-        if (Guid.TryParse(filters.StringFilter1, out var tx))
-            filtered = filtered.Where(a => a.TransporterId == tx);
-        if (filters.DateTimeFilter1.HasValue)
-            filtered = filtered.Where(a => a.EffectiveFrom >= filters.DateTimeFilter1.Value);
-        if (filters.DateTimeFilter2.HasValue)
-            filtered = filtered.Where(a => a.EffectiveFrom <= filters.DateTimeFilter2.Value);
+        if (filters.GetGuid(FilterNames.Transporter) is { } transporterId)
+            filtered = filtered.Where(a => a.TransporterId == transporterId);
+        if (filters.GetDate(FilterNames.From) is { } from)
+            filtered = filtered.Where(a => a.EffectiveFrom >= from);
+        if (filters.GetDate(FilterNames.To) is { } to)
+            filtered = filtered.Where(a => a.EffectiveFrom <= to);
         var rows = filtered
             .OrderByDescending(a => a.EffectiveFrom)
             .Select(a => new GpsAssignmentHistoryRowVm(

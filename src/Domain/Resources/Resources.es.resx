@@ -123,9 +123,6 @@
   <data name="Altitude" xml:space="preserve">
     <value>Altitud (mts)</value>
   </data>
-  <data name="Attributes" xml:space="preserve">
-    <value>Atributos</value>
-  </data>
   <data name="City" xml:space="preserve">
     <value>Ciudad</value>
   </data>
@@ -417,8 +414,29 @@
   <data name="FilterTo" xml:space="preserve">
     <value>Hasta</value>
   </data>
-  <data name="Filter" xml:space="preserve">
-    <value>Filtro</value>
+  <data name="FilterTransporterId" xml:space="preserve">
+    <value>Unidad</value>
+  </data>
+  <data name="FilterOperatorId" xml:space="preserve">
+    <value>Operador</value>
+  </data>
+  <data name="FilterGeofenceId" xml:space="preserve">
+    <value>Geocerca</value>
+  </data>
+  <data name="FilterDeviceId" xml:space="preserve">
+    <value>Dispositivo</value>
+  </data>
+  <data name="FilterStatus" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="FilterMaxRows" xml:space="preserve">
+    <value>Máximo de Filas</value>
+  </data>
+  <data name="FilterWithinDays" xml:space="preserve">
+    <value>Dentro de (días)</value>
+  </data>
+  <data name="FilterLookbackHours" xml:space="preserve">
+    <value>Horas hacia Atrás</value>
   </data>
   <data name="Page" xml:space="preserve">
     <value>Página</value>
@@ -497,6 +515,24 @@
   </data>
   <data name="ActualEndAt" xml:space="preserve">
     <value>Fin Real</value>
+  </data>
+  <data name="OriginArrivedAt" xml:space="preserve">
+    <value>En Origen</value>
+  </data>
+  <data name="OriginDepartedAt" xml:space="preserve">
+    <value>Salida de Origen</value>
+  </data>
+  <data name="LoadingMinutes" xml:space="preserve">
+    <value>Cargue (min)</value>
+  </data>
+  <data name="TransitMinutes" xml:space="preserve">
+    <value>En Tránsito (min)</value>
+  </data>
+  <data name="TotalMinutes" xml:space="preserve">
+    <value>Total (min)</value>
+  </data>
+  <data name="StopActivity" xml:space="preserve">
+    <value>Actividad</value>
   </data>
   <data name="PlannedDistanceKm" xml:space="preserve">
     <value>Distancia Planificada (km)</value>

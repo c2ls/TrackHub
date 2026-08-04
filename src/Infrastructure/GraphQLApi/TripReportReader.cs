@@ -50,6 +50,11 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
                             plannedEndAt
                             actualStartAt
                             actualEndAt
+                            originArrivedAt
+                            originDepartedAt
+                            loadingMinutes
+                            transitMinutes
+                            totalMinutes
                             plannedDistanceMeters
                             actualDistanceMeters
                             stopCount
@@ -75,6 +80,7 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
                             customerName
                             sequence
                             name
+                            activity
                             status
                             plannedArrivalFrom
                             plannedArrivalTo

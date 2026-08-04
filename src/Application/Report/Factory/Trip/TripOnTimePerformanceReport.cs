@@ -21,8 +21,8 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
 // On-time performance (spec 11 §13): punctuality percentage, average and worst delay, and delayed
-// stop counts grouped by transporter/driver/customer. Filters: DateTimeFilter1/2 = window,
-// StringFilter1 = transporter id. Aggregated, so it stays inside the 500-row PDF limit — SupportsPdf.
+// stop counts grouped by transporter/driver/customer. Filters: from/to = window, transporterId =
+// optional unit. Aggregated, so it stays inside the 500-row PDF limit — SupportsPdf.
 //
 // Only stops carrying BOTH a planned window end and an actual arrival are evaluated: a stop with no
 // planned window has no punctuality to measure, and a stop never arrived at would otherwise be
@@ -36,10 +36,10 @@ public sealed class TripOnTimePerformanceReport(ITripReportReader reader) : IRep
     {
         await reader.EnsureTripManagementFeatureAsync(cancellationToken);
 
-        var transporterId = TripReportSupport.ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var stops = await reader.GetTripStopsAsync(
-            filters.DateTimeFilter1, filters.DateTimeFilter2, transporterId, driverId: null, cancellationToken);
+            filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), transporterId, driverId: null, cancellationToken);
 
         var evaluated = stops
             .Select(s => new

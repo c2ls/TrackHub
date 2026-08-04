@@ -21,8 +21,8 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
 // Trips by period (spec 11 §13): plan versus reality on one line per trip. Filters:
-// DateTimeFilter1/2 = window, StringFilter1 = transporter id (optional GUID; unparseable values are
-// ignored — the portal's only picker slot). Most recent departure first. Excel only.
+// from/to = window, transporterId = optional unit (unparseable values are ignored). Most
+// recent departure first. Excel only.
 public sealed class TripSummaryReport(ITripReportReader reader) : IReport
 {
     public string ReportCode => TripReportCodes.Summary;
@@ -31,10 +31,10 @@ public sealed class TripSummaryReport(ITripReportReader reader) : IReport
     {
         await reader.EnsureTripManagementFeatureAsync(cancellationToken);
 
-        var transporterId = TripReportSupport.ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var trips = await reader.GetTripsAsync(
-            filters.DateTimeFilter1, filters.DateTimeFilter2, transporterId, driverId: null, cancellationToken);
+            filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), transporterId, driverId: null, cancellationToken);
 
         var rows = trips
             .OrderByDescending(t => t.PlannedStartAt)
@@ -48,6 +48,11 @@ public sealed class TripSummaryReport(ITripReportReader reader) : IReport
                 t.ActualStartAt,
                 t.PlannedEndAt,
                 t.ActualEndAt,
+                t.OriginArrivedAt,
+                t.OriginDepartedAt,
+                t.LoadingMinutes,
+                t.TransitMinutes,
+                t.TotalMinutes,
                 t.PlannedDistanceMeters.ToKilometers(),
                 t.ActualDistanceMeters.ToKilometers(),
                 t.StopCount,

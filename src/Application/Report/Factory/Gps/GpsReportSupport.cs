@@ -25,11 +25,12 @@ internal static class GpsReportSupport
     // Clamp ceiling comes from configuration — the caller passes the resolved limits.
     public static int ResolveTake(FilterDto filters, ReportingLimitsOptions limits, int defaultTake = DefaultPageSize)
     {
-        if (!filters.NumericFilter1.HasValue || filters.NumericFilter1.Value <= 0)
+        var maxRows = filters.GetNumber(FilterNames.MaxRows);
+        if (maxRows is not > 0)
         {
             return defaultTake;
         }
 
-        return (int)Math.Min(filters.NumericFilter1.Value, limits.MaxExportRows);
+        return (int)Math.Min(maxRows.Value, limits.MaxExportRows);
     }
 }

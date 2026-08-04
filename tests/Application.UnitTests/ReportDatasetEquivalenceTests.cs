@@ -13,10 +13,14 @@ public class ReportDatasetEquivalenceTests
     {
         Name = "My Report",
         Language = "en",
-        DateTimeFilter1 = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
-        DateTimeFilter2 = new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero),
-        StringFilter1 = "abc",
-        NumericFilter1 = 7
+        Values = new Dictionary<string, string?>
+        {
+            [FilterNames.From] = "2026-01-01T00:00:00Z",
+            [FilterNames.To] = "2026-01-31T00:00:00Z",
+            [FilterNames.Status] = "abc",
+            [FilterNames.MaxRows] = "7",
+            [FilterNames.Transporter] = null
+        }
     };
 
     private static void AssertMatchesProperties<T>(IReadOnlyCollection<T> rows)
@@ -41,8 +45,8 @@ public class ReportDatasetEquivalenceTests
 
         // Title + date range come from the filter.
         Assert.That(dataset.Title, Is.EqualTo("My Report"));
-        Assert.That(dataset.FromDate, Is.EqualTo(Filters().DateTimeFilter1));
-        Assert.That(dataset.ToDate, Is.EqualTo(Filters().DateTimeFilter2));
+        Assert.That(dataset.FromDate, Is.EqualTo(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)));
+        Assert.That(dataset.ToDate, Is.EqualTo(new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero)));
     }
 
     [Test]
@@ -50,7 +54,7 @@ public class ReportDatasetEquivalenceTests
         => AssertMatchesProperties(new[]
         {
             new PositionVm(Guid.NewGuid(), "Dev", "Truck", 4.5, -74.1, 10.0,
-                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 60, 90, 1, "addr", "city", "state", "country", null)
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 60, 90, 1, "addr", "city", "state", "country")
         });
 
     [Test]
@@ -75,13 +79,17 @@ public class ReportDatasetEquivalenceTests
         });
 
     [Test]
-    public void AppliedFilters_IncludeNonEmptyFilterValues()
+    public void AppliedFilters_EchoProvidedValuesUnderNamedKeys()
     {
         var dataset = ReportDataset.Create(Filters(), new[] { new AccountByStatusRowVm("A", "Active", 1, true, DateTimeOffset.UtcNow) });
-        var keys = dataset.AppliedFilters.Select(f => f.Key).ToList();
+        var applied = dataset.AppliedFilters.ToDictionary(f => f.Key, f => f.Value);
 
-        Assert.That(keys, Does.Contain("FilterFrom"));
-        Assert.That(keys, Does.Contain("FilterTo"));
-        Assert.That(keys, Does.Contain("Filter")); // StringFilter1 + NumericFilter1
+        // Named echo: "Filter" + PascalCase(name); dates normalized, others raw.
+        Assert.That(applied["FilterFrom"], Is.EqualTo("2026-01-01 00:00"));
+        Assert.That(applied["FilterTo"], Is.EqualTo("2026-01-31 00:00"));
+        Assert.That(applied["FilterStatus"], Is.EqualTo("abc"));
+        Assert.That(applied["FilterMaxRows"], Is.EqualTo("7"));
+        // Null/empty values are not echoed.
+        Assert.That(applied.ContainsKey("FilterTransporterId"), Is.False);
     }
 }

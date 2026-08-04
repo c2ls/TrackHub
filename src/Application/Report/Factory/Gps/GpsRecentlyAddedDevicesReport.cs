@@ -18,10 +18,10 @@ public sealed class GpsRecentlyAddedDevicesReport(
     public async Task<ReportDataset> GetDatasetAsync(FilterDto filters, CancellationToken cancellationToken)
     {
         var accountId = await GpsReportSupport.RequireAccountAsync(user, features, FeatureKeys.GpsIntegration, cancellationToken);
-        var lookbackDays = filters.NumericFilter1.HasValue && filters.NumericFilter1.Value > 0
-            ? (int)Math.Min(filters.NumericFilter1.Value, 365)
+        var lookbackDays = filters.GetNumber(FilterNames.WithinDays) is { } days && days > 0
+            ? (int)Math.Min(days, 365)
             : 7;
-        var cutoff = filters.DateTimeFilter1 ?? DateTimeOffset.UtcNow.AddDays(-lookbackDays);
+        var cutoff = filters.GetDate(FilterNames.From) ?? DateTimeOffset.UtcNow.AddDays(-lookbackDays);
         var devices = await manager.GetSynchronizedDevicesAsync(accountId, null, null, cancellationToken);
         var operators = (await manager.GetOperatorsAsync(cancellationToken))
             .ToDictionary(o => o.OperatorId, o => o.Name);
