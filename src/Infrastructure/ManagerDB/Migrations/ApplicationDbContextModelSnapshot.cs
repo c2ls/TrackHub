@@ -323,6 +323,10 @@ namespace TrackHub.Geofencing.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
                     b.Property<Point>("Geom")
                         .IsRequired()
                         .HasColumnType("geometry(Point, 4326)")
@@ -333,15 +337,30 @@ namespace TrackHub.Geofencing.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("userid");
-
                     b.HasKey("TransporterId");
 
                     b.ToTable((string)null);
 
                     b.ToView("vw_transporter_position", "geofencing");
+                });
+
+            modelBuilder.Entity("TrackHub.Geofencing.Infrastructure.Entities.VwVisibleTransporter", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<Guid>("TransporterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transporterid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("userid");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_visible_transporter", "geofencing");
                 });
 
             modelBuilder.Entity("TrackHub.Geofencing.Infrastructure.Entities.VwUser", b =>

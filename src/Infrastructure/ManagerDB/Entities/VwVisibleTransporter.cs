@@ -13,19 +13,17 @@
 //  limitations under the License.
 //
 
-namespace TrackHub.Geofencing.Infrastructure.Interfaces;
+namespace TrackHub.Geofencing.Infrastructure.Entities;
 
-public interface IApplicationDbContext
+/// <summary>
+/// Backing entity for geofencing.vw_visible_transporter - the single source of portal group
+/// visibility for this service, mirroring trip.vw_visible_transporter. The view joins
+/// app.user_group, app.transporter_group and app.transporters so visibility costs no
+/// cross-service call.
+/// </summary>
+public sealed class VwVisibleTransporter
 {
-    DbSet<Geofence> Geofences { get; set; }
-    DbSet<GeofenceEvent> GeofenceEvents { get; set; }
-    DbSet<VwTransporterPosition> Transporters { get; set; }
-    DbSet<VwVisibleTransporter> VisibleTransporters { get; set; }
-    DbSet<VwUser> Users { get; set; }
-    DbSet<AccountFeature> AccountFeatures { get; set; }
-    DbSet<Account> Accounts { get; set; }
-    DbSet<AuditEvent> AuditEvents { get; set; }
-
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    public Guid UserId { get; set; }
+    public Guid TransporterId { get; set; }
+    public Guid AccountId { get; set; }
 }
-

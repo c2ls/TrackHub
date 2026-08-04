@@ -17,23 +17,18 @@ using Common.Domain.Constants;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace TrackHub.Geofencing.Infrastructure.Configurations;
-public sealed class VmTransporterPositionConfiguration : IEntityTypeConfiguration<VwTransporterPosition>
+
+public sealed class VwVisibleTransporterConfiguration : IEntityTypeConfiguration<VwVisibleTransporter>
 {
-    public void Configure(EntityTypeBuilder<VwTransporterPosition> builder)
+    public void Configure(EntityTypeBuilder<VwVisibleTransporter> builder)
     {
-        //Table name
-        builder.ToView(name: ViewMetadata.VwTransporterPosition, schema: SchemaMetadata.Geofencing);
-
-        //Column names
-        builder.Property(x => x.TransporterId).HasColumnName("id");
-        builder.Property(x => x.Name).HasColumnName("name");
-        builder.Property(e => e.Geom)
-            .HasColumnName("geom")
-            .HasColumnType("geometry(Point, 4326)");
+        builder.ToView(name: ViewMetadata.VwVisibleTransporter, schema: SchemaMetadata.Geofencing);
+        builder.Property(x => x.TransporterId).HasColumnName("transporterid");
         builder.Property(x => x.AccountId).HasColumnName("accountid");
+        builder.Property(x => x.UserId).HasColumnName("userid");
 
-        //Indexes
-        builder.HasKey(e => e.TransporterId);
+        // A (user, transporter) pair is the natural grain; the view can repeat it across groups,
+        // so readers always de-duplicate with an EXISTS predicate rather than a join.
+        builder.HasNoKey();
     }
 }
-

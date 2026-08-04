@@ -17,6 +17,10 @@ namespace TrackHub.Geofencing.Domain.Interfaces;
 
 public interface ITransportersInGeofence
 {
-    Task<IReadOnlyCollection<TransporterInGeofenceVm>> GetTransportersInGeofencesAsync(Guid accountId, Guid userId, Guid? geofenceId, short? type, CancellationToken cancellationToken);
+    /// <summary>
+    /// <paramref name="scopeUserId"/> is the caller's user id when the caller is group-scoped,
+    /// or null when the caller sees the whole account (Administrator/Manager).
+    /// </summary>
+    Task<IReadOnlyCollection<TransporterInGeofenceVm>> GetTransportersInGeofencesAsync(Guid accountId, Guid? scopeUserId, Guid? geofenceId, short? type, CancellationToken cancellationToken);
 }
 

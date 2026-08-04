@@ -14,6 +14,7 @@
 //
 
 using Common.Application.Interfaces;
+using TrackHub.Geofencing.Application.Common;
 
 namespace TrackHub.Geofencing.Application.GeofenceEvents.Queries.Get;
 
@@ -45,9 +46,11 @@ public class GetGeofenceEventsQueryHandler(IGeofenceEventReader reader, IUserRea
 
         var skip = Math.Max(request.Skip ?? 0, 0);
         var take = Math.Clamp(request.Take ?? DefaultPageSize, 1, MaxPageSize);
+        // Same visibility rule as the live map: Administrator/Manager read account-wide, plain
+        // users only the transporters in their groups.
         return await reader.GetGeofenceEventsAsync(
             userData.AccountId,
-            UserId,
+            GeofenceVisibility.ResolveScopeUserId(user, UserId),
             request.From,
             request.To,
             request.TransporterId,

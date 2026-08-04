@@ -34,7 +34,7 @@ public class GetTransportersInGeofenceQueryHandlerTests
             .Returns(Task.CompletedTask);
         var geofenceId = Guid.NewGuid();
         short type = 2;
-        _readerMock.Setup(r => r.GetTransportersInGeofencesAsync(accountId, It.IsAny<Guid>(), geofenceId, type, It.IsAny<CancellationToken>())).ReturnsAsync(items);
+        _readerMock.Setup(r => r.GetTransportersInGeofencesAsync(accountId, It.IsAny<Guid?>(), geofenceId, type, It.IsAny<CancellationToken>())).ReturnsAsync(items);
 
         var handler = new GetTransportersInGeofenceQueryHandler(_readerMock.Object, _userReaderMock.Object, _userMock.Object, _featureReaderMock.Object);
         var query = new GetTransportersInGeofenceQuery(geofenceId, type);
@@ -46,7 +46,42 @@ public class GetTransportersInGeofenceQueryHandlerTests
         Assert.That(result, Is.EqualTo(items));
         _userReaderMock.Verify(r => r.GetUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
         _featureReaderMock.Verify(r => r.EnsureFeatureEnabledAsync(accountId, FeatureKeys.Geofencing, It.IsAny<CancellationToken>()), Times.Once);
-        _readerMock.Verify(r => r.GetTransportersInGeofencesAsync(accountId, It.IsAny<Guid>(), geofenceId, type, It.IsAny<CancellationToken>()), Times.Once);
+        _readerMock.Verify(r => r.GetTransportersInGeofencesAsync(accountId, It.IsAny<Guid?>(), geofenceId, type, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // The dashboard tile must agree with the live map: Administrator/Manager count account-wide
+    // (null scope), the plain User role is narrowed to their groups (their own user id as scope).
+    [TestCase(Roles.Administrator)]
+    [TestCase(Roles.Manager)]
+    public async Task Handle_ShouldReadAccountWide_WhenRoleIsPrivileged(string role)
+    {
+        var accountId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        _userMock.Setup(u => u.Id).Returns(userId.ToString());
+        _userMock.Setup(u => u.Role).Returns(role);
+        _userReaderMock.Setup(r => r.GetUserAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(new UserVm { UserId = userId, Username = "u", AccountId = accountId });
+        _readerMock.Setup(r => r.GetTransportersInGeofencesAsync(accountId, null, null, null, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        var handler = new GetTransportersInGeofenceQueryHandler(_readerMock.Object, _userReaderMock.Object, _userMock.Object, _featureReaderMock.Object);
+        await handler.Handle(new GetTransportersInGeofenceQuery(null, null), CancellationToken.None);
+
+        _readerMock.Verify(r => r.GetTransportersInGeofencesAsync(accountId, null, null, null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Handle_ShouldReadGroupScoped_WhenRoleIsPlainUser()
+    {
+        var accountId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        _userMock.Setup(u => u.Id).Returns(userId.ToString());
+        _userMock.Setup(u => u.Role).Returns(Roles.User);
+        _userReaderMock.Setup(r => r.GetUserAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(new UserVm { UserId = userId, Username = "u", AccountId = accountId });
+        _readerMock.Setup(r => r.GetTransportersInGeofencesAsync(accountId, userId, null, null, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        var handler = new GetTransportersInGeofenceQueryHandler(_readerMock.Object, _userReaderMock.Object, _userMock.Object, _featureReaderMock.Object);
+        await handler.Handle(new GetTransportersInGeofenceQuery(null, null), CancellationToken.None);
+
+        _readerMock.Verify(r => r.GetTransportersInGeofencesAsync(accountId, userId, null, null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]

@@ -123,9 +123,17 @@
  SELECT transporters.id,
     transporters.name,
     st_setsrid(st_makepoint(transporter_position.longitude, transporter_position.latitude), 4326) AS geom,
+    transporters.accountid
+   FROM telemetry.transporter_position
+     JOIN app.transporters ON transporter_position.transporterid = transporters.id;</value>
+  </data>
+  <data name="vw_visible_transporter" xml:space="preserve">
+    <value>CREATE OR REPLACE VIEW geofencing.vw_visible_transporter
+ AS
+ SELECT transporters.id AS transporterid,
+    transporters.accountid,
     user_group.userid
-   FROM app.transporter_position
-     JOIN app.transporters ON transporter_position.transporterid = transporters.id
+   FROM app.transporters
      JOIN app.transporter_group ON transporter_group.transporterid = transporters.id
      JOIN app.user_group ON user_group.groupid = transporter_group.groupid;</value>
   </data>

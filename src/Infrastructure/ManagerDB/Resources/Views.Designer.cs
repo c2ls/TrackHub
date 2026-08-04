@@ -66,18 +66,32 @@ namespace TrackHub.Geofencing.Infrastructure.Resources {
         /// SELECT transporters.id,
         ///    transporters.name,
         ///    st_setsrid(st_makepoint(transporter_position.longitude, transporter_position.latitude), 4326) AS geom,
-        ///    user_group.userid
-        ///   FROM app.transporter_position
-        ///     JOIN app.transporters ON transporter_position.transporterid = transporters.id
-        ///     JOIN app.transporter_group ON transporter_group.transporterid = transporters.id
-        ///     JOIN app.user_group ON user_group.groupid = transporter_group.group [rest of string was truncated]&quot;;.
+        ///    transporters.accountid
+        ///   FROM telemetry.transporter_position
+        ///     JOIN app.transporters ON transporter_position.transporterid = transporters.id;.
         /// </summary>
         internal static string vw_transporter_position {
             get {
                 return ResourceManager.GetString("vw_transporter_position", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE OR REPLACE VIEW geofencing.vw_visible_transporter
+        /// AS
+        /// SELECT transporters.id AS transporterid,
+        ///    transporters.accountid,
+        ///    user_group.userid
+        ///   FROM app.transporters
+        ///     JOIN app.transporter_group ON transporter_group.transporterid = transporters.id
+        ///     JOIN app.user_group ON user_group.groupid = transporter_group.groupid;.
+        /// </summary>
+        internal static string vw_visible_transporter {
+            get {
+                return ResourceManager.GetString("vw_visible_transporter", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to CREATE OR REPLACE VIEW geofencing.vw_users
         /// AS

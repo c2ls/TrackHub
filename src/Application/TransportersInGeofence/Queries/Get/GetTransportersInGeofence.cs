@@ -14,6 +14,7 @@
 //
 
 using Common.Application.Interfaces;
+using TrackHub.Geofencing.Application.Common;
 
 namespace TrackHub.Geofencing.Application.TransportersInGeofence.Queries.Get;
 
@@ -29,9 +30,13 @@ public class GetTransportersInGeofenceQueryHandler(ITransportersInGeofence reade
 
     public async Task<IReadOnlyCollection<TransporterInGeofenceVm>> Handle(GetTransportersInGeofenceQuery request, CancellationToken cancellationToken)
     {
-        var user = await userReader.GetUserAsync(UserId, cancellationToken);
-        await accountFeatureReader.EnsureFeatureEnabledAsync(user.AccountId, FeatureKeys.Geofencing, cancellationToken);
-        return await reader.GetTransportersInGeofencesAsync(user.AccountId, UserId, request.GeofenceId, request.Type, cancellationToken);
+        var userData = await userReader.GetUserAsync(UserId, cancellationToken);
+        await accountFeatureReader.EnsureFeatureEnabledAsync(userData.AccountId, FeatureKeys.Geofencing, cancellationToken);
+
+        // Same visibility rule as the live map: Administrator/Manager count account-wide, plain
+        // users only the transporters in their groups — the dashboard tile must agree with the map.
+        var scopeUserId = GeofenceVisibility.ResolveScopeUserId(user, UserId);
+        return await reader.GetTransportersInGeofencesAsync(userData.AccountId, scopeUserId, request.GeofenceId, request.Type, cancellationToken);
     }
 
 }

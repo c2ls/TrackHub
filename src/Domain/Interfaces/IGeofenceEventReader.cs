@@ -27,11 +27,13 @@ public interface IGeofenceEventReader
 
     /// <summary>
     /// Gets a server-side page of geofence events filtered by account, user visibility, date range,
-    /// optional transporter/geofence, and open-visit-only flag.
+    /// optional transporter/geofence, and open-visit-only flag. <paramref name="scopeUserId"/> is
+    /// the caller's user id when the caller is group-scoped, or null when the caller sees the
+    /// whole account (Administrator/Manager).
     /// </summary>
     Task<GeofenceEventsPageVm> GetGeofenceEventsAsync(
         Guid accountId,
-        Guid userId,
+        Guid? scopeUserId,
         DateTimeOffset fromDate,
         DateTimeOffset toDate,
         Guid? transporterId,

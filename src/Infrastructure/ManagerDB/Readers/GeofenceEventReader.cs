@@ -41,7 +41,7 @@ public sealed class GeofenceEventReader(IApplicationDbContext context) : IGeofen
 
     public async Task<GeofenceEventsPageVm> GetGeofenceEventsAsync(
         Guid accountId,
-        Guid userId,
+        Guid? scopeUserId,
         DateTimeOffset fromDate,
         DateTimeOffset toDate,
         Guid? transporterId,
@@ -53,27 +53,36 @@ public sealed class GeofenceEventReader(IApplicationDbContext context) : IGeofen
     {
         // No g.Active filter: deactivating a geofence must not erase its recorded visit
         // history from the event view.
-        var query = from evt in context.GeofenceEvents
-                    join g in context.Geofences on evt.GeofenceId equals g.GeofenceId
-                    join t in context.Transporters on evt.TransporterId equals t.TransporterId
-                    where g.AccountId == accountId
-                    where t.UserId == userId
-                    where evt.EventDateTime >= fromDate && evt.EventDateTime <= toDate
-                    where transporterId == null || evt.TransporterId == transporterId
-                    where geofenceId == null || evt.GeofenceId == geofenceId
-                    where !openOnly || evt.DepartureTimestamp == null
-                    select new
-                    {
-                        evt.GeofenceEventId,
-                        evt.TransporterId,
-                        evt.GeofenceId,
-                        TransporterName = t.Name,
-                        GeofenceName = g.Name,
-                        evt.EventDateTime,
-                        evt.DepartureTimestamp,
-                        evt.Latitude,
-                        evt.Longitude
-                    };
+        var events = from evt in context.GeofenceEvents
+                     join g in context.Geofences on evt.GeofenceId equals g.GeofenceId
+                     join t in context.Transporters on evt.TransporterId equals t.TransporterId
+                     where g.AccountId == accountId
+                     where evt.EventDateTime >= fromDate && evt.EventDateTime <= toDate
+                     where transporterId == null || evt.TransporterId == transporterId
+                     where geofenceId == null || evt.GeofenceId == geofenceId
+                     where !openOnly || evt.DepartureTimestamp == null
+                     select new { evt, g, t };
+
+        // Group visibility as an EXISTS predicate, never a join: the view repeats a
+        // (user, transporter) pair once per shared group and a join would multiply the rows.
+        if (scopeUserId is { } userId)
+            events = events.Where(e => context.VisibleTransporters.Any(v =>
+                v.AccountId == accountId
+                && v.UserId == userId
+                && v.TransporterId == e.evt.TransporterId));
+
+        var query = events.Select(e => new
+        {
+            e.evt.GeofenceEventId,
+            e.evt.TransporterId,
+            e.evt.GeofenceId,
+            TransporterName = e.t.Name,
+            GeofenceName = e.g.Name,
+            e.evt.EventDateTime,
+            e.evt.DepartureTimestamp,
+            e.evt.Latitude,
+            e.evt.Longitude
+        });
 
         var totalCount = await query.CountAsync(cancellationToken);
         var rawEvents = await query

@@ -115,11 +115,13 @@ namespace TrackHub.Geofencing.Infrastructure.Migrations
 
             migrationBuilder.Sql(Views.vw_users);
             migrationBuilder.Sql(Views.vw_transporter_position);
+            migrationBuilder.Sql(Views.vw_visible_transporter);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DROP VIEW IF EXISTS geofencing.vw_visible_transporter;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS geofencing.vw_transporter_position;");
             migrationBuilder.Sql("DROP VIEW IF EXISTS geofencing.vw_users;");
 

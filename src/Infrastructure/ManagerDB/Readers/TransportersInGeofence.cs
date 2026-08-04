@@ -18,23 +18,33 @@ namespace TrackHub.Geofencing.Infrastructure.Readers;
 public sealed class TransportersInGeofence(IApplicationDbContext context) : ITransportersInGeofence
 {
 
-    public async Task<IReadOnlyCollection<TransporterInGeofenceVm>> GetTransportersInGeofencesAsync(Guid accountId, Guid userId, Guid? geofenceId, short? type, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<TransporterInGeofenceVm>> GetTransportersInGeofencesAsync(Guid accountId, Guid? scopeUserId, Guid? geofenceId, short? type, CancellationToken cancellationToken)
     {
-        var query = from geofence in context.Geofences
+        var pairs = from geofence in context.Geofences
                     from transporter in context.Transporters
-                    where geofence.AccountId == accountId && geofence.Active && transporter.UserId == userId
+                    where geofence.AccountId == accountId && geofence.Active && transporter.AccountId == accountId
                     where geofenceId == null || geofence.GeofenceId == geofenceId
                     where type == null || geofence.Type == type
                     where geofence.Geom.Intersects(transporter.Geom)
-                    select new TransporterInGeofenceVm
-                    {
-                        GeofenceId = geofence.GeofenceId,
-                        GeofenceName = geofence.Name,
-                        TransporterId = transporter.TransporterId,
-                        TransporterName = transporter.Name
-                    };
+                    select new { geofence, transporter };
 
-        return await query.ToListAsync(cancellationToken);
+        // Group visibility as an EXISTS predicate, never a join: the view repeats a
+        // (user, transporter) pair once per shared group and a join would multiply the rows.
+        if (scopeUserId is { } userId)
+            pairs = pairs.Where(p => context.VisibleTransporters.Any(v =>
+                v.AccountId == accountId
+                && v.UserId == userId
+                && v.TransporterId == p.transporter.TransporterId));
+
+        return await pairs
+            .Select(p => new TransporterInGeofenceVm
+            {
+                GeofenceId = p.geofence.GeofenceId,
+                GeofenceName = p.geofence.Name,
+                TransporterId = p.transporter.TransporterId,
+                TransporterName = p.transporter.Name
+            })
+            .ToListAsync(cancellationToken);
     }
 
 }
