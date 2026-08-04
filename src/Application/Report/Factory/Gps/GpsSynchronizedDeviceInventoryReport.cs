@@ -18,7 +18,7 @@ public sealed class GpsSynchronizedDeviceInventoryReport(
     public async Task<ReportDataset> GetDatasetAsync(FilterDto filters, CancellationToken cancellationToken)
     {
         var accountId = await GpsReportSupport.RequireAccountAsync(user, features, FeatureKeys.GpsIntegration, cancellationToken);
-        Guid? operatorId = Guid.TryParse(filters.StringFilter1, out var op) ? op : null;
+        Guid? operatorId = filters.GetGuid(FilterNames.Operator);
         var devices = await manager.GetSynchronizedDevicesAsync(accountId, null, operatorId, cancellationToken);
         var operators = (await manager.GetOperatorsAsync(cancellationToken))
             .ToDictionary(o => o.OperatorId, o => o.Name);

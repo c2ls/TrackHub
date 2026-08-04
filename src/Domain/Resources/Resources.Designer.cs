@@ -79,15 +79,6 @@ namespace TrackHub.Reporting.Domain.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attributes.
-        /// </summary>
-        internal static string Attributes {
-            get {
-                return ResourceManager.GetString("Attributes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to City.
         /// </summary>
         internal static string City {

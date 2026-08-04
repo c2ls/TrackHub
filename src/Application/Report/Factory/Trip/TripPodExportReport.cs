@@ -20,8 +20,8 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
-// Proof-of-delivery register (spec 11 §13). Filters: DateTimeFilter1/2 = window, StringFilter1 =
-// transporter id. Most recent capture first. Excel only.
+// Proof-of-delivery register (spec 11 §13). Filters: from/to = window, transporterId =
+// optional unit. Most recent capture first. Excel only.
 //
 // SENSITIVE EXPORT. It carries receiver names, receiver identity documents and the coordinates where
 // the signature was captured. Spec 06 §13 / spec 11 §13 call for a HIGH-SEVERITY export audit; the
@@ -40,10 +40,10 @@ public sealed class TripPodExportReport(ITripReportReader reader) : IReport
     {
         await reader.EnsureTripManagementFeatureAsync(cancellationToken);
 
-        var transporterId = TripReportSupport.ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var pods = await reader.GetTripProofsOfDeliveryAsync(
-            filters.DateTimeFilter1, filters.DateTimeFilter2, transporterId, driverId: null, cancellationToken);
+            filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), transporterId, driverId: null, cancellationToken);
 
         var rows = pods
             .OrderByDescending(p => p.CapturedAt)

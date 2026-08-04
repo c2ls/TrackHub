@@ -85,7 +85,7 @@ public class DocumentReportsTests
             new ReportDocumentVm("SOAT", "Transporter", "t1", "a.pdf", "Internal", "Active", DateTimeOffset.UtcNow.AddDays(3)),
             new ReportDocumentVm("RTM", "Transporter", "t2", "b.pdf", "Internal", "Active", DateTimeOffset.UtcNow.AddDays(1))));
 
-        var filters = _filters with { NumericFilter1 = 15 };
+        var filters = _filters with { Values = FilterValues.Of((FilterNames.WithinDays, "15")) };
         var result = await new ExpiringDocumentsReport(_reader.Object).GetDatasetAsync(filters, CancellationToken.None);
 
         Assert.That(result.RowCount, Is.EqualTo(2));

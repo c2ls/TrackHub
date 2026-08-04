@@ -20,8 +20,8 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
-// Estimated toll by trip/route/station/vehicle class (spec 11 §13). Filters: DateTimeFilter1/2 =
-// window, StringFilter1 = transporter id. SupportsPdf.
+// Estimated toll by trip/route/station/vehicle class (spec 11 §13). Filters: from/to = window,
+// transporterId = optional unit. SupportsPdf.
 //
 // The `PartialNoTariff` column is the point of the report: a station crossed with no tariff for the
 // trip's vehicle class on the plan date carries a NULL amount, not a zero. Leaving it out would turn
@@ -34,10 +34,10 @@ public sealed class TripTollCostReport(ITripReportReader reader) : IReport
     {
         await reader.EnsureTripManagementFeatureAsync(cancellationToken);
 
-        var transporterId = TripReportSupport.ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var tolls = await reader.GetTripTollsAsync(
-            filters.DateTimeFilter1, filters.DateTimeFilter2, transporterId, driverId: null, cancellationToken);
+            filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), transporterId, driverId: null, cancellationToken);
 
         var rows = tolls
             .OrderByDescending(t => t.PlannedStartAt)

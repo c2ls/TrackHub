@@ -15,6 +15,5 @@ public readonly record struct PositionVm(
     string? Address,
     string? City,
     string? State,
-    string? Country,
-    AttributesVm? Attributes
+    string? Country
     );

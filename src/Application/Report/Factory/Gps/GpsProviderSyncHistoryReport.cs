@@ -20,14 +20,14 @@ public sealed class GpsProviderSyncHistoryReport(
     public async Task<ReportDataset> GetDatasetAsync(FilterDto filters, CancellationToken cancellationToken)
     {
         var accountId = await GpsReportSupport.RequireAccountAsync(user, features, FeatureKeys.GpsIntegration, cancellationToken);
-        Guid? operatorId = Guid.TryParse(filters.StringFilter1, out var op) ? op : null;
+        Guid? operatorId = filters.GetGuid(FilterNames.Operator);
         var take = GpsReportSupport.ResolveTake(filters, limits, 500);
         var runs = await telemetry.GetOperatorSyncRunsAsync(accountId, operatorId, take, cancellationToken);
         IEnumerable<Domain.Models.Manager.ManagerOperatorSyncRunVm> filtered = runs;
-        if (filters.DateTimeFilter1.HasValue)
-            filtered = filtered.Where(r => r.StartedAt >= filters.DateTimeFilter1.Value);
-        if (filters.DateTimeFilter2.HasValue)
-            filtered = filtered.Where(r => r.StartedAt <= filters.DateTimeFilter2.Value);
+        if (filters.GetDate(FilterNames.From) is { } from)
+            filtered = filtered.Where(r => r.StartedAt >= from);
+        if (filters.GetDate(FilterNames.To) is { } to)
+            filtered = filtered.Where(r => r.StartedAt <= to);
         var rows = filtered.Select(r => new GpsProviderSyncHistoryRowVm(
             r.OperatorId,
             r.StartedAt,

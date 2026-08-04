@@ -21,7 +21,7 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 
 // Driver qualification expirations (spec 09 §13). Qualifications expiring inside the window
-// (NumericFilter1 days, default 30), nearest expiry first. Short report — also SupportsPdf.
+// (withinDays, default 30), nearest expiry first. Short report — also SupportsPdf.
 public sealed class QualificationExpirationsReport(IWorkforceReportReader reader) : IReport
 {
     private const int DefaultWithinDays = 30;
@@ -32,7 +32,7 @@ public sealed class QualificationExpirationsReport(IWorkforceReportReader reader
     {
         await reader.EnsureWorkforceFeatureAsync(cancellationToken);
 
-        var withinDays = (int)(filters.NumericFilter1 ?? DefaultWithinDays);
+        var withinDays = (int)(filters.GetNumber(FilterNames.WithinDays) ?? DefaultWithinDays);
         var qualifications = await reader.GetDriverQualificationsAsync(null, withinDays, cancellationToken);
 
         var rows = qualifications

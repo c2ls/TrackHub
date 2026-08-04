@@ -21,7 +21,7 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Document;
 
 // Expiring-documents report. Active documents with an ExpiresAt inside the window
-// (NumericFilter1 days, default 30). Owner-visibility + classification are enforced by the Manager query.
+// (withinDays, default 30). Owner-visibility + classification are enforced by the Manager query.
 public sealed class ExpiringDocumentsReport(IDocumentReportReader reader) : IReport
 {
     public string ReportCode => DocumentReportCodes.ExpiringDocuments;
@@ -30,7 +30,7 @@ public sealed class ExpiringDocumentsReport(IDocumentReportReader reader) : IRep
     {
         await reader.EnsureDocumentsFeatureAsync(cancellationToken);
 
-        var withinDays = (int)(filters.NumericFilter1 ?? 30);
+        var withinDays = (int)(filters.GetNumber(FilterNames.WithinDays) ?? 30);
         var documents = await reader.GetExpiringDocumentsAsync(withinDays, cancellationToken);
 
         var rows = documents

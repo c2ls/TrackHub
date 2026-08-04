@@ -28,10 +28,10 @@ public sealed class GpsSyncStatisticsReport(
             .ToDictionary(o => o.OperatorId, o => o.Name);
 
         IEnumerable<Domain.Models.Manager.ManagerOperatorSyncRunVm> filtered = runs;
-        if (filters.DateTimeFilter1.HasValue)
-            filtered = filtered.Where(r => r.StartedAt >= filters.DateTimeFilter1.Value);
-        if (filters.DateTimeFilter2.HasValue)
-            filtered = filtered.Where(r => r.StartedAt <= filters.DateTimeFilter2.Value);
+        if (filters.GetDate(FilterNames.From) is { } from)
+            filtered = filtered.Where(r => r.StartedAt >= from);
+        if (filters.GetDate(FilterNames.To) is { } to)
+            filtered = filtered.Where(r => r.StartedAt <= to);
 
         var rows = filtered
             .GroupBy(r => new { Date = new DateTimeOffset(r.StartedAt.UtcDateTime.Date, TimeSpan.Zero), r.OperatorId })

@@ -19,8 +19,8 @@ public class GeofenceReader(IGraphQLClientFactory graphQLClient)
               }";
 
     internal const string GeofenceEventsQuery = @"
-                query($from: DateTime!, $to: DateTime!, $transporterId: UUID, $skip: Int, $take: Int) {
-                    geofenceEvents(query: {from: $from, to: $to, transporterId: $transporterId, skip: $skip, take: $take}) {
+                query($from: DateTime!, $to: DateTime!, $transporterId: UUID, $geofenceId: UUID, $skip: Int, $take: Int) {
+                    geofenceEvents(query: {from: $from, to: $to, transporterId: $transporterId, geofenceId: $geofenceId, skip: $skip, take: $take}) {
                         items {
                             transporterName
                             geofenceName
@@ -57,8 +57,8 @@ public class GeofenceReader(IGraphQLClientFactory graphQLClient)
     }
 
     /// <summary>
-    /// Retrieves geofence events asynchronously filtered by date range and optional transporter,
-    /// draining the producer's server-side pages.
+    /// Retrieves geofence events asynchronously filtered by date range and optional
+    /// transporter/geofence, draining the producer's server-side pages.
     /// </summary>
     public async Task<IEnumerable<GeofenceEventReportVm>> GetGeofenceEventsAsync(FilterDto filters, CancellationToken cancellationToken)
     {
@@ -71,9 +71,10 @@ public class GeofenceReader(IGraphQLClientFactory graphQLClient)
                 Query = GeofenceEventsQuery,
                 Variables = new
                 {
-                    from = filters.DateTimeFilter1,
-                    to = filters.DateTimeFilter2,
-                    transporterId = string.IsNullOrEmpty(filters.StringFilter1) ? null : filters.StringFilter1,
+                    from = filters.GetDate(FilterNames.From),
+                    to = filters.GetDate(FilterNames.To),
+                    transporterId = filters.GetGuid(FilterNames.Transporter),
+                    geofenceId = filters.GetGuid(FilterNames.Geofence),
                     skip = rows.Count,
                     take = PageSize
                 }

@@ -11,13 +11,6 @@ public class RouterReader(IGraphQLClientFactory graphQLClient)
     internal const string DevicePositionsByUserQuery = @"
             query {
                 devicePositionsByUser {
-                    attributes {
-                        temperature
-                        satellites
-                        mileage
-                        ignition
-                        hourmeter
-                    }
                     altitude
                     address
                     deviceName
@@ -39,13 +32,6 @@ public class RouterReader(IGraphQLClientFactory graphQLClient)
     internal const string PositionsByTransporterQuery = @"
                 query($transporterId: UUID!, $to: DateTime!, $from: DateTime!) {
                     positionsByTransporter(query: { transporterId: $transporterId, to: $to, from: $from }) {
-                        attributes {
-                            temperature
-                            satellites
-                            mileage
-                            ignition
-                            hourmeter
-                        }
                         altitude
                         address
                         deviceName
@@ -86,9 +72,9 @@ public class RouterReader(IGraphQLClientFactory graphQLClient)
             Query = PositionsByTransporterQuery,
             Variables = new
             {
-                transporterId = filters.StringFilter1,
-                from = filters.DateTimeFilter1,
-                to = filters.DateTimeFilter2
+                transporterId = filters.GetGuid(FilterNames.Transporter),
+                from = filters.GetDate(FilterNames.From),
+                to = filters.GetDate(FilterNames.To)
             }
         };
         return await QueryAsync<IEnumerable<PositionVm>>(request, cancellationToken);

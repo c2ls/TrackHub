@@ -20,8 +20,8 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
-// Dwell distribution per stop/customer (spec 11 §13). Filters: DateTimeFilter1/2 = window,
-// StringFilter1 = transporter id. Longest average dwell first — the reason to read the report is to
+// Dwell distribution per stop/customer (spec 11 §13). Filters: from/to = window, transporterId =
+// optional unit. Longest average dwell first — the reason to read the report is to
 // find where time is lost. Excel only.
 //
 // Only completed visits (both an arrival and a departure) contribute: an open visit has no dwell
@@ -34,28 +34,32 @@ public sealed class TripStopDwellReport(ITripReportReader reader) : IReport
     {
         await reader.EnsureTripManagementFeatureAsync(cancellationToken);
 
-        var transporterId = TripReportSupport.ParseOptionalId(filters.StringFilter1);
+        var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var stops = await reader.GetTripStopsAsync(
-            filters.DateTimeFilter1, filters.DateTimeFilter2, transporterId, driverId: null, cancellationToken);
+            filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), transporterId, driverId: null, cancellationToken);
 
         var visits = stops
             .Select(s => new
             {
                 s.Name,
+                s.Activity,
                 CustomerName = s.CustomerName.OrUnspecified(),
                 Dwell = TripReportSupport.DwellMinutes(s.ActualArrivalAt, s.ActualDepartureAt)
             })
             .Where(s => s.Dwell.HasValue)
             .ToList();
 
+        // Grouped by activity as well as by place: the same dock can be a load on the outbound leg
+        // and an unload on the return, and averaging the two together answers neither question.
         var rows = visits
-            .GroupBy(s => (s.Name, s.CustomerName))
+            .GroupBy(s => (s.Name, s.Activity, s.CustomerName))
             .Select(g =>
             {
                 var dwells = g.Select(s => s.Dwell!.Value).ToList();
                 return new TripStopDwellRowVm(
                     g.Key.Name,
+                    g.Key.Activity,
                     g.Key.CustomerName,
                     dwells.Count,
                     Math.Round(dwells.Average(), 2),
