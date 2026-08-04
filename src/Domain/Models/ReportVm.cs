@@ -25,5 +25,7 @@ public readonly record struct ReportVm(
     string? RequiredFeatureKey,
     bool ManagerOnly,
     bool SupportsPdf,
-    int SortOrder
+    int SortOrder,
+    // Raw JSON array of filter definitions (name/type/labelKey/source); the portal parses it.
+    string? Filters
     );

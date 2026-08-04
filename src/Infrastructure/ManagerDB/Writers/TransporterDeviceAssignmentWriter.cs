@@ -19,6 +19,7 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
         var device = await Context.Devices.Include(d => d.Operator)
             .FirstOrDefaultAsync(d => d.DeviceId == dto.DeviceId, cancellationToken)
             ?? throw new NotFoundException(nameof(Device), $"{dto.DeviceId}");
+        Context.Devices.Attach(device);
         if (device.AccountId != scopedAccount || device.Operator.AccountId != scopedAccount)
         {
             throw new ForbiddenAccessException();
@@ -33,22 +34,28 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
         var now = DateTimeOffset.UtcNow;
         var actorType = Principal.PrincipalType.ToString();
 
+        // The context is NoTracking by default; attach every loaded row that gets mutated or
+        // the supersede/demote/device updates silently never reach SaveChanges.
         var existingActive = await Context.TransporterDeviceAssignments
             .Where(a => a.TransporterId == dto.TransporterId && a.DeviceId == dto.DeviceId && a.Status == (int)AssignmentStatus.Active)
             .ToListAsync(cancellationToken);
         foreach (var prior in existingActive)
         {
+            Context.TransporterDeviceAssignments.Attach(prior);
             prior.Status = (int)AssignmentStatus.Superseded;
             prior.EffectiveTo = now;
         }
 
         if (dto.IsPrimary)
         {
+            // The current device's rows are excluded: they were just superseded above, and
+            // attaching a second instance of an already-attached row would throw.
             var otherPrimaries = await Context.TransporterDeviceAssignments
-                .Where(a => a.TransporterId == dto.TransporterId && a.IsPrimary && a.Status == (int)AssignmentStatus.Active)
+                .Where(a => a.TransporterId == dto.TransporterId && a.DeviceId != dto.DeviceId && a.IsPrimary && a.Status == (int)AssignmentStatus.Active)
                 .ToListAsync(cancellationToken);
             foreach (var p in otherPrimaries)
             {
+                Context.TransporterDeviceAssignments.Attach(p);
                 p.IsPrimary = false;
             }
         }
@@ -84,7 +91,7 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
 
     public async Task EndAssignmentAsync(Guid assignmentId, string? reason, CancellationToken cancellationToken)
     {
-        var entity = await Context.TransporterDeviceAssignments.Include(a => a.Device)
+        var entity = await Context.TransporterDeviceAssignments
             .FirstOrDefaultAsync(a => a.TransporterDeviceAssignmentId == assignmentId, cancellationToken)
             ?? throw new NotFoundException(nameof(TransporterDeviceAssignment), $"{assignmentId}");
         RequireAccountWriteAccess(entity.AccountId);
@@ -92,6 +99,8 @@ public sealed class TransporterDeviceAssignmentWriter(IApplicationDbContext cont
         {
             return;
         }
+        // The context is NoTracking by default; attach so the status flip actually persists.
+        Context.TransporterDeviceAssignments.Attach(entity);
         var now = DateTimeOffset.UtcNow;
         entity.Status = (int)AssignmentStatus.Ended;
         entity.EffectiveTo = now;

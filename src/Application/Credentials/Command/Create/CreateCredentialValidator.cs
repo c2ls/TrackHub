@@ -27,10 +27,11 @@ public sealed class CreateCredentialValidator : AbstractValidator<CreateCredenti
         RuleFor(v => v.Credential.OperatorId)
             .NotEmpty();
 
+        // Deliberately no trailing-slash rule: a Uri that differs only by a trailing slash is not
+        // invalid input, and demanding one here protected nothing — the update commands never
+        // enforced it, so a slash-less Uri was always one edit away. The providers that resolve
+        // relative paths against the Uri get their trailing slash from the Router's
+        // CredentialHttpClientFactory, which is the only component that depends on it.
         CredentialUriRules.Apply(this, v => v.Credential.Uri, configuration);
-
-        RuleFor(v => v.Credential.Uri)
-            .Must(uri => uri.EndsWith('/'))
-            .WithMessage("Credential Uri must end with '/'");
     }
 }

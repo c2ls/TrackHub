@@ -55,11 +55,14 @@ public class CredentialUriValidationTests
         CreateValidator().TestValidate(CommandFor("http://localhost:8080/")).ShouldNotHaveAnyValidationErrors();
     }
 
-    [Test]
-    public void Should_Still_Require_A_Trailing_Slash_On_Create()
-        => CreateValidator().TestValidate(CommandFor("https://gps.example.com"))
-            .ShouldHaveValidationErrorFor(x => x.Credential.Uri)
-            .WithErrorMessage("Credential Uri must end with '/'");
+    // Create and update now share one rule set. A Uri without a trailing slash is accepted on
+    // both: the Router's CredentialHttpClientFactory appends it for the providers that resolve
+    // relative paths against the base address, and a credential Uri that names a complete
+    // endpoint rather than a base is legitimate input that a mandatory slash would corrupt.
+    [TestCase("https://gps.example.com")]
+    [TestCase("https://gps.example.com/api/v1/endpoint")]
+    public void Should_Accept_A_Uri_Without_A_Trailing_Slash_On_Create(string uri)
+        => CreateValidator().TestValidate(CommandFor(uri)).ShouldNotHaveAnyValidationErrors();
 
     [Test]
     public void Update_Should_Reject_Non_Routable_Hosts()

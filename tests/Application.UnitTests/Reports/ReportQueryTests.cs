@@ -23,7 +23,7 @@ public class ReportQueryTests
     }
 
     private static ReportVm Vm(string code, string category = "Operations", bool active = true)
-        => new(Guid.NewGuid(), code, code, ReportType.Basic, (short)ReportType.Basic, active, category, null, false, false, 10);
+        => new(Guid.NewGuid(), code, code, ReportType.Basic, (short)ReportType.Basic, active, category, null, false, false, 10, "[]");
 
     [Test]
     public async Task GetReports_ReturnsReaderResult()

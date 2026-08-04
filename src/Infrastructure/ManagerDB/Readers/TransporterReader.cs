@@ -231,6 +231,20 @@ public sealed class TransporterReader(IApplicationDbContext context, ICurrentPri
             .ToListAsync(cancellationToken);
     }
 
+    // Oldest first so repeated syncs adopt deterministically when several same-name
+    // transporters are unassigned.
+    public async Task<Guid?> FindAdoptableTransporterAsync(Guid accountId, string name, CancellationToken cancellationToken)
+    {
+        RequireAccountAccess(accountId);
+        return await ByAccount(accountId)
+            .Where(t => t.Name.ToLower() == name.ToLower())
+            .Where(t => !Context.TransporterDeviceAssignments.Any(a =>
+                a.TransporterId == t.TransporterId && a.Status == (int)AssignmentStatus.Active))
+            .OrderBy(t => t.Created)
+            .Select(t => (Guid?)t.TransporterId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     private IQueryable<Entities.Transporter> ByAccount(Guid accountId)
         => Context.Transporters
             .Where(t => t.AccountId == accountId);

@@ -26,7 +26,8 @@ public class Report(
     string? requiredFeatureKey = null,
     bool managerOnly = false,
     bool supportsPdf = false,
-    int sortOrder = 0) : BaseAuditableEntity
+    int sortOrder = 0,
+    string? filters = null) : BaseAuditableEntity
 {
     public Guid ReportId { get; private set; } = Guid.NewGuid();
     public string Code { get; set; } = code;
@@ -40,4 +41,8 @@ public class Report(
     public bool ManagerOnly { get; set; } = managerOnly;
     public bool SupportsPdf { get; set; } = supportsPdf;
     public int SortOrder { get; set; } = sortOrder;
+
+    // JSON array of filter definitions (name/type/labelKey/source) driving the portal's
+    // filter form; seeded from the catalog contributions, null only for pre-seed rows.
+    public string? Filters { get; set; } = filters;
 }

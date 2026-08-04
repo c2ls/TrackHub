@@ -553,6 +553,7 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     manageronly = table.Column<bool>(type: "boolean", nullable: false),
                     supportspdf = table.Column<bool>(type: "boolean", nullable: false),
                     sortorder = table.Column<int>(type: "integer", nullable: false),
+                    filters = table.Column<string>(type: "jsonb", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

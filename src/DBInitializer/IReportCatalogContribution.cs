@@ -25,7 +25,8 @@ internal interface IReportCatalogContribution
 {
     /// <summary>
     /// Report rows with their governance metadata: category grouping, RequiredFeatureKey
-    /// gating (null = global), ManagerOnly role gating and SupportsPdf format support.
+    /// gating (null = global), ManagerOnly role gating, SupportsPdf format support and the
+    /// report's filter definitions (seeded as JSON; drives the portal's filter form).
     /// </summary>
-    IReadOnlyList<(string Code, string Description, string Category, string? RequiredFeatureKey, bool ManagerOnly, bool SupportsPdf, int SortOrder)> Reports { get; }
+    IReadOnlyList<(string Code, string Description, string Category, string? RequiredFeatureKey, bool ManagerOnly, bool SupportsPdf, int SortOrder, IReadOnlyList<ReportFilterDefinition> Filters)> Reports { get; }
 }

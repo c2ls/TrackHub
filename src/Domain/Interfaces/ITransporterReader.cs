@@ -25,4 +25,8 @@ public interface ITransporterReader
     Task<IReadOnlyCollection<TransporterLookupVm>> GetTransporterLookupByAccountAsync(Guid accountId, int fetchSize, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<TransporterLookupVm>> GetTransporterLookupByUserAsync(Guid userId, int fetchSize, CancellationToken cancellationToken);
     Task<Guid?> GetAccountIdAsync(Guid transporterId, CancellationToken cancellationToken);
+    /// <summary>Id of the account's oldest transporter with this exact name (case-insensitive)
+    /// and no active device assignment, or null. Lets the device sync adopt an existing
+    /// transporter instead of provisioning a duplicate.</summary>
+    Task<Guid?> FindAdoptableTransporterAsync(Guid accountId, string name, CancellationToken cancellationToken);
 }
