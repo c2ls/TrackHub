@@ -116,7 +116,7 @@ public class GpsReportsTests
         _manager.Setup(m => m.GetOperatorsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(List(new ManagerOperatorVm(opId, "Op1", true)));
 
-        var filters = _filters with { NumericFilter1 = 7 };
+        var filters = _filters with { Values = FilterValues.Of((FilterNames.WithinDays, "7")) };
         var report = new GpsRecentlyAddedDevicesReport(_user.Object, _features.Object, _manager.Object);
         var result = await report.GetDatasetAsync(filters, CancellationToken.None);
 

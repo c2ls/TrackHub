@@ -52,10 +52,16 @@ public class TripReportsTests
         double? plannedDistanceMeters = 12_500,
         double actualDistanceMeters = 13_000,
         decimal? toll = 42.5m,
-        string? currency = "COP")
+        string? currency = "COP",
+        DateTimeOffset? originArrivedAt = null,
+        DateTimeOffset? originDepartedAt = null,
+        int? loadingMinutes = null,
+        int? transitMinutes = null,
+        int? totalMinutes = null)
         => new(
             Guid.NewGuid(), code, "Completed", Guid.NewGuid(), "Truck 1", Guid.NewGuid(), driverName, "ACME",
             plannedStart, plannedEnd, plannedStart.AddMinutes(5), actualEnd,
+            originArrivedAt, originDepartedAt, loadingMinutes, transitMinutes, totalMinutes,
             plannedDistanceMeters, actualDistanceMeters, 3, toll, currency, "Complete");
 
     private static ReportTripStopVm Stop(
@@ -71,10 +77,11 @@ public class TripReportsTests
         int deliveries = 2,
         int delivered = 1,
         int failed = 1,
-        int partial = 0)
+        int partial = 0,
+        string activity = "Unload")
         => new(
             Guid.NewGuid(), Guid.NewGuid(), tripCode, transporterName, driverName, customerName,
-            sequence, name, "Departed", plannedTo?.AddMinutes(-30), plannedTo, arrivedAt, departedAt,
+            sequence, name, activity, "Departed", plannedTo?.AddMinutes(-30), plannedTo, arrivedAt, departedAt,
             deliveries, delivered, failed, partial);
 
     [Test]
@@ -154,26 +161,37 @@ public class TripReportsTests
         });
     }
 
-    // StringFilter1 is the portal's transporter picker slot; the window comes from DateTimeFilter1/2.
+    // `transporterId` is the catalog's picker filter; the window comes from `from`/`to`.
     [Test]
-    public async Task Summary_ReadsStringFilter1AsTransporterIdAndIgnoresGarbage()
+    public async Task Summary_ReadsTransporterIdFilterAndIgnoresGarbage()
     {
         var transporterId = Guid.NewGuid();
         _reader.Setup(r => r.GetTripsAsync(It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(List<ReportTripVm>());
 
         await new TripSummaryReport(_reader.Object).GetDatasetAsync(
-            _filters with { StringFilter1 = transporterId.ToString(), DateTimeFilter1 = Base, DateTimeFilter2 = Base.AddDays(1) },
+            _filters with
+            {
+                Values = FilterValues.Of(
+                    (FilterNames.Transporter, transporterId.ToString()),
+                    (FilterNames.From, Base.ToString("O")),
+                    (FilterNames.To, Base.AddDays(1).ToString("O")))
+            },
             CancellationToken.None);
 
         _reader.Verify(r => r.GetTripsAsync(Base, Base.AddDays(1), transporterId, null, It.IsAny<CancellationToken>()), Times.Once);
 
         // An unparseable or empty picker value means "no filter", never an error and never a literal.
-        // StringFilter2 is the portal's free-text device slot and is not part of this report's spec.
+        // `deviceId` is not part of this report's catalog filter set and must be ignored.
         await new TripSummaryReport(_reader.Object).GetDatasetAsync(
-            _filters with { StringFilter1 = "not-a-guid", StringFilter2 = Guid.NewGuid().ToString() }, CancellationToken.None);
+            _filters with
+            {
+                Values = FilterValues.Of(
+                    (FilterNames.Transporter, "not-a-guid"),
+                    (FilterNames.Device, Guid.NewGuid().ToString()))
+            }, CancellationToken.None);
         await new TripSummaryReport(_reader.Object).GetDatasetAsync(
-            _filters with { StringFilter1 = Guid.Empty.ToString() }, CancellationToken.None);
+            _filters with { Values = FilterValues.Of((FilterNames.Transporter, Guid.Empty.ToString())) }, CancellationToken.None);
 
         _reader.Verify(r => r.GetTripsAsync(null, null, null, null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
@@ -190,6 +208,8 @@ public class TripReportsTests
         {
             "TripCode", "TripStatus", "TransporterName", "DriverName",
             "PlannedStartAt", "ActualStartAt", "PlannedEndAt", "ActualEndAt",
+            "OriginArrivedAt", "OriginDepartedAt",
+            "LoadingMinutes", "TransitMinutes", "TotalMinutes",
             "PlannedDistanceKm", "ActualDistanceKm", "StopCount", "OnTime",
             "EstimatedTollAmount", "TollCurrency"
         }));
@@ -247,7 +267,7 @@ public class TripReportsTests
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "TripCode", "StopSequence", "StopName", "CustomerName",
+            "TripCode", "StopSequence", "StopName", "StopActivity", "CustomerName",
             "PlannedArrivalFrom", "PlannedArrivalTo", "ActualArrivalAt", "ActualDepartureAt",
             "DwellMinutes", "StopStatus",
             "DeliveryCount", "DeliveredCount", "FailedDeliveryCount", "PartialDeliveryCount"
@@ -394,7 +414,7 @@ public class TripReportsTests
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "StopName", "CustomerName", "VisitCount",
+            "StopName", "StopActivity", "CustomerName", "VisitCount",
             "AverageDwellMinutes", "MinDwellMinutes", "MaxDwellMinutes", "TotalDwellMinutes"
         }));
     }

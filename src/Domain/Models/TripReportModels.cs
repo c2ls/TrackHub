@@ -30,6 +30,12 @@ public readonly record struct ReportTripVm(
     string? CustomerName,
     DateTimeOffset PlannedStartAt, DateTimeOffset? PlannedEndAt,
     DateTimeOffset? ActualStartAt, DateTimeOffset? ActualEndAt,
+
+    // The measured origin visit and the three durations derived from it (spec 11a §13). Each is
+    // null when the measurement behind it was never taken — a trip whose start was DECLARED has no
+    // loading time, and reporting zero for it would invent a dock the truck never sat at.
+    DateTimeOffset? OriginArrivedAt, DateTimeOffset? OriginDepartedAt,
+    int? LoadingMinutes, int? TransitMinutes, int? TotalMinutes,
     double? PlannedDistanceMeters, double ActualDistanceMeters,
     int StopCount,
     decimal? EstimatedTollAmount, string? TollCurrency, string TollStatus);
@@ -37,7 +43,7 @@ public readonly record struct ReportTripVm(
 public readonly record struct ReportTripStopVm(
     Guid TripStopId, Guid TripId, string TripCode,
     string TransporterName, string? DriverName, string? CustomerName,
-    int Sequence, string Name, string Status,
+    int Sequence, string Name, string Activity, string Status,
     DateTimeOffset? PlannedArrivalFrom, DateTimeOffset? PlannedArrivalTo,
     DateTimeOffset? ActualArrivalAt, DateTimeOffset? ActualDepartureAt,
     int DeliveryCount, int DeliveredCount, int FailedDeliveryCount, int PartialDeliveryCount);

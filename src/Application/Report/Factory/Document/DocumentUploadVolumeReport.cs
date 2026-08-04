@@ -21,7 +21,7 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Document;
 
 // Document upload-volume report: document counts by Category over the date window
-// (DateTimeFilter1..2). Uses the group-scoped library search under the caller's token.
+// (from/to). Uses the group-scoped library search under the caller's token.
 public sealed class DocumentUploadVolumeReport(IDocumentReportReader reader) : IReport
 {
     public string ReportCode => DocumentReportCodes.UploadVolume;
@@ -30,7 +30,7 @@ public sealed class DocumentUploadVolumeReport(IDocumentReportReader reader) : I
     {
         await reader.EnsureDocumentsFeatureAsync(cancellationToken);
 
-        var documents = await reader.SearchDocumentsAsync(filters.DateTimeFilter1, filters.DateTimeFilter2, cancellationToken);
+        var documents = await reader.SearchDocumentsAsync(filters.GetDate(FilterNames.From), filters.GetDate(FilterNames.To), cancellationToken);
 
         var rows = documents
             .GroupBy(d => string.IsNullOrWhiteSpace(d.Category) ? "Other" : d.Category, StringComparer.OrdinalIgnoreCase)

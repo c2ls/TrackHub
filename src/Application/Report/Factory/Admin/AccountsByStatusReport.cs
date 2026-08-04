@@ -22,7 +22,7 @@ namespace TrackHub.Reporting.Application.Report.Factory.Admin;
 
 // Accounts-by-status report (SuperAdministrator). Runs under the caller's token; the
 // Manager `accounts` query enforces the Administrative/Read permission. Optional status filter via
-// StringFilter1 (AccountStatus enum name).
+// `status` (AccountStatus enum name).
 public sealed class AccountsByStatusReport(IAdminReportReader reader) : IReport
 {
     public string ReportCode => AdminReportCodes.AccountsByStatus;
@@ -31,9 +31,9 @@ public sealed class AccountsByStatusReport(IAdminReportReader reader) : IReport
     {
         var accounts = await reader.GetAccountsAsync(cancellationToken);
 
-        var filtered = string.IsNullOrWhiteSpace(filters.StringFilter1)
+        var filtered = filters.GetText(FilterNames.Status) is not { } status
             ? accounts
-            : accounts.Where(a => string.Equals(a.Status, filters.StringFilter1, StringComparison.OrdinalIgnoreCase));
+            : accounts.Where(a => string.Equals(a.Status, status, StringComparison.OrdinalIgnoreCase));
 
         var rows = filtered
             .OrderBy(a => a.Status, StringComparer.OrdinalIgnoreCase)

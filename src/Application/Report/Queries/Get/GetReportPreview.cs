@@ -25,7 +25,10 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Queries.Get;
 
+// Same scope declaration as GetReportQuery: filter values may carry entity ids, and the
+// data feeds enforce account/visibility scope under the caller's token.
 [Authorize(Resource = Resources.Reports, Action = Actions.Read)]
+[AccountScopeEnforcedInHandler]
 public readonly record struct GetReportPreviewQuery(string ReportCode, FilterDto Filters)
     : IRequest<ReportPreviewVm>;
 

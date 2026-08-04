@@ -18,16 +18,23 @@ namespace TrackHub.Reporting.Domain.Models;
 // Row VMs for the six spec 11 §13 trip reports.
 // Property order = Excel/PDF column order; property name = resx header key (all three Resources*.resx).
 
+// The measured columns sit beside the planned/actual ones rather than replacing them: the point of
+// the report is the comparison. LoadingMinutes/TransitMinutes/TotalMinutes are what answer "how long
+// did loading, transit and the whole trip actually take" (spec 11a §13).
 public readonly record struct TripSummaryRowVm(
     string TripCode, string TripStatus, string TransporterName, string DriverName,
     DateTimeOffset PlannedStartAt, DateTimeOffset? ActualStartAt,
     DateTimeOffset? PlannedEndAt, DateTimeOffset? ActualEndAt,
+    DateTimeOffset? OriginArrivedAt, DateTimeOffset? OriginDepartedAt,
+    int? LoadingMinutes, int? TransitMinutes, int? TotalMinutes,
     double? PlannedDistanceKm, double ActualDistanceKm,
     int StopCount, bool? OnTime,
     decimal? EstimatedTollAmount, string TollCurrency);
 
+// Activity sits next to the dwell it explains, so the same figure reads as loading time at a plant
+// and unloading time at a client instead of an anonymous number of minutes.
 public readonly record struct TripStopDetailRowVm(
-    string TripCode, int StopSequence, string StopName, string CustomerName,
+    string TripCode, int StopSequence, string StopName, string StopActivity, string CustomerName,
     DateTimeOffset? PlannedArrivalFrom, DateTimeOffset? PlannedArrivalTo,
     DateTimeOffset? ActualArrivalAt, DateTimeOffset? ActualDepartureAt,
     double? DwellMinutes, string StopStatus,
@@ -43,7 +50,7 @@ public readonly record struct TripOnTimePerformanceRowVm(
 // Dwell distribution aggregated per (stop, customer); only stops with both an arrival and a
 // departure contribute, so an open visit never deflates the average.
 public readonly record struct TripStopDwellRowVm(
-    string StopName, string CustomerName, int VisitCount,
+    string StopName, string StopActivity, string CustomerName, int VisitCount,
     double AverageDwellMinutes, double MinDwellMinutes, double MaxDwellMinutes, double TotalDwellMinutes);
 
 // One row per matched station. PartialNoTariff makes a catalog gap visible instead of netting the
