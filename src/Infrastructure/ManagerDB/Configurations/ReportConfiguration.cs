@@ -42,6 +42,7 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(x => x.ManagerOnly).HasColumnName("manageronly");
         builder.Property(x => x.SupportsPdf).HasColumnName("supportspdf");
         builder.Property(x => x.SortOrder).HasColumnName("sortorder");
+        builder.Property(x => x.Filters).HasColumnName("filters").HasColumnType("jsonb");
 
         builder.Property(t => t.Description)
             .HasMaxLength(ColumnMetadata.DefaultDescriptionLength)

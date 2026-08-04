@@ -13,6 +13,8 @@
 //  limitations under the License.
 //
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Common.Domain.Constants;
 using Microsoft.Extensions.Logging;
 using TrackHub.Manager.Infrastructure.Entities;
@@ -28,12 +30,21 @@ internal class ApplicationDbContextInitializer(ILogger<ApplicationDbContextIniti
     // The canonical governed catalog is the aggregate of every IReportCatalogContribution in
     // this assembly (one file per module, discovered here; core rows live in
     // CoreReportCatalogContribution).
-    private static readonly (string Code, string Description, string Category, string? RequiredFeatureKey, bool ManagerOnly, bool SupportsPdf, int SortOrder)[] ReportCatalog =
+    private static readonly (string Code, string Description, string Category, string? RequiredFeatureKey, bool ManagerOnly, bool SupportsPdf, int SortOrder, IReadOnlyList<ReportFilterDefinition> Filters)[] ReportCatalog =
         [.. typeof(ApplicationDbContextInitializer).Assembly.GetTypes()
             .Where(t => t is { IsAbstract: false, IsInterface: false } && typeof(IReportCatalogContribution).IsAssignableFrom(t))
             .OrderBy(t => t.FullName, StringComparer.Ordinal)
             .Select(t => (IReportCatalogContribution)Activator.CreateInstance(t)!)
             .SelectMany(c => c.Reports)];
+
+    // camelCase + omitted nulls: the portal parses this column as-is.
+    private static readonly JsonSerializerOptions FilterJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private static string SerializeFilters(IReadOnlyList<ReportFilterDefinition> filters)
+        => JsonSerializer.Serialize(filters, FilterJsonOptions);
 
     public async Task SeedAsync()
     {
@@ -64,8 +75,9 @@ internal class ApplicationDbContextInitializer(ILogger<ApplicationDbContextIniti
         var reportType = (short)ReportType.Basic;
         var existingReports = await context.Reports.AsTracking().ToListAsync();
         var reportsByCode = existingReports.ToDictionary(r => r.Code, StringComparer.Ordinal);
-        foreach (var (code, description, category, requiredFeatureKey, managerOnly, supportsPdf, sortOrder) in ReportCatalog)
+        foreach (var (code, description, category, requiredFeatureKey, managerOnly, supportsPdf, sortOrder, filters) in ReportCatalog)
         {
+            var filtersJson = SerializeFilters(filters);
             if (reportsByCode.TryGetValue(code, out var report))
             {
                 report.Description = description;
@@ -74,10 +86,11 @@ internal class ApplicationDbContextInitializer(ILogger<ApplicationDbContextIniti
                 report.ManagerOnly = managerOnly;
                 report.SupportsPdf = supportsPdf;
                 report.SortOrder = sortOrder;
+                report.Filters = filtersJson;
             }
             else
             {
-                context.Reports.Add(new Report(code, description, reportType, true, category, requiredFeatureKey, managerOnly, supportsPdf, sortOrder));
+                context.Reports.Add(new Report(code, description, reportType, true, category, requiredFeatureKey, managerOnly, supportsPdf, sortOrder, filtersJson));
             }
         }
         await context.SaveChangesAsync();

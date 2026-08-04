@@ -21,16 +21,15 @@ namespace TrackHub.Manager.Application.Operators.Commands.Delete;
 [AccountScopeEnforcedInHandler]
 public record DeleteOperatorCommand(Guid Id) : IRequest;
 
-public class DeleteOperatorCommandHandler(IOperatorWriter writer, IOperatorReader reader, ICredentialWriter credentialWriter) : IRequestHandler<DeleteOperatorCommand>
+public class DeleteOperatorCommandHandler(IOperatorWriter writer, ICredentialWriter credentialWriter) : IRequestHandler<DeleteOperatorCommand>
 {
-    public async Task Handle(DeleteOperatorCommand request, CancellationToken cancellationToken) 
+    public async Task Handle(DeleteOperatorCommand request, CancellationToken cancellationToken)
     {
-        var @operator = await reader.GetOperatorAsync(request.Id, cancellationToken);
-        if (@operator.Credential != null && @operator.Credential != default(CredentialTokenVm)) 
-        {
-            await credentialWriter.DeleteCredentialAsync(@operator.Credential.Value.CredentialId, cancellationToken);
-        }
+        // Delete-if-exists by operator id, never via the operator VM: the VM redacts the
+        // credential for callers without Credentials/Custom, so gating on it left the FK row
+        // behind and the operator delete failed with 23503 for exactly those callers.
+        await credentialWriter.DeleteCredentialByOperatorAsync(request.Id, cancellationToken);
 
-        await writer.DeleteOperatorAsync(request.Id, cancellationToken); 
+        await writer.DeleteOperatorAsync(request.Id, cancellationToken);
     }
 }

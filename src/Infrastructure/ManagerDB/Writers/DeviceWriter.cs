@@ -55,6 +55,8 @@ public sealed class DeviceWriter(IApplicationDbContext context, ICurrentPrincipa
         }
         else
         {
+            // The context is NoTracking by default; attach or the sync update never persists.
+            Context.Devices.Attach(existing);
             existing.Name = deviceDto.Name;
             existing.Identifier = deviceDto.Identifier;
             existing.Serial = deviceDto.Serial;

@@ -2267,6 +2267,10 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
+                    b.Property<string>("Filters")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("filters");
+
                     b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
