@@ -52,6 +52,11 @@ const GPS_DASHBOARD_KEYS = [
   'gpsIntegration.status.available',
   'gpsIntegration.status.ignored',
   'gpsIntegration.status.removed',
+  'gpsIntegration.deviceForm.title',
+  'gpsIntegration.deviceForm.nameHelp',
+  'gpsIntegration.deviceForm.identifierHelp',
+  'gpsIntegration.deviceForm.autoAssign',
+  'gpsIntegration.deviceForm.autoAssignHelp',
   'operator.singleTitle',
   'generic.total',
 ];

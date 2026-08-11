@@ -54,6 +54,7 @@ export const OperatorGpsFragment = graphql(`
     operatorId
     name
     protocolType
+    protocolTypeId
     enabled
     lastDeviceSyncAt
     lastPositionSyncAt

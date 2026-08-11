@@ -36,6 +36,7 @@ import {
   GetSynchronizedDevicesDocument,
   GetUnassignedSynchronizedDevicesDocument,
   SetSynchronizedDeviceIgnoredDocument,
+  RegisterManualDeviceDocument,
 } from './deviceOperations';
 
 export type Device = DeviceItemType;
@@ -132,4 +133,44 @@ export async function setSynchronizedDeviceIgnored(
     ignored: !!ignored,
   });
   return data.setSynchronizedDeviceIgnored;
+}
+
+/** Fields the operator supplies when registering a device by hand. */
+export interface ManualDeviceInput {
+  accountId: string;
+  operatorId: string;
+  /** For providers queried by plate (Prosegur/Rastrack) this must be the license plate. */
+  name: string;
+  serial: string;
+  deviceTypeId: number;
+  /** 0 (default) lets the server allocate the next free identifier for the operator. */
+  identifier?: number;
+  description?: string | null;
+}
+
+/**
+ * Manual registration for providers without a device-catalog API (Prosegur).
+ * With autoAssign (default) the server also creates/adopts a transporter named
+ * after the device and assigns it, so positions flow without further setup.
+ */
+export async function registerManualDevice(
+  input: ManualDeviceInput,
+  autoAssign: boolean = true
+): Promise<SynchronizedDevice> {
+  const data = await executeGraphQL('manager', RegisterManualDeviceDocument, {
+    device: {
+      accountId: input.accountId,
+      operatorId: input.operatorId,
+      name: input.name,
+      serial: input.serial,
+      deviceTypeId: input.deviceTypeId,
+      identifier: input.identifier ?? 0,
+      description: input.description ?? null,
+      providerDisplayName: null,
+      providerMetadataHash: null,
+      providerStatus: null,
+    },
+    autoAssign,
+  });
+  return data.registerManualDevice;
 }
