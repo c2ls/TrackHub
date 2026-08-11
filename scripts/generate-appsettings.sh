@@ -108,6 +108,10 @@ VALID_AUDIENCE=${VALID_AUDIENCE:-"trackhub_api"}
 # Serilog + Columns blocks, kept in sync with config/appsettings.template.json.
 # The PostgreSQL sink resolves "connectionString" as a connection string NAME
 # ("Logging"), and needs the "Using" directive plus the top-level "Columns" block.
+# The PostgreSQL sink also carries "restrictedToMinimumLevel": "Warning" so production
+# stops flooding the logs table with Information; Console keeps the "MinimumLevel"
+# default (Information). This note cannot live inside the heredoc: a "#" there would be
+# emitted verbatim and break the JSON.
 serilog_section() {
     cat << EOF
   "Serilog": {
@@ -120,6 +124,7 @@ serilog_section() {
         "Microsoft": "Warning",
         "Microsoft.AspNetCore": "Warning",
         "Microsoft.Hosting.Lifetime": "Information",
+        "OpenIddict": "Warning",
         "System": "Warning"
       }
     },
@@ -128,6 +133,7 @@ serilog_section() {
       {
         "Name": "PostgreSQL",
         "Args": {
+          "restrictedToMinimumLevel": "Warning",
           "connectionString": "Logging",
           "tableName": "logs",
           "needAutoCreateTable": true,
