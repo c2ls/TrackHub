@@ -32,11 +32,15 @@ import ArgonButton from 'components/ArgonButton';
 import ArgonTypography from 'components/ArgonTypography';
 import ArgonBox from 'components/ArgonBox';
 import { getAccountByUser } from 'api/manager/accounts';
-import { getSynchronizedDevices, setSynchronizedDeviceIgnored, deleteDevice } from 'api/manager/devices';
+import { getSynchronizedDevices, setSynchronizedDeviceIgnored, deleteDevice, registerManualDevice } from 'api/manager/devices';
 import type { SynchronizedDevice } from 'api/manager/devices';
 import type { DetectedStatus } from 'api/manager/generated/graphql';
 import { notifyApiError } from 'api/core/errors';
 import { useGpsOperators } from 'queries/operators';
+import { useProviderCapabilities } from 'queries/router';
+import useForm from 'controls/Dialogs/useForm';
+import DeviceFormDialog from 'layouts/gpsintegration/components/devices/DeviceDialog';
+import type { ManualDeviceFormValues } from 'layouts/gpsintegration/components/devices/DeviceDialog';
 import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from 'utils/dateUtils';
 import { GPS_INTEGRATION_REFRESH_EVENT } from 'layouts/gpsintegration/gpsIntegrationEvents';
@@ -83,6 +87,20 @@ function ManageSynchronizedDevices() {
   useClampPage(page, PAGE_SIZE, totalCount, setPage);
   const operatorsQuery = useGpsOperators({ enabled: expanded });
   const operators = operatorsQuery.data ?? [];
+  const capabilitiesQuery = useProviderCapabilities({ enabled: expanded });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deviceValues, handleDeviceChange, setDeviceValues, setDeviceErrors, validateDevice, deviceErrors] =
+    useForm<ManualDeviceFormValues>({});
+
+  // Manual registration is meant for providers whose API exposes no device catalog
+  // (e.g. Prosegur): sync can never discover their devices. Offering it for a
+  // catalog provider is a footgun — the next sync, which keys removal on the
+  // provider's identifier, would flag the hand-entered device as removed.
+  const catalogLessProtocolIds = new Set(
+    (capabilitiesQuery.data ?? []).filter((p) => !p.deviceCatalog).map((p) => p.protocolTypeId)
+  );
+  const manualOperators = operators.filter((o) => catalogLessProtocolIds.has(o.protocolTypeId));
+  const canAddManual = manualOperators.length > 0;
 
   const statusLabel = (status: string): string => {
     const key = (status || '').toLowerCase();
@@ -164,6 +182,41 @@ function ManageSynchronizedDevices() {
     } finally { setLoading(false); }
   };
 
+  const handleAddClick = () => {
+    setDeviceValues({
+      operatorId: manualOperators[0]?.operatorId ?? '',
+      deviceTypeId: 4, // Cellular — the usual GPS tracker
+      identifier: 0,
+      autoAssign: true,
+    });
+    setDeviceErrors({});
+  };
+
+  const handleRegisterDevice = async () => {
+    if (!accountId) return;
+    if (!validateDevice(['operatorId', 'name', 'serial', 'deviceTypeId'])) return;
+    setLoading(true);
+    try {
+      await registerManualDevice(
+        {
+          accountId,
+          operatorId: deviceValues.operatorId!,
+          name: (deviceValues.name ?? '').trim(),
+          serial: (deviceValues.serial ?? '').trim(),
+          deviceTypeId: Number(deviceValues.deviceTypeId),
+          identifier: Number(deviceValues.identifier ?? 0),
+          description: deviceValues.description?.trim() || null,
+        },
+        deviceValues.autoAssign !== false
+      );
+      setDialogOpen(false);
+      await refresh();
+    } catch (e) {
+      // Keep the dialog open so the operator can correct a duplicate identifier etc.
+      notifyApiError(e);
+    } finally { setLoading(false); }
+  };
+
   const operatorNames = operators.reduce<Record<string, string>>((acc, operator) => {
     acc[operator.operatorId] = operator.name;
     return acc;
@@ -215,7 +268,14 @@ function ManageSynchronizedDevices() {
   };
 
   return (
-    <TableAccordion title={t('gpsIntegration.sections.devices')} expanded={expanded} setExpanded={setExpanded}>
+    <>
+    <TableAccordion
+      title={t('gpsIntegration.sections.devices')}
+      expanded={expanded}
+      setExpanded={setExpanded}
+      showAddIcon={canAddManual}
+      setOpen={setDialogOpen}
+      handleAddClick={handleAddClick}>
       {error
         ? <ArgonBox><ArgonTypography variant="button" color="error">{error}</ArgonTypography></ArgonBox>
         : <>
@@ -310,6 +370,16 @@ function ManageSynchronizedDevices() {
             </>
       }
     </TableAccordion>
+    <DeviceFormDialog
+      open={dialogOpen}
+      setOpen={setDialogOpen}
+      handleSubmit={handleRegisterDevice}
+      values={deviceValues}
+      handleChange={handleDeviceChange}
+      errors={deviceErrors}
+      operators={manualOperators}
+    />
+    </>
   );
 }
 

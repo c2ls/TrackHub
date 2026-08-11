@@ -3,6 +3,7 @@
     "title": "Error de Autenticación",
     "tokenExchangeFailed": "No se pudo canjear el código de autorización por un token de acceso. Es posible que el servicio de autenticación no esté disponible.",
     "noCode": "No se recibió ningún código de autorización. El proceso de autenticación fue interrumpido.",
+    "stateMismatch": "No se pudo verificar el intento de inicio de sesión (la comprobación de seguridad no coincide). Esto suele ocurrir al entrar desde una página de inicio de sesión guardada en favoritos o desactualizada, o cuando el navegador bloquea el almacenamiento del sitio (por ejemplo, en modo privado). Ingrese directamente a la página principal del portal y reintente.",
     "generic": "Ocurrió un error de autenticación. Por favor, intente nuevamente más tarde.",
     "causesIntro": "Esto puede deberse a:",
     "causeUnavailable": "El servicio de autenticación no está disponible temporalmente",
@@ -1337,6 +1338,13 @@
       "syncRuns": "No hay sincronizaciones en la ventana seleccionada.",
       "alerts": "No hay alertas GPS abiertas.",
       "healthHistory": "No hay registros de historial de salud."
+    },
+    "deviceForm": {
+      "title": "Registrar Dispositivo Manualmente",
+      "nameHelp": "Para proveedores consultados por placa (p. ej. Prosegur), ingrese la placa exacta: es la clave con la que se emparejan las posiciones.",
+      "identifierHelp": "Déjelo en 0 para que el sistema asigne un identificador automáticamente.",
+      "autoAssign": "Crear y asignar una unidad automáticamente",
+      "autoAssignHelp": "Se crea una unidad con el nombre del dispositivo (o se adopta una existente sin asignar) y se vincula, para que las posiciones aparezcan en el mapa sin pasos adicionales."
     }
   },
   "platformStatus": {

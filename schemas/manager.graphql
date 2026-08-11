@@ -320,6 +320,8 @@ type Mutation {
   setSynchronizedDeviceIgnored(
     command: SetSynchronizedDeviceIgnoredCommandInput!
   ): Boolean! @cost(weight: "10")
+  registerManualDevice(command: RegisterManualDeviceCommandInput!): DeviceVm!
+    @cost(weight: "10")
   assignDeviceToTransporter(command: AssignDeviceToTransporterCommandInput!): TransporterDeviceAssignmentVm!
     @cost(weight: "10")
   endDeviceTransporterAssignment(
@@ -1943,6 +1945,11 @@ input PublicLinkGrantDtoInput {
 
 input RecordAlertEventCommandInput {
   alertEvent: AlertEventDtoInput!
+}
+
+input RegisterManualDeviceCommandInput {
+  device: DeviceDtoInput!
+  autoAssign: Boolean! = true
 }
 
 input ReplaceDocumentVersionCommandInput {

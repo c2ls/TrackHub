@@ -54,6 +54,9 @@ const ErrorPage = () => {
       case 'no_code':
         setErrorMessage(t('authError.noCode'));
         break;
+      case 'state_mismatch':
+        setErrorMessage(t('authError.stateMismatch'));
+        break;
       default:
         setErrorMessage(authError || t('authError.generic'));
     }
