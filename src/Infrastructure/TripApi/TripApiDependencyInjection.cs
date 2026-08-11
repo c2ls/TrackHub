@@ -23,11 +23,13 @@ namespace Microsoft.Extensions.DependencyInjection;
 // already own that type name in this namespace — TelemetryApi avoids the clash the same way.
 public static class TripApiDependencyInjection
 {
-    public static IServiceCollection AddAppTripManagementContext(this IServiceCollection services)
+    public static IServiceCollection AddAppTripManagementContext(this IServiceCollection services, bool headerPropagation = true)
     {
         // A named client MUST be registered: an unregistered name silently yields a default
         // HttpClient (100 s timeout, no propagation). processTripPositions is a mutation — no retry.
-        services.AddGraphQLClient(Clients.TripManagement);
+        // headerPropagation must be false outside an HTTP pipeline (SyncWorker) — the
+        // propagation handler throws when no request context ever initialized the headers.
+        services.AddGraphQLClient(Clients.TripManagement, propagateHeaders: headerPropagation);
         services.AddScoped<ITripPositionWriter, TripPositionWriter>();
         return services;
     }

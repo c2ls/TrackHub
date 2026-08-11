@@ -20,11 +20,13 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddGeofenceManagerContext(this IServiceCollection services)
+    public static IServiceCollection AddGeofenceManagerContext(this IServiceCollection services, bool headerPropagation = true)
     {
         // A named client MUST be registered: an unregistered name silently yields a default
         // HttpClient (100 s timeout, no propagation). processPositions is a mutation — no retry.
-        services.AddGraphQLClient(Clients.Geofence);
+        // headerPropagation must be false outside an HTTP pipeline (SyncWorker) — the
+        // propagation handler throws when no request context ever initialized the headers.
+        services.AddGraphQLClient(Clients.Geofence, propagateHeaders: headerPropagation);
         services.AddScoped<IGeofenceWriter, GeofenceWriter>();
         return services;
     }
