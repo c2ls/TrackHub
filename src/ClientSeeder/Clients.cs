@@ -37,9 +37,9 @@ internal class Clients
     /// <summary>
     /// Loads the base catalog plus every <c>clients.*.json</c> overlay next to it (sorted by
     /// file name). Overlays are additive; an overlay entry with the same scope name/client id
-    /// replaces the base entry. No overlay files ship with this repository — a deployment or
-    /// distribution drops them next to <c>clients.json</c> to register additional identities
-    /// without editing the base catalog.
+    /// replaces the base entry. Overlays are a local-development convenience only — the
+    /// project excludes them from publish output so a deployed image never carries one; a
+    /// production deployment registers extra identities in its mounted <c>clients.json</c>.
     /// </summary>
     public static Clients LoadWithOverlays(string filePath)
     {

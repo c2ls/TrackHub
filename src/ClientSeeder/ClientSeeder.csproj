@@ -21,10 +21,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The base catalog plus any local overlay files (clients.*.json) next to it; overlays
-         are optional and none ship with this repository. -->
-    <None Update="clients.json;clients.*.json">
+    <None Update="clients.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!-- Overlays (clients.*.json) are local-dev only. They must never reach a
+         published image: overlays merge overlay-wins, so a baked-in dev overlay silently
+         replaces the operator's mounted clients.json entries (manager_client 401 in prod). -->
+    <None Update="clients.*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 
