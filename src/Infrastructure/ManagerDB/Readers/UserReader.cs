@@ -25,12 +25,14 @@ public sealed class UserReader(IApplicationDbContext context) : IUserReader
     /// <param name="cancellationToken"></param>
     /// <returns>A UserVm object representing the retrieved user.</returns>
     public async Task<UserVm> GetUserAsync(Guid id, CancellationToken cancellationToken)
-        => await context.Users
-            .Where(u => u.UserId.Equals(id))
-            .Select(u => new UserVm(
-                u.UserId,
-                u.Username,
-                u.AccountId))
-            .FirstAsync(cancellationToken);
+    {
+        // The view hides inactive users; a missing row must read as "user not visible",
+        // not as an opaque InvalidOperationException from FirstAsync.
+        var user = await context.Users
+            .FirstOrDefaultAsync(u => u.UserId.Equals(id), cancellationToken)
+            ?? throw new NotFoundException($"{id}", nameof(VwUser));
+
+        return new UserVm(user.UserId, user.Username, user.AccountId);
+    }
 }
 
