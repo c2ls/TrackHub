@@ -18,4 +18,5 @@ namespace TrackHub.Security.Domain.Records;
 public record struct UserShrankDto(
     Guid UserId,
     string Username,
-    Guid AccountId);
+    Guid AccountId,
+    bool Active);

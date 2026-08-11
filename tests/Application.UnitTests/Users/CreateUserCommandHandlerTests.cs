@@ -53,7 +53,7 @@ public class CreateUserCommandHandlerTests
             Username = "username",
             AccountId = accountId
         };
-        var shrankUser = new UserShrankDto(user.UserId, user.Username, user.AccountId);
+        var shrankUser = new UserShrankDto(user.UserId, user.Username, user.AccountId, user.Active);
 
         _mockUserReader.Setup(x => x.GetUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserVm { AccountId = accountId });
@@ -88,7 +88,7 @@ public class CreateUserCommandHandlerTests
             Username = "username",
             AccountId = Guid.NewGuid()
         };
-        var shrankUser = new UserShrankDto(user.UserId, user.Username, user.AccountId);
+        var shrankUser = new UserShrankDto(user.UserId, user.Username, user.AccountId, user.Active);
 
         _mockUserReader.Setup(x => x.GetUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserVm { AccountId = Guid.NewGuid() });

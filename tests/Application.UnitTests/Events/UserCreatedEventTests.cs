@@ -31,7 +31,7 @@ public class UserCreatedEventTests
     [Test]
     public async Task Handle_ValidNotification_CallsCreateUserAsync()
     {
-        var user = new UserShrankDto(Guid.NewGuid(), "newuser", Guid.NewGuid());
+        var user = new UserShrankDto(Guid.NewGuid(), "newuser", Guid.NewGuid(), true);
         var notification = new UserCreated.Notification(user);
         var handler = new UserCreated.Notification.EventHandler(_managerWriterMock.Object);
 
@@ -45,7 +45,7 @@ public class UserCreatedEventTests
     {
         var userId = Guid.NewGuid();
         var accountId = Guid.NewGuid();
-        var user = new UserShrankDto(userId, "testuser", accountId);
+        var user = new UserShrankDto(userId, "testuser", accountId, true);
         var handler = new UserCreated.Notification.EventHandler(_managerWriterMock.Object);
 
         await handler.Handle(new UserCreated.Notification(user), CancellationToken.None);

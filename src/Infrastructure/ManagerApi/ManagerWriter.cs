@@ -41,7 +41,9 @@ public class ManagerWriter(IGraphQLClientFactory graphQLClient)
             Variables = new
             {
                 user.AccountId,
-                active = false,
+                // Mirror the Security row's real state: hard-coding false left the app.users
+                // replica invisible to the vw_users views (WHERE active) until an update ran.
+                active = user.Active,
                 user.UserId,
                 user.Username
             }

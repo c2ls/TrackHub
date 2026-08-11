@@ -33,7 +33,7 @@ public class CreateManagerCommandHandler(IUserWriter writer, IPublisher publishe
         var user = await writer.CreateUserAsync(request.User, request.AccountId, cancellationToken);
         await publisher.Publish(new ManagerCreated.Notification(user.UserId), cancellationToken);
         // Replicate the user in the management service
-        var shrankUser = new UserShrankDto(user.UserId, user.Username, request.AccountId);
+        var shrankUser = new UserShrankDto(user.UserId, user.Username, request.AccountId, user.Active);
         await publisher.Publish(new UserCreated.Notification(shrankUser), cancellationToken);
         await publisher.Publish(SecurityAudit.Event(principal, "CreateManager", "User", user.UserId.ToString(), request.AccountId, null, user.Username), cancellationToken);
         return user;

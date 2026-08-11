@@ -15,6 +15,7 @@
 
 using Common.Application.Interfaces;
 using TrackHub.Security.Application.Audit.Events;
+using TrackHub.Security.Application.Users.Events;
 
 namespace TrackHub.Security.Application.Users.Commands.Update;
 [Authorize(Resource = Resources.Users, Action = Actions.Custom)]
@@ -40,6 +41,21 @@ public class UpdatePasswordCommandHandler(IUserWriter writer, IUserReader reader
         {
             // Update the user asynchronously
             await writer.UpdatePasswordAsync(request.User, cancellationToken);
+
+            // UpdatePasswordAsync also sets the subject active. When a MANAGER sets/resets a
+            // subject's password (the invite-activation flow), propagate that activation to the
+            // Manager replica (app.users) so the vw_users views stop hiding the user — mirroring
+            // UpdateUser's UserUpdated publish. Only in the manager path: the propagated Manager
+            // updateUser requires Users/Edit, which the manager holds but a self-service caller
+            // (Users/Custom only) does not — and a self password change never needs the replica
+            // flipped, since the caller is already an active, visible user.
+            if (isManager)
+            {
+                var username = await reader.GetUserNameAsync(request.User.UserId, cancellationToken);
+                var updatedUser = new UpdateUserShrankDto(request.User.UserId, username, true);
+                await publisher.Publish(new UserUpdated.Notification(request.User.UserId, updatedUser), cancellationToken);
+            }
+
             await publisher.Publish(SecurityAudit.Event(principal, "UserPasswordChanged", "User", request.User.UserId.ToString(), principal.AccountId), cancellationToken);
         }
         else

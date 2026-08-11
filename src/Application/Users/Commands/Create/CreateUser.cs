@@ -34,7 +34,7 @@ public class CreateUserCommandHandler(IUserWriter writer, IUserReader reader, IU
         // Create the user using the writer
         var user = await writer.CreateUserAsync(request.User, currentUser.AccountId, cancellationToken);
         // Create a shrank user DTO
-        var shrankUser = new UserShrankDto(user.UserId, user.Username, currentUser.AccountId);
+        var shrankUser = new UserShrankDto(user.UserId, user.Username, currentUser.AccountId, user.Active);
         // Publish a UserCreated notification
         await publisher.Publish(new UserCreated.Notification(shrankUser), cancellationToken);
         await publisher.Publish(SecurityAudit.Event(principal, "CreateUser", "User", user.UserId.ToString(), currentUser.AccountId, null, user.Username), cancellationToken);
