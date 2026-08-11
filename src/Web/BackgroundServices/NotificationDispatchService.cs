@@ -46,19 +46,51 @@ public sealed class NotificationDispatchService(
     private const int DefaultSendingReclaimMinutes = 10;
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan StartupDelay = TimeSpan.FromMinutes(1);
+    // Cap for the exponential backoff applied after consecutive cycle-level failures. A broken
+    // dependency (e.g. bad client credentials) otherwise produces an Error row every 30 s
+    // around the clock — plus the token-endpoint chatter each attempt causes downstream.
+    private static readonly TimeSpan MaxFailureBackoff = TimeSpan.FromMinutes(15);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try { await Task.Delay(StartupDelay, stoppingToken); }
         catch (OperationCanceledException) { return; }
 
+        var consecutiveFailures = 0;
         while (!stoppingToken.IsCancellationRequested)
         {
-            try { await RunOnceAsync(stoppingToken); }
+            try
+            {
+                await RunOnceAsync(stoppingToken);
+                if (consecutiveFailures > 0)
+                {
+                    logger.LogInformation("Notification dispatch recovered after {Failures} failed cycles.", consecutiveFailures);
+                }
+                consecutiveFailures = 0;
+            }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
-            catch (Exception ex) { logger.LogError(ex, "Notification dispatch cycle failed."); }
+            catch (Exception ex)
+            {
+                consecutiveFailures++;
+                // First failures log at Error; once it is clearly persistent, drop to Warning so
+                // a misconfigured environment does not flood the log store.
+                if (consecutiveFailures <= 3)
+                {
+                    logger.LogError(ex, "Notification dispatch cycle failed ({Failures} consecutive).", consecutiveFailures);
+                }
+                else
+                {
+                    logger.LogWarning("Notification dispatch cycle failed ({Failures} consecutive): {Error}", consecutiveFailures, ex.Message);
+                }
+            }
 
-            try { await Task.Delay(Interval, stoppingToken); }
+            var delay = Interval;
+            if (consecutiveFailures > 0)
+            {
+                var backoff = TimeSpan.FromSeconds(Interval.TotalSeconds * Math.Pow(2, Math.Min(consecutiveFailures, 5)));
+                delay = backoff < MaxFailureBackoff ? backoff : MaxFailureBackoff;
+            }
+            try { await Task.Delay(delay, stoppingToken); }
             catch (OperationCanceledException) { return; }
         }
     }

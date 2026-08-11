@@ -9,4 +9,8 @@ public partial class Mutation
 
     public async Task<bool> SetSynchronizedDeviceIgnored([Service] ISender sender, SetSynchronizedDeviceIgnoredCommand command, CancellationToken cancellationToken)
     { await sender.Send(command, cancellationToken); return true; }
+
+    // Manual registration for providers without a device-catalog API (Prosegur).
+    public async Task<DeviceVm> RegisterManualDevice([Service] ISender sender, RegisterManualDeviceCommand command, CancellationToken cancellationToken)
+        => await sender.Send(command, cancellationToken);
 }
