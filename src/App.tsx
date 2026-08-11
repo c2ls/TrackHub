@@ -256,6 +256,11 @@ export default function App() {
   // when things break, and a customer's tracking link is not an account surface.
   const onPublicPage = (PUBLIC_ROUTES as readonly string[]).includes(pathname);
 
+  // The auth error page and the authorize/callback interstitials render their own
+  // full-page shell too — without this the Sidenav overlays the error card and
+  // hides the message.
+  const onChromelessPage = onPublicPage || pathname === "/error" || pathname.startsWith("/authentication/");
+
   // Shared with FeaturesContext consumers; matches the backend flag semantics
   // (missing row ⇒ disabled, effective window honoured).
   const featureEnabled = (featureKey?: string | null): boolean =>
@@ -346,7 +351,7 @@ export default function App() {
           <FeaturesContext.Provider value={{ features: accountFeatures, isFeatureEnabled: featureEnabled }}>
           <PermissionsContext.Provider value={{ actions: authorizedActions, can, loaded: permissionsLoaded }}>
           <HelpProvider allowedScreens={allowedScreens} isFeatureEnabled={featureEnabled}>
-          {layout === "dashboard" && !onPublicPage && (
+          {layout === "dashboard" && !onChromelessPage && (
           <>
             <Sidenav
               brand={darkMode ? brand : brandDark}
@@ -367,7 +372,7 @@ export default function App() {
         )}
         {/* Platform announcements reach every signed-in user on every screen; the
             status page renders its own copy, so it is skipped there. */}
-        {isAuthenticated && !onPublicPage && <AnnouncementBanner />}
+        {isAuthenticated && !onChromelessPage && <AnnouncementBanner />}
         <Routes>
           {getRoutes(enabledRoutes)}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

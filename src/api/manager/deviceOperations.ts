@@ -142,3 +142,16 @@ export const SetSynchronizedDeviceIgnoredDocument = graphql(`
     setSynchronizedDeviceIgnored(command: { deviceId: $deviceId, ignored: $ignored })
   }
 `);
+
+/**
+ * Manual registration for providers without a device-catalog API (e.g. Prosegur):
+ * sync can never discover their devices, so the operator enters them by hand.
+ * identifier 0 lets the server allocate the next free one for the operator.
+ */
+export const RegisterManualDeviceDocument = graphql(`
+  mutation RegisterManualDevice($device: DeviceDtoInput!, $autoAssign: Boolean!) {
+    registerManualDevice(command: { device: $device, autoAssign: $autoAssign }) {
+      ...SynchronizedDevice
+    }
+  }
+`);

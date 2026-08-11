@@ -3,6 +3,7 @@
     "title": "Authentication Failed",
     "tokenExchangeFailed": "Failed to exchange authorization code for access token. The authentication service may be unavailable.",
     "noCode": "No authorization code was received. The authentication process was interrupted.",
+    "stateMismatch": "The sign-in attempt could not be verified (the security check did not match). This usually happens when signing in from a bookmarked or stale sign-in page, or when the browser blocks site storage (for example, in private mode). Open the portal home page directly and try again.",
     "generic": "An authentication error occurred. Please try again later.",
     "causesIntro": "This could be due to:",
     "causeUnavailable": "The authentication service is temporarily unavailable",
@@ -1337,6 +1338,13 @@
       "syncRuns": "No sync runs in the selected window.",
       "alerts": "No open GPS alerts.",
       "healthHistory": "No health history records."
+    },
+    "deviceForm": {
+      "title": "Register Device Manually",
+      "nameHelp": "For providers queried by license plate (e.g. Prosegur), enter the exact plate — it is how positions are matched.",
+      "identifierHelp": "Leave at 0 to let the system assign an identifier automatically.",
+      "autoAssign": "Create and assign a unit automatically",
+      "autoAssignHelp": "A unit named after the device is created (or an existing unassigned one adopted) and linked, so positions appear on the map without further steps."
     }
   },
   "platformStatus": {
