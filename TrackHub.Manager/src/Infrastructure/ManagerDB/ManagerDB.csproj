@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Manager.Infrastructure</RootNamespace>
+    <AssemblyName>TrackHub.Manager.Infrastructure</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TrackHubCommon.Application" />
+    <PackageReference Include="TrackHubCommon.Infrastructure" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="MailKit" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Azure.Storage.Blobs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Application\Application.csproj" />
+  </ItemGroup>
+</Project>

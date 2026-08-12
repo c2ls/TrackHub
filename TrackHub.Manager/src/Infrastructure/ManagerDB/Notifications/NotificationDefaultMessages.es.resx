@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DefaultAlertSubject" xml:space="preserve">
+    <value>[TrackHub] {eventType}</value>
+  </data>
+  <data name="DefaultAlertBody" xml:space="preserve">
+    <value>Alerta {eventType} ({severity}) sobre {resourceType} {resourceId} a las {occurredAt}. Detalles: {link}</value>
+  </data>
+  <data name="TestNotificationSubject" xml:space="preserve">
+    <value>[TrackHub] Notificación de prueba</value>
+  </data>
+  <data name="TestNotificationBody" xml:space="preserve">
+    <value>Esta es una notificación de prueba de TrackHub. Si la recibió, el canal está configurado correctamente.</value>
+  </data>
+  <data name="NotificationDigestSubject" xml:space="preserve">
+    <value>[TrackHub] Resumen de alertas: {count} alertas</value>
+  </data>
+  <data name="NotificationDigestBody" xml:space="preserve">
+    <value>Se registraron {count} alertas ({eventTypes}) desde el último resumen. Revise el portal: {link}</value>
+  </data>
+</root>
