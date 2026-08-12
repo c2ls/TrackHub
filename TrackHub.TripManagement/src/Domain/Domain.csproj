@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.TripManagement.Domain</RootNamespace>
+    <AssemblyName>TrackHub.TripManagement.Domain</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NetTopologySuite" />
+    <PackageReference Include="TrackHubCommon.Domain" />
+  </ItemGroup>
+</Project>

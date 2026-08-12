@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.TripManagement.Application</RootNamespace>
+    <AssemblyName>TrackHub.TripManagement.Application</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="NetTopologySuite" />
+    <PackageReference Include="TrackHubCommon.Application" />
+    <PackageReference Include="TrackHubCommon.Domain" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+</Project>
