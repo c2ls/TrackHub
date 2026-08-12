@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Geofencing.Infrastructure.ManagerApi</RootNamespace>
+    <AssemblyName>TrackHub.Geofencing.Infrastructure.ManagerApi</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GraphQL.Client" />
+    <PackageReference Include="TrackHubCommon.Infrastructure" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\Domain.csproj" />
+  </ItemGroup>
+</Project>
