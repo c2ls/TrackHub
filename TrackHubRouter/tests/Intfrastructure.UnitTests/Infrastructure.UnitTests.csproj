@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Ardalis.GuardClauses" />
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Application\Application.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Common\Common.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\CommandTrack\CommandTrack.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Protack\Protrack.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Traccar\Traccar.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Flespi\Flespi.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Geotab\Geotab.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\GpsGate\GpsGate.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Navixy\Navixy.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Samsara\Samsara.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Wialon\Wialon.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Router.Infrastructure.Geotab</RootNamespace>
+    <AssemblyName>TrackHub.Router.Infrastructure.Geotab</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Geotab.Checkmate.ObjectModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\Domain.csproj" />
+  </ItemGroup>
+</Project>

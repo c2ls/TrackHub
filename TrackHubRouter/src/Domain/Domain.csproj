@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Router.Domain</RootNamespace>
+    <AssemblyName>TrackHub.Router.Domain</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TrackHubCommon.Domain" />
+  </ItemGroup>
+</Project>
