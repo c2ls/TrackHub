@@ -1,0 +1,67 @@
+# TrackHub Geofencing API (GraphQL)
+# Multi-stage build for .NET 10
+
+# Stage 0: Pack shared TrackHubCommon NuGet packages
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS common
+WORKDIR /common
+COPY TrackHubCommon/ ./
+# GeneratePackageOnBuild=true: `dotnet build` emits the .nupkg for each project
+# (`dotnet pack` hits NU5026 with this setting); building Web builds all four.
+RUN dotnet build src/Common.Web/Common.Web.csproj -c Release \
+ && mkdir -p /local-nuget \
+ && find /common/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /local-nuget/ \;
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY TrackHub.Geofencing/TrackHub.Geofencing.slnx .
+COPY TrackHub.Geofencing/Directory.Build.props .
+COPY TrackHub.Geofencing/Directory.Packages.props .
+COPY TrackHub.Geofencing/global.json .
+COPY TrackHub.Geofencing/src/Application/Application.csproj src/Application/
+COPY TrackHub.Geofencing/src/Domain/Domain.csproj src/Domain/
+COPY TrackHub.Geofencing/src/Infrastructure/ManagerApi/ManagerApi.csproj src/Infrastructure/ManagerApi/
+COPY TrackHub.Geofencing/src/Infrastructure/ManagerDB/ManagerDB.csproj src/Infrastructure/ManagerDB/
+COPY TrackHub.Geofencing/src/Web/Web.csproj src/Web/
+
+# Copy freshly packed TrackHubCommon packages + NuGet feed config
+COPY --from=common /local-nuget/ /nuget-packages/
+COPY TrackHub.Deployment/nuget-packages/nuget.config /nuget-packages/nuget.config
+
+# Restore dependencies
+RUN dotnet restore src/Web/Web.csproj --configfile /nuget-packages/nuget.config
+
+# Copy all source code
+COPY TrackHub.Geofencing/src/ src/
+
+# Build and publish
+RUN dotnet publish src/Web/Web.csproj -c Release -o /app/publish --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Create certificates directory
+RUN mkdir -p /app/certificates
+
+# Copy published application
+COPY --from=build /app/publish .
+
+# Set environment variables
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:8080
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Entry point
+ENTRYPOINT ["dotnet", "TrackHub.Geofencing.Web.dll"]

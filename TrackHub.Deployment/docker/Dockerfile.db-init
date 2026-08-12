@@ -1,0 +1,69 @@
+# Database Initialization Container
+# Runs ClientSeeder and DBInitializers once during initial deployment
+
+# Stage 0: Pack shared TrackHubCommon NuGet packages
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS common
+WORKDIR /common
+COPY TrackHubCommon/ ./
+# GeneratePackageOnBuild=true: `dotnet build` emits the .nupkg for each project
+# (`dotnet pack` hits NU5026 with this setting); building Web builds all four.
+RUN dotnet build src/Common.Web/Common.Web.csproj -c Release \
+ && mkdir -p /local-nuget \
+ && find /common/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /local-nuget/ \;
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy AuthorityServer ClientSeeder
+COPY TrackHub.AuthorityServer/AuthorityServer.slnx ./authority/
+COPY TrackHub.AuthorityServer/Directory.Build.props ./authority/
+COPY TrackHub.AuthorityServer/Directory.Packages.props ./authority/
+COPY TrackHub.AuthorityServer/global.json ./authority/
+COPY TrackHub.AuthorityServer/src/ ./authority/src/
+
+# Copy TrackHubSecurity DBInitializer
+COPY TrackHubSecurity/TrackHub.Security.slnx ./security/
+COPY TrackHubSecurity/Directory.Build.props ./security/
+COPY TrackHubSecurity/Directory.Packages.props ./security/
+COPY TrackHubSecurity/global.json ./security/
+COPY TrackHubSecurity/src/ ./security/src/
+
+# Copy TrackHub.Manager DBInitializer
+COPY TrackHub.Manager/TrackHub.Manager.slnx ./manager/
+COPY TrackHub.Manager/Directory.Build.props ./manager/
+COPY TrackHub.Manager/Directory.Packages.props ./manager/
+COPY TrackHub.Manager/global.json ./manager/
+COPY TrackHub.Manager/src/ ./manager/src/
+
+# Copy freshly packed TrackHubCommon packages + NuGet feed config
+COPY --from=common /local-nuget/ /nuget-packages/
+COPY TrackHub.Deployment/nuget-packages/nuget.config /nuget-packages/nuget.config
+
+# Build all initializers
+RUN dotnet restore ./authority/src/ClientSeeder/ClientSeeder.csproj --configfile /nuget-packages/nuget.config && \
+    dotnet publish ./authority/src/ClientSeeder/ClientSeeder.csproj -c Release -o /app/client-seeder --no-restore
+RUN dotnet restore ./security/src/DBInitializer/DBInitializer.csproj --configfile /nuget-packages/nuget.config && \
+    dotnet publish ./security/src/DBInitializer/DBInitializer.csproj -c Release -o /app/security-init --no-restore
+RUN dotnet restore ./manager/src/DBInitializer/DBInitializer.csproj --configfile /nuget-packages/nuget.config && \
+    dotnet publish ./manager/src/DBInitializer/DBInitializer.csproj -c Release -o /app/manager-init --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+# Install PostgreSQL client for connectivity checks
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Copy published applications
+COPY --from=build /app/client-seeder ./client-seeder/
+COPY --from=build /app/security-init ./security-init/
+COPY --from=build /app/manager-init ./manager-init/
+
+# Copy initialization scripts
+COPY TrackHub.Deployment/scripts/init-databases.sh ./init-databases.sh
+COPY TrackHub.Deployment/scripts/sync-user-account-ids.sh ./sync-user-account-ids.sh
+RUN chmod +x ./init-databases.sh ./sync-user-account-ids.sh
+
+# Create flags directory for tracking initialization state
+RUN mkdir -p /app/flags
+
+ENTRYPOINT ["./init-databases.sh"]

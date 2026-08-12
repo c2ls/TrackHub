@@ -1,0 +1,72 @@
+# TrackHub React Frontend
+# Multi-stage build for optimized production image
+
+# Stage 1: Build
+# Node 24 (current LTS). Vite 8 requires ^20.19.0 || >=22.12.0.
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+# Copy package files. .npmrc (legacy-peer-deps=true) MUST come with them: without it the
+# install fails ERESOLVE, because i18next declares a peer on typescript ^5 and this app is
+# on typescript 7.
+COPY TrackHub/package*.json TrackHub/.npmrc ./
+
+# Install from the lockfile. `npm install` would re-resolve the caret ranges on
+# bleeding-edge deps (vite ^8, typescript ^7) and could pull a breaking minor into a
+# production image even when nothing in the repo changed.
+RUN npm ci
+
+# Copy source code
+COPY TrackHub/ .
+
+# Build arguments for environment variables
+ARG REACT_APP_DEFAULT_LAT=4.624335
+ARG REACT_APP_DEFAULT_LNG=-74.063644
+ARG REACT_APP_CLIENT_ID=web_client
+ARG REACT_APP_AUTHORIZATION_ENDPOINT
+ARG REACT_APP_TOKEN_ENDPOINT
+ARG REACT_APP_CALLBACK_ENDPOINT
+ARG REACT_APP_REVOKE_TOKEN_ENDPOINT
+ARG REACT_APP_LOGOUT_ENDPOINT
+ARG REACT_APP_MANAGER_ENDPOINT
+ARG REACT_APP_ROUTER_ENDPOINT
+ARG REACT_APP_SECURITY_ENDPOINT
+ARG REACT_APP_GEOFENCING_ENDPOINT
+ARG REACT_APP_TELEMETRY_ENDPOINT
+ARG REACT_APP_REPORTING_ENDPOINT
+
+# Set environment variables for build
+ENV REACT_APP_DEFAULT_LAT=$REACT_APP_DEFAULT_LAT
+ENV REACT_APP_DEFAULT_LNG=$REACT_APP_DEFAULT_LNG
+ENV REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID
+ENV REACT_APP_AUTHORIZATION_ENDPOINT=$REACT_APP_AUTHORIZATION_ENDPOINT
+ENV REACT_APP_TOKEN_ENDPOINT=$REACT_APP_TOKEN_ENDPOINT
+ENV REACT_APP_CALLBACK_ENDPOINT=$REACT_APP_CALLBACK_ENDPOINT
+ENV REACT_APP_REVOKE_TOKEN_ENDPOINT=$REACT_APP_REVOKE_TOKEN_ENDPOINT
+ENV REACT_APP_LOGOUT_ENDPOINT=$REACT_APP_LOGOUT_ENDPOINT
+ENV REACT_APP_MANAGER_ENDPOINT=$REACT_APP_MANAGER_ENDPOINT
+ENV REACT_APP_ROUTER_ENDPOINT=$REACT_APP_ROUTER_ENDPOINT
+ENV REACT_APP_SECURITY_ENDPOINT=$REACT_APP_SECURITY_ENDPOINT
+ENV REACT_APP_GEOFENCING_ENDPOINT=$REACT_APP_GEOFENCING_ENDPOINT
+ENV REACT_APP_TELEMETRY_ENDPOINT=$REACT_APP_TELEMETRY_ENDPOINT
+ENV REACT_APP_REPORTING_ENDPOINT=$REACT_APP_REPORTING_ENDPOINT
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Production
+FROM alpine:latest AS production
+
+WORKDIR /app
+
+# Keep the build output at an immutable, non-volume path inside the image.
+# The entrypoint copies it into the shared "trackhub-frontend" volume (mounted
+# at /app/build) on every start so nginx always serves the current build.
+COPY --from=build /app/build ./dist
+
+# Entrypoint that refreshes the volume-backed /app/build on every container start.
+COPY TrackHub.Deployment/docker/frontend-entrypoint.sh /usr/local/bin/frontend-entrypoint.sh
+RUN chmod +x /usr/local/bin/frontend-entrypoint.sh && mkdir -p /app/build
+
+ENTRYPOINT ["/usr/local/bin/frontend-entrypoint.sh"]
