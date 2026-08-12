@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Manager.Web</RootNamespace>
+    <AssemblyName>TrackHub.Manager.Web</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\ManagerDB\ManagerDB.csproj" />
+    <ProjectReference Include="..\Infrastructure\SecurityApi\SecurityApi.csproj" />
+    <ProjectReference Include="..\Infrastructure\RouterApi\RouterApi.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="TrackHubCommon.Web" />
+    <PackageReference Include="HotChocolate.AspNetCore" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+  <Target Name="CleanBuildHostFolders" AfterTargets="Publish">
+    <RemoveDir Directories="$(PublishDir)BuildHost-net472;$(PublishDir)BuildHost-netcore" />
+  </Target>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+</Project>
