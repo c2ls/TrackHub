@@ -1,0 +1,35 @@
+@model TrackHub.AuthorityServer.Web.Models.LoginViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+<h2 class="text-center mb-4">@Localizer["LoginTitle"]</h2>
+<form autocomplete="off" asp-route="Login">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group">
+        <label for="email">@Localizer["EmailLabel"]</label>
+        <input type="email" id="email" class="form-control form-control-lg" placeholder="@Localizer["EmailPlaceholder"]" asp-for="Email" autofocus>
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label for="password">@Localizer["PasswordLabel"]</label>
+        <input type="password" id="password" class="form-control form-control-lg" placeholder="@Localizer["PasswordPlaceholder"]" asp-for="Password">
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    @if (Model.AuthenticationFailed)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Model.AuthenticationFailedMessage
+        </div>
+    }
+    <button type="submit" class="btn btn-dark btn-block mt-3">@Localizer["LoginLabel"]</button>
+</form>
+@if (!string.IsNullOrEmpty(Model.PlatformStatusUrl))
+{
+    @* Helps when sign-in FAILS (bad credentials, suspended account, downstream error). If the
+       AuthorityServer itself is down no page renders at all — the help topic tells users to
+       bookmark the status page for that case. *@
+    <footer>
+        <small><a href="@Model.PlatformStatusUrl">@Localizer["PlatformStatusLink"]</a></small>
+    </footer>
+}
