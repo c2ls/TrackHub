@@ -1,0 +1,654 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Altitude" xml:space="preserve">
+    <value>Altitude</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="Course" xml:space="preserve">
+    <value>Course</value>
+  </data>
+  <data name="DeviceDateTime" xml:space="preserve">
+    <value>Device DateTime</value>
+  </data>
+  <data name="DeviceName" xml:space="preserve">
+    <value>Device Name</value>
+  </data>
+  <data name="EventId" xml:space="preserve">
+    <value>Event Id</value>
+  </data>
+  <data name="Hourmeter" xml:space="preserve">
+    <value>Hourmeter</value>
+  </data>
+  <data name="Ignition" xml:space="preserve">
+    <value>Ignition</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="Mileage" xml:space="preserve">
+    <value>Mileage</value>
+  </data>
+  <data name="Satellites" xml:space="preserve">
+    <value>Satellites</value>
+  </data>
+  <data name="ServerDateTime" xml:space="preserve">
+    <value>Server DateTime</value>
+  </data>
+  <data name="Speed" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="Temperature" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="TransporterId" xml:space="preserve">
+    <value>Transporter Id</value>
+  </data>
+  <data name="TransporterType" xml:space="preserve">
+    <value>Transporter Type</value>
+  </data>
+  <data name="TransporterName" xml:space="preserve">
+    <value>Transporter Name</value>
+  </data>
+  <data name="GeofenceName" xml:space="preserve">
+    <value>Geofence Name</value>
+  </data>
+  <data name="DatetimeIn" xml:space="preserve">
+    <value>Datetime In</value>
+  </data>
+  <data name="DatetimeOut" xml:space="preserve">
+    <value>Datetime Out</value>
+  </data>
+  <data name="TotalTime" xml:space="preserve">
+    <value>Total Time</value>
+  </data>
+  <data name="OperatorId" xml:space="preserve">
+    <value>Operator Id</value>
+  </data>
+  <data name="OperatorName" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="Operator" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="UptimePercent" xml:space="preserve">
+    <value>Uptime %</value>
+  </data>
+  <data name="AvgLatencyMs" xml:space="preserve">
+    <value>Avg Latency (ms)</value>
+  </data>
+  <data name="FailureCount" xml:space="preserve">
+    <value>Failures</value>
+  </data>
+  <data name="LastCheckAt" xml:space="preserve">
+    <value>Last Check</value>
+  </data>
+  <data name="LastFailureCode" xml:space="preserve">
+    <value>Last Failure Code</value>
+  </data>
+  <data name="StartedAt" xml:space="preserve">
+    <value>Started</value>
+  </data>
+  <data name="FinishedAt" xml:space="preserve">
+    <value>Finished</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="DevicesSynced" xml:space="preserve">
+    <value>Devices Synced</value>
+  </data>
+  <data name="Added" xml:space="preserve">
+    <value>Added</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Updated</value>
+  </data>
+  <data name="Removed" xml:space="preserve">
+    <value>Removed</value>
+  </data>
+  <data name="Ignored" xml:space="preserve">
+    <value>Ignored</value>
+  </data>
+  <data name="FailedDevices" xml:space="preserve">
+    <value>Failed Devices</value>
+  </data>
+  <data name="PositionsRetrieved" xml:space="preserve">
+    <value>Positions Retrieved</value>
+  </data>
+  <data name="CorrelationId" xml:space="preserve">
+    <value>Correlation Id</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Runs" xml:space="preserve">
+    <value>Runs</value>
+  </data>
+  <data name="Successes" xml:space="preserve">
+    <value>Successes</value>
+  </data>
+  <data name="Failures" xml:space="preserve">
+    <value>Failures</value>
+  </data>
+  <data name="AvgDurationMs" xml:space="preserve">
+    <value>Avg Duration (ms)</value>
+  </data>
+  <data name="TotalPositions" xml:space="preserve">
+    <value>Total Positions</value>
+  </data>
+  <data name="DeviceId" xml:space="preserve">
+    <value>Device Id</value>
+  </data>
+  <data name="Identifier" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="Serial" xml:space="preserve">
+    <value>Serial</value>
+  </data>
+  <data name="ProviderStatus" xml:space="preserve">
+    <value>Provider Status</value>
+  </data>
+  <data name="DetectedStatus" xml:space="preserve">
+    <value>Detected Status</value>
+  </data>
+  <data name="FirstSeenAt" xml:space="preserve">
+    <value>First Seen</value>
+  </data>
+  <data name="LastSeenAt" xml:space="preserve">
+    <value>Last Seen</value>
+  </data>
+  <data name="AssignedTransporter" xml:space="preserve">
+    <value>Assigned Transporter</value>
+  </data>
+  <data name="AssignedAt" xml:space="preserve">
+    <value>Assigned At</value>
+  </data>
+  <data name="ProviderDisplayName" xml:space="preserve">
+    <value>Provider Name</value>
+  </data>
+  <data name="IgnoredAt" xml:space="preserve">
+    <value>Ignored At</value>
+  </data>
+  <data name="AssignmentType" xml:space="preserve">
+    <value>Assignment Type</value>
+  </data>
+  <data name="EndedAt" xml:space="preserve">
+    <value>Ended</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="LastDeviceDateTime" xml:space="preserve">
+    <value>Last Device DateTime</value>
+  </data>
+  <data name="AgeMinutes" xml:space="preserve">
+    <value>Age (min)</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SourceDeviceId" xml:space="preserve">
+    <value>Source Device Id</value>
+  </data>
+  <data name="AccountId" xml:space="preserve">
+    <value>Account Id</value>
+  </data>
+  <data name="AccountName" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="AccountType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Last Modified</value>
+  </data>
+  <data name="FeatureKey" xml:space="preserve">
+    <value>Feature</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="Tier" xml:space="preserve">
+    <value>Tier</value>
+  </data>
+  <data name="GroupName" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="MemberType" xml:space="preserve">
+    <value>Member Type</value>
+  </data>
+  <data name="MemberName" xml:space="preserve">
+    <value>Member</value>
+  </data>
+  <data name="MemberId" xml:space="preserve">
+    <value>Member Id</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="OwnerType" xml:space="preserve">
+    <value>Owner Type</value>
+  </data>
+  <data name="OwnerId" xml:space="preserve">
+    <value>Owner Id</value>
+  </data>
+  <data name="OwnerName" xml:space="preserve">
+    <value>Owner Name</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>File Name</value>
+  </data>
+  <data name="Classification" xml:space="preserve">
+    <value>Classification</value>
+  </data>
+  <data name="ExpiresAt" xml:space="preserve">
+    <value>Expires At</value>
+  </data>
+  <data name="Scopes" xml:space="preserve">
+    <value>Scopes</value>
+  </data>
+  <data name="Purpose" xml:space="preserve">
+    <value>Purpose</value>
+  </data>
+  <data name="AccessCount" xml:space="preserve">
+    <value>Access Count</value>
+  </data>
+  <data name="LastAccessedAt" xml:space="preserve">
+    <value>Last Accessed</value>
+  </data>
+  <data name="RevokedAt" xml:space="preserve">
+    <value>Revoked At</value>
+  </data>
+  <data name="DocumentCount" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="SharedDocumentId" xml:space="preserve">
+    <value>Document Id</value>
+  </data>
+  <data name="GeneratedAt" xml:space="preserve">
+    <value>Generated</value>
+  </data>
+  <data name="FilterFrom" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="FilterTo" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="FilterTransporterId" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="FilterOperatorId" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="FilterGeofenceId" xml:space="preserve">
+    <value>Geofence</value>
+  </data>
+  <data name="FilterDeviceId" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="FilterStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="FilterMaxRows" xml:space="preserve">
+    <value>Max Rows</value>
+  </data>
+  <data name="FilterWithinDays" xml:space="preserve">
+    <value>Within Days</value>
+  </data>
+  <data name="FilterLookbackHours" xml:space="preserve">
+    <value>Lookback Hours</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="PageOf" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="DriverName" xml:space="preserve">
+    <value>Driver</value>
+  </data>
+  <data name="EmployeeCode" xml:space="preserve">
+    <value>Employee Code</value>
+  </data>
+  <data name="DocumentType" xml:space="preserve">
+    <value>Document Type</value>
+  </data>
+  <data name="DocumentNumber" xml:space="preserve">
+    <value>Document Number</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="LicenseNumber" xml:space="preserve">
+    <value>License Number</value>
+  </data>
+  <data name="LicenseExpiresAt" xml:space="preserve">
+    <value>License Expires At</value>
+  </data>
+  <data name="DefaultTransporterId" xml:space="preserve">
+    <value>Default Transporter</value>
+  </data>
+  <data name="LicenseCategory" xml:space="preserve">
+    <value>License Category</value>
+  </data>
+  <data name="QualificationType" xml:space="preserve">
+    <value>Qualification Type</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="IssuingAuthority" xml:space="preserve">
+    <value>Issuing Authority</value>
+  </data>
+  <data name="IssuedAt" xml:space="preserve">
+    <value>Issued At</value>
+  </data>
+  <data name="DaysRemaining" xml:space="preserve">
+    <value>Days Remaining</value>
+  </data>
+  <data name="StartsAt" xml:space="preserve">
+    <value>Starts At</value>
+  </data>
+  <data name="EndsAt" xml:space="preserve">
+    <value>Ends At</value>
+  </data>
+  <data name="DurationDays" xml:space="preserve">
+    <value>Duration (Days)</value>
+  </data>
+  <data name="CreatedByPrincipal" xml:space="preserve">
+    <value>Created By</value>
+  </data>
+  <data name="TripCode" xml:space="preserve">
+    <value>Trip Code</value>
+  </data>
+  <data name="TripStatus" xml:space="preserve">
+    <value>Trip Status</value>
+  </data>
+  <data name="PlannedStartAt" xml:space="preserve">
+    <value>Planned Start</value>
+  </data>
+  <data name="ActualStartAt" xml:space="preserve">
+    <value>Actual Start</value>
+  </data>
+  <data name="PlannedEndAt" xml:space="preserve">
+    <value>Planned End</value>
+  </data>
+  <data name="ActualEndAt" xml:space="preserve">
+    <value>Actual End</value>
+  </data>
+  <data name="OriginArrivedAt" xml:space="preserve">
+    <value>At Origin</value>
+  </data>
+  <data name="OriginDepartedAt" xml:space="preserve">
+    <value>Left Origin</value>
+  </data>
+  <data name="LoadingMinutes" xml:space="preserve">
+    <value>Loading (min)</value>
+  </data>
+  <data name="TransitMinutes" xml:space="preserve">
+    <value>In Transit (min)</value>
+  </data>
+  <data name="TotalMinutes" xml:space="preserve">
+    <value>Total (min)</value>
+  </data>
+  <data name="StopActivity" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="PlannedDistanceKm" xml:space="preserve">
+    <value>Planned Distance (km)</value>
+  </data>
+  <data name="ActualDistanceKm" xml:space="preserve">
+    <value>Actual Distance (km)</value>
+  </data>
+  <data name="StopCount" xml:space="preserve">
+    <value>Stops</value>
+  </data>
+  <data name="OnTime" xml:space="preserve">
+    <value>On Time</value>
+  </data>
+  <data name="EstimatedTollAmount" xml:space="preserve">
+    <value>Estimated Toll</value>
+  </data>
+  <data name="TollCurrency" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="StopSequence" xml:space="preserve">
+    <value>Sequence</value>
+  </data>
+  <data name="StopName" xml:space="preserve">
+    <value>Stop Name</value>
+  </data>
+  <data name="CustomerName" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="PlannedArrivalFrom" xml:space="preserve">
+    <value>Window From</value>
+  </data>
+  <data name="PlannedArrivalTo" xml:space="preserve">
+    <value>Window To</value>
+  </data>
+  <data name="ActualArrivalAt" xml:space="preserve">
+    <value>Arrival</value>
+  </data>
+  <data name="ActualDepartureAt" xml:space="preserve">
+    <value>Departure</value>
+  </data>
+  <data name="DwellMinutes" xml:space="preserve">
+    <value>Dwell (min)</value>
+  </data>
+  <data name="StopStatus" xml:space="preserve">
+    <value>Stop Status</value>
+  </data>
+  <data name="DeliveryCount" xml:space="preserve">
+    <value>Delivery Count</value>
+  </data>
+  <data name="DeliveredCount" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="FailedDeliveryCount" xml:space="preserve">
+    <value>Failed Deliveries</value>
+  </data>
+  <data name="PartialDeliveryCount" xml:space="preserve">
+    <value>Partial Deliveries</value>
+  </data>
+  <data name="EvaluatedStopCount" xml:space="preserve">
+    <value>Evaluated Stops</value>
+  </data>
+  <data name="OnTimeStopCount" xml:space="preserve">
+    <value>On Time Stops</value>
+  </data>
+  <data name="DelayedStopCount" xml:space="preserve">
+    <value>Delayed Stops</value>
+  </data>
+  <data name="OnTimePercent" xml:space="preserve">
+    <value>Punctuality %</value>
+  </data>
+  <data name="AverageDelayMinutes" xml:space="preserve">
+    <value>Avg Delay (min)</value>
+  </data>
+  <data name="MaxDelayMinutes" xml:space="preserve">
+    <value>Max Delay (min)</value>
+  </data>
+  <data name="VisitCount" xml:space="preserve">
+    <value>Visits</value>
+  </data>
+  <data name="AverageDwellMinutes" xml:space="preserve">
+    <value>Avg Dwell (min)</value>
+  </data>
+  <data name="MinDwellMinutes" xml:space="preserve">
+    <value>Min Dwell (min)</value>
+  </data>
+  <data name="MaxDwellMinutes" xml:space="preserve">
+    <value>Max Dwell (min)</value>
+  </data>
+  <data name="TotalDwellMinutes" xml:space="preserve">
+    <value>Total Dwell (min)</value>
+  </data>
+  <data name="RoutePlanId" xml:space="preserve">
+    <value>Route Plan</value>
+  </data>
+  <data name="TollStationName" xml:space="preserve">
+    <value>Toll Station</value>
+  </data>
+  <data name="RoadName" xml:space="preserve">
+    <value>Road</value>
+  </data>
+  <data name="Direction" xml:space="preserve">
+    <value>Direction</value>
+  </data>
+  <data name="TollVehicleClass" xml:space="preserve">
+    <value>Vehicle Class</value>
+  </data>
+  <data name="PartialNoTariff" xml:space="preserve">
+    <value>Partial (No Tariff)</value>
+  </data>
+  <data name="ReceiverName" xml:space="preserve">
+    <value>Receiver Name</value>
+  </data>
+  <data name="ReceiverDocument" xml:space="preserve">
+    <value>Receiver Document</value>
+  </data>
+  <data name="CapturedAt" xml:space="preserve">
+    <value>Captured At</value>
+  </data>
+</root>
