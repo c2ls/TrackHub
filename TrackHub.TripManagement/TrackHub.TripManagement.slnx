@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Application/Application.csproj" />
+    <Project Path="src/Domain/Domain.csproj" />
+    <Project Path="src/Web/Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/ManagerApi/ManagerApi.csproj" />
+    <Project Path="src/Infrastructure/RoutingApi/RoutingApi.csproj" />
+    <Project Path="src/Infrastructure/TelemetryApi/TelemetryApi.csproj" />
+    <Project Path="src/Infrastructure/TripDB/TripDB.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+</Solution>
