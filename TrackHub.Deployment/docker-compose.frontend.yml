@@ -1,0 +1,69 @@
+# TrackHub Frontend-Only Deployment
+# Use this for split deployment where frontend runs on a separate server.
+# This server only serves the static bundle — it does NOT proxy to the backend.
+# Point the frontend at the backend by setting the REACT_APP_* endpoint URLs in .env
+# (they are baked in at build time and called directly by the browser).
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: trackhub-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.frontend.conf:/etc/nginx/nginx.conf:ro
+      - ./certificates:/etc/nginx/ssl:ro
+      - ./certbot/webroot:/var/www/certbot:ro
+      - trackhub-frontend:/usr/share/nginx/html:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+    networks:
+      - trackhub-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.frontend
+      args:
+        - REACT_APP_DEFAULT_LAT=${REACT_APP_DEFAULT_LAT:-4.624335}
+        - REACT_APP_DEFAULT_LNG=${REACT_APP_DEFAULT_LNG:--74.063644}
+        - REACT_APP_CLIENT_ID=${REACT_APP_CLIENT_ID:-web_client}
+        - REACT_APP_AUTHORIZATION_ENDPOINT=${REACT_APP_AUTHORIZATION_ENDPOINT}
+        - REACT_APP_TOKEN_ENDPOINT=${REACT_APP_TOKEN_ENDPOINT}
+        - REACT_APP_CALLBACK_ENDPOINT=${REACT_APP_CALLBACK_ENDPOINT}
+        - REACT_APP_REVOKE_TOKEN_ENDPOINT=${REACT_APP_REVOKE_TOKEN_ENDPOINT}
+        - REACT_APP_LOGOUT_ENDPOINT=${REACT_APP_LOGOUT_ENDPOINT}
+        - REACT_APP_MANAGER_ENDPOINT=${REACT_APP_MANAGER_ENDPOINT}
+        - REACT_APP_ROUTER_ENDPOINT=${REACT_APP_ROUTER_ENDPOINT}
+        - REACT_APP_SECURITY_ENDPOINT=${REACT_APP_SECURITY_ENDPOINT}
+        - REACT_APP_GEOFENCING_ENDPOINT=${REACT_APP_GEOFENCING_ENDPOINT}
+        - REACT_APP_TELEMETRY_ENDPOINT=${REACT_APP_TELEMETRY_ENDPOINT}
+        - REACT_APP_REPORTING_ENDPOINT=${REACT_APP_REPORTING_ENDPOINT}
+    container_name: trackhub-frontend
+    restart: unless-stopped
+    volumes:
+      - trackhub-frontend:/app/build
+    networks:
+      - trackhub-network
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /app/build/.ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  trackhub-network:
+    driver: bridge
+
+volumes:
+  trackhub-frontend:
+    driver: local

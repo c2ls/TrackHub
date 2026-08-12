@@ -1,0 +1,545 @@
+# TrackHub Full Stack Deployment - Docker Compose
+# This configuration deploys the frontend and all backend services on a single server
+# For split deployment, see docker-compose.frontend.yml and docker-compose.backend.yml
+
+services:
+  # =============================================================================
+  # REVERSE PROXY
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: trackhub-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certificates:/etc/nginx/ssl:ro
+      - ./certbot/webroot:/var/www/certbot:ro
+      - trackhub-frontend:/usr/share/nginx/html:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      authority:
+        condition: service_started
+      security:
+        condition: service_started
+      manager:
+        condition: service_started
+      router:
+        condition: service_started
+      geofencing:
+        condition: service_started
+      telemetry:
+        condition: service_started
+      reporting:
+        condition: service_started
+    networks:
+      - trackhub-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # FRONTEND
+  # =============================================================================
+  frontend:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.frontend
+      args:
+        - REACT_APP_DEFAULT_LAT=${REACT_APP_DEFAULT_LAT:-4.624335}
+        - REACT_APP_DEFAULT_LNG=${REACT_APP_DEFAULT_LNG:--74.063644}
+        - REACT_APP_CLIENT_ID=${REACT_APP_CLIENT_ID:-web_client}
+        - REACT_APP_AUTHORIZATION_ENDPOINT=${REACT_APP_AUTHORIZATION_ENDPOINT}
+        - REACT_APP_TOKEN_ENDPOINT=${REACT_APP_TOKEN_ENDPOINT}
+        - REACT_APP_CALLBACK_ENDPOINT=${REACT_APP_CALLBACK_ENDPOINT}
+        - REACT_APP_REVOKE_TOKEN_ENDPOINT=${REACT_APP_REVOKE_TOKEN_ENDPOINT}
+        - REACT_APP_LOGOUT_ENDPOINT=${REACT_APP_LOGOUT_ENDPOINT}
+        - REACT_APP_MANAGER_ENDPOINT=${REACT_APP_MANAGER_ENDPOINT}
+        - REACT_APP_ROUTER_ENDPOINT=${REACT_APP_ROUTER_ENDPOINT}
+        - REACT_APP_SECURITY_ENDPOINT=${REACT_APP_SECURITY_ENDPOINT}
+        - REACT_APP_GEOFENCING_ENDPOINT=${REACT_APP_GEOFENCING_ENDPOINT}
+        - REACT_APP_TELEMETRY_ENDPOINT=${REACT_APP_TELEMETRY_ENDPOINT}
+        - REACT_APP_REPORTING_ENDPOINT=${REACT_APP_REPORTING_ENDPOINT}
+    container_name: trackhub-frontend
+    restart: unless-stopped
+    volumes:
+      - trackhub-frontend:/app/build
+    networks:
+      - trackhub-network
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /app/build/.ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # =============================================================================
+  # AUTHORITY SERVER (OpenIddict Identity Server)
+  # =============================================================================
+  authority:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.authority
+    container_name: trackhub-authority
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Security=${DB_CONNECTION_SECURITY}
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+      - OpenIddict__Scopes=${OPENIDDICT_SCOPES:-mobile_scope,driver_mobile_scope,web_scope,service_scope}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.authority.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      # db-init is a one-shot seeder with no healthcheck: wait for it to finish
+      # seeding before the authority server boots.
+      db-init:
+        condition: service_completed_successfully
+
+  # =============================================================================
+  # SECURITY API (GraphQL)
+  # =============================================================================
+  security:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.security
+    container_name: trackhub-security
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Security=${DB_CONNECTION_SECURITY}
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      # Client credentials for service-to-service calls (Security -> Manager audit/user writes)
+      - AuthorityServer__ClientId=${SECURITY_CLIENT_ID}
+      - AuthorityServer__ClientSecret=${SECURITY_CLIENT_SECRET}
+      - AuthorityServer__Scope=service_scope
+      - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
+      - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.security.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - authority
+
+  # =============================================================================
+  # MANAGER API (GraphQL)
+  # =============================================================================
+  manager:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.manager
+    container_name: trackhub-manager
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_MANAGER}
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - AppSettings__GraphQLSecurityService=${GRAPHQL_SECURITY_SERVICE}
+      - AppSettings__GraphQLRouterService=${GRAPHQL_ROUTER_SERVICE}
+      - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
+      # Document management storage. Default LocalFileSystem persists to the
+      # manager-documents volume; switch to S3/AzureBlob via DocumentStorage__Provider.
+      - DocumentStorage__Provider=${DOCUMENT_STORAGE_PROVIDER:-LocalFileSystem}
+      - DocumentStorage__LocalRootPath=${DOCUMENT_STORAGE_LOCAL_ROOT:-/app/documents}
+      - DocumentStorage__RetentionDays=${DOCUMENT_RETENTION_DAYS:-1825}
+      # S3 settings (required when DocumentStorage__Provider=S3; ignored otherwise).
+      # BucketName is mandatory for S3; AccessKey/SecretKey may be left empty to use the
+      # default AWS credential chain (IAM role / instance profile).
+      - DocumentStorage__S3__BucketName=${DOCUMENT_S3_BUCKET_NAME:-}
+      - DocumentStorage__S3__Region=${DOCUMENT_S3_REGION:-}
+      - DocumentStorage__S3__ServiceUrl=${DOCUMENT_S3_SERVICE_URL:-}
+      - DocumentStorage__S3__AccessKey=${DOCUMENT_S3_ACCESS_KEY:-}
+      - DocumentStorage__S3__SecretKey=${DOCUMENT_S3_SECRET_KEY:-}
+      - DocumentStorage__S3__ForcePathStyle=${DOCUMENT_S3_FORCE_PATH_STYLE:-}
+      - DocumentStorage__S3__PresignedExpiryMinutes=${DOCUMENT_S3_PRESIGNED_EXPIRY_MINUTES:-}
+      # Azure Blob settings (required when DocumentStorage__Provider=AzureBlob; ignored otherwise).
+      - DocumentStorage__AzureBlob__ContainerName=${DOCUMENT_AZURE_CONTAINER_NAME:-}
+      - DocumentStorage__AzureBlob__ConnectionString=${DOCUMENT_AZURE_CONNECTION_STRING:-}
+      - DocumentStorage__AzureBlob__SasExpiryMinutes=${DOCUMENT_AZURE_SAS_EXPIRY_MINUTES:-}
+      # Notifications (spec 05). Portal link in channel messages + delivery retention.
+      - AppSettings__PortalBaseUrl=${PORTAL_BASE_URL:-https://${DOMAIN}}
+      - AppSettings__NotificationDeliveryRetentionDays=${NOTIFICATION_DELIVERY_RETENTION_DAYS:-90}
+      # Email channel (SMTP). Empty host disables sends. External blocker: a production relay.
+      - AppSettings__Smtp__Host=${SMTP_HOST:-}
+      - AppSettings__Smtp__Port=${SMTP_PORT:-25}
+      - AppSettings__Smtp__Username=${SMTP_USERNAME:-}
+      - AppSettings__Smtp__Password=${SMTP_PASSWORD:-}
+      - AppSettings__Smtp__UseStartTls=${SMTP_USE_STARTTLS:-false}
+      - AppSettings__Smtp__FromAddress=${SMTP_FROM_ADDRESS:-alerts@trackhub.local}
+      - AppSettings__Smtp__FromName=${SMTP_FROM_NAME:-TrackHub Alerts}
+      # WhatsApp channel (Meta Cloud API, outbound utility templates only). Empty values disable
+      # sends. External blocker: verified Meta Business + WABA + approved templates.
+      - AppSettings__WhatsApp__ApiBaseUrl=${WHATSAPP_API_BASE_URL:-https://graph.facebook.com/v21.0}
+      - AppSettings__WhatsApp__PhoneNumberId=${WHATSAPP_PHONE_NUMBER_ID:-}
+      - AppSettings__WhatsApp__AccessToken=${WHATSAPP_ACCESS_TOKEN:-}
+      - AppSettings__WhatsApp__TemplateName=${WHATSAPP_TEMPLATE_NAME:-trackhub_alert}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.manager.json:/app/appsettings.json:ro
+      - manager-documents:/app/documents
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - security
+
+  # =============================================================================
+  # ROUTER API (GraphQL)
+  # =============================================================================
+  router:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.router
+    container_name: trackhub-router
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      # Client credentials for service-to-service calls (Router -> Telemetry/Manager system writers, ReverseGeocode)
+      - AuthorityServer__ClientId=${ROUTER_CLIENT_ID}
+      - AuthorityServer__ClientSecret=${ROUTER_CLIENT_SECRET}
+      - AuthorityServer__Scope=service_scope
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
+      - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
+      - AppSettings__GraphQLGeofenceService=${GRAPHQL_GEOFENCE_SERVICE}
+      - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
+      - AppSettings__Protocols__0=CommandTrack
+      - AppSettings__Protocols__1=Flespi
+      - AppSettings__Protocols__2=GeoTab
+      - AppSettings__Protocols__3=GpsGate
+      - AppSettings__Protocols__4=Navixy
+      - AppSettings__Protocols__5=Samsara
+      - AppSettings__Protocols__6=Traccar
+      - AppSettings__Protocols__7=Wialon
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.router.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - manager
+
+  # =============================================================================
+  # GEOFENCING API (GraphQL)
+  # =============================================================================
+  geofencing:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.geofencing
+    container_name: trackhub-geofencing
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_MANAGER}
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      - AuthorityServer__ClientId=${GEOFENCE_CLIENT_ID}
+      - AuthorityServer__ClientSecret=${GEOFENCE_CLIENT_SECRET}
+      - AuthorityServer__Scope=service_scope
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.geofencing.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 384M
+        reservations:
+          memory: 192M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - manager
+
+  # =============================================================================
+  # TELEMETRY API (GraphQL)
+  # =============================================================================
+  telemetry:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.telemetry
+    container_name: trackhub-telemetry
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_TELEMETRY}
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.telemetry.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 384M
+        reservations:
+          memory: 192M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - manager
+
+  # =============================================================================
+  # REPORTING API (REST)
+  # =============================================================================
+  reporting:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.reporting
+    container_name: trackhub-reporting
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ValidateAudience=true
+      - AuthorityServer__ValidateIssuer=true
+      - AuthorityServer__ValidateIssuerSigningKey=true
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - AppSettings__GraphQLRouterService=${GRAPHQL_ROUTER_SERVICE}
+      - AppSettings__GraphQLGeofenceService=${GRAPHQL_GEOFENCE_SERVICE}
+      - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
+      - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.reporting.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 384M
+        reservations:
+          memory: 192M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - router
+      - geofencing
+
+  # =============================================================================
+  # DATABASE INITIALIZATION (runs once)
+  # =============================================================================
+  db-init:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.db-init
+    container_name: trackhub-db-init
+    environment:
+      - DB_CONNECTION_SECURITY=${DB_CONNECTION_SECURITY}
+      - DB_CONNECTION_MANAGER=${DB_CONNECTION_MANAGER}
+    volumes:
+      - ./config/clients.json:/app/clients.json:ro
+      - db-init-flag:/app/flags
+    networks:
+      - trackhub-network
+
+# =============================================================================
+  # SYNC WORKER (Background Service)
+  # =============================================================================
+  syncworker:
+    build:
+      context: ..
+      dockerfile: TrackHub.Deployment/docker/Dockerfile.syncworker
+    container_name: trackhub-syncworker
+    restart: unless-stopped
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - ConnectionStrings__Logging=${DB_CONNECTION_LOGGING}
+      - AuthorityServer__Authority=${AUTHORITY_URL}
+      - AuthorityServer__ClientId=${SYNCWORKER_CLIENT_ID}
+      - AuthorityServer__ClientSecret=${SYNCWORKER_CLIENT_SECRET}
+      # SyncWorker authenticates as a service (client credentials); GraphQLClientFactory
+      # only attaches a service token when AuthorityServer__IsService is true.
+      - AuthorityServer__IsService=true
+      - AuthorityServer__Scope=service_scope
+      - AppSettings__GraphQLIdentityService=${GRAPHQL_IDENTITY_SERVICE}
+      - AppSettings__GraphQLManagerService=${GRAPHQL_MANAGER_SERVICE}
+      - AppSettings__GraphQLTelemetryService=${GRAPHQL_TELEMETRY_SERVICE}
+      - AppSettings__GraphQLGeofenceService=${GRAPHQL_GEOFENCE_SERVICE}
+      - AppSettings__EncryptionKey=${ENCRYPTION_KEY}
+      # Full protocol list — must stay in sync with the router service above.
+      # (Protrack/Mettax exist in the ProtocolType enum but are not wired into the
+      # Router DI assembly, so they must NOT be listed here.)
+      - AppSettings__Protocols__0=CommandTrack
+      - AppSettings__Protocols__1=Flespi
+      - AppSettings__Protocols__2=GeoTab
+      - AppSettings__Protocols__3=GpsGate
+      - AppSettings__Protocols__4=Navixy
+      - AppSettings__Protocols__5=Samsara
+      - AppSettings__Protocols__6=Traccar
+      - AppSettings__Protocols__7=Wialon
+      - OpenIddict__LoadCertFromFile=true
+      - OpenIddict__Path=/app/certificates/certificate.pfx
+      - OpenIddict__Password=${CERTIFICATE_PASSWORD}
+    volumes:
+      - ./certificates:/app/certificates:ro
+      - ./generated/appsettings.syncworker.json:/app/appsettings.json:ro
+    networks:
+      - trackhub-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          memory: 128M
+    depends_on:
+      authority:
+        condition: service_healthy
+      manager:
+        condition: service_healthy
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  trackhub-network:
+    driver: bridge
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  trackhub-frontend:
+    driver: local
+  db-init-flag:
+    driver: local
+  manager-documents:
+    driver: local
