@@ -1,0 +1,63 @@
+.map-container {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Lightens the CARTO dark_all raster, which is too dark as-is.
+   Applied to the dark tile layer only (see darkMapStyles.js). */
+.th-dark-tiles {
+    filter: brightness(1.45) contrast(0.92) saturate(0.9);
+}
+
+.trips-stats-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 260px;
+    font-size: 13px;
+}
+.trips-stats-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e6e6e6;
+    background: linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+    border-radius: 8px 8px 0 0;
+    color: #111;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+.trips-stats-header strong { font-size: 16px; font-weight: 600; }
+.trips-stats-body {
+    padding: 10px 12px;
+}
+.trips-stats-panel .stats-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    color: #333;
+}
+
+.trips-stats-toggle {
+    position: absolute;
+    top: 56px; /* placed under typical top-left controls (measurement) */
+    left: 12px;
+    background: #fff;
+    border: 0;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.15);
+    z-index: 1100;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.trips-stats-toggle:focus { outline: none; }

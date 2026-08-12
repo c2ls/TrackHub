@@ -1,0 +1,44 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+.DS_Store
+
+# testing
+/coverage
+
+# production
+/build
+
+# generated help manifest (scripts/build-help.mjs)
+/public/help/manifest.json
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# package-lock.json is tracked: the Docker build (Dockerfile.frontend) installs with
+# `npm ci`, which requires the lockfile in the clone.
+yarn.lock
+
+commit.sh
+.vscode/launch.json
+.env
+
+# SSL certificates
+*.key
+*.crt
+*.pem
+ca.key
+ca.crt
+cert.key
+cert.crt
+
+/.github/copilot

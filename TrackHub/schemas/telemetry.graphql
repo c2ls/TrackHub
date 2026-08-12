@@ -1,0 +1,394 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  operatorHealth(query: GetOperatorHealthQueryInput!): OperatorHealthVm!
+    @cost(weight: "10")
+  operatorHealthHistory(query: GetOperatorHealthHistoryQueryInput!): [OperatorHealthCheckVm!]!
+    @cost(weight: "10")
+  operatorHealthSummary(query: GetOperatorHealthSummaryQueryInput!): OperatorHealthSummaryVm!
+    @cost(weight: "10")
+  operatorSyncRuns(query: GetOperatorSyncRunsQueryInput!): [OperatorSyncRunVm!]!
+    @cost(weight: "10")
+  positionHistory(query: GetPositionHistoryQueryInput!): [TransporterPositionHistoryVm!]!
+    @cost(weight: "10")
+  positionHistoryRange(query: GetPositionHistoryRangeQueryInput!): [TransporterPositionHistoryVm!]!
+    @cost(weight: "10")
+  transporterPositionByOperator(
+    query: GetTransporterPositionsByOperatorQueryInput!
+  ): [TransporterPositionVm!]! @cost(weight: "10")
+  transporterPositionsByOperators(operatorIds: [UUID!]!): [TransporterPositionVm!]!
+    @cost(weight: "10")
+}
+
+type Mutation {
+  recordOperatorHealth(command: RecordOperatorHealthCommandInput!): OperatorHealthCheckVm!
+    @cost(weight: "10")
+  recordOperatorSyncRun(command: RecordOperatorSyncRunCommandInput!): OperatorSyncRunVm!
+    @cost(weight: "10")
+  purgeExpiredPositionHistory(command: PurgeExpiredPositionHistoryCommandInput!): Int!
+    @cost(weight: "10")
+  appendPositionHistory(command: AppendPositionHistoryCommandInput!): Boolean!
+    @cost(weight: "10")
+  appendPositionHistoryBatch(command: AppendPositionHistoryBatchCommandInput!): Int!
+    @cost(weight: "10")
+  persistResolvedAddress(command: PersistResolvedAddressCommandInput!): Boolean!
+    @cost(weight: "10")
+  bulkTransporterPosition(command: BulkTransporterPositionCommandInput!): Boolean!
+    @cost(weight: "10")
+}
+
+type AttributesVm {
+  ignition: Boolean
+  satellites: Int
+  mileage: Float
+  hourmeter: Float
+  temperature: Float
+  extra: String
+}
+
+type OperatorHealthCheckVm {
+  operatorHealthCheckId: UUID!
+  accountId: UUID!
+  operatorId: UUID!
+  checkType: OperatorHealthCheckType!
+  status: OperatorHealthStatus!
+  latencyMs: Int
+  startedAt: DateTime!
+  completedAt: DateTime
+  errorCode: String
+  errorMessage: String
+  retryCount: Int!
+  correlationId: String
+}
+
+type OperatorHealthSummaryVm {
+  operatorId: UUID!
+  since: DateTime!
+  totalChecks: Int!
+  healthyChecks: Int!
+  degradedChecks: Int!
+  offlineChecks: Int!
+  failureCount: Int!
+  uptimePercent: Float!
+  averageLatencyMs: Float
+  lastCheckAt: DateTime
+  lastFailureAt: DateTime
+  lastFailureCode: String
+}
+
+type OperatorHealthVm {
+  operatorId: UUID!
+  healthStatus: OperatorHealthStatus!
+  lastSuccessfulSyncAt: DateTime
+  lastFailedSyncAt: DateTime
+  lastDeviceSyncAt: DateTime
+  lastPositionSyncAt: DateTime
+  lastFailureCode: String
+  lastFailureMessage: String
+  lastLatencyMs: Int
+}
+
+type OperatorSyncRunVm {
+  operatorSyncRunId: UUID!
+  accountId: UUID!
+  operatorId: UUID!
+  triggerType: SyncTriggerType!
+  result: OperatorSyncResult!
+  startedAt: DateTime!
+  completedAt: DateTime
+  devicesSeen: Int!
+  devicesAdded: Int!
+  devicesUpdated: Int!
+  devicesRemoved: Int!
+  devicesIgnored: Int!
+  positionsRead: Int!
+  positionsAccepted: Int!
+  positionsRejected: Int!
+  errorCode: String
+  errorMessage: String
+  correlationId: String
+}
+
+type TransporterPositionHistoryVm {
+  transporterPositionHistoryId: UUID!
+  accountId: UUID!
+  operatorId: UUID!
+  deviceId: UUID!
+  transporterId: UUID!
+  sourceTimestamp: DateTime!
+  receivedAt: DateTime!
+  latitude: Float!
+  longitude: Float!
+  altitude: Float
+  speed: Float!
+  course: Float
+  eventId: Int
+  address: String
+  city: String
+  state: String
+  country: String
+  attributes: String
+  idempotencyKey: String!
+}
+
+type TransporterPositionVm {
+  transporterPositionId: UUID!
+  transporterId: UUID!
+  deviceName: String!
+  transporterType: TransporterType!
+  geometryId: UUID
+  latitude: Float!
+  longitude: Float!
+  altitude: Float
+  deviceDateTime: DateTime!
+  speed: Float!
+  course: Float
+  eventId: Int
+  address: String
+  city: String
+  state: String
+  country: String
+  attributes: AttributesVm
+}
+
+input AppendPositionHistoryBatchCommandInput {
+  accountId: UUID!
+  positions: [TransporterPositionHistoryDtoInput!]!
+}
+
+input AppendPositionHistoryCommandInput {
+  position: TransporterPositionHistoryDtoInput!
+}
+
+input AttributesDtoInput {
+  ignition: Boolean
+  satellites: Int
+  mileage: Float
+  hourmeter: Float
+  temperature: Float
+  extra: String
+}
+
+input BulkTransporterPositionCommandInput {
+  positions: [TransporterPositionDtoInput!]!
+}
+
+input GetOperatorHealthHistoryQueryInput {
+  operatorId: UUID!
+  take: Int! = 50
+}
+
+input GetOperatorHealthQueryInput {
+  operatorId: UUID!
+}
+
+input GetOperatorHealthSummaryQueryInput {
+  operatorId: UUID!
+  lookbackHours: Int! = 24
+}
+
+input GetOperatorSyncRunsQueryInput {
+  accountId: UUID
+  operatorId: UUID
+  take: Int! = 50
+}
+
+input GetPositionHistoryQueryInput {
+  accountId: UUID!
+  transporterId: UUID
+  deviceId: UUID
+  take: Int! = 500
+}
+
+input GetPositionHistoryRangeQueryInput {
+  accountId: UUID!
+  transporterId: UUID!
+  from: DateTime!
+  to: DateTime!
+  maxPoints: Int! = 10000
+}
+
+input GetTransporterPositionsByOperatorQueryInput {
+  operatorId: UUID!
+}
+
+input OperatorHealthCheckDtoInput {
+  accountId: UUID!
+  operatorId: UUID!
+  checkType: OperatorHealthCheckType!
+  status: OperatorHealthStatus!
+  latencyMs: Int
+  startedAt: DateTime!
+  completedAt: DateTime
+  errorCode: String
+  errorMessage: String
+  retryCount: Int!
+  correlationId: String
+}
+
+input OperatorSyncRunDtoInput {
+  accountId: UUID!
+  operatorId: UUID!
+  triggerType: SyncTriggerType!
+  result: OperatorSyncResult!
+  startedAt: DateTime!
+  completedAt: DateTime
+  devicesSeen: Int!
+  devicesAdded: Int!
+  devicesUpdated: Int!
+  devicesRemoved: Int!
+  devicesIgnored: Int!
+  positionsRead: Int!
+  positionsAccepted: Int!
+  positionsRejected: Int!
+  errorCode: String
+  errorMessage: String
+  correlationId: String
+}
+
+input PersistResolvedAddressCommandInput {
+  transporterPositionHistoryId: UUID
+  transporterId: UUID
+  address: String
+  city: String
+  state: String
+  country: String
+}
+
+input PurgeExpiredPositionHistoryCommandInput {
+  accountId: UUID!
+  cutoff: DateTime!
+}
+
+input RecordOperatorHealthCommandInput {
+  check: OperatorHealthCheckDtoInput!
+}
+
+input RecordOperatorSyncRunCommandInput {
+  run: OperatorSyncRunDtoInput!
+}
+
+input TransporterPositionDtoInput {
+  transporterId: UUID!
+  geometryId: UUID
+  latitude: Float!
+  longitude: Float!
+  altitude: Float
+  deviceDateTime: DateTime!
+  speed: Float!
+  course: Float
+  eventId: Int
+  address: String
+  city: String
+  state: String
+  country: String
+  attributes: AttributesDtoInput
+}
+
+input TransporterPositionHistoryDtoInput {
+  accountId: UUID!
+  operatorId: UUID!
+  deviceId: UUID!
+  transporterId: UUID!
+  sourceTimestamp: DateTime!
+  latitude: Float!
+  longitude: Float!
+  altitude: Float
+  speed: Float!
+  course: Float
+  eventId: Int
+  address: String
+  city: String
+  state: String
+  country: String
+  attributes: String
+  idempotencyKey: String!
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+enum OperatorHealthCheckType {
+  PING
+  DEVICE_SYNC
+  POSITION_SYNC
+  TOKEN_REFRESH
+}
+
+enum OperatorHealthStatus {
+  UNKNOWN
+  HEALTHY
+  DEGRADED
+  OFFLINE
+  DISABLED
+}
+
+enum OperatorSyncResult {
+  PENDING
+  SUCCEEDED
+  FAILED
+  PARTIALLY_SUCCEEDED
+  THROTTLED
+}
+
+enum SyncTriggerType {
+  AUTOMATIC
+  MANUAL
+}
+
+enum TransporterType {
+  AIRCRAFT
+  ASSET
+  BICYCLE
+  BOAT
+  CAR
+  CARGO_CONTAINER
+  CONSTRUCTION_VEHICLE
+  CHILD
+  DELIVERY_VAN
+  DRONE
+  ELDERLY_PERSON
+  FLEET_VEHICLE
+  HEAVY_EQUIPMENT
+  LIVESTOCK
+  MOTORCYCLE
+  PACKAGE
+  PERSON
+  PET
+  SCHOOL_BUS
+  SCOOTER
+  TAXI
+  TOOL
+  TRUCK
+  TRACTOR
+}
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"The `UUID` scalar type represents a Universally Unique Identifier (UUID) as defined by RFC 9562."
+scalar UUID
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/uuid.html")
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost(
+  "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
+  weight: String!
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION

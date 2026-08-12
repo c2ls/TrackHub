@@ -1,0 +1,2136 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  accountFeatures(query: GetAccountFeaturesQueryInput!): [AccountFeatureVm!]!
+    @cost(weight: "10")
+  accountFeaturesMaster(query: GetAccountFeaturesMasterQueryInput!): [AccountFeatureVm!]!
+    @cost(weight: "10")
+  allAccountFeaturesMaster: [AccountFeatureVm!]! @cost(weight: "10")
+  validateFeatureEnabled(query: ValidateFeatureEnabledQueryInput!): Boolean!
+    @cost(weight: "10")
+  account(query: GetAccountQueryInput!): AccountVm! @cost(weight: "10")
+  accountBranding(query: GetAccountBrandingQueryInput!): AccountBrandingVm!
+    @cost(weight: "10")
+  accountContext: AccountContextVm! @cost(weight: "10")
+  accountStatus(query: GetAccountStatusQueryInput!): Short! @cost(weight: "10")
+  accountByUser: AccountVm! @cost(weight: "10")
+  accountSettings(query: GetAccountSettingsQueryInput!): AccountSettingsVm!
+    @cost(weight: "10")
+  accountSettingsMaster(query: GetAccountSettingsMasterQueryInput!): [AccountSettingsVm!]!
+    @cost(weight: "10")
+  accountSettingsByUser: AccountSettingsVm! @cost(weight: "10")
+  accounts: [AccountVm!]! @cost(weight: "10")
+  supportGrantStatus(query: GetSupportGrantStatusQueryInput!): AccountSupportGrantVm!
+    @cost(weight: "10")
+  accountSupportGrants(query: GetAccountSupportGrantsQueryInput!): [AccountSupportGrantVm!]!
+    @cost(weight: "10")
+  alertEvents(query: GetAlertEventsQueryInput!): [AlertEventVm!]!
+    @cost(weight: "10")
+  auditTrail(query: GetAuditTrailQueryInput!): [AuditEventVm!]!
+    @cost(weight: "10")
+  backgroundJobRuns(query: GetBackgroundJobRunsQueryInput!): [BackgroundJobRunVm!]!
+    @cost(weight: "10")
+  credential(query: GetCredentialQueryInput!): CredentialVm! @cost(weight: "10")
+  credentialByOperator(query: GetCredentialByOperatorQueryInput!): CredentialVm!
+    @cost(weight: "10")
+  token(query: GetTokenQueryInput!): TokenVm! @cost(weight: "10")
+  device(query: GetDeviceQueryInput!): DeviceVm! @cost(weight: "10")
+  devicesByAccount: [DeviceVm!]! @cost(weight: "10")
+  deviceTransporterByUserByOperator(
+    query: GetDeviceTransporterByUserByOperatorQueryInput!
+  ): [DeviceTransporterVm!]! @cost(weight: "10")
+  deviceTransporterMaster(query: GetDeviceTransporterMasterQueryInput!): [DeviceTransporterVm!]!
+    @cost(weight: "10")
+  deviceTransporterById(query: GetDeviceTransporterByIdQueryInput!): DeviceTransporterVm!
+    @cost(weight: "10")
+  documentsForOwner(query: GetDocumentsForOwnerQueryInput!): [DocumentVm!]!
+    @cost(weight: "10")
+  document(query: GetDocumentQueryInput!): DocumentVm! @cost(weight: "10")
+  documentVersions(query: GetDocumentVersionsQueryInput!): [DocumentVersionVm!]!
+    @cost(weight: "10")
+  activeDocumentByCategory(query: GetActiveDocumentByCategoryQueryInput!): DocumentVm
+    @cost(weight: "10")
+  documentSignatures(query: GetDocumentSignaturesQueryInput!): [DocumentSignatureVm!]!
+    @cost(weight: "10")
+  searchDocuments(query: SearchDocumentsQueryInput!): [DocumentVm!]!
+    @cost(weight: "10")
+  expiringDocuments(query: GetExpiringDocumentsQueryInput!): [DocumentVm!]!
+    @cost(weight: "10")
+  documentShares(query: GetDocumentSharesQueryInput!): [PublicLinkGrantVm!]!
+    @cost(weight: "10")
+  documentTypes(query: GetDocumentTypesQueryInput!): [DocumentTypeVm!]!
+    @cost(weight: "10")
+  transporterDocumentCompliance(
+    query: GetTransporterDocumentComplianceQueryInput!
+  ): [TransporterDocumentComplianceVm!]! @cost(weight: "10")
+  driver(query: GetDriverQueryInput!): DriverVm! @cost(weight: "10")
+  driversByAccount(query: GetDriversByAccountQueryInput!): [DriverVm!]!
+    @cost(weight: "10")
+  driverAssignments(query: GetDriverAssignmentsQueryInput!): [DriverAssignmentVm!]!
+    @cost(weight: "10")
+  validateDriverAssignment(query: ValidateDriverAssignmentQueryInput!): Boolean!
+    @cost(weight: "10")
+  geocodingProviders: [GeocodingProviderVm!]! @cost(weight: "10")
+  activeGeocodingProvider: GeocodingProviderTokenVm @cost(weight: "10")
+  gpsIntegrationDashboard(query: GetGpsIntegrationDashboardQueryInput!): GpsIntegrationDashboardVm!
+    @cost(weight: "10")
+  group(query: GetGroupQueryInput!): GroupVm! @cost(weight: "10")
+  groupsByAccount: [GroupVm!]! @cost(weight: "10")
+  groupsByUser: [GroupVm!]! @cost(weight: "10")
+  validateGroupVisibility(query: ValidateGroupVisibilityQueryInput!): Boolean!
+    @cost(weight: "10")
+  notificationRules(query: GetNotificationRulesQueryInput!): [NotificationRuleVm!]!
+    @cost(weight: "10")
+  notificationDeliveries(query: GetNotificationDeliveriesQueryInput!): [NotificationDeliveryVm!]!
+    @cost(weight: "10")
+  alertSubscriptions(query: GetAlertSubscriptionsQueryInput!): [AlertSubscriptionVm!]!
+    @cost(weight: "10")
+  notificationTemplates(query: GetNotificationTemplatesQueryInput!): [NotificationTemplateVm!]!
+    @cost(weight: "10")
+  myNotifications(query: GetMyNotificationsQueryInput!): [MyNotificationVm!]!
+    @cost(weight: "10")
+  deliveryHealth(query: GetDeliveryHealthQueryInput!): [DeliveryHealthVm!]!
+    @cost(weight: "10")
+  operatorCredentialMetadata(query: GetOperatorCredentialMetadataQueryInput!): CredentialMetadataVm
+    @cost(weight: "10")
+  operator(query: GetOperatorQueryInput!): OperatorVm! @cost(weight: "10")
+  operatorsMaster(query: GetOperatorMasterQueryInput!): [OperatorVm!]!
+    @cost(weight: "10")
+  operatorsByCurrentAccount: [OperatorVm!]! @cost(weight: "10")
+  operatorsByUser: [OperatorVm!]! @cost(weight: "10")
+  operatorByTransporter(query: GetOperatorByTransporterQueryInput!): OperatorVm!
+    @cost(weight: "10")
+  pointsOfInterestByAccount: [PointOfInterestVm!]! @cost(weight: "10")
+  currentPrincipal: CurrentPrincipalVm! @cost(weight: "10")
+  publicLinkGrant(query: GetPublicLinkGrantQueryInput!): PublicLinkGrantVm!
+    @cost(weight: "10")
+  publicLinkGrantsByAccount(query: GetPublicLinkGrantsByAccountQueryInput!): [PublicLinkGrantVm!]!
+    @cost(weight: "10")
+  reports: [ReportVm!]! @cost(weight: "10")
+  reportByCode(code: String!): ReportVm @cost(weight: "10")
+  synchronizedDevices(query: GetSynchronizedDevicesQueryInput!): [DeviceVm!]!
+    @cost(weight: "10")
+  unassignedSynchronizedDevices(
+    query: GetUnassignedSynchronizedDevicesQueryInput!
+  ): [DeviceVm!]! @cost(weight: "10")
+  assignedDeviceTransportersByOperator(
+    query: GetAssignedDeviceTransportersByOperatorQueryInput!
+  ): [DeviceTransporterVm!]! @cost(weight: "10")
+  transporterDeviceAssignmentsByTransporter(
+    query: GetTransporterDeviceAssignmentsByTransporterQueryInput!
+  ): [TransporterDeviceAssignmentVm!]! @cost(weight: "10")
+  transporterDeviceAssignmentsByDevice(
+    query: GetTransporterDeviceAssignmentsByDeviceQueryInput!
+  ): [TransporterDeviceAssignmentVm!]! @cost(weight: "10")
+  transporterDeviceAssignmentsByAccount(
+    query: GetTransporterDeviceAssignmentsByAccountQueryInput!
+  ): [TransporterDeviceAssignmentVm!]! @cost(weight: "10")
+  transporter(query: GetTransporterQueryInput!): TransporterVm!
+    @cost(weight: "10")
+  transportersByAccount: [TransporterVm!]! @cost(weight: "10")
+  transportersByGroup(query: GetTransporterByGroupQueryInput!): [TransporterVm!]!
+    @cost(weight: "10")
+  transportersByUser: [TransporterVm!]! @cost(weight: "10")
+  transporterType(query: GetTransporterTypeQueryInput!): TransporterTypeVm!
+    @cost(weight: "10")
+  transporterTypes: [TransporterTypeVm!]! @cost(weight: "10")
+  user(query: GetUserQueryInput!): UserVm! @cost(weight: "10")
+  userSettings: UserSettingsVm! @cost(weight: "10")
+  usersByAccount(query: GetUsersByAccountQueryInput!): [UserVm!]!
+    @cost(weight: "10")
+  usersByGroup(query: GetUsersByGroupQueryInput!): [UserVm!]!
+    @cost(weight: "10")
+}
+
+type Mutation {
+  setAccountFeature(command: SetAccountFeatureCommandInput!): AccountFeatureVm!
+    @cost(weight: "10")
+  setAccountFeatureMaster(command: SetAccountFeatureMasterCommandInput!): AccountFeatureVm!
+    @cost(weight: "10")
+  disableAccountFeature(command: DisableAccountFeatureCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateAccountFeatureConfiguration(
+    command: UpdateAccountFeatureConfigurationCommandInput!
+  ): Boolean! @cost(weight: "10")
+  seedPublicLinksFeature: Int! @cost(weight: "10")
+  createAccount(command: CreateAccountCommandInput!): AccountVm!
+    @cost(weight: "10")
+  changeAccountStatus(command: ChangeAccountStatusCommandInput!): AccountVm!
+    @cost(weight: "10")
+  updateAccountBranding(command: UpdateAccountBrandingCommandInput!): AccountBrandingVm!
+    @cost(weight: "10")
+  updateAccount(id: UUID!, command: UpdateAccountCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateAccountSettings(id: UUID!, command: UpdateAccountSettingsCommandInput!): Boolean!
+    @cost(weight: "10")
+  createAccountSupportGrant(command: CreateAccountSupportGrantCommandInput!): AccountSupportGrantVm!
+    @cost(weight: "10")
+  approveAccountSupportGrant(command: ApproveAccountSupportGrantCommandInput!): Boolean!
+    @cost(weight: "10")
+  revokeAccountSupportGrant(command: RevokeAccountSupportGrantCommandInput!): Boolean!
+    @cost(weight: "10")
+  recordAlertEvent(command: RecordAlertEventCommandInput!): AlertEventVm!
+    @cost(weight: "10")
+  acknowledgeAlertEvent(command: AcknowledgeAlertEventCommandInput!): Boolean!
+    @cost(weight: "10")
+  resolveAlertEvent(command: ResolveAlertEventCommandInput!): Boolean!
+    @cost(weight: "10")
+  createAuditEvent(command: CreateAuditEventCommandInput!): AuditEventVm!
+    @cost(weight: "10")
+  createBackgroundJobRun(command: CreateBackgroundJobRunCommandInput!): BackgroundJobRunVm!
+    @cost(weight: "10")
+  emitExpiringCredentialAlerts(
+    command: EmitExpiringCredentialAlertsCommandInput!
+  ): Int! @cost(weight: "10")
+  createCredential(command: CreateCredentialCommandInput!): CredentialVm!
+    @cost(weight: "10")
+  updateCredential(id: UUID!, command: UpdateCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateOperatorCredential(
+    id: UUID!
+    command: UpdateOperatorCredentialCommandInput!
+  ): Boolean! @cost(weight: "10")
+  updateToken(id: UUID!, command: UpdateTokenCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteCredential(id: UUID!): UUID! @cost(weight: "10")
+  wipeDevices(operatorId: UUID!): UUID! @cost(weight: "10")
+  deleteDevice(deviceId: UUID!): UUID! @cost(weight: "10")
+  createDocumentMetadata(command: CreateDocumentMetadataCommandInput!): DocumentVm!
+    @cost(weight: "10")
+  markDocumentUploaded(command: MarkDocumentUploadedCommandInput!): Boolean!
+    @cost(weight: "10")
+  markDocumentScanResult(command: MarkDocumentScanResultCommandInput!): Boolean!
+    @cost(weight: "10")
+  expireDocument(command: ExpireDocumentCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteDocumentReference(command: DeleteDocumentReferenceCommandInput!): UUID!
+    @cost(weight: "10")
+  replaceDocumentVersion(command: ReplaceDocumentVersionCommandInput!): DocumentVm!
+    @cost(weight: "10")
+  voidDocument(command: VoidDocumentCommandInput!): Boolean! @cost(weight: "10")
+  signDocument(command: SignDocumentCommandInput!): DocumentSignatureVm!
+    @cost(weight: "10")
+  configureDocumentType(command: ConfigureDocumentTypeCommandInput!): DocumentTypeVm!
+    @cost(weight: "10")
+  disableDocumentType(command: DisableDocumentTypeCommandInput!): UUID!
+    @cost(weight: "10")
+  createDriver(command: CreateDriverCommandInput!): DriverVm!
+    @cost(weight: "10")
+  updateDriver(command: UpdateDriverCommandInput!): Boolean! @cost(weight: "10")
+  deactivateDriver(command: DeactivateDriverCommandInput!): Boolean!
+    @cost(weight: "10")
+  createGeocodingProvider(command: CreateGeocodingProviderCommandInput!): GeocodingProviderVm!
+    @cost(weight: "10")
+  updateGeocodingProvider(
+    id: UUID!
+    command: UpdateGeocodingProviderCommandInput!
+  ): Boolean! @cost(weight: "10")
+  deleteGeocodingProvider(id: UUID!): UUID! @cost(weight: "10")
+  setActiveGeocodingProvider(id: UUID!): Boolean! @cost(weight: "10")
+  createGroup(command: CreateGroupCommandInput!): GroupVm! @cost(weight: "10")
+  updateGroup(id: Long!, command: UpdateGroupCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteGroup(id: Long!): Long! @cost(weight: "10")
+  createNotificationRule(command: CreateNotificationRuleCommandInput!): NotificationRuleVm!
+    @cost(weight: "10")
+  updateNotificationRule(command: UpdateNotificationRuleCommandInput!): Boolean!
+    @cost(weight: "10")
+  disableNotificationRule(command: DisableNotificationRuleCommandInput!): Boolean!
+    @cost(weight: "10")
+  createNotificationDelivery(command: CreateNotificationDeliveryCommandInput!): NotificationDeliveryVm!
+    @cost(weight: "10")
+  createAlertSubscription(command: CreateAlertSubscriptionCommandInput!): AlertSubscriptionVm!
+    @cost(weight: "10")
+  updateAlertSubscription(command: UpdateAlertSubscriptionCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteAlertSubscription(command: DeleteAlertSubscriptionCommandInput!): UUID!
+    @cost(weight: "10")
+  createNotificationTemplate(command: CreateNotificationTemplateCommandInput!): NotificationTemplateVm!
+    @cost(weight: "10")
+  updateNotificationTemplate(command: UpdateNotificationTemplateCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteNotificationTemplate(command: DeleteNotificationTemplateCommandInput!): UUID!
+    @cost(weight: "10")
+  retryNotificationDelivery(command: RetryNotificationDeliveryCommandInput!): Boolean!
+    @cost(weight: "10")
+  markNotificationRead(command: MarkNotificationReadCommandInput!): Boolean!
+    @cost(weight: "10")
+  sendTestNotification(command: SendTestNotificationCommandInput!): NotificationDeliveryVm!
+    @cost(weight: "10")
+  createOperator(command: CreateOperatorCommandInput!): OperatorVm!
+    @cost(weight: "10")
+  updateOperator(id: UUID!, command: UpdateOperatorCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteOperator(id: UUID!): UUID! @cost(weight: "10")
+  setOperatorEnabled(command: SetOperatorEnabledCommandInput!): Boolean!
+    @cost(weight: "10")
+  triggerOperatorDeviceSync(command: TriggerOperatorDeviceSyncCommandInput!): Boolean!
+    @cost(weight: "10")
+  createPointOfInterest(command: CreatePointOfInterestCommandInput!): PointOfInterestVm!
+    @cost(weight: "10")
+  updatePointOfInterest(id: UUID!, command: UpdatePointOfInterestCommandInput!): Boolean!
+    @cost(weight: "10")
+  deletePointOfInterest(id: UUID!): UUID! @cost(weight: "10")
+  createPublicLinkGrant(command: CreatePublicLinkGrantCommandInput!): PublicLinkGrantVm!
+    @cost(weight: "10")
+  revokePublicLinkGrant(command: RevokePublicLinkGrantCommandInput!): Boolean!
+    @cost(weight: "10")
+  recordPublicLinkAccess(command: RecordPublicLinkAccessCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateReport(id: UUID!, command: UpdateReportCommandInput!): Boolean!
+    @cost(weight: "10")
+  synchronizeOperatorDevices(command: SynchronizeOperatorDevicesCommandInput!): OperatorSyncRunVm!
+    @cost(weight: "10")
+  setSynchronizedDeviceIgnored(
+    command: SetSynchronizedDeviceIgnoredCommandInput!
+  ): Boolean! @cost(weight: "10")
+  assignDeviceToTransporter(command: AssignDeviceToTransporterCommandInput!): TransporterDeviceAssignmentVm!
+    @cost(weight: "10")
+  endDeviceTransporterAssignment(
+    command: EndDeviceTransporterAssignmentCommandInput!
+  ): Boolean! @cost(weight: "10")
+  createTransporterGroup(command: CreateTransporterGroupCommandInput!): TransporterGroupVm!
+    @cost(weight: "10")
+  deleteTransporterGroup(transporterId: UUID!, groupId: Long!): UUID!
+    @cost(weight: "10")
+  createTransporter(command: CreateTransporterCommandInput!): TransporterVm!
+    @cost(weight: "10")
+  updateTransporter(id: UUID!, command: UpdateTransporterCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteTransporter(id: UUID!): UUID! @cost(weight: "10")
+  updateTransporterType(id: Short!, command: UpdateTransporterTypeCommandInput!): Boolean!
+    @cost(weight: "10")
+  createUserGroup(command: CreateUserGroupCommandInput!): UserGroupVm!
+    @cost(weight: "10")
+  deleteUserGroup(userId: UUID!, groupId: Long!): UUID! @cost(weight: "10")
+  createUser(command: CreateUserCommandInput!): UserVm! @cost(weight: "10")
+  updateUser(id: UUID!, command: UpdateUserCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateUserSettings(id: UUID!, command: UpdateUserSettingsCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteUser(id: UUID!): UUID! @cost(weight: "10")
+}
+
+type AccountBrandingVm {
+  accountId: UUID!
+  displayName: String!
+  logoDocumentId: UUID
+  primaryColor: String!
+  reportHeader: String
+  lastModified: DateTime!
+}
+
+type AccountContextVm {
+  status: AccountStatus!
+  statusId: Short!
+  branding: AccountBrandingVm!
+  features: [AccountFeatureVm!]!
+}
+
+type AccountFeatureVm {
+  accountFeatureId: UUID!
+  accountId: UUID!
+  featureKey: String!
+  enabled: Boolean!
+  tier: String!
+  source: String!
+  effectiveFrom: DateTime
+  effectiveTo: DateTime
+  configurationJson: String
+  lastModified: DateTime!
+}
+
+type AccountSettingsVm {
+  accountId: UUID!
+  maps: String!
+  mapsKey: String
+  onlineInterval: Int!
+  refreshMap: Boolean!
+  refreshMapInterval: Int!
+}
+
+type AccountSupportGrantVm {
+  accountSupportGrantId: UUID!
+  accountId: UUID!
+  supportUserId: UUID!
+  reason: String!
+  ticketReference: String!
+  approvedBy: String
+  approvedAt: DateTime
+  accessLevel: String!
+  startsAt: DateTime!
+  endsAt: DateTime!
+  revokedAt: DateTime
+  revokedBy: String
+  lastModified: DateTime!
+}
+
+type AccountVm {
+  accountId: UUID!
+  name: String!
+  description: String
+  type: AccountType!
+  typeId: Short!
+  status: AccountStatus!
+  statusId: Short!
+  active: Boolean!
+  lastModified: DateTime!
+}
+
+type AlertEventVm {
+  alertEventId: UUID!
+  accountId: UUID!
+  eventType: String!
+  severity: String!
+  sourceModule: String!
+  resourceType: String!
+  resourceId: String!
+  status: String!
+  firstSeenAt: DateTime!
+  lastSeenAt: DateTime!
+  payloadJson: String
+  deduplicationKey: String!
+  lastModified: DateTime!
+}
+
+type AlertSubscriptionVm {
+  alertSubscriptionId: UUID!
+  accountId: UUID!
+  principalType: String!
+  principalId: UUID!
+  eventTypeFilter: String
+  channel: String!
+  contact: String
+  enabled: Boolean!
+  lastModified: DateTime!
+}
+
+type AuditEventVm {
+  auditEventId: UUID!
+  accountId: UUID!
+  actorType: String!
+  actorId: String!
+  action: String!
+  resourceType: String!
+  resourceId: String!
+  result: String!
+  reason: String
+  ipAddress: String
+  userAgent: String
+  correlationId: String
+  occurredAt: DateTime!
+}
+
+type BackgroundJobRunVm {
+  backgroundJobRunId: UUID!
+  jobKey: String!
+  accountId: UUID
+  resourceKey: String
+  idempotencyKey: String!
+  status: String!
+  attempts: Int!
+  startedAt: DateTime!
+  completedAt: DateTime
+  errorCode: String
+  errorMessage: String
+}
+
+type CredentialMetadataVm {
+  credentialId: UUID!
+  operatorId: UUID!
+  uri: String!
+  usernameMask: String!
+  hasPassword: Boolean!
+  hasKey: Boolean!
+  hasKey2: Boolean!
+  hasToken: Boolean!
+  hasRefreshToken: Boolean!
+  tokenExpiration: DateTime
+  refreshTokenExpiration: DateTime
+  credentialVersion: Int!
+  rotatedAt: DateTime
+  rotatedByPrincipalType: String
+  rotatedByPrincipalId: String
+}
+
+type CredentialTokenVm {
+  credentialId: UUID!
+  uri: String!
+  username: String!
+  password: String!
+  salt: String!
+  key: String
+  key2: String
+  token: String
+  tokenExpiration: DateTime
+  refreshToken: String
+  refreshTokenExpiration: DateTime
+}
+
+type CredentialVm {
+  credentialId: UUID!
+  uri: String!
+  username: String!
+  password: String!
+  key: String
+  key2: String
+}
+
+type CurrentPrincipalVm {
+  subjectId: String
+  principalType: PrincipalType!
+  userId: UUID
+  driverId: UUID
+  clientId: String
+  publicLinkGrantId: UUID
+  role: String
+  accountId: UUID
+  scopes: [String!]!
+  audiences: [String!]!
+  correlationId: String
+}
+
+type DeliveryHealthVm {
+  channel: String!
+  status: String!
+  count: Int!
+  averageAttempts: Float!
+}
+
+type DeviceProviderStatusCountVm {
+  operatorId: UUID!
+  operatorName: String!
+  detectedStatus: DetectedStatus!
+  count: Int!
+}
+
+type DeviceTransporterVm {
+  transporterId: UUID!
+  identifier: Int!
+  serial: String!
+  name: String!
+  transporterType: TransporterType!
+  transporterTypeId: Short!
+}
+
+type DeviceVm {
+  deviceId: UUID!
+  accountId: UUID!
+  operatorId: UUID!
+  serial: String!
+  name: String!
+  identifier: Int!
+  providerDisplayName: String
+  deviceType: DeviceType!
+  deviceTypeId: Short!
+  description: String
+  providerMetadataHash: String
+  providerStatus: String
+  detectedStatus: DetectedStatus!
+  firstSeenAt: DateTime!
+  lastSeenAt: DateTime!
+  lastSyncedAt: DateTime!
+  lastAssignedAt: DateTime
+  ignoredAt: DateTime
+}
+
+type DocumentSignatureVm {
+  documentSignatureId: UUID!
+  documentId: UUID!
+  accountId: UUID!
+  signerPrincipalType: String!
+  signerPrincipalId: String!
+  signerName: String!
+  signatureImageDocumentId: UUID
+  legalTextAccepted: String!
+  latitude: Float
+  longitude: Float
+  signedAt: DateTime!
+  createdAt: DateTime!
+}
+
+type DocumentTypeVm {
+  documentTypeId: UUID!
+  accountId: UUID!
+  category: String!
+  displayName: String
+  required: Boolean!
+  expiring: Boolean!
+  defaultValidityDays: Int
+  enabled: Boolean!
+  createdAt: DateTime!
+}
+
+type DocumentVersionVm {
+  documentVersionId: UUID!
+  documentId: UUID!
+  accountId: UUID!
+  versionNumber: Int!
+  contentType: String!
+  fileName: String!
+  sizeBytes: Long!
+  sha256Hash: String!
+  scanStatus: String!
+  replacedByPrincipalType: String
+  replacedByPrincipalId: String
+  reason: String
+  createdAt: DateTime!
+}
+
+type DocumentVm {
+  documentId: UUID!
+  accountId: UUID!
+  ownerEntityType: String!
+  ownerEntityId: String!
+  uploadedByPrincipalType: String!
+  uploadedByPrincipalId: String!
+  fileName: String!
+  category: String!
+  title: String
+  description: String
+  contentType: String!
+  sizeBytes: Long!
+  sha256Hash: String!
+  classification: String!
+  status: String!
+  expiresAt: DateTime
+  visibilityScope: String!
+  scanStatus: String!
+  currentVersion: Int!
+  downloadUrl: String
+  lastModified: DateTime!
+}
+
+type DriverAssignmentVm {
+  driverId: UUID!
+  accountId: UUID!
+  resourceType: String!
+  resourceId: String!
+  active: Boolean!
+}
+
+type DriverVm {
+  driverId: UUID!
+  accountId: UUID!
+  name: String!
+  phone: String
+  documentType: String
+  documentNumber: String
+  active: Boolean!
+  employeeCode: String
+  licenseNumber: String
+  licenseExpiresAt: LocalDate
+  defaultTransporterId: UUID
+  lastModified: DateTime!
+}
+
+type GeocodingProviderTokenVm {
+  geocodingProviderId: UUID!
+  name: String!
+  type: Short!
+  endpointUri: String!
+  apiKey: String
+  salt: String
+  requestsPerSecond: Int!
+  timeoutSeconds: Int!
+  configurationJson: String
+}
+
+type GeocodingProviderVm {
+  geocodingProviderId: UUID!
+  name: String!
+  type: Short!
+  endpointUri: String!
+  apiKey: String
+  requestsPerSecond: Int!
+  timeoutSeconds: Int!
+  configurationJson: String
+  active: Boolean!
+}
+
+type GpsIntegrationDashboardVm {
+  operatorsTotal: Int!
+  operatorsEnabled: Int!
+  operatorsHealthy: Int!
+  operatorsDegraded: Int!
+  operatorsOffline: Int!
+  devicesTotal: Int!
+  devicesNew: Int!
+  devicesAvailable: Int!
+  devicesAssigned: Int!
+  devicesIgnored: Int!
+  devicesRemoved: Int!
+  recentlyAddedDevicesLast24h: Int!
+  unassignedDevicesCount: Int!
+  syncRunsSucceededLast24h: Int!
+  syncRunsFailedLast24h: Int!
+  lastAutomaticSyncAt: DateTime
+  lastManualSyncAt: DateTime
+  averageSyncDurationSeconds: Float!
+  deviceCountsByProviderStatus: [DeviceProviderStatusCountVm!]!
+}
+
+type GroupVm {
+  groupId: Long!
+  name: String!
+  description: String!
+  active: Boolean!
+  accountId: UUID!
+}
+
+type MyNotificationVm {
+  notificationDeliveryId: UUID!
+  alertEventId: UUID
+  eventType: String
+  severity: String
+  sourceModule: String
+  resourceType: String
+  resourceId: String
+  payloadJson: String
+  createdAt: DateTime!
+  readAt: DateTime
+}
+
+type NotificationDeliveryVm {
+  notificationDeliveryId: UUID!
+  accountId: UUID!
+  notificationRuleId: UUID
+  alertEventId: UUID
+  channel: String!
+  recipientPrincipalType: String!
+  recipient: String!
+  status: String!
+  attempts: Int!
+  providerMessageId: String
+  error: String
+  sentAt: DateTime
+  readAt: DateTime
+  lastModified: DateTime!
+}
+
+type NotificationRuleVm {
+  notificationRuleId: UUID!
+  accountId: UUID!
+  ruleKey: String!
+  ruleType: String!
+  enabled: Boolean!
+  triggerEvent: String!
+  recipientSelector: String!
+  channelsJson: String!
+  throttlingJson: String
+  configurationJson: String
+  lastModified: DateTime!
+}
+
+type NotificationTemplateVm {
+  notificationTemplateId: UUID!
+  accountId: UUID
+  templateKey: String!
+  channel: String!
+  locale: String!
+  subject: String
+  body: String!
+  active: Boolean!
+  lastModified: DateTime!
+}
+
+type OperatorSyncRunVm {
+  operatorSyncRunId: UUID!
+  accountId: UUID!
+  operatorId: UUID!
+  triggerType: SyncTriggerType!
+  result: OperatorSyncResult!
+  startedAt: DateTime!
+  completedAt: DateTime
+  devicesSeen: Int!
+  devicesAdded: Int!
+  devicesUpdated: Int!
+  devicesRemoved: Int!
+  devicesIgnored: Int!
+  positionsRead: Int!
+  positionsAccepted: Int!
+  positionsRejected: Int!
+  errorCode: String
+  errorMessage: String
+  correlationId: String
+}
+
+type OperatorVm {
+  operatorId: UUID!
+  name: String!
+  description: String
+  phoneNumber: String
+  emailAddress: String
+  address: String
+  contactName: String
+  protocolType: ProtocolType!
+  protocolTypeId: Int!
+  accountId: UUID!
+  lastModified: DateTime!
+  credential: CredentialTokenVm
+  enabled: Boolean!
+  syncIntervalMinutes: Int!
+  healthStatus: OperatorHealthStatus!
+  lastSuccessfulSyncAt: DateTime
+  lastFailedSyncAt: DateTime
+  lastManualSyncAt: DateTime
+  lastDeviceSyncAt: DateTime
+  lastPositionSyncAt: DateTime
+  lastFailureCode: String
+  lastFailureMessage: String
+  lastLatencyMs: Int
+  lastHealthCheckAt: DateTime
+}
+
+type PointOfInterestVm {
+  pointOfInterestId: UUID!
+  accountId: UUID!
+  name: String!
+  description: String
+  type: Short!
+  latitude: Float!
+  longitude: Float!
+  address: String
+  color: Short
+  groupId: Long
+  active: Boolean!
+}
+
+type PublicLinkGrantVm {
+  publicLinkGrantId: UUID!
+  accountId: UUID!
+  resourceType: String!
+  resourceId: String!
+  scopes: String!
+  purpose: String!
+  expiresAt: DateTime!
+  revokedAt: DateTime
+  revokedBy: String
+  createdByPrincipalId: String!
+  accessCount: Int!
+  lastAccessedAt: DateTime
+  lastModified: DateTime!
+  token: String
+}
+
+type ReportVm {
+  reportId: UUID!
+  code: String!
+  description: String
+  type: ReportType!
+  typeId: Short!
+  active: Boolean!
+  category: String!
+  requiredFeatureKey: String
+  managerOnly: Boolean!
+  supportsPdf: Boolean!
+  sortOrder: Int!
+}
+
+type TokenVm {
+  token: String
+  tokenExpiration: DateTime
+  refreshToken: String
+  refreshTokenExpiration: DateTime
+}
+
+type TransporterDeviceAssignmentVm {
+  transporterDeviceAssignmentId: UUID!
+  accountId: UUID!
+  transporterId: UUID!
+  deviceId: UUID!
+  effectiveFrom: DateTime!
+  effectiveTo: DateTime
+  priority: Int!
+  isPrimary: Boolean!
+  status: AssignmentStatus!
+  assignmentReason: String
+  createdByPrincipalType: String!
+  createdByPrincipalId: String!
+}
+
+type TransporterDocumentComplianceVm {
+  transporterId: UUID!
+  transporterName: String!
+  activeCategories: [String!]!
+}
+
+type TransporterGroupVm {
+  transporterId: UUID!
+  groupId: Long!
+}
+
+type TransporterTypeVm {
+  transporterTypeId: Short!
+  accBased: Boolean!
+  stoppedGap: Float!
+  maxDistance: Float!
+  maxTimeGap: Float!
+  type: TransporterType!
+}
+
+type TransporterVm {
+  transporterId: UUID!
+  name: String!
+  transporterType: TransporterType!
+  transporterTypeId: Short!
+}
+
+type UserGroupVm {
+  userId: UUID!
+  groupId: Long!
+}
+
+type UserSettingsVm {
+  language: String!
+  style: String!
+  navbar: String!
+  userId: UUID!
+}
+
+type UserVm {
+  userId: UUID!
+  username: String!
+  active: Boolean!
+  accountId: UUID!
+}
+
+input AccountBrandingDtoInput {
+  accountId: UUID!
+  displayName: String!
+  logoDocumentId: UUID
+  primaryColor: String!
+  reportHeader: String
+}
+
+input AccountDtoInput {
+  name: String!
+  description: String
+  typeId: Short!
+  active: Boolean!
+  password: String!
+  emailAddress: String!
+  firstName: String!
+  lastName: String!
+}
+
+input AccountFeatureDtoInput {
+  accountId: UUID!
+  featureKey: String!
+  enabled: Boolean!
+  tier: String!
+  source: String!
+  effectiveFrom: DateTime
+  effectiveTo: DateTime
+  configurationJson: String
+}
+
+input AccountSettingsDtoInput {
+  accountId: UUID!
+  maps: String!
+  mapsKey: String
+  onlineInterval: Int!
+  refreshMap: Boolean!
+  refreshMapInterval: Int!
+}
+
+input AccountSupportGrantDtoInput {
+  accountId: UUID!
+  supportUserId: UUID!
+  reason: String!
+  ticketReference: String!
+  accessLevel: String!
+  startsAt: DateTime!
+  endsAt: DateTime!
+}
+
+input AcknowledgeAlertEventCommandInput {
+  alertEventId: UUID!
+}
+
+input AlertEventDtoInput {
+  accountId: UUID!
+  eventType: String!
+  severity: String!
+  sourceModule: String!
+  resourceType: String!
+  resourceId: String!
+  status: String!
+  payloadJson: String
+  deduplicationKey: String!
+}
+
+input AlertSubscriptionDtoInput {
+  accountId: UUID!
+  principalType: String!
+  principalId: UUID!
+  eventTypeFilter: String
+  channel: String!
+  contact: String
+  enabled: Boolean!
+}
+
+input ApproveAccountSupportGrantCommandInput {
+  accountSupportGrantId: UUID!
+  approvedBy: String!
+}
+
+input AssignDeviceToTransporterCommandInput {
+  assignment: TransporterDeviceAssignmentDtoInput!
+}
+
+input AuditEventDtoInput {
+  accountId: UUID!
+  actorType: String!
+  actorId: String!
+  action: String!
+  resourceType: String!
+  resourceId: String!
+  result: String!
+  oldValuesJson: String
+  newValuesJson: String
+  reason: String
+  ipAddress: String
+  userAgent: String
+  correlationId: String
+}
+
+input BackgroundJobRunDtoInput {
+  jobKey: String!
+  accountId: UUID
+  resourceKey: String
+  idempotencyKey: String!
+  status: String!
+  attempts: Int!
+  startedAt: DateTime!
+  completedAt: DateTime
+  errorCode: String
+  errorMessage: String
+}
+
+input ChangeAccountStatusCommandInput {
+  accountId: UUID!
+  targetStatus: AccountStatus!
+  reason: String
+}
+
+input ConfigureDocumentTypeCommandInput {
+  documentType: DocumentTypeDtoInput!
+}
+
+input CreateAccountCommandInput {
+  account: AccountDtoInput!
+}
+
+input CreateAccountSupportGrantCommandInput {
+  accountSupportGrant: AccountSupportGrantDtoInput!
+}
+
+input CreateAlertSubscriptionCommandInput {
+  subscription: AlertSubscriptionDtoInput!
+}
+
+input CreateAuditEventCommandInput {
+  auditEvent: AuditEventDtoInput!
+}
+
+input CreateBackgroundJobRunCommandInput {
+  backgroundJobRun: BackgroundJobRunDtoInput!
+}
+
+input CreateCredentialCommandInput {
+  credential: CredentialDtoInput!
+}
+
+input CreateDocumentMetadataCommandInput {
+  document: DocumentDtoInput!
+}
+
+input CreateDriverCommandInput {
+  driver: DriverDtoInput!
+}
+
+input CreateGeocodingProviderCommandInput {
+  geocodingProvider: GeocodingProviderDtoInput!
+}
+
+input CreateGroupCommandInput {
+  group: GroupDtoInput!
+}
+
+input CreateNotificationDeliveryCommandInput {
+  notificationDelivery: NotificationDeliveryDtoInput!
+}
+
+input CreateNotificationRuleCommandInput {
+  notificationRule: NotificationRuleDtoInput!
+}
+
+input CreateNotificationTemplateCommandInput {
+  template: NotificationTemplateDtoInput!
+}
+
+input CreateOperatorCommandInput {
+  operator: OperatorDtoInput!
+}
+
+input CreatePointOfInterestCommandInput {
+  pointOfInterest: PointOfInterestDtoInput!
+}
+
+input CreatePublicLinkGrantCommandInput {
+  publicLinkGrant: PublicLinkGrantDtoInput!
+}
+
+input CreateTransporterCommandInput {
+  transporter: TransporterDtoInput!
+}
+
+input CreateTransporterGroupCommandInput {
+  transporterGroup: TransporterGroupDtoInput!
+}
+
+input CreateUserCommandInput {
+  user: UserDtoInput!
+}
+
+input CreateUserGroupCommandInput {
+  userGroup: UserGroupDtoInput!
+}
+
+input CredentialDtoInput {
+  uri: String!
+  username: String!
+  password: String!
+  key: String
+  key2: String
+  operatorId: UUID!
+}
+
+input DeactivateDriverCommandInput {
+  driverId: UUID!
+}
+
+input DeleteAlertSubscriptionCommandInput {
+  alertSubscriptionId: UUID!
+}
+
+input DeleteDocumentReferenceCommandInput {
+  documentId: UUID!
+}
+
+input DeleteNotificationTemplateCommandInput {
+  notificationTemplateId: UUID!
+}
+
+input DeviceDtoInput {
+  accountId: UUID!
+  operatorId: UUID!
+  serial: String!
+  name: String!
+  identifier: Int!
+  providerDisplayName: String
+  deviceTypeId: Short!
+  description: String
+  providerMetadataHash: String
+  providerStatus: String
+}
+
+input DisableAccountFeatureCommandInput {
+  accountFeatureId: UUID!
+}
+
+input DisableDocumentTypeCommandInput {
+  documentTypeId: UUID!
+}
+
+input DisableNotificationRuleCommandInput {
+  notificationRuleId: UUID!
+}
+
+input DocumentDtoInput {
+  accountId: UUID!
+  ownerEntityType: String!
+  ownerEntityId: String!
+  uploadedByPrincipalType: String!
+  uploadedByPrincipalId: String!
+  storageProvider: String!
+  storageKey: String!
+  contentType: String!
+  sizeBytes: Long!
+  sha256Hash: String!
+  classification: String!
+  status: String!
+  expiresAt: DateTime
+  visibilityScope: String!
+  scanStatus: String!
+  fileName: String! = ""
+  category: String! = ""
+  title: String
+  description: String
+  capturedLatitude: Float
+  capturedLongitude: Float
+  capturedAtDeviceTime: DateTime
+  sourceDeviceRegistrationId: UUID
+}
+
+input DocumentSearchFilterInput {
+  ownerEntityType: String
+  ownerEntityId: String
+  category: String
+  classification: String
+  status: String
+  expiringWithinDays: Int
+  uploadedByPrincipalId: String
+  from: DateTime
+  to: DateTime
+}
+
+input DocumentSignatureDtoInput {
+  documentId: UUID!
+  signerPrincipalType: String!
+  signerPrincipalId: String!
+  signerName: String!
+  legalTextAccepted: String!
+  signatureImageDocumentId: UUID
+  latitude: Float
+  longitude: Float
+}
+
+input DocumentTypeDtoInput {
+  accountId: UUID!
+  category: String!
+  displayName: String
+  required: Boolean!
+  expiring: Boolean!
+  defaultValidityDays: Int
+}
+
+input DocumentVersionDtoInput {
+  documentId: UUID!
+  storageProvider: String!
+  storageKey: String!
+  sha256Hash: String!
+  sizeBytes: Long!
+  contentType: String!
+  fileName: String!
+  reason: String
+}
+
+input DriverDtoInput {
+  accountId: UUID!
+  name: String!
+  phone: String
+  documentType: String
+  documentNumber: String
+  active: Boolean!
+  employeeCode: String
+  licenseNumber: String
+  licenseExpiresAt: LocalDate
+  defaultTransporterId: UUID
+}
+
+input EmitExpiringCredentialAlertsCommandInput {
+  withinDays: Int! = 7
+}
+
+input EndDeviceTransporterAssignmentCommandInput {
+  assignmentId: UUID!
+  reason: String
+}
+
+input ExpireDocumentCommandInput {
+  documentId: UUID!
+  expiresAt: DateTime!
+}
+
+input FilterItemInput {
+  key: String!
+  value: Any
+}
+
+input FiltersInput {
+  filters: [FilterItemInput!]!
+}
+
+input GeocodingProviderDtoInput {
+  name: String!
+  type: Short!
+  endpointUri: String!
+  apiKey: String
+  requestsPerSecond: Int!
+  timeoutSeconds: Int!
+  configurationJson: String
+  active: Boolean!
+}
+
+input GetAccountBrandingQueryInput {
+  accountId: UUID!
+}
+
+input GetAccountFeaturesMasterQueryInput {
+  accountId: UUID!
+}
+
+input GetAccountFeaturesQueryInput {
+  accountId: UUID!
+}
+
+input GetAccountQueryInput {
+  id: UUID!
+}
+
+input GetAccountSettingsMasterQueryInput {
+  filter: FiltersInput!
+}
+
+input GetAccountSettingsQueryInput {
+  id: UUID!
+}
+
+input GetAccountStatusQueryInput {
+  accountId: UUID!
+}
+
+input GetAccountSupportGrantsQueryInput {
+  accountId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetActiveDocumentByCategoryQueryInput {
+  ownerEntityType: String!
+  ownerEntityId: String!
+  category: String!
+}
+
+input GetAlertEventsQueryInput {
+  accountId: UUID!
+  from: DateTime
+  to: DateTime
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetAlertSubscriptionsQueryInput {
+  accountId: UUID!
+  principalId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetAssignedDeviceTransportersByOperatorQueryInput {
+  accountId: UUID!
+  operatorId: UUID!
+}
+
+input GetAuditTrailQueryInput {
+  accountId: UUID!
+  from: DateTime
+  to: DateTime
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetBackgroundJobRunsQueryInput {
+  accountId: UUID
+  from: DateTime
+  to: DateTime
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetCredentialByOperatorQueryInput {
+  operatorId: UUID!
+}
+
+input GetCredentialQueryInput {
+  id: UUID!
+}
+
+input GetDeliveryHealthQueryInput {
+  accountId: UUID!
+  from: DateTime!
+  to: DateTime!
+}
+
+input GetDeviceQueryInput {
+  id: UUID!
+}
+
+input GetDeviceTransporterByIdQueryInput {
+  transporterId: UUID!
+}
+
+input GetDeviceTransporterByUserByOperatorQueryInput {
+  operatorId: UUID!
+}
+
+input GetDeviceTransporterMasterQueryInput {
+  filter: FiltersInput!
+}
+
+input GetDocumentQueryInput {
+  documentId: UUID!
+}
+
+input GetDocumentsForOwnerQueryInput {
+  accountId: UUID!
+  ownerEntityType: String!
+  ownerEntityId: String!
+  from: DateTime
+  to: DateTime
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetDocumentSharesQueryInput {
+  documentId: UUID!
+}
+
+input GetDocumentSignaturesQueryInput {
+  documentId: UUID!
+}
+
+input GetDocumentTypesQueryInput {
+  accountId: UUID!
+  includeDisabled: Boolean! = false
+}
+
+input GetDocumentVersionsQueryInput {
+  documentId: UUID!
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetDriverAssignmentsQueryInput {
+  driverId: UUID!
+}
+
+input GetDriverQueryInput {
+  driverId: UUID!
+}
+
+input GetDriversByAccountQueryInput {
+  accountId: UUID!
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetExpiringDocumentsQueryInput {
+  withinDays: Int! = 30
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetGpsIntegrationDashboardQueryInput {
+  accountId: UUID!
+}
+
+input GetGroupQueryInput {
+  id: Long!
+}
+
+input GetMyNotificationsQueryInput {
+  unreadOnly: Boolean! = false
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetNotificationDeliveriesQueryInput {
+  accountId: UUID!
+  status: String
+  channel: String
+  from: DateTime
+  to: DateTime
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetNotificationRulesQueryInput {
+  accountId: UUID!
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetNotificationTemplatesQueryInput {
+  accountId: UUID!
+}
+
+input GetOperatorByTransporterQueryInput {
+  transporterId: UUID!
+}
+
+input GetOperatorCredentialMetadataQueryInput {
+  operatorId: UUID!
+}
+
+input GetOperatorMasterQueryInput {
+  filter: FiltersInput!
+}
+
+input GetOperatorQueryInput {
+  id: UUID!
+}
+
+input GetPublicLinkGrantQueryInput {
+  publicLinkGrantId: UUID!
+}
+
+input GetPublicLinkGrantsByAccountQueryInput {
+  accountId: UUID!
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetSupportGrantStatusQueryInput {
+  accountSupportGrantId: UUID!
+}
+
+input GetSynchronizedDevicesQueryInput {
+  accountId: UUID!
+  detectedStatus: DetectedStatus
+  operatorId: UUID
+}
+
+input GetTokenQueryInput {
+  id: UUID!
+}
+
+input GetTransporterByGroupQueryInput {
+  groupId: Long!
+}
+
+input GetTransporterDeviceAssignmentsByAccountQueryInput {
+  accountId: UUID!
+  activeOnly: Boolean! = false
+}
+
+input GetTransporterDeviceAssignmentsByDeviceQueryInput {
+  deviceId: UUID!
+  activeOnly: Boolean! = false
+}
+
+input GetTransporterDeviceAssignmentsByTransporterQueryInput {
+  transporterId: UUID!
+  activeOnly: Boolean! = false
+}
+
+input GetTransporterDocumentComplianceQueryInput {
+  accountId: UUID!
+}
+
+input GetTransporterQueryInput {
+  id: UUID!
+}
+
+input GetTransporterTypeQueryInput {
+  transporterTypeId: Short!
+}
+
+input GetUnassignedSynchronizedDevicesQueryInput {
+  accountId: UUID!
+}
+
+input GetUserQueryInput {
+  id: UUID!
+}
+
+input GetUsersByAccountQueryInput {
+  accountId: UUID!
+}
+
+input GetUsersByGroupQueryInput {
+  groupId: Long!
+}
+
+input GroupDtoInput {
+  name: String!
+  description: String!
+  active: Boolean!
+}
+
+input MarkDocumentScanResultCommandInput {
+  documentId: UUID!
+  scanStatus: String!
+}
+
+input MarkDocumentUploadedCommandInput {
+  documentId: UUID!
+  status: String!
+}
+
+input MarkNotificationReadCommandInput {
+  notificationDeliveryId: UUID!
+}
+
+input NotificationDeliveryDtoInput {
+  accountId: UUID!
+  notificationRuleId: UUID
+  alertEventId: UUID
+  channel: String!
+  recipientPrincipalType: String!
+  recipient: String!
+  status: String!
+}
+
+input NotificationRuleDtoInput {
+  accountId: UUID!
+  ruleKey: String!
+  ruleType: String!
+  enabled: Boolean!
+  triggerEvent: String!
+  recipientSelector: String!
+  channelsJson: String!
+  throttlingJson: String
+  configurationJson: String
+}
+
+input NotificationTemplateDtoInput {
+  accountId: UUID
+  templateKey: String!
+  channel: String!
+  locale: String!
+  subject: String
+  body: String!
+  active: Boolean!
+}
+
+input OperatorDtoInput {
+  name: String!
+  description: String
+  phoneNumber: String
+  emailAddress: String
+  address: String
+  contactName: String
+  protocolTypeId: Short!
+  syncIntervalMinutes: Int! = 30
+}
+
+input PointOfInterestDtoInput {
+  accountId: UUID!
+  name: String!
+  description: String
+  type: Short!
+  latitude: Float!
+  longitude: Float!
+  address: String
+  color: Short
+  groupId: Long
+  active: Boolean!
+}
+
+input PublicLinkGrantDtoInput {
+  accountId: UUID!
+  resourceType: String!
+  resourceId: String!
+  scopes: String!
+  purpose: String!
+  subjectTokenIdHash: String
+  expiresAt: DateTime!
+  createdByPrincipalId: String!
+}
+
+input RecordAlertEventCommandInput {
+  alertEvent: AlertEventDtoInput!
+}
+
+input RecordPublicLinkAccessCommandInput {
+  publicLinkGrantId: UUID!
+}
+
+input ReplaceDocumentVersionCommandInput {
+  documentId: UUID!
+  newVersion: DocumentVersionDtoInput!
+}
+
+input ResolveAlertEventCommandInput {
+  alertEventId: UUID!
+}
+
+input RetryNotificationDeliveryCommandInput {
+  notificationDeliveryId: UUID!
+}
+
+input RevokeAccountSupportGrantCommandInput {
+  accountSupportGrantId: UUID!
+  revokedBy: String!
+}
+
+input RevokePublicLinkGrantCommandInput {
+  publicLinkGrantId: UUID!
+  revokedBy: String!
+}
+
+input SearchDocumentsQueryInput {
+  filter: DocumentSearchFilterInput!
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input SendTestNotificationCommandInput {
+  accountId: UUID!
+  channel: String!
+  contact: String
+}
+
+input SetAccountFeatureCommandInput {
+  feature: AccountFeatureDtoInput!
+}
+
+input SetAccountFeatureMasterCommandInput {
+  feature: AccountFeatureDtoInput!
+}
+
+input SetOperatorEnabledCommandInput {
+  operatorId: UUID!
+  enabled: Boolean!
+}
+
+input SetSynchronizedDeviceIgnoredCommandInput {
+  deviceId: UUID!
+  ignored: Boolean!
+}
+
+input SignDocumentCommandInput {
+  signature: DocumentSignatureDtoInput!
+}
+
+input SynchronizeOperatorDevicesCommandInput {
+  accountId: UUID!
+  operatorId: UUID!
+  devices: [DeviceDtoInput!]!
+  correlationId: String!
+  triggerType: String! = "AUTOMATIC"
+  autoAssignNewDevices: Boolean
+}
+
+input TransporterDeviceAssignmentDtoInput {
+  accountId: UUID!
+  transporterId: UUID!
+  deviceId: UUID!
+  priority: Int!
+  isPrimary: Boolean!
+  assignmentReason: String
+}
+
+input TransporterDtoInput {
+  name: String!
+  transporterTypeId: Short!
+  accountId: UUID!
+}
+
+input TransporterGroupDtoInput {
+  transporterId: UUID!
+  groupId: Long!
+}
+
+input TransporterTypeDtoInput {
+  transporterTypeId: Short!
+  accBased: Boolean!
+  stoppedGap: Float!
+  maxDistance: Float!
+  maxTimeGap: Float!
+}
+
+input TriggerOperatorDeviceSyncCommandInput {
+  operatorId: UUID!
+  resetDeviceCatalog: Boolean! = false
+  autoAssignNewDevices: Boolean
+}
+
+input UpdateAccountBrandingCommandInput {
+  branding: AccountBrandingDtoInput!
+}
+
+input UpdateAccountCommandInput {
+  account: UpdateAccountDtoInput!
+}
+
+input UpdateAccountDtoInput {
+  accountId: UUID!
+  name: String!
+  description: String
+  typeId: Short!
+  active: Boolean!
+}
+
+input UpdateAccountFeatureConfigurationCommandInput {
+  accountFeatureId: UUID!
+  configurationJson: String
+}
+
+input UpdateAccountSettingsCommandInput {
+  accountSettings: AccountSettingsDtoInput!
+}
+
+input UpdateAlertSubscriptionCommandInput {
+  alertSubscriptionId: UUID!
+  subscription: AlertSubscriptionDtoInput!
+}
+
+input UpdateCredentialCommandInput {
+  credential: UpdateCredentialDtoInput!
+}
+
+input UpdateCredentialDtoInput {
+  credentialId: UUID!
+  uri: String!
+  username: String!
+  password: String!
+  key: String!
+  key2: String!
+}
+
+input UpdateDriverCommandInput {
+  driverId: UUID!
+  driver: DriverDtoInput!
+}
+
+input UpdateGeocodingProviderCommandInput {
+  id: UUID!
+  geocodingProvider: UpdateGeocodingProviderDtoInput!
+}
+
+input UpdateGeocodingProviderDtoInput {
+  name: String!
+  type: Short!
+  endpointUri: String!
+  apiKey: String
+  requestsPerSecond: Int!
+  timeoutSeconds: Int!
+  configurationJson: String
+}
+
+input UpdateGroupCommandInput {
+  group: UpdateGroupDtoInput!
+}
+
+input UpdateGroupDtoInput {
+  groupId: Long!
+  name: String!
+  description: String!
+  active: Boolean!
+}
+
+input UpdateNotificationRuleCommandInput {
+  notificationRuleId: UUID!
+  notificationRule: NotificationRuleDtoInput!
+}
+
+input UpdateNotificationTemplateCommandInput {
+  notificationTemplateId: UUID!
+  template: NotificationTemplateDtoInput!
+}
+
+input UpdateOperatorCommandInput {
+  operator: UpdateOperatorDtoInput!
+}
+
+input UpdateOperatorCredentialCommandInput {
+  credential: UpdateOperatorCredentialDtoInput!
+}
+
+input UpdateOperatorCredentialDtoInput {
+  operatorId: UUID!
+  uri: String!
+  username: String!
+  password: String!
+  key: String!
+  key2: String!
+}
+
+input UpdateOperatorDtoInput {
+  operatorId: UUID!
+  name: String!
+  description: String
+  phoneNumber: String
+  emailAddress: String
+  address: String
+  contactName: String
+  protocolTypeId: Short!
+  syncIntervalMinutes: Int!
+}
+
+input UpdatePointOfInterestCommandInput {
+  id: UUID!
+  pointOfInterest: UpdatePointOfInterestDtoInput!
+}
+
+input UpdatePointOfInterestDtoInput {
+  name: String!
+  description: String
+  type: Short!
+  latitude: Float!
+  longitude: Float!
+  address: String
+  color: Short
+  groupId: Long
+  active: Boolean!
+}
+
+input UpdateReportCommandInput {
+  report: UpdateReportDtoInput!
+}
+
+input UpdateReportDtoInput {
+  reportId: UUID!
+  description: String
+  typeId: Short!
+  active: Boolean!
+  category: String!
+  requiredFeatureKey: String
+  managerOnly: Boolean!
+  supportsPdf: Boolean!
+  sortOrder: Int!
+}
+
+input UpdateTokenCommandInput {
+  credential: UpdateTokenDtoInput!
+}
+
+input UpdateTokenDtoInput {
+  credentialId: UUID!
+  token: String
+  tokenExpiration: DateTime
+  refreshToken: String
+  refreshTokenExpiration: DateTime
+}
+
+input UpdateTransporterCommandInput {
+  transporter: UpdateTransporterDtoInput!
+}
+
+input UpdateTransporterDtoInput {
+  transporterId: UUID!
+  name: String!
+  transporterTypeId: Short!
+}
+
+input UpdateTransporterTypeCommandInput {
+  transporterType: TransporterTypeDtoInput!
+}
+
+input UpdateUserCommandInput {
+  user: UpdateUserDtoInput!
+}
+
+input UpdateUserDtoInput {
+  userId: UUID!
+  username: String!
+  active: Boolean!
+}
+
+input UpdateUserSettingsCommandInput {
+  userSettings: UserSettingsDtoInput!
+}
+
+input UserDtoInput {
+  userId: UUID!
+  username: String!
+  active: Boolean!
+  accountId: UUID!
+}
+
+input UserGroupDtoInput {
+  userId: UUID!
+  groupId: Long!
+}
+
+input UserSettingsDtoInput {
+  language: String!
+  style: String!
+  navbar: String!
+  userId: UUID!
+}
+
+input ValidateDriverAssignmentQueryInput {
+  driverId: UUID!
+  resourceType: String!
+  resourceId: String!
+}
+
+input ValidateFeatureEnabledQueryInput {
+  accountId: UUID!
+  featureKey: String!
+}
+
+input ValidateGroupVisibilityQueryInput {
+  accountId: UUID!
+  userId: UUID!
+  resourceType: String!
+  resourceId: String!
+}
+
+input VoidDocumentCommandInput {
+  documentId: UUID!
+  reason: String!
+}
+
+enum AccountStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  ARCHIVED
+}
+
+enum AccountType {
+  PERSONAL
+  BUSINESS
+  ASSOCIATE
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  ENDED
+  SUPERSEDED
+}
+
+enum DetectedStatus {
+  NEW
+  AVAILABLE
+  ASSIGNED
+  IGNORED
+  REMOVED
+}
+
+enum DeviceType {
+  AVIATION
+  CAMERA
+  CYCLING
+  CELLULAR
+  DRONES
+  EMERGENCY_LOCATOR
+  FITNESS
+  HANDHELD
+  MARINE
+  OBD_SCANNER
+  PET_TRACKING
+  PHONE
+  SATELLITE
+  SMARTWATCH
+  WEARABLE
+}
+
+enum OperatorHealthStatus {
+  UNKNOWN
+  HEALTHY
+  DEGRADED
+  OFFLINE
+  DISABLED
+}
+
+enum OperatorSyncResult {
+  PENDING
+  SUCCEEDED
+  FAILED
+  PARTIALLY_SUCCEEDED
+  THROTTLED
+}
+
+enum PrincipalType {
+  UNKNOWN
+  USER
+  DRIVER
+  SERVICE_CLIENT
+  PUBLIC_LINK
+}
+
+enum ProtocolType {
+  COMMAND_TRACK
+  TRACCAR
+  FLESPI
+  GEO_TAB
+  GPS_GATE
+  NAVIXY
+  SAMSARA
+  WIALON
+  PROTRACK
+  METTAX
+}
+
+enum ReportType {
+  BASIC
+  CUSTOM
+  EXTERNAL
+}
+
+enum SyncTriggerType {
+  AUTOMATIC
+  MANUAL
+}
+
+enum TransporterType {
+  AIRCRAFT
+  ASSET
+  BICYCLE
+  BOAT
+  CAR
+  CARGO_CONTAINER
+  CONSTRUCTION_VEHICLE
+  CHILD
+  DELIVERY_VAN
+  DRONE
+  ELDERLY_PERSON
+  FLEET_VEHICLE
+  HEAVY_EQUIPMENT
+  LIVESTOCK
+  MOTORCYCLE
+  PACKAGE
+  PERSON
+  PET
+  SCHOOL_BUS
+  SCOOTER
+  TAXI
+  TOOL
+  TRUCK
+  TRACTOR
+}
+
+scalar Any
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"The `LocalDate` scalar type represents a date without time or time zone information."
+scalar LocalDate
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/local-date.html")
+
+"The `Long` scalar type represents a signed 64-bit integer."
+scalar Long
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/long.html")
+
+"The `Short` scalar type represents a signed 16-bit integer."
+scalar Short
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/short.html")
+
+"The `UUID` scalar type represents a Universally Unique Identifier (UUID) as defined by RFC 9562."
+scalar UUID
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/uuid.html")
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost(
+  "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
+  weight: String!
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION

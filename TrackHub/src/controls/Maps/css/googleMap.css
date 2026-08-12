@@ -1,0 +1,40 @@
+/* Custom styles for the InfoWindow content */
+.info-window-content {
+    margin: 0;
+    padding: 10px 20px; /* Add padding to ensure content is not touching the edges */
+}
+
+/* Override Google Maps InfoWindow styles */
+.gm-style-iw {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 300px !important; /* Adjust the max-width as needed */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+/* Add left and right padding to the InfoWindow's content container */
+.gm-style-iw-d {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+/* Adjust the size and position of the close button */
+.gm-style-iw button.gm-ui-hover-effect {
+    width: 20px !important;
+    height: 20px !important;
+    top: 5px !important; /* Adjust the top position */
+    right: 5px !important; /* Adjust the right position */
+    background: none !important; /* Ensure no background */
+    border: none !important; /* Ensure no border */
+    margin: 0 !important; /* Ensure no margin */
+    padding: 0 !important; /* Ensure no padding */
+    cursor: pointer !important; /* Ensure pointer cursor */
+}
+
+/* Adjust the size and position of the close button's span */
+.gm-style-iw button.gm-ui-hover-effect span {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important; /* Ensure no margin */
+    padding: 0 !important; /* Ensure no padding */
+}

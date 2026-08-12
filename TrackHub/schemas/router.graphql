@@ -1,0 +1,178 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  devicePositionsByUser: [PositionVm!]! @cost(weight: "10")
+  devicePositionByTransporter(query: GetPositionByTransporterQueryInput!): PositionVm!
+    @cost(weight: "10")
+  devices: [DeviceVm!]! @cost(weight: "10")
+  providerDevicesByOperator(query: GetDevicesByOperatorQueryInput!): [DeviceVm!]!
+    @cost(weight: "10")
+  reverseGeocode(query: ReverseGeocodeQueryInput!): AddressVm!
+    @cost(weight: "10")
+  pingOperator(query: PingOperatorQueryInput!): Boolean! @cost(weight: "10")
+  positionsByTransporter(query: GetPositionsRecordQueryInput!): [PositionVm!]!
+    @cost(weight: "10")
+  tripsByTransporter(query: GetPositionTripsQueryInput!): [TripVm!]!
+    @cost(weight: "10")
+}
+
+type Mutation {
+  triggerOperatorSync(command: TriggerOperatorSyncCommandInput!): Boolean!
+    @cost(weight: "10")
+}
+
+type AddressVm {
+  address: String
+  city: String
+  state: String
+  country: String
+}
+
+type AttributesVm {
+  ignition: Boolean
+  satellites: Int
+  mileage: Float
+  hourmeter: Float
+  temperature: Float
+  extra: String
+}
+
+type DeviceVm {
+  deviceId: UUID
+  identifier: Int!
+  serial: String!
+  name: String!
+  deviceTypeId: Short!
+  transporterTypeId: Short!
+  providerDisplayName: String
+  providerMetadataHash: String
+  providerStatus: String
+}
+
+type PositionVm {
+  transporterId: UUID!
+  deviceName: String!
+  transporterType: String!
+  latitude: Float!
+  longitude: Float!
+  altitude: Float
+  deviceDateTime: DateTime!
+  serverDateTime: DateTime
+  speed: Float!
+  course: Float
+  eventId: Int
+  address: String
+  city: String
+  state: String
+  country: String
+  attributes: AttributesVm
+}
+
+type TripPointVm {
+  latitude: Float!
+  longitude: Float!
+  deviceDateTime: DateTime!
+  speed: Float!
+  course: Float
+  eventId: Int
+  movement: Boolean!
+}
+
+type TripVm {
+  tripId: UUID!
+  points: [TripPointVm!]!
+  totalDistance: Float!
+  duration: Duration!
+  averageSpeed: Float!
+  type: Short!
+  from: DateTime!
+  to: DateTime!
+}
+
+input GetDevicesByOperatorQueryInput {
+  operatorId: UUID!
+}
+
+input GetPositionByTransporterQueryInput {
+  transporterId: UUID!
+}
+
+input GetPositionsRecordQueryInput {
+  transporterId: UUID!
+  from: DateTime!
+  to: DateTime!
+  source: PositionSourceType! = PROVIDER
+}
+
+input GetPositionTripsQueryInput {
+  transporterId: UUID!
+  from: DateTime!
+  to: DateTime!
+  source: PositionSourceType! = PROVIDER
+}
+
+input PingOperatorQueryInput {
+  operatorId: UUID!
+}
+
+input ReverseGeocodeQueryInput {
+  latitude: Float!
+  longitude: Float!
+  transporterId: UUID
+  transporterPositionHistoryId: UUID
+}
+
+input TriggerOperatorSyncCommandInput {
+  accountId: UUID!
+  operatorId: UUID!
+  triggerType: String! = "MANUAL"
+  correlationId: String
+  resetDeviceCatalog: Boolean! = false
+  autoAssignNewDevices: Boolean
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+enum PositionSourceType {
+  PROVIDER
+  STORED
+}
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"The `Duration` scalar type represents a duration of time."
+scalar Duration
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/duration.html")
+
+"The `Short` scalar type represents a signed 16-bit integer."
+scalar Short
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/short.html")
+
+"The `UUID` scalar type represents a Universally Unique Identifier (UUID) as defined by RFC 9562."
+scalar UUID
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/uuid.html")
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost(
+  "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
+  weight: String!
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION
