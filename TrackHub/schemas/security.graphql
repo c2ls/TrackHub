@@ -1,0 +1,580 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  actions: [ActionVm!]! @cost(weight: "10")
+  clients(query: GetClientsQueryInput!): [ClientVm!]! @cost(weight: "10")
+  driverCredentials(query: GetDriverCredentialsQueryInput!): [DriverCredentialVm!]!
+    @cost(weight: "10")
+  driverDevices(query: GetDriverDevicesQueryInput!): [DriverDeviceRegistrationVm!]!
+    @cost(weight: "10")
+  userName(query: GetUserNameQueryInput!): String! @cost(weight: "10")
+  isInRole(query: IsInRoleQueryInput!): Boolean! @cost(weight: "10")
+  authorize(query: AuthorizeQueryInput!): Boolean! @cost(weight: "10")
+  authorizeUser(query: AuthorizeUserQueryInput!): Boolean! @cost(weight: "10")
+  isValidService(query: IsValidServiceQueryInput!): Boolean! @cost(weight: "10")
+  isValidServiceForResource(query: IsValidServiceForResourceQueryInput!): Boolean!
+    @cost(weight: "10")
+  policies: [PolicyVm!]! @cost(weight: "10")
+  resourcesByPolicy(query: GetResourcesByPolicyQueryInput!): PolicyResourceVm!
+    @cost(weight: "10")
+  resources: [ResourceVm!]! @cost(weight: "10")
+  roles: [RoleVm!]! @cost(weight: "10")
+  resourcesByRole(query: GetResourcesByRoleQueryInput!): RoleResourceVm!
+    @cost(weight: "10")
+  serviceClientPermissions(query: GetServiceClientPermissionsQueryInput!): [ServiceClientPermissionVm!]!
+    @cost(weight: "10")
+  user(query: GetUserQueryInput!): UserVm! @cost(weight: "10")
+  users(query: GetUsersQueryInput!): [UserVm!]! @cost(weight: "10")
+  currentUser: UserVm! @cost(weight: "10")
+  usersByAccount(query: GetUsersByAccountQueryInput!): [UserVm!]!
+    @cost(weight: "10")
+  usersByRole(query: GetUsersByRoleQueryInput!): [UserVm!]! @cost(weight: "10")
+  usersByPolicy(query: GetUsersByPolicyQueryInput!): [UserVm!]!
+    @cost(weight: "10")
+  authorizedActions(query: GetAuthorizedActionsQueryInput!): [ResourceActionVm!]!
+    @cost(weight: "10")
+  userIsAdmin: Boolean! @cost(weight: "10")
+  userIsManager: Boolean! @cost(weight: "10")
+}
+
+type Mutation {
+  createClient(command: CreateClientCommandInput!): ClientVm!
+    @cost(weight: "10")
+  updateClient(id: UUID!, command: UpdateClientCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteClient(id: UUID!): UUID! @cost(weight: "10")
+  createDriverCredential(command: CreateDriverCredentialCommandInput!): DriverCredentialVm!
+    @cost(weight: "10")
+  activateDriverCredential(command: ActivateDriverCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  lockDriverCredential(command: LockDriverCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  resetDriverCredential(command: ResetDriverCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  revokeDriverCredential(command: RevokeDriverCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  registerDriverDevice(command: RegisterDriverDeviceCommandInput!): DriverDeviceRegistrationVm!
+    @cost(weight: "10")
+  updateDriverDevicePushToken(command: UpdateDriverDevicePushTokenCommandInput!): Boolean!
+    @cost(weight: "10")
+  revokeDriverDevice(command: RevokeDriverDeviceCommandInput!): Boolean!
+    @cost(weight: "10")
+  createResourceActionPolicy(command: CreateResourceActionPolicyCommandInput!): ResourceActionPolicyVm!
+    @cost(weight: "10")
+  deleteResourceActionPolicy(resourceId: Int!, actionId: Int!, policyId: Int!): Int!
+    @cost(weight: "10")
+  createResourceActionRole(command: CreateResourceActionRoleCommandInput!): ResourceActionRoleVm!
+    @cost(weight: "10")
+  deleteResourceActionRole(resourceId: Int!, actionId: Int!, roleId: Int!): Int!
+    @cost(weight: "10")
+  createServiceClientPermission(
+    command: CreateServiceClientPermissionCommandInput!
+  ): ServiceClientPermissionVm! @cost(weight: "10")
+  updateServiceClientPermission(
+    command: UpdateServiceClientPermissionCommandInput!
+  ): Boolean! @cost(weight: "10")
+  deleteServiceClientPermission(
+    command: DeleteServiceClientPermissionCommandInput!
+  ): UUID! @cost(weight: "10")
+  createUserPolicy(command: CreateUserPolicyCommandInput!): UserPolicyVm!
+    @cost(weight: "10")
+  deleteUserPolicy(userId: UUID!, policyId: Int!): UUID! @cost(weight: "10")
+  createUserRole(command: CreateUserRoleCommandInput!): UserRoleVm!
+    @cost(weight: "10")
+  deleteUserRole(userId: UUID!, roleId: Int!): UUID! @cost(weight: "10")
+  createUser(command: CreateUserCommandInput!): UserVm! @cost(weight: "10")
+  createManager(command: CreateManagerCommandInput!): UserVm!
+    @cost(weight: "10")
+  updateUser(id: UUID!, command: UpdateUserCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateCurrentUser(command: UpdateCurrentUserCommandInput!): Boolean!
+    @cost(weight: "10")
+  updatePassword(id: UUID!, command: UpdatePasswordCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteUser(id: UUID!): UUID! @cost(weight: "10")
+  unlockUser(id: UUID!): Boolean! @cost(weight: "10")
+}
+
+type ActionVm {
+  actionId: Int!
+  actionName: String!
+  resourceId: Int!
+}
+
+type ClientVm {
+  clientId: UUID!
+  userId: UUID
+  name: String!
+  description: String!
+  secret: String!
+  processed: Boolean!
+  lastModified: DateTime!
+}
+
+type DriverCredentialVm {
+  driverCredentialId: UUID!
+  driverId: UUID!
+  accountId: UUID!
+  normalizedLogin: String!
+  failedAttempts: Int!
+  lockedUntil: DateTime
+  verifiedAt: DateTime
+  lastLoginAt: DateTime
+  active: Boolean!
+  resetRequired: Boolean!
+  lastModified: DateTime!
+}
+
+type DriverDeviceRegistrationVm {
+  driverDeviceRegistrationId: UUID!
+  driverId: UUID!
+  accountId: UUID!
+  deviceId: String!
+  deviceName: String
+  platform: String!
+  appVersion: String
+  pushToken: String
+  active: Boolean!
+  registeredAt: DateTime!
+  lastSeenAt: DateTime
+  revokedAt: DateTime
+  revokedBy: String
+  lastModified: DateTime!
+}
+
+type PolicyResourceVm {
+  policyId: Int!
+  name: String!
+  resources: [ResourceVm!]!
+}
+
+type PolicyVm {
+  policyId: Int!
+  name: String!
+}
+
+type ResourceActionPolicyVm {
+  resourceActionPolicyId: Int!
+  resourceId: Int!
+  actionId: Int!
+  policyId: Int!
+}
+
+type ResourceActionRoleVm {
+  resourceActionRoleId: Int!
+  resourceId: Int!
+  actionId: Int!
+  roleId: Int!
+}
+
+type ResourceActionVm {
+  resourceId: Int!
+  resourceName: String!
+  actionId: Int!
+  actionName: String!
+}
+
+type ResourceVm {
+  resourceId: Int!
+  resourceName: String!
+  actions: [ActionVm!]
+}
+
+type RoleResourceVm {
+  roleId: Int!
+  name: String!
+  resources: [ResourceVm!]!
+}
+
+type RoleVm {
+  roleId: Int!
+  name: String!
+}
+
+type ServiceClientPermissionVm {
+  serviceClientPermissionId: UUID!
+  clientId: String!
+  accountId: UUID
+  resource: String!
+  action: String!
+  scope: String!
+  audience: String!
+  active: Boolean!
+  effectiveFrom: DateTime
+  effectiveTo: DateTime
+  lastModified: DateTime!
+}
+
+type UserPolicyVm {
+  userId: UUID!
+  policyId: Int!
+}
+
+type UserRoleVm {
+  userId: UUID!
+  roleId: Int!
+}
+
+type UserVm {
+  userId: UUID!
+  username: String!
+  emailAddress: String!
+  firstName: String!
+  secondName: String
+  lastName: String!
+  secondSurname: String
+  dob: LocalDate
+  loginAttempts: Int!
+  lockedUntil: DateTime
+  accountId: UUID!
+  active: Boolean!
+  integrationUser: Boolean!
+  roles: [RoleVm!]
+  profiles: [PolicyVm!]
+}
+
+input ActivateDriverCredentialCommandInput {
+  driverCredentialId: UUID!
+  password: String!
+}
+
+input AuthorizeQueryInput {
+  userId: UUID!
+  resource: String!
+  action: String!
+}
+
+input AuthorizeUserQueryInput {
+  userId: UUID!
+  resource: String!
+  action: String!
+}
+
+input ClientDtoInput {
+  userId: UUID
+  name: String!
+  description: String!
+  secret: String!
+}
+
+input ClientUserDtoInput {
+  clientId: UUID!
+  userId: UUID!
+}
+
+input CreateClientCommandInput {
+  client: ClientDtoInput!
+}
+
+input CreateDriverCredentialCommandInput {
+  credential: DriverCredentialDtoInput!
+}
+
+input CreateManagerCommandInput {
+  user: CreateUserDtoInput!
+  accountId: UUID!
+}
+
+input CreateResourceActionPolicyCommandInput {
+  resourceActionPolicy: ResourceActionPolicyDtoInput!
+}
+
+input CreateResourceActionRoleCommandInput {
+  resourceActionRole: ResourceActionRoleDtoInput!
+}
+
+input CreateServiceClientPermissionCommandInput {
+  permission: ServiceClientPermissionDtoInput!
+}
+
+input CreateUserCommandInput {
+  user: CreateUserDtoInput!
+}
+
+input CreateUserDtoInput {
+  username: String!
+  password: String!
+  emailAddress: String!
+  firstName: String!
+  secondName: String
+  lastName: String!
+  secondSurname: String
+  dob: LocalDate
+  active: Boolean!
+  integrationUser: Boolean!
+}
+
+input CreateUserPolicyCommandInput {
+  userPolicy: UserPolicyDtoInput!
+}
+
+input CreateUserRoleCommandInput {
+  userRole: UserRoleDtoInput!
+}
+
+input DeleteServiceClientPermissionCommandInput {
+  serviceClientPermissionId: UUID!
+}
+
+input DriverCredentialDtoInput {
+  driverId: UUID!
+  accountId: UUID!
+  login: String!
+  password: String!
+  active: Boolean!
+  resetRequired: Boolean!
+}
+
+input DriverDeviceRegistrationDtoInput {
+  driverId: UUID!
+  accountId: UUID!
+  deviceId: String!
+  deviceName: String
+  platform: String!
+  appVersion: String
+  pushToken: String
+  refreshTokenFamilyId: String!
+}
+
+input FilterItemInput {
+  key: String!
+  value: Any
+}
+
+input FiltersInput {
+  filters: [FilterItemInput!]!
+}
+
+input GetAuthorizedActionsQueryInput {
+  userId: UUID!
+}
+
+input GetClientsQueryInput {
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetDriverCredentialsQueryInput {
+  accountId: UUID!
+  driverId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetDriverDevicesQueryInput {
+  accountId: UUID!
+  driverId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetResourcesByPolicyQueryInput {
+  policyId: Int!
+}
+
+input GetResourcesByRoleQueryInput {
+  roleId: Int!
+}
+
+input GetServiceClientPermissionsQueryInput {
+  clientId: String
+  accountId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetUserNameQueryInput {
+  userId: UUID!
+}
+
+input GetUserQueryInput {
+  id: UUID!
+}
+
+input GetUsersByAccountQueryInput {
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetUsersByPolicyQueryInput {
+  policyId: Int!
+}
+
+input GetUsersByRoleQueryInput {
+  roleId: Int!
+}
+
+input GetUsersQueryInput {
+  filter: FiltersInput!
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input IsInRoleQueryInput {
+  userId: UUID!
+  resource: String!
+  action: String!
+}
+
+input IsValidServiceForResourceQueryInput {
+  client: String
+  resource: String!
+  action: String!
+  accountId: UUID
+  scopes: [String!]
+  audiences: [String!]
+}
+
+input IsValidServiceQueryInput {
+  client: String
+}
+
+input LockDriverCredentialCommandInput {
+  driverCredentialId: UUID!
+  lockedUntil: DateTime!
+}
+
+input RegisterDriverDeviceCommandInput {
+  device: DriverDeviceRegistrationDtoInput!
+}
+
+input ResetDriverCredentialCommandInput {
+  driverCredentialId: UUID!
+  password: String!
+  resetRequired: Boolean!
+}
+
+input ResourceActionPolicyDtoInput {
+  resourceId: Int!
+  actionId: Int!
+  policyId: Int!
+}
+
+input ResourceActionRoleDtoInput {
+  resourceId: Int!
+  actionId: Int!
+  roleId: Int!
+}
+
+input RevokeDriverCredentialCommandInput {
+  driverCredentialId: UUID!
+}
+
+input RevokeDriverDeviceCommandInput {
+  driverDeviceRegistrationId: UUID!
+  revokedBy: String!
+}
+
+input ServiceClientPermissionDtoInput {
+  clientId: String!
+  accountId: UUID
+  resource: String!
+  action: String!
+  scope: String!
+  audience: String!
+  active: Boolean!
+  effectiveFrom: DateTime
+  effectiveTo: DateTime
+}
+
+input UpdateClientCommandInput {
+  client: ClientUserDtoInput!
+}
+
+input UpdateCurrentUserCommandInput {
+  user: UpdateCurrentUserDtoInput!
+}
+
+input UpdateCurrentUserDtoInput {
+  firstName: String!
+  secondName: String
+  lastName: String!
+  secondSurname: String
+  dob: LocalDate
+}
+
+input UpdateDriverDevicePushTokenCommandInput {
+  driverDeviceRegistrationId: UUID!
+  pushToken: String
+  appVersion: String
+}
+
+input UpdatePasswordCommandInput {
+  user: UserPasswordDtoInput!
+}
+
+input UpdateServiceClientPermissionCommandInput {
+  serviceClientPermissionId: UUID!
+  permission: ServiceClientPermissionDtoInput!
+}
+
+input UpdateUserCommandInput {
+  user: UpdateUserDtoInput!
+}
+
+input UpdateUserDtoInput {
+  userId: UUID!
+  username: String!
+  emailAddress: String!
+  firstName: String!
+  secondName: String
+  lastName: String!
+  secondSurname: String
+  dob: LocalDate
+  active: Boolean!
+  integrationUser: Boolean!
+}
+
+input UserPasswordDtoInput {
+  userId: UUID!
+  password: String!
+}
+
+input UserPolicyDtoInput {
+  userId: UUID!
+  policyId: Int!
+}
+
+input UserRoleDtoInput {
+  userId: UUID!
+  roleId: Int!
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+scalar Any
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"The `LocalDate` scalar type represents a date without time or time zone information."
+scalar LocalDate
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/local-date.html")
+
+"The `UUID` scalar type represents a Universally Unique Identifier (UUID) as defined by RFC 9562."
+scalar UUID
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/uuid.html")
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost(
+  "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
+  weight: String!
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION

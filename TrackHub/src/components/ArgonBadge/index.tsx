@@ -1,0 +1,84 @@
+/**
+* Copyright (c) 2025 Sergio Hernandez. All rights reserved.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License").
+*  You may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+*/
+
+/**
+=========================================================
+* Argon Dashboard 2 MUI - v3.0.1
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/argon-dashboard-material-ui
+* Copyright 2023 Creative Tim (https://www.creative-tim.com)
+
+Coded by www.creative-tim.com
+
+ =========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*/
+
+import { forwardRef } from "react";
+import type { ReactNode } from "react";
+import type { BadgeProps } from "@mui/material/Badge";
+
+// Custom styles for the ArgonBadge
+import ArgonBadgeRoot from "components/ArgonBadge/ArgonBadgeRoot";
+
+export interface ArgonBadgeProps extends Omit<BadgeProps, "color" | "variant" | "children"> {
+  color?:
+    | "primary"
+    | "secondary"
+    | "info"
+    | "success"
+    | "warning"
+    | "error"
+    | "light"
+    | "dark";
+  variant?: "gradient" | "contained";
+  size?: "xs" | "sm" | "md" | "lg";
+  circular?: boolean;
+  indicator?: boolean;
+  border?: boolean;
+  container?: boolean;
+  children?: ReactNode;
+}
+
+const ArgonBadge = forwardRef<HTMLSpanElement, ArgonBadgeProps>(
+  (
+    {
+      color = "info",
+      variant = "gradient",
+      size = "sm",
+      circular = false,
+      indicator = false,
+      border = false,
+      container = false,
+      children = false,
+      ...rest
+    },
+    ref
+  ) => (
+    <ArgonBadgeRoot
+      {...rest}
+      ownerState={{ color, variant, size, circular, indicator, border, container, children }}
+      ref={ref}
+      color="default"
+    >
+      {children}
+    </ArgonBadgeRoot>
+  )
+);
+
+export default ArgonBadge;
