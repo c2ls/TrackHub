@@ -1,0 +1,21 @@
+﻿<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--
+      GHSA-v5pm-xwqc-g5wc: Microsoft.OpenApi (transitive, high severity - circular schema
+      references can crash the OpenAPI *reader/parser*). We cannot upgrade to the patched
+      2.7.5+/3.5.4+ because Microsoft.AspNetCore.OpenApi 10.0.9 (latest) pins Microsoft.OpenApi
+      2.0.0 and its build-time source generator targets that API - the patched versions make
+      IOpenApiMediaType.Example read-only and break the generated OpenApiXmlCommentSupport code.
+      The vulnerable reader APIs are not used by ASP.NET Core OpenAPI document generation, so the
+      path is not reachable here. Remove this suppression once Microsoft.AspNetCore.OpenApi ships a
+      release referencing a patched Microsoft.OpenApi.
+    -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-v5pm-xwqc-g5wc" />
+  </ItemGroup>
+</Project>
