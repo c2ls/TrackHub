@@ -1,0 +1,73 @@
+{
+  "scopes": [
+    {
+      "name": "mobile_scope",
+      "resource": "trackhub_api"
+    },
+    {
+      "name": "driver_mobile_scope",
+      "resource": "trackhub_api"
+    },
+    {
+      "name": "web_scope",
+      "resource": "trackhub_api"
+    },
+    {
+      "name": "service_scope",
+      "resource": "trackhub_api"
+    }
+  ],
+  "PKCEClients": [
+    {
+      "clientId": "postman_client",
+      "uri": "https://oauth.pstmn.io/v1/callback",
+      "postLogoutUri": "https://oauth.pstmn.io/v1/callback",
+      "scope": "web_scope"
+    },
+    {
+      "clientId": "mobile_client",
+      "uri": "trackhubmobile://callback",
+      "postLogoutUri": "trackhubmobile://logoutcallback",
+      "scope": "mobile_scope"
+    },
+    {
+      "clientId": "driver_mobile_client",
+      "uri": "trackhubmobiledriver://callback",
+      "postLogoutUri": "trackhubmobiledriver://callback",
+      "scope": "driver_mobile_scope"
+    },
+    {
+      "clientId": "web_client",
+      "uri": "https://localhost:3000/authentication/callback",
+      "postLogoutUri": "https://localhost:3000/authentication/callback",
+      "scope": "web_scope"
+    }
+  ],
+  "serviceClients": [
+    {
+      "clientId": "syncworker_client",
+      "clientSecret": "470339fa-040e-4a43-b410-e3e4bc55c858",
+      "scope": "service_scope"
+    },
+    {
+      "clientId": "router_client",
+      "clientSecret": "0e22a8ea-0533-4b21-972f-6c7406842d98",
+      "scope": "service_scope"
+    },
+    {
+      "clientId": "security_client",
+      "clientSecret": "6f3d1c4a-9b27-4e58-8a11-2c7f5d90ab34",
+      "scope": "service_scope"
+    },
+    {
+      "clientId": "geofence_client",
+      "clientSecret": "8c5f1d9b-3e72-4a06-b1c8-64f0d2a97e35",
+      "scope": "service_scope"
+    },
+    {
+      "clientId": "trip_client",
+      "clientSecret": "96cd18c9-d1b6-424b-9e29-b17842046d01",
+      "scope": "service_scope"
+    }
+  ]
+}
