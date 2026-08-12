@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--
+      GHSA-v5pm-xwqc-g5wc: Microsoft.OpenApi (transitive via the referenced service Web
+      projects, high severity - circular schema references can crash the OpenAPI
+      *reader/parser*). Suppressed here for the same reason as in every service repository:
+      Microsoft.AspNetCore.OpenApi 10.0.9 pins Microsoft.OpenApi 2.0.0, and the vulnerable
+      reader APIs are not reachable from document generation. Remove this suppression when
+      the service repositories remove theirs.
+    -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-v5pm-xwqc-g5wc" />
+  </ItemGroup>
+</Project>

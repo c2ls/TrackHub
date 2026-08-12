@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TrackHub.ServiceContracts.Harness\TrackHub.ServiceContracts.Harness.csproj" />
+    <!-- Consumers: the real GraphQL client classes of each service (spec 25 §6). Manager's
+         SecurityApi/RouterApi and Security's ManagerApi arrive transitively via the producer
+         Web references below; Reporting's GraphQLApi needs a direct reference. -->
+    <ProjectReference Include="..\..\..\TrackHubRouter\src\Infrastructure\ManagerApi\ManagerApi.csproj" />
+    <ProjectReference Include="..\..\..\TrackHubRouter\src\Infrastructure\TelemetryApi\TelemetryApi.csproj" />
+    <ProjectReference Include="..\..\..\TrackHubRouter\src\Infrastructure\GeofenceApi\GeofenceApi.csproj" />
+    <ProjectReference Include="..\..\..\TrackHub.Reporting\src\Infrastructure\GraphQLApi\GraphQLApi.csproj" />
+    <!-- Producers: the real Query/Mutation types each service ships. -->
+    <ProjectReference Include="..\..\..\TrackHub.Manager\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\..\TrackHub.Telemetry\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\..\TrackHubSecurity\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\..\TrackHubRouter\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\..\TrackHub.Geofencing\src\Web\Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+</Project>
