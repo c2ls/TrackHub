@@ -177,6 +177,7 @@ public class ReportingToRouterRoundTripTests
         // dropped by design on this hop. Nothing to assert on the consumer side until
         // Reporting projects them.
 
+
         // The consumer parses the named filter values (transporterId GUID, from/to ISO strings)
         // and sends typed variables — this pins that coercion into the Router's request type.
         _sender.Verify(s => s.Send(

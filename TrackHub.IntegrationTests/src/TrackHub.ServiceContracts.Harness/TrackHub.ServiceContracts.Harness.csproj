@@ -4,7 +4,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <TrackHubCommonVersion>1.0.15</TrackHubCommonVersion>
   </PropertyGroup>
+  <!-- Local override point: restores pick up property overrides (e.g. TrackHubCommonVersion) from an
+       optional sibling file that is not part of this repository. -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.Edition.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.Edition.props')" />
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
