@@ -4,8 +4,8 @@
     <AssemblyName>TrackHub.AuthorityServer.Application</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="TrackHubCommon.Application" />
-    <PackageReference Include="TrackHubCommon.Domain" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Application/Common.Application.csproj" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />

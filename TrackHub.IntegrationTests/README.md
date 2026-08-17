@@ -18,7 +18,9 @@ Covered pairs: Router→Manager, Router→Telemetry, Router→Geofence, Reportin
 
 ## Prerequisites
 
-The projects reference the service source by **relative path**: all TrackHub repositories must be cloned side-by-side with this one (`TrackHub.Manager`, `TrackHub.Telemetry`, `TrackHubRouter`, `TrackHubSecurity`, `TrackHub.Reporting`, `TrackHub.Geofencing`, plus the local `TrackHubCommon.*` NuGet feed the services already use).
+The projects reference the service source by **relative path**. Every service lives in this
+repository, so a plain clone is all that is needed — nothing to check out side by side, and no
+local `TrackHubCommon` feed, since Common is referenced as a project like everything else.
 
 ## Run
 

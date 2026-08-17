@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="PDFsharp-MigraDoc" />
-    <PackageReference Include="TrackHubCommon.Domain" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\Resources.Designer.cs">

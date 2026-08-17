@@ -1,0 +1,119 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/TrackHub.AuthorityServer/">
+    <Project Path="TrackHub.AuthorityServer/src/Application/Application.csproj" />
+    <Project Path="TrackHub.AuthorityServer/src/ClientSeeder/ClientSeeder.csproj" />
+    <Project Path="TrackHub.AuthorityServer/src/Domain/Domain.csproj" />
+    <Project Path="TrackHub.AuthorityServer/src/Infrastructure/Infrastructure.csproj" />
+    <Project Path="TrackHub.AuthorityServer/src/Web/Web.csproj" />
+    <Project Path="TrackHub.AuthorityServer/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHub.AuthorityServer/tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="TrackHub.AuthorityServer/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHub.Geofencing/">
+    <Project Path="TrackHub.Geofencing/src/Application/Application.csproj" />
+    <Project Path="TrackHub.Geofencing/src/Domain/Domain.csproj" />
+    <Project Path="TrackHub.Geofencing/src/Infrastructure/ManagerApi/ManagerApi.csproj" />
+    <Project Path="TrackHub.Geofencing/src/Infrastructure/ManagerDB/ManagerDB.csproj" />
+    <Project Path="TrackHub.Geofencing/src/Web/Web.csproj" />
+    <Project Path="TrackHub.Geofencing/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHub.Geofencing/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHub.IntegrationTests/">
+    <Project Path="TrackHub.IntegrationTests/src/TrackHub.ServiceContracts.Harness/TrackHub.ServiceContracts.Harness.csproj" />
+    <Project Path="TrackHub.IntegrationTests/tests/TrackHub.ServiceContracts.Tests/TrackHub.ServiceContracts.Tests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHub.Manager/">
+    <Project Path="TrackHub.Manager/src/Application/Application.csproj" />
+    <Project Path="TrackHub.Manager/src/DBInitializer/DBInitializer.csproj" />
+    <Project Path="TrackHub.Manager/src/Domain/Domain.csproj" />
+    <Project Path="TrackHub.Manager/src/Infrastructure/ManagerDB/ManagerDB.csproj" />
+    <Project Path="TrackHub.Manager/src/Infrastructure/RouterApi/RouterApi.csproj" />
+    <Project Path="TrackHub.Manager/src/Infrastructure/SecurityApi/SecurityApi.csproj" />
+    <Project Path="TrackHub.Manager/src/Web/Web.csproj" />
+    <Project Path="TrackHub.Manager/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHub.Manager/tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="TrackHub.Manager/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHub.Reporting/">
+    <Project Path="TrackHub.Reporting/src/Application/Application.csproj" />
+    <Project Path="TrackHub.Reporting/src/Domain/Domain.csproj" />
+    <Project Path="TrackHub.Reporting/src/Infrastructure/GraphQLApi/GraphQLApi.csproj" />
+    <Project Path="TrackHub.Reporting/src/Web/Web.csproj" />
+    <Project Path="TrackHub.Reporting/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHub.Reporting/tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="TrackHub.Reporting/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHub.Telemetry/">
+    <Project Path="TrackHub.Telemetry/src/Application/Application.csproj" />
+    <Project Path="TrackHub.Telemetry/src/Domain/Domain.csproj" />
+    <Project Path="TrackHub.Telemetry/src/Infrastructure/TelemetryDB/TelemetryDB.csproj" />
+    <Project Path="TrackHub.Telemetry/src/Web/Web.csproj" />
+    <Project Path="TrackHub.Telemetry/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHub.Telemetry/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHub.TripManagement/">
+    <Project Path="TrackHub.TripManagement/src/Application/Application.csproj" />
+    <Project Path="TrackHub.TripManagement/src/Domain/Domain.csproj" />
+    <Project Path="TrackHub.TripManagement/src/Infrastructure/ManagerApi/ManagerApi.csproj" />
+    <Project Path="TrackHub.TripManagement/src/Infrastructure/RoutingApi/RoutingApi.csproj" />
+    <Project Path="TrackHub.TripManagement/src/Infrastructure/TelemetryApi/TelemetryApi.csproj" />
+    <Project Path="TrackHub.TripManagement/src/Infrastructure/TripDB/TripDB.csproj" />
+    <Project Path="TrackHub.TripManagement/src/Web/Web.csproj" />
+    <Project Path="TrackHub.TripManagement/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHub.TripManagement/tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="TrackHub.TripManagement/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHubCommon/">
+    <Project Path="TrackHubCommon/src/Common.Application/Common.Application.csproj" />
+    <Project Path="TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
+    <Project Path="TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj" />
+    <Project Path="TrackHubCommon/src/Common.Web/Common.Web.csproj" />
+    <Project Path="TrackHubCommon/tests/Common.Application.Tests/Common.Application.Tests.csproj" />
+    <Project Path="TrackHubCommon/tests/Common.Domain.Tests/Common.Domain.Tests.csproj" />
+    <Project Path="TrackHubCommon/tests/Common.Infrastructure.Tests/Common.Infrastructure.Tests.csproj" />
+    <Project Path="TrackHubCommon/tests/Common.Web.Tests/Common.Web.Tests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHubRouter/">
+    <Project Path="TrackHubRouter/src/Application/Application.csproj" />
+    <Project Path="TrackHubRouter/src/Domain/Domain.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/CommandTrack/CommandTrack.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Common/Common.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Flespi/Flespi.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/GeofenceApi/GeofenceApi.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Geotab/Geotab.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/GpsGate/GpsGate.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/ManagerApi/ManagerApi.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Navixy/Navixy.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Protrack/Protrack.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Samsara/Samsara.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/TelemetryApi/TelemetryApi.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Traccar/Traccar.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/TripApi/TripApi.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Wialon/Wialon.csproj" />
+    <Project Path="TrackHubRouter/src/SyncWorker/SyncWorker.csproj" />
+    <Project Path="TrackHubRouter/src/Web/Web.csproj" />
+    <Project Path="TrackHubRouter/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHubRouter/tests/Intfrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="TrackHubRouter/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/TrackHubSecurity/">
+    <Project Path="TrackHubSecurity/src/Application/Application.csproj" />
+    <Project Path="TrackHubSecurity/src/DBInitializer/DBInitializer.csproj" />
+    <Project Path="TrackHubSecurity/src/Domain/Domain.csproj" />
+    <Project Path="TrackHubSecurity/src/Infrastructure/ManagerApi/ManagerApi.csproj" />
+    <Project Path="TrackHubSecurity/src/Infrastructure/SecurityDB/SecurityDB.csproj" />
+    <Project Path="TrackHubSecurity/src/Web/Web.csproj" />
+    <Project Path="TrackHubSecurity/tests/Application.UnitTests/Application.UnitTests.csproj" />
+    <Project Path="TrackHubSecurity/tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj" />
+    <Project Path="TrackHubSecurity/tests/Web.UnitTests/Web.UnitTests.csproj" />
+  </Folder>
+</Solution>

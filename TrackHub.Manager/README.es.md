@@ -35,15 +35,14 @@ Detalle completo: **[Manager](https://github.com/shernandezp/TrackHub/wiki/Manag
 - SDK de .NET 10
 - PostgreSQL 14+ (con PostGIS, ya que la base de datos `TrackHub` se comparte con los esquemas de Geofencing y TripManagement)
 - Un TrackHub AuthorityServer en ejecución, para autenticación
-- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet — **no** están en nuget.org
 
 ### Pasos
 
 1. **Clonar**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.Manager.git
-   cd TrackHub.Manager
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.Manager
    ```
 
 2. **Configurar la conexión a la base de datos** en `src/Web/appsettings.json`:
@@ -100,7 +99,7 @@ Detalle completo: **[Manager](https://github.com/shernandezp/TrackHub/wiki/Manag
 
 - **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
 - **De usuario** — en la app: el botón de Ayuda o **F1** en cualquier pantalla
-- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Despliegue** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

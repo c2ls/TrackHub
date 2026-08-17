@@ -28,15 +28,14 @@ Full detail: **[Security and Identity](https://github.com/shernandezp/TrackHub/w
 - .NET 10 SDK
 - PostgreSQL 14+
 - An SSL certificate — self-signed for development, CA-issued for production
-- The `TrackHubCommon.*` packages available from a local NuGet feed
 
 ### Steps
 
 1. **Clone**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.AuthorityServer.git
-   cd TrackHub.AuthorityServer
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.AuthorityServer
    ```
 
 2. **Configure the database connection** in `src/Web/appsettings.json`:
@@ -116,7 +115,7 @@ Full detail: **[Security and Identity](https://github.com/shernandezp/TrackHub/w
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology), [Database](https://github.com/shernandezp/TrackHub/wiki/Database)
 - **User** — in the app: the Help button or **F1** on any screen
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

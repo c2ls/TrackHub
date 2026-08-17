@@ -32,27 +32,34 @@ docker compose version
 
 ---
 
-## Step 2: Clone Repositories
+## Step 2: Clone the Repository
+
+The whole product is one repository. Clone it and you have every service, the
+portal and this deployment folder in one go.
 
 ```bash
 sudo mkdir -p /opt/trackhub && sudo chown $USER:$USER /opt/trackhub
-cd /opt/trackhub
 
-git clone https://github.com/shernandezp/TrackHub.Deployment.git
+git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub
 
-cd TrackHub.Deployment
+cd /opt/trackhub/TrackHub.Deployment
 cp .env.example .env
-./scripts/clone-repos.sh
-cd ..
 ```
 
-> Deploying from private repositories? Set `GITHUB_OWNER`, `GITHUB_REPO_SUFFIX`,
-> `GITHUB_USER` and `GITHUB_PASSWORD` in `.env` before running `clone-repos.sh`.
-> `GITHUB_PASSWORD` must be a Personal Access Token — GitHub does not accept account
-> passwords over HTTPS. See [INSTALL.md](INSTALL.md) for the full table.
+The checkout root (`/opt/trackhub`) is the docker build context, so it must hold
+`TrackHub.Deployment/` alongside `TrackHubCommon/`, `TrackHub.Manager/` and the
+other service directories — which is exactly what the clone gives you.
 
-> The **SyncWorker** background service is built from the `TrackHubRouter` repo — there is
-> nothing extra to clone for it.
+> Deploying from a private repository? Set `GITHUB_OWNER`, `GITHUB_REPO`,
+> `GITHUB_USER` and `GITHUB_PASSWORD` in `.env`. `GITHUB_PASSWORD` must be a Personal
+> Access Token — GitHub does not accept account passwords over HTTPS. See
+> [INSTALL.md](INSTALL.md) for the full table.
+
+> Later, `./scripts/clone-repos.sh` fast-forwards this checkout and verifies no source
+> directory is missing. It is no longer needed for the first checkout.
+
+> The **SyncWorker** background service is built from the `TrackHubRouter` directory —
+> there is nothing extra to check out for it.
 
 ---
 
@@ -147,21 +154,11 @@ Requires the .NET SDK and `dotnet-ef` on the machine that can reach PostgreSQL:
 dotnet tool install --global dotnet-ef
 ```
 
-**Pack TrackHubCommon into a local feed first.** The services depend on `TrackHubCommon.*`
-packages that are **not on nuget.org** — pack
-them from source, then register the feed. Without this, `dotnet ef` fails to restore
-(Docker image builds pack them automatically in a `common` stage):
+`TrackHubCommon` needs no separate step: the services reference it as a
+`ProjectReference`, so `dotnet ef` builds it from the source in this checkout
+automatically (the Docker image builds resolve it the same way).
 
-```bash
-cd /opt/trackhub
-# `dotnet build` (not `dotnet pack`) — GeneratePackageOnBuild emits the .nupkg files
-dotnet build TrackHubCommon/src/Common.Web/Common.Web.csproj -c Release
-mkdir -p /opt/trackhub/local-nuget
-find TrackHubCommon/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /opt/trackhub/local-nuget/ \;
-dotnet nuget add source /opt/trackhub/local-nuget -n trackhub-local
-```
-
-Now apply the migrations:
+Apply the migrations:
 
 ```bash
 cd /opt/trackhub
@@ -260,11 +257,11 @@ is reachable. Every tile should read *Working*; a grey *Unknown* tile usually me
 ## Updating TrackHub
 
 > ⚠️ **Upgrading an instance installed before the Telemetry / SyncWorker / Documents release?**
-> The `git pull` + redeploy below is **not enough**. That release adds a new repository
-> (`TrackHub.Telemetry`), new `.env` keys, new OAuth service clients, and new database
+> The `git pull` + redeploy below is **not enough**. That release adds a new service
+> (`TrackHub.Telemetry/`), new `.env` keys, new OAuth service clients, and new database
 > migrations — none of which a plain redeploy creates for you. Follow
 > [INSTALL.md → Upgrading From a Previous Version](INSTALL.md#upgrading-from-a-previous-version)
-> **once** (back up → clone Telemetry → reconcile `.env` → reconcile `clients.json` →
+> **once** (back up → pull → reconcile `.env` → reconcile `clients.json` →
 > apply migrations → `deploy.sh full --build`). After that one-time upgrade, the steps
 > below are all you need.
 
@@ -276,12 +273,8 @@ repeated runs, or manual volume cleanup.
 ### Update Everything
 
 ```bash
-cd /opt/trackhub
-
-# Pull latest code for all repos
-for repo in TrackHub TrackHub.AuthorityServer TrackHubSecurity TrackHub.Manager TrackHubRouter TrackHub.Geofencing TrackHub.Telemetry TrackHub.Reporting TrackHubCommon TrackHub.Deployment; do
-  cd /opt/trackhub/$repo && git pull
-done
+# Pull the latest code — one repository, so one pull covers every service
+cd /opt/trackhub && git pull
 
 # Rebuild and deploy (cached, deterministic)
 cd /opt/trackhub/TrackHub.Deployment
@@ -294,18 +287,11 @@ cd /opt/trackhub/TrackHub.Deployment
 ### Update a Single Service
 
 ```bash
-cd /opt/trackhub
+# Same single pull — one repository covers every service
+cd /opt/trackhub && git pull
 
-# Pull latest code for the service (use the matching repo name)
-# authority → TrackHub.AuthorityServer | security → TrackHubSecurity
-# manager → TrackHub.Manager | router → TrackHubRouter
-# geofencing → TrackHub.Geofencing | telemetry → TrackHub.Telemetry
-# reporting → TrackHub.Reporting | syncworker → TrackHubRouter
-# frontend → TrackHub | deployment → TrackHub.Deployment
-cd TrackHub.Manager && git pull
+# Rebuild and restart only the service that changed
 cd /opt/trackhub/TrackHub.Deployment
-
-# Rebuild and restart the service
 ./scripts/update-service.sh manager
 ```
 

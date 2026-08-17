@@ -13,6 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="TrackHubCommon.Web" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Web/Common.Web.csproj" />
   </ItemGroup>
 </Project>

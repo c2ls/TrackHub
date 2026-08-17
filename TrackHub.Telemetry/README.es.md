@@ -2,7 +2,7 @@
 
 [← Volver a la página principal](README.md) · [English](README.en.md)
 
-La API de Telemetry gestiona los datos de **alto volumen y de solo anexado** de TrackHub. Almacena y sirve posiciones y telemetría de operadores; nunca se comunica con proveedores GPS — ese es el rol del [Router](https://github.com/shernandezp/TrackHubRouter).
+La API de Telemetry gestiona los datos de **alto volumen y de solo anexado** de TrackHub. Almacena y sirve posiciones y telemetría de operadores; nunca se comunica con proveedores GPS — ese es el rol del [Router](../TrackHubRouter).
 
 Construida sobre .NET 10 con un endpoint GraphQL de HotChocolate, siguiendo las convenciones de Clean Architecture y CQRS de la plataforma.
 
@@ -33,15 +33,14 @@ Detalle completo: **[Telemetry](https://github.com/shernandezp/TrackHub/wiki/Tel
 - PostgreSQL 14+
 - La base de datos `TrackHub` con el esquema `telemetry` **ya creado por las migraciones de Manager**
 - Un TrackHub AuthorityServer en ejecución, para autenticación
-- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet
 
 ### Pasos
 
 1. **Clonar**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.Telemetry.git
-   cd TrackHub.Telemetry
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.Telemetry
    ```
 
 2. **Configurar la conexión a la base de datos** en `src/Web/appsettings.json` — debe apuntar a la **misma** base de datos `TrackHub` que Manager:
@@ -68,7 +67,7 @@ En producción, conectarse con un rol que tenga lectura/escritura sobre `telemet
 
 ## Notas específicas del proyecto
 
-- **Este servicio no tiene migraciones propias — no agregar ninguna.** Las tablas de `telemetry` son creadas y migradas por la [API de Gestión](https://github.com/shernandezp/TrackHub.Manager). Por eso `DB_CONNECTION_TELEMETRY` debe apuntar a la misma base de datos `TrackHub`. Agregar una columna de telemetry implica agregar una migración de *Manager*.
+- **Este servicio no tiene migraciones propias — no agregar ninguna.** Las tablas de `telemetry` son creadas y migradas por la [API de Gestión](../TrackHub.Manager). Por eso `DB_CONNECTION_TELEMETRY` debe apuntar a la misma base de datos `TrackHub`. Agregar una columna de telemetry implica agregar una migración de *Manager*.
 - **Las tablas del esquema `app` se mapean como solo lectura** y se excluyen de las migraciones. Existen para que el servicio pueda aplicar el alcance por cuenta y la visibilidad de grupo sin un salto de red por solicitud: usuarios, grupos, vínculos usuario–grupo y transportador–grupo, transportadores, asignaciones de dispositivos, dispositivos, operadores y funcionalidades de cuenta.
 - **`attributes` es una columna `json` de PostgreSQL.** `json` no tiene operador de igualdad, por lo que `Distinct()`, `GroupBy()` u operaciones de conjunto sobre una entidad o proyección que la incluya fallan en tiempo de ejecución con `42883`. Deduplicar con `EXISTS` o predicados basados en clave — **EF InMemory no detectará esto.**
 - **`PlatformSyncActivityReader` es deliberadamente sin alcance de cuenta.** Es una lectura documentada de ámbito de plataforma, protegida por `[Authorize(Administrative, Read)]`, que devuelve solo marcas de tiempo y conteos, nunca un id de cuenta. Respalda el mosaico de SyncWorker de la página pública de estado.
@@ -87,7 +86,7 @@ En producción, conectarse con un rol que tenga lectura/escritura sobre `telemet
 
 - **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Router](https://github.com/shernandezp/TrackHub/wiki/Router), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture)
 - **De usuario** — en la app: el botón de Ayuda o **F1** en cualquier pantalla
-- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Despliegue** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

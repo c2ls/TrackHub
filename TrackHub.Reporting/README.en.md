@@ -24,15 +24,14 @@ Full detail, including the complete catalog: **[Reporting](https://github.com/sh
 - .NET 10 SDK
 - A running TrackHub AuthorityServer and Management API (the catalog lives there)
 - The other producer services reachable for the reports you intend to run
-- The `TrackHubCommon.*` packages available from a local NuGet feed
 
 ### Steps
 
 1. **Clone**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.Reporting.git
-   cd TrackHub.Reporting
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.Reporting
    ```
 
 2. **Configure the producer endpoints and limits** in `src/Web/appsettings.json`:
@@ -89,7 +88,7 @@ Full detail, including the complete catalog: **[Reporting](https://github.com/sh
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting), [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager#report-catalog), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
 - **User** — in the app: the Help button or **F1** on any screen
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

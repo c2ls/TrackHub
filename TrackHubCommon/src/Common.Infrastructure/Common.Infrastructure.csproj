@@ -3,7 +3,6 @@
     <PackageId>TrackHubCommon.Infrastructure</PackageId>
     <Authors>Sergio Hernandez</Authors>
     <Company>TBD</Company>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" />

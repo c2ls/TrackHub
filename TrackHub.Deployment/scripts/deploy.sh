@@ -13,7 +13,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Source repository settings (GITHUB_OWNER / GITHUB_REPO_SUFFIX / credentials)
+# Source repository settings (GITHUB_OWNER / GITHUB_REPO / credentials)
 source "$SCRIPT_DIR/repo-config.sh"
 
 # Colors for output
@@ -166,19 +166,18 @@ select_compose_file() {
 }
 
 ensure_trackhubcommon() {
-    # Backend images pack the TrackHubCommon NuGet packages from source inside the
-    # container (the "common" build stage), so the repo must be present in the
-    # build context (the workspace root) alongside the service repos.
+    # Backend images build TrackHubCommon straight from source (the services
+    # reference it as a ProjectReference), so it must be present in the build
+    # context (the workspace root) alongside the service directories.
+    # It is part of this repository, so a missing directory means a broken or
+    # partial checkout rather than a repo that still needs cloning — say so
+    # instead of failing later inside "docker compose build".
     local workspace_dir
     workspace_dir="$(dirname "$PROJECT_DIR")"
     if [ ! -d "$workspace_dir/TrackHubCommon" ]; then
-        print_info "TrackHubCommon repository not found — cloning into $workspace_dir..."
-        if ! repo_clone_or_update "TrackHubCommon" "$workspace_dir/TrackHubCommon"; then
-            print_error "Could not clone $(repo_url_clean TrackHubCommon)"
-            print_info "For private repositories set GITHUB_USER and GITHUB_PASSWORD in .env"
-            exit 1
-        fi
-        print_success "TrackHubCommon cloned"
+        print_error "TrackHubCommon is missing from this checkout ($workspace_dir)"
+        print_info "Re-sync the checkout: ./scripts/clone-repos.sh"
+        exit 1
     fi
 }
 

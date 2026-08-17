@@ -2,7 +2,7 @@
 
 [← Volver a la página principal](README.md) · [English](README.en.md)
 
-La Geofencing API es la propietaria de las zonas geográficas y de los eventos de visita que los transportadores generan sobre ellas. Evalúa las posiciones enviadas por el [Router](https://github.com/shernandezp/TrackHubRouter) mediante consultas espaciales de PostGIS y emite eventos de alerta a través de la [Management API](https://github.com/shernandezp/TrackHub.Manager).
+La Geofencing API es la propietaria de las zonas geográficas y de los eventos de visita que los transportadores generan sobre ellas. Evalúa las posiciones enviadas por el [Router](../TrackHubRouter) mediante consultas espaciales de PostGIS y emite eventos de alerta a través de la [Management API](../TrackHub.Manager).
 
 Construida sobre .NET 10 con un endpoint GraphQL de HotChocolate y geometría de NetTopologySuite. Habilitada mediante la característica de cuenta `geofencing`.
 
@@ -31,15 +31,14 @@ Detalle completo: **[Geofencing](https://github.com/shernandezp/TrackHub/wiki/Ge
 - .NET 10 SDK
 - PostgreSQL 14+ **con PostGIS habilitado**
 - Una instancia de TrackHub AuthorityServer y Management API en ejecución
-- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet
 
 ### Pasos
 
 1. **Clonar**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.Geofencing.git
-   cd TrackHub.Geofencing
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.Geofencing
    ```
 
 2. **Habilitar PostGIS** en la base de datos `TrackHub` (un solo `CREATE EXTENSION` cubre también el esquema `trip`, ya que comparten la base de datos):
@@ -96,7 +95,7 @@ Detalle completo: **[Geofencing](https://github.com/shernandezp/TrackHub/wiki/Ge
 
 - **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Geofencing](https://github.com/shernandezp/TrackHub/wiki/Geofencing), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
 - **Usuario** — en la aplicación: el botón de ayuda o **F1** en cualquier pantalla
-- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Despliegue** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

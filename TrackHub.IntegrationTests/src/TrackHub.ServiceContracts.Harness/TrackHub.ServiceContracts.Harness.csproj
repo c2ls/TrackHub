@@ -9,7 +9,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
-    <PackageReference Include="TrackHubCommon.Web" Version="1.0.1" />
+    <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Web/Common.Web.csproj" />
   </ItemGroup>
 </Project>

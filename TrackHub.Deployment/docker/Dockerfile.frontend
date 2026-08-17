@@ -10,7 +10,7 @@ WORKDIR /app
 # Copy package files. .npmrc (legacy-peer-deps=true) MUST come with them: without it the
 # install fails ERESOLVE, because i18next declares a peer on typescript ^5 and this app is
 # on typescript 7.
-COPY TrackHub/package*.json TrackHub/.npmrc ./
+COPY TrackHub.Portal/package*.json TrackHub.Portal/.npmrc ./
 
 # Install from the lockfile. `npm install` would re-resolve the caret ranges on
 # bleeding-edge deps (vite ^8, typescript ^7) and could pull a breaking minor into a
@@ -18,7 +18,7 @@ COPY TrackHub/package*.json TrackHub/.npmrc ./
 RUN npm ci
 
 # Copy source code
-COPY TrackHub/ .
+COPY TrackHub.Portal/ .
 
 # Build arguments for environment variables
 ARG REACT_APP_DEFAULT_LAT=4.624335

@@ -2,11 +2,14 @@
 # =============================================================================
 # TrackHub Source Checkout
 # =============================================================================
-# Clones (or updates) every repository the stack builds from, into the
-# workspace directory alongside TrackHub.Deployment.
+# The whole product is one repository, and these scripts live inside it — so by
+# the time you can run this, the source is already checked out. This script now
+# fast-forwards that checkout (and still clones it outright in the unusual case
+# of being run from outside one), then verifies every directory the image builds
+# need is present.
 # Usage: ./clone-repos.sh
-# Configure GITHUB_OWNER / GITHUB_REPO_SUFFIX / GITHUB_BRANCH and, for private
-# repositories, GITHUB_USER / GITHUB_PASSWORD in .env
+# Configure GITHUB_OWNER / GITHUB_REPO / GITHUB_BRANCH and, for a private
+# repository, GITHUB_USER / GITHUB_PASSWORD in .env
 # =============================================================================
 
 set -e
@@ -26,36 +29,39 @@ print_info()    { echo -e "${BLUE}ℹ $1${NC}"; }
 
 source "$SCRIPT_DIR/repo-config.sh"
 
-print_info "Source: github.com/${GITHUB_OWNER}/<repo>${GITHUB_REPO_SUFFIX} (branch ${GITHUB_BRANCH})"
+print_info "Source: $(monorepo_url_clean) (branch ${GITHUB_BRANCH})"
 print_info "Target: $WORKSPACE_DIR"
 if [ -n "$GITHUB_USER" ]; then
     print_info "Authenticating as ${GITHUB_USER}"
 fi
 echo
 
-failed=()
-for repo in "${TRACKHUB_REPOS[@]}"; do
-    target="$WORKSPACE_DIR/$repo"
-    if [ -d "$target/.git" ]; then
-        printf "%-26s updating... " "$repo"
-    else
-        printf "%-26s cloning...  " "$repo"
-    fi
+if [ -d "$WORKSPACE_DIR/.git" ]; then
+    printf "%-26s updating... " "$GITHUB_REPO"
+else
+    printf "%-26s cloning...  " "$GITHUB_REPO"
+fi
 
-    if repo_clone_or_update "$repo" "$target" >/dev/null 2>&1; then
-        echo "ok"
-    else
-        echo "FAILED"
-        failed+=("$repo")
-    fi
-done
-
-echo
-if [ ${#failed[@]} -gt 0 ]; then
-    print_error "Failed: ${failed[*]}"
-    print_info "For private repositories set GITHUB_USER and GITHUB_PASSWORD in .env."
+if monorepo_clone_or_update "$WORKSPACE_DIR" >/dev/null 2>&1; then
+    echo "ok"
+else
+    echo "FAILED"
+    print_error "Could not update $(monorepo_url_clean)"
+    print_info "For a private repository set GITHUB_USER and GITHUB_PASSWORD in .env."
     print_info "GITHUB_PASSWORD must be a Personal Access Token, not your account password."
     exit 1
 fi
 
-print_success "All repositories ready in $WORKSPACE_DIR"
+echo
+# A partial checkout fails much later and far less clearly, deep inside
+# "docker compose build", as:
+#   failed to compute cache key: "/TrackHub.<Service>/src": not found
+missing="$(missing_source_dirs "$WORKSPACE_DIR")"
+if [ -n "$missing" ]; then
+    print_error "Checkout is incomplete — these source directories are missing:"
+    echo "$missing" | sed 's/^/    /'
+    print_info "Expected them under $WORKSPACE_DIR (the docker build context)."
+    exit 1
+fi
+
+print_success "Source ready in $WORKSPACE_DIR"

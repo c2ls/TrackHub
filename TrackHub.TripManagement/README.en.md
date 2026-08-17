@@ -30,15 +30,14 @@ Full detail: **[Trip Management](https://github.com/shernandezp/TrackHub/wiki/Tr
 - PostgreSQL 14+ **with PostGIS enabled**
 - A running TrackHub AuthorityServer, Management API and Telemetry API
 - An OpenRouteService API key, for route planning
-- The `TrackHubCommon.*` packages available from a local NuGet feed
 
 ### Steps
 
 1. **Clone**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.TripManagement.git
-   cd TrackHub.TripManagement
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.TripManagement
    ```
 
 2. **Enable PostGIS** in the `TrackHub` database (one `CREATE EXTENSION` also covers the `geofencing` schema):
@@ -110,7 +109,7 @@ In development the service listens on `https://localhost:5006` and `http://local
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Trip Management](https://github.com/shernandezp/TrackHub/wiki/Trip-Management), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication), [Reporting](https://github.com/shernandezp/TrackHub/wiki/Reporting)
 - **User** — in the app: the Help button or **F1** on any screen
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

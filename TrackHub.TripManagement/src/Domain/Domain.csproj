@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NetTopologySuite" />
-    <PackageReference Include="TrackHubCommon.Domain" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
   </ItemGroup>
 </Project>

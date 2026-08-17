@@ -2,7 +2,7 @@
 
 [← Back to the landing page](README.md) · [Español](README.es.md)
 
-The Telemetry API owns TrackHub's **high-volume, append-heavy** data. It stores and serves positions and operator telemetry; it never talks to GPS providers — that is the [Router](https://github.com/shernandezp/TrackHubRouter)'s role.
+The Telemetry API owns TrackHub's **high-volume, append-heavy** data. It stores and serves positions and operator telemetry; it never talks to GPS providers — that is the [Router](../TrackHubRouter)'s role.
 
 Built on .NET 10 with a HotChocolate GraphQL endpoint, following the platform's Clean Architecture and CQRS conventions.
 
@@ -33,15 +33,14 @@ Full detail: **[Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetr
 - PostgreSQL 14+
 - The `TrackHub` database with the `telemetry` schema **already created by the Manager migrations**
 - A running TrackHub AuthorityServer, for authentication
-- The `TrackHubCommon.*` packages available from a local NuGet feed
 
 ### Steps
 
 1. **Clone**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.Telemetry.git
-   cd TrackHub.Telemetry
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.Telemetry
    ```
 
 2. **Configure the database connection** in `src/Web/appsettings.json` — it must point at the **same** `TrackHub` database as the Manager:
@@ -68,7 +67,7 @@ In production, connect with a role that has read/write on `telemetry` and **read
 
 ## Project-specific notes
 
-- **This service has no migrations of its own — do not add any.** The `telemetry` tables are created and migrated by the [Management API](https://github.com/shernandezp/TrackHub.Manager). That is why `DB_CONNECTION_TELEMETRY` must point at the same `TrackHub` database. Adding a telemetry column means adding a *Manager* migration.
+- **This service has no migrations of its own — do not add any.** The `telemetry` tables are created and migrated by the [Management API](../TrackHub.Manager). That is why `DB_CONNECTION_TELEMETRY` must point at the same `TrackHub` database. Adding a telemetry column means adding a *Manager* migration.
 - **The `app`-schema tables are mapped read-only** and excluded from migrations. They exist so the service can enforce account scoping and group visibility without a network hop per request: users, groups, user–group and transporter–group links, transporters, device assignments, devices, operators and account features.
 - **`attributes` is a PostgreSQL `json` column.** `json` has no equality operator, so `Distinct()`, `GroupBy()` or set operations over an entity or projection including it fail at runtime with `42883`. De-duplicate with `EXISTS` or key-based predicates — **EF InMemory will not catch this.**
 - **`PlatformSyncActivityReader` is deliberately unscoped.** It is a documented platform-wide read gated by `[Authorize(Administrative, Read)]`, returning timestamps and counts only, never an account id. It backs the public status page's SyncWorker tile.
@@ -87,7 +86,7 @@ In production, connect with a role that has read/write on `telemetry` and **read
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Router](https://github.com/shernandezp/TrackHub/wiki/Router), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture)
 - **User** — in the app: the Help button or **F1** on any screen
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

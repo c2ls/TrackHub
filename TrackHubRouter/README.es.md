@@ -19,7 +19,7 @@ Construido sobre .NET 10 con un endpoint GraphQL de HotChocolate más una superf
 - **Sincronización manual y ping de conectividad** como funcionalidades de usuario autorizadas y con límite de tasa
 - **Declaración de capacidades del proveedor** — una solicitud de algo que un proveedor no puede hacer falla como una limitación del *proveedor*, no como un error de TrackHub
 
-El Router **no tiene base de datos propia**. Los datos maestros pasan por la [API de Gestión](https://github.com/shernandezp/TrackHub.Manager); las posiciones, el historial, las verificaciones de salud y las ejecuciones de sincronización van a la [API de Telemetry](https://github.com/shernandezp/TrackHub.Telemetry); los flujos de detección van a [Geofencing](https://github.com/shernandezp/TrackHub.Geofencing) y [Trip Management](https://github.com/shernandezp/TrackHub.TripManagement).
+El Router **no tiene base de datos propia**. Los datos maestros pasan por la [API de Gestión](../TrackHub.Manager); las posiciones, el historial, las verificaciones de salud y las ejecuciones de sincronización van a la [API de Telemetry](../TrackHub.Telemetry); los flujos de detección van a [Geofencing](../TrackHub.Geofencing) y [Trip Management](../TrackHub.TripManagement).
 
 Detalle completo: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** en la wiki.
 
@@ -32,15 +32,14 @@ Detalle completo: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router
 - SDK de .NET 10
 - Un TrackHub AuthorityServer, API de Gestión y API de Telemetry en ejecución
 - Al menos una cuenta de proveedor GPS (Traccar y CommandTrack son los probados)
-- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet
 
 ### Pasos
 
 1. **Clonar**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHubRouter.git
-   cd TrackHubRouter
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHubRouter
    ```
 
 2. **Configurar los servicios subyacentes y los protocolos habilitados** en `src/Web/appsettings.json` (y `src/SyncWorker/appsettings.json`):
@@ -119,7 +118,7 @@ Detalle completo: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router
 
 - **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Router](https://github.com/shernandezp/TrackHub/wiki/Router), [Adding a Provider](https://github.com/shernandezp/TrackHub/wiki/Adding-a-Provider), [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
 - **De usuario** — en la app: el botón de Ayuda o **F1** en cualquier pantalla
-- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Despliegue** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

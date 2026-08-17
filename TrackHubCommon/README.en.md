@@ -2,9 +2,9 @@
 
 [← Back to the landing page](README.md) · [Español](README.es.md)
 
-TrackHubCommon is the shared foundation every TrackHub backend service builds on. It ships as **four local NuGet packages**, not project references.
+TrackHubCommon is the shared foundation every TrackHub backend service builds on. It is **not packaged** — every backend service references its four projects directly.
 
-| Package | Contents |
+| Project | Contents |
 |---|---|
 | `TrackHubCommon.Domain` | Constants, enums, cryptography extensions, localization, domain-event primitives |
 | `TrackHubCommon.Application` | The custom CQRS mediator, the behavior pipeline, attributes, testing helpers |
@@ -35,20 +35,22 @@ Full detail: **[Common Library](https://github.com/shernandezp/TrackHub/wiki/Com
 ### Prerequisites
 
 - .NET 10 SDK
-- A local NuGet feed — the packages are **not** published to nuget.org
 
-### Consuming the packages
+### Consuming Common
 
-Add the package references through your repository's `Directory.Packages.props`, then reference them per project:
+Common is **not** packaged. Every service in the monorepo references the projects directly, so
+there is no version to pin and no feed to configure:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="TrackHubCommon.Domain" />
-  <PackageReference Include="TrackHubCommon.Application" />
-  <PackageReference Include="TrackHubCommon.Infrastructure" />
-  <PackageReference Include="TrackHubCommon.Web" />
+  <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
+  <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Application/Common.Application.csproj" />
+  <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj" />
+  <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Web/Common.Web.csproj" />
 </ItemGroup>
 ```
+
+`$(RepoRoot)` is defined in each service's `Directory.Build.props` as the monorepo root.
 
 Register the services in each layer's `DependencyInjection.cs`:
 
@@ -62,50 +64,46 @@ builder.Services
     .AddTrackHubGraphQLServer<Query, Mutation>(builder.Environment.IsDevelopment());
 ```
 
-### Building the packages
+### Building
 
 ```bash
-dotnet build
+dotnet build TrackHub.slnx     # from the monorepo root — builds Common and every consumer
 ```
-
-**Use `dotnet build`, not `dotnet pack`.** The projects set `GeneratePackageOnBuild=true`, so packages are produced during build. `dotnet pack` can package a **stale** DLL, or fail with NU5026 after a clean — it does not reliably recompile.
 
 ---
 
-## Repacking after a change
+## Changing Common
 
-When any `TrackHubCommon.*` project changes — a new constant, a new behavior, a contract change — the packages must be rebuilt and every consumer bumped.
+Edit the code and build. That is the whole procedure.
 
-1. **Bump `<Version>`** in `Directory.Build.props`. It is the source of truth, applied in lockstep to all four packages.
-2. **`dotnet build`** (see above).
-3. **Copy the `.nupkg` files** from each `src/Common.*/bin/Debug/` to the local feed and to `NugetPackages/`.
-4. **Purge the global cache** when repacking the *same* version:
+Because consumers reference the projects rather than packages, a change to Common rebuilds every
+service that uses it in the same build, and the compiler reports breakage immediately. There is no
+version to bump, nothing to pack, no feed to copy into, and no NuGet cache to purge — the
+`CS0117 'Resources' does not contain …` class of error caused by a stale extracted package cannot
+happen any more.
 
-   ```bash
-   rm -rf ~/.nuget/packages/trackhubcommon.*/<version>
-   ```
-
-   Otherwise consumers restore the previously extracted copy and you get confusing `CS0117 'Resources' does not contain …` errors against code you just wrote.
-5. **Bump and restore every consumer.**
+Change Common and its consumers in **one commit**.
 
 ---
 
 ## Project-specific notes
 
-- **Every consumer must move together, and none may be pinned back.** The eight service repositories track the version through their `Directory.Packages.props` — and **the ServiceContracts harness tracks it through a direct `PackageReference`** in `TrackHub.ServiceContracts.Harness.csproj`. It has no `Directory.Packages.props`, so a props-only sweep misses it and the contract suite then fails to restore.
+- **Every consumer moves together, automatically.** All services and the ServiceContracts harness
+  reference the projects, so they always compile against the current source — nothing can be pinned
+  back to an older Common, and a breaking change surfaces at build time rather than after a publish.
 - **`AccountScopeBehavior` is fail-closed; the default `IFeatureFlagService` is fail-open.** That is deliberate: a missing tenant scope is a security failure, while a missing feature registration is a service-configuration failure the service's own tests should catch. A service that uses `[RequireFeature]` **must** register its own `IFeatureFlagService`.
 - **`AddDistributedMemoryCache()` is not optional.** `CachingBehavior` resolves `IDistributedCache` for every request type; a missing registration fails **every** request with a masked DI error.
 - **Adding an authorization resource is not enough.** It must also be added to `TrackHubSecurity`'s `ApplicationDbContextInitializer` `DefaultResources`, and granted in each role's matrix — [two separate steps](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity#seeding-rules-that-bite).
 - **The constant catalogs are the contract.** Resource, action, feature-key, schema and table names are never string literals at a call site — a typo becomes a silent authorization or mapping failure.
 - Verifying that a constant landed in a built DLL is best done with `grep -a`; UTF-16 metadata literals defeat plain `strings`.
-- Docker image builds pack these packages automatically in a `common` stage, so a deployment does not need a pre-populated feed. A local `dotnet ef` run does.
+- Docker image builds copy the TrackHubCommon source into the build context and restore it as a project reference — there is no packing stage and no feed to pre-populate, in a deployment or locally.
 
 ---
 
 ## Documentation
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

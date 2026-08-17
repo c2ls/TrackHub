@@ -2,7 +2,7 @@
 
 [← Back to the landing page](README.md) · [Español](README.es.md)
 
-The Geofencing API owns geographic zones and the visit events transporters generate against them. It evaluates positions fed by the [Router](https://github.com/shernandezp/TrackHubRouter) with PostGIS spatial queries and emits alert events through the [Management API](https://github.com/shernandezp/TrackHub.Manager).
+The Geofencing API owns geographic zones and the visit events transporters generate against them. It evaluates positions fed by the [Router](../TrackHubRouter) with PostGIS spatial queries and emits alert events through the [Management API](../TrackHub.Manager).
 
 Built on .NET 10 with a HotChocolate GraphQL endpoint and NetTopologySuite geometry. Gated by the `geofencing` account feature.
 
@@ -31,15 +31,14 @@ Full detail: **[Geofencing](https://github.com/shernandezp/TrackHub/wiki/Geofenc
 - .NET 10 SDK
 - PostgreSQL 14+ **with PostGIS enabled**
 - A running TrackHub AuthorityServer and Management API
-- The `TrackHubCommon.*` packages available from a local NuGet feed
 
 ### Steps
 
 1. **Clone**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHub.Geofencing.git
-   cd TrackHub.Geofencing
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHub.Geofencing
    ```
 
 2. **Enable PostGIS** in the `TrackHub` database (one `CREATE EXTENSION` also covers the `trip` schema — they share the database):
@@ -96,7 +95,7 @@ Full detail: **[Geofencing](https://github.com/shernandezp/TrackHub/wiki/Geofenc
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Geofencing](https://github.com/shernandezp/TrackHub/wiki/Geofencing), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
 - **User** — in the app: the Help button or **F1** on any screen
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

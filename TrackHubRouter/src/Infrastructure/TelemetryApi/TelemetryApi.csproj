@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GraphQL.Client" />
-    <PackageReference Include="TrackHubCommon.Infrastructure" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Application\Application.csproj" />

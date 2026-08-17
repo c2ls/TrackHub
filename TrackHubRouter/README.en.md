@@ -19,7 +19,7 @@ Built on .NET 10 with a HotChocolate GraphQL endpoint plus a REST surface for th
 - **Manual sync and connectivity ping** as authorized, rate-limited user features
 - **Provider capability declaration** — a request for something a provider cannot do fails as a *provider* limitation, not a TrackHub error
 
-The Router has **no database of its own**. Master data goes through the [Management API](https://github.com/shernandezp/TrackHub.Manager); positions, history, health checks and sync runs go to the [Telemetry API](https://github.com/shernandezp/TrackHub.Telemetry); detection feeds go to [Geofencing](https://github.com/shernandezp/TrackHub.Geofencing) and [Trip Management](https://github.com/shernandezp/TrackHub.TripManagement).
+The Router has **no database of its own**. Master data goes through the [Management API](../TrackHub.Manager); positions, history, health checks and sync runs go to the [Telemetry API](../TrackHub.Telemetry); detection feeds go to [Geofencing](../TrackHub.Geofencing) and [Trip Management](../TrackHub.TripManagement).
 
 Full detail: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** in the wiki.
 
@@ -32,15 +32,14 @@ Full detail: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** i
 - .NET 10 SDK
 - A running TrackHub AuthorityServer, Management API and Telemetry API
 - At least one GPS provider account (Traccar and CommandTrack are the tested ones)
-- The `TrackHubCommon.*` packages available from a local NuGet feed
 
 ### Steps
 
 1. **Clone**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHubRouter.git
-   cd TrackHubRouter
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHubRouter
    ```
 
 2. **Configure the downstream services and enabled protocols** in `src/Web/appsettings.json` (and `src/SyncWorker/appsettings.json`):
@@ -119,7 +118,7 @@ Full detail: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** i
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Router](https://github.com/shernandezp/TrackHub/wiki/Router), [Adding a Provider](https://github.com/shernandezp/TrackHub/wiki/Adding-a-Provider), [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry), [Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)
 - **User** — in the app: the Help button or **F1** on any screen
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

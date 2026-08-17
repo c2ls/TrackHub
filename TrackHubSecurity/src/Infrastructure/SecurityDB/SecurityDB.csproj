@@ -4,8 +4,8 @@
     <AssemblyName>TrackHub.Security.Infrastructure</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="TrackHubCommon.Application" />
-    <PackageReference Include="TrackHubCommon.Infrastructure" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Application/Common.Application.csproj" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">

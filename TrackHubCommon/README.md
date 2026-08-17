@@ -14,7 +14,7 @@ We believe in the strength of community collaboration to create effective and ac
 
 ## Overview
 
-TrackHubCommon is the shared foundation every TrackHub backend service builds on, distributed as four local NuGet packages: `TrackHubCommon.Domain`, `.Application`, `.Infrastructure` and `.Web`.
+TrackHubCommon is the shared foundation every TrackHub backend service builds on, comprising four projects referenced directly by every service: `Common.Domain`, `Common.Application`, `Common.Infrastructure` and `Common.Web`.
 
 It provides the custom CQRS mediator and its behavior pipeline, the cross-service constant catalogs, OpenIddict JWT configuration, the GraphQL client factory, authorization and fail-closed tenant-scope enforcement, EF interceptors and conventions, and the single GraphQL server registration used by every service.
 
@@ -26,27 +26,27 @@ It provides the custom CQRS mediator and its behavior pipeline, the cross-servic
 |---|---|
 | **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Common Library](https://github.com/shernandezp/TrackHub/wiki/Common-Library) and [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture) |
 | **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) |
+| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
 
 ---
 
-## Project Repositories
+## Modules in this repository
 
 | Repository | Purpose |
 |---|---|
-| [TrackHubCommon](https://github.com/shernandezp/TrackHubCommon) | Shared library, distributed as local NuGet packages |
-| [TrackHub.AuthorityServer](https://github.com/shernandezp/TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](https://github.com/shernandezp/TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](https://github.com/shernandezp/TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](https://github.com/shernandezp/TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](https://github.com/shernandezp/TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](https://github.com/shernandezp/TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](https://github.com/shernandezp/TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](https://github.com/shernandezp/TrackHub.Reporting) | Reporting API |
-| [TrackHub](https://github.com/shernandezp/TrackHub) | Web portal (React) |
+| [TrackHubCommon](../TrackHubCommon) | Shared framework, referenced by project |
+| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
+| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
+| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
+| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
+| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
+| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
+| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
+| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
+| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) |
 | [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
-| [TrackHub.IntegrationTests](https://github.com/shernandezp/TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) | Docker deployment for the whole stack |
+| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
+| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
 
 ---
 

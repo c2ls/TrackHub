@@ -33,15 +33,14 @@ Detalle completo: **[Security and Identity](https://github.com/shernandezp/Track
 - .NET 10 SDK
 - PostgreSQL 14+
 - Una instancia de TrackHub AuthorityServer en ejecución, para autenticación
-- Los paquetes `TrackHubCommon.*` disponibles desde un feed local de NuGet
 
 ### Pasos
 
 1. **Clonar**
 
    ```bash
-   git clone https://github.com/shernandezp/TrackHubSecurity.git
-   cd TrackHubSecurity
+   git clone https://github.com/shernandezp/TrackHub.git
+   cd TrackHub/TrackHubSecurity
    ```
 
 2. **Configurar la conexión a la base de datos** en `src/Web/appsettings.json`:
@@ -98,7 +97,7 @@ Detalle completo: **[Security and Identity](https://github.com/shernandezp/Track
 
 - **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity), [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture)
 - **Usuario** — en la aplicación: el botón de ayuda o **F1** en cualquier pantalla
-- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Despliegue** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

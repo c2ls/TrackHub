@@ -1,56 +1,57 @@
 # TrackHub SyncWorker Service
 # Background worker for data synchronization
 
-# Stage 0: Pack shared TrackHubCommon NuGet packages
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS common
-WORKDIR /common
-COPY TrackHubCommon/ ./
-# GeneratePackageOnBuild=true: `dotnet build` emits the .nupkg for each project
-# (`dotnet pack` hits NU5026 with this setting); building Web builds all four.
-RUN dotnet build src/Common.Web/Common.Web.csproj -c Release \
- && mkdir -p /local-nuget \
- && find /common/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /local-nuget/ \;
-
 # Stage 1: Build
+# TrackHubCommon is a ProjectReference now (not a packed NuGet feed), so it must
+# be present in the same layout as the repository and restores resolve it directly.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy solution and project files
-COPY TrackHubRouter/TrackHub.Router.slnx .
-COPY TrackHubRouter/Directory.Build.props .
-COPY TrackHubRouter/Directory.Packages.props .
-COPY TrackHubRouter/global.json .
-COPY TrackHubRouter/src/Application/Application.csproj src/Application/
-COPY TrackHubRouter/src/Domain/Domain.csproj src/Domain/
-COPY TrackHubRouter/src/Infrastructure/Common/Common.csproj src/Infrastructure/Common/
-COPY TrackHubRouter/src/Infrastructure/CommandTrack/CommandTrack.csproj src/Infrastructure/CommandTrack/
-COPY TrackHubRouter/src/Infrastructure/Flespi/Flespi.csproj src/Infrastructure/Flespi/
-COPY TrackHubRouter/src/Infrastructure/GeofenceApi/GeofenceApi.csproj src/Infrastructure/GeofenceApi/
-COPY TrackHubRouter/src/Infrastructure/Geotab/Geotab.csproj src/Infrastructure/Geotab/
-COPY TrackHubRouter/src/Infrastructure/GpsGate/GpsGate.csproj src/Infrastructure/GpsGate/
-COPY TrackHubRouter/src/Infrastructure/ManagerApi/ManagerApi.csproj src/Infrastructure/ManagerApi/
-COPY TrackHubRouter/src/Infrastructure/Navixy/Navixy.csproj src/Infrastructure/Navixy/
-COPY TrackHubRouter/src/Infrastructure/Protack/Protrack.csproj src/Infrastructure/Protack/
-COPY TrackHubRouter/src/Infrastructure/Samsara/Samsara.csproj src/Infrastructure/Samsara/
-COPY TrackHubRouter/src/Infrastructure/TelemetryApi/TelemetryApi.csproj src/Infrastructure/TelemetryApi/
-COPY TrackHubRouter/src/Infrastructure/Traccar/Traccar.csproj src/Infrastructure/Traccar/
-COPY TrackHubRouter/src/Infrastructure/Wialon/Wialon.csproj src/Infrastructure/Wialon/
-COPY TrackHubRouter/src/SyncWorker/SyncWorker.csproj src/SyncWorker/
+# Central build configuration, shared by every project.
+COPY global.json Directory.Packages.props ./
 
-# Copy freshly packed TrackHubCommon packages + NuGet feed config
-COPY --from=common /local-nuget/ /nuget-packages/
-COPY TrackHub.Deployment/nuget-packages/nuget.config /nuget-packages/nuget.config
+# Project files first: this layer only changes when a dependency changes,
+# so the restore below stays cached across ordinary source edits.
+COPY TrackHubCommon/Directory.Build.props TrackHubCommon/
+COPY TrackHubCommon/src/Common.Application/Common.Application.csproj TrackHubCommon/src/Common.Application/
+COPY TrackHubCommon/src/Common.Domain/Common.Domain.csproj TrackHubCommon/src/Common.Domain/
+COPY TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj TrackHubCommon/src/Common.Infrastructure/
+COPY TrackHubCommon/src/Common.Web/Common.Web.csproj TrackHubCommon/src/Common.Web/
+COPY TrackHubCommon/tests/Common.Application.Tests/Common.Application.Tests.csproj TrackHubCommon/tests/Common.Application.Tests/
+COPY TrackHubCommon/tests/Common.Domain.Tests/Common.Domain.Tests.csproj TrackHubCommon/tests/Common.Domain.Tests/
+COPY TrackHubCommon/tests/Common.Infrastructure.Tests/Common.Infrastructure.Tests.csproj TrackHubCommon/tests/Common.Infrastructure.Tests/
+COPY TrackHubCommon/tests/Common.Web.Tests/Common.Web.Tests.csproj TrackHubCommon/tests/Common.Web.Tests/
+COPY TrackHubRouter/Directory.Build.props TrackHubRouter/
+COPY TrackHubRouter/src/Application/Application.csproj TrackHubRouter/src/Application/
+COPY TrackHubRouter/src/Domain/Domain.csproj TrackHubRouter/src/Domain/
+COPY TrackHubRouter/src/Infrastructure/CommandTrack/CommandTrack.csproj TrackHubRouter/src/Infrastructure/CommandTrack/
+COPY TrackHubRouter/src/Infrastructure/Common/Common.csproj TrackHubRouter/src/Infrastructure/Common/
+COPY TrackHubRouter/src/Infrastructure/Flespi/Flespi.csproj TrackHubRouter/src/Infrastructure/Flespi/
+COPY TrackHubRouter/src/Infrastructure/GeofenceApi/GeofenceApi.csproj TrackHubRouter/src/Infrastructure/GeofenceApi/
+COPY TrackHubRouter/src/Infrastructure/Geotab/Geotab.csproj TrackHubRouter/src/Infrastructure/Geotab/
+COPY TrackHubRouter/src/Infrastructure/GpsGate/GpsGate.csproj TrackHubRouter/src/Infrastructure/GpsGate/
+COPY TrackHubRouter/src/Infrastructure/ManagerApi/ManagerApi.csproj TrackHubRouter/src/Infrastructure/ManagerApi/
+COPY TrackHubRouter/src/Infrastructure/Navixy/Navixy.csproj TrackHubRouter/src/Infrastructure/Navixy/
+COPY TrackHubRouter/src/Infrastructure/Protrack/Protrack.csproj TrackHubRouter/src/Infrastructure/Protrack/
+COPY TrackHubRouter/src/Infrastructure/Samsara/Samsara.csproj TrackHubRouter/src/Infrastructure/Samsara/
+COPY TrackHubRouter/src/Infrastructure/TelemetryApi/TelemetryApi.csproj TrackHubRouter/src/Infrastructure/TelemetryApi/
+COPY TrackHubRouter/src/Infrastructure/Traccar/Traccar.csproj TrackHubRouter/src/Infrastructure/Traccar/
+COPY TrackHubRouter/src/Infrastructure/TripApi/TripApi.csproj TrackHubRouter/src/Infrastructure/TripApi/
+COPY TrackHubRouter/src/Infrastructure/Wialon/Wialon.csproj TrackHubRouter/src/Infrastructure/Wialon/
+COPY TrackHubRouter/src/SyncWorker/SyncWorker.csproj TrackHubRouter/src/SyncWorker/
+COPY TrackHubRouter/src/Web/Web.csproj TrackHubRouter/src/Web/
+COPY TrackHubRouter/tests/Application.UnitTests/Application.UnitTests.csproj TrackHubRouter/tests/Application.UnitTests/
+COPY TrackHubRouter/tests/Intfrastructure.UnitTests/Infrastructure.UnitTests.csproj TrackHubRouter/tests/Intfrastructure.UnitTests/
+COPY TrackHubRouter/tests/Web.UnitTests/Web.UnitTests.csproj TrackHubRouter/tests/Web.UnitTests/
 
-# Restore dependencies
-RUN dotnet restore src/SyncWorker/SyncWorker.csproj --configfile /nuget-packages/nuget.config
+RUN dotnet restore TrackHubRouter/src/SyncWorker/SyncWorker.csproj
 
-# Copy all source code
-COPY TrackHubRouter/src/ src/
+# Then the sources.
+COPY TrackHubCommon/ TrackHubCommon/
+COPY TrackHubRouter/ TrackHubRouter/
 
-# Build and publish
-RUN dotnet publish src/SyncWorker/SyncWorker.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish TrackHubRouter/src/SyncWorker/SyncWorker.csproj -c Release -o /app/publish --no-restore
 
-# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 

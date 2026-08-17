@@ -1,44 +1,43 @@
 # TrackHub Reporting API (REST)
 # Multi-stage build for .NET 10
 
-# Stage 0: Pack shared TrackHubCommon NuGet packages
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS common
-WORKDIR /common
-COPY TrackHubCommon/ ./
-# GeneratePackageOnBuild=true: `dotnet build` emits the .nupkg for each project
-# (`dotnet pack` hits NU5026 with this setting); building Web builds all four.
-RUN dotnet build src/Common.Web/Common.Web.csproj -c Release \
- && mkdir -p /local-nuget \
- && find /common/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /local-nuget/ \;
-
 # Stage 1: Build
+# TrackHubCommon is a ProjectReference now (not a packed NuGet feed), so it must
+# be present in the same layout as the repository and restores resolve it directly.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy solution and project files
-COPY TrackHub.Reporting/TrackHub.Reporting.slnx .
-COPY TrackHub.Reporting/Directory.Build.props .
-COPY TrackHub.Reporting/Directory.Packages.props .
-COPY TrackHub.Reporting/global.json .
-COPY TrackHub.Reporting/src/Application/Application.csproj src/Application/
-COPY TrackHub.Reporting/src/Domain/Domain.csproj src/Domain/
-COPY TrackHub.Reporting/src/Infrastructure/GraphQLApi/GraphQLApi.csproj src/Infrastructure/GraphQLApi/
-COPY TrackHub.Reporting/src/Web/Web.csproj src/Web/
+# Central build configuration, shared by every project.
+COPY global.json Directory.Packages.props ./
 
-# Copy freshly packed TrackHubCommon packages + NuGet feed config
-COPY --from=common /local-nuget/ /nuget-packages/
-COPY TrackHub.Deployment/nuget-packages/nuget.config /nuget-packages/nuget.config
+# Project files first: this layer only changes when a dependency changes,
+# so the restore below stays cached across ordinary source edits.
+COPY TrackHubCommon/Directory.Build.props TrackHubCommon/
+COPY TrackHubCommon/src/Common.Application/Common.Application.csproj TrackHubCommon/src/Common.Application/
+COPY TrackHubCommon/src/Common.Domain/Common.Domain.csproj TrackHubCommon/src/Common.Domain/
+COPY TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj TrackHubCommon/src/Common.Infrastructure/
+COPY TrackHubCommon/src/Common.Web/Common.Web.csproj TrackHubCommon/src/Common.Web/
+COPY TrackHubCommon/tests/Common.Application.Tests/Common.Application.Tests.csproj TrackHubCommon/tests/Common.Application.Tests/
+COPY TrackHubCommon/tests/Common.Domain.Tests/Common.Domain.Tests.csproj TrackHubCommon/tests/Common.Domain.Tests/
+COPY TrackHubCommon/tests/Common.Infrastructure.Tests/Common.Infrastructure.Tests.csproj TrackHubCommon/tests/Common.Infrastructure.Tests/
+COPY TrackHubCommon/tests/Common.Web.Tests/Common.Web.Tests.csproj TrackHubCommon/tests/Common.Web.Tests/
+COPY TrackHub.Reporting/Directory.Build.props TrackHub.Reporting/
+COPY TrackHub.Reporting/src/Application/Application.csproj TrackHub.Reporting/src/Application/
+COPY TrackHub.Reporting/src/Domain/Domain.csproj TrackHub.Reporting/src/Domain/
+COPY TrackHub.Reporting/src/Infrastructure/GraphQLApi/GraphQLApi.csproj TrackHub.Reporting/src/Infrastructure/GraphQLApi/
+COPY TrackHub.Reporting/src/Web/Web.csproj TrackHub.Reporting/src/Web/
+COPY TrackHub.Reporting/tests/Application.UnitTests/Application.UnitTests.csproj TrackHub.Reporting/tests/Application.UnitTests/
+COPY TrackHub.Reporting/tests/Infrastructure.UnitTests/Infrastructure.UnitTests.csproj TrackHub.Reporting/tests/Infrastructure.UnitTests/
+COPY TrackHub.Reporting/tests/Web.UnitTests/Web.UnitTests.csproj TrackHub.Reporting/tests/Web.UnitTests/
 
-# Restore dependencies
-RUN dotnet restore src/Web/Web.csproj --configfile /nuget-packages/nuget.config
+RUN dotnet restore TrackHub.Reporting/src/Web/Web.csproj
 
-# Copy all source code
-COPY TrackHub.Reporting/src/ src/
+# Then the sources.
+COPY TrackHubCommon/ TrackHubCommon/
+COPY TrackHub.Reporting/ TrackHub.Reporting/
 
-# Build and publish
-RUN dotnet publish src/Web/Web.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish TrackHub.Reporting/src/Web/Web.csproj -c Release -o /app/publish --no-restore
 
-# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 

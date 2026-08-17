@@ -128,11 +128,10 @@ outside PostgreSQL: back it up separately.
 
 > **Note:** Docker builds include the .NET SDK automatically, but you still need the SDK
 > (plus `dotnet-ef`) on a host that can reach PostgreSQL, because **EF migrations are applied
-> outside Docker** — see [Applying Migrations](#applying-migrations). Because the
-> `TrackHubCommon.*` packages are not published to nuget.org, that host must pack them from
-> the `TrackHubCommon/` source into a local feed and register it (the commands are in
-> [Applying Migrations](#applying-migrations)). Docker image builds handle this automatically —
-> each Dockerfile packs TrackHubCommon in a dedicated `common` stage.
+> outside Docker** — see [Applying Migrations](#applying-migrations). TrackHubCommon needs
+> no setup on that host: the services reference it as a `ProjectReference`, so restore and
+> build resolve it straight from the source in the checkout — the same way the Docker
+> image builds do.
 
 ### External Requirements
 
@@ -175,33 +174,41 @@ docker compose version
 mkdir -p /opt/trackhub
 cd /opt/trackhub
 
-# Clone the deployment repository
-git clone https://github.com/shernandezp/TrackHub.Deployment.git
+# Clone the repository — one clone brings every service, the portal and this folder
+git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub
 
-# Configure where the source repositories come from, then clone them all
-cd TrackHub.Deployment
+cd /opt/trackhub/TrackHub.Deployment
 cp .env.example .env
-./scripts/clone-repos.sh
-cd ..
 ```
 
-`clone-repos.sh` reads these settings from `.env`:
+The checkout root (`/opt/trackhub`) is the docker build context: every compose
+service builds with `context: ..` and each Dockerfile copies from
+`TrackHubCommon/`, `TrackHub.Manager/` and the other service directories, so those
+must sit alongside `TrackHub.Deployment/`. A normal clone gives you exactly that.
+
+`clone-repos.sh` is no longer needed for the first checkout — the clone above *is*
+the checkout. Run it later to fast-forward the checkout and verify no source
+directory has gone missing. It reads these settings from `.env`:
 
 | Setting | Purpose | Default |
 |---|---|---|
-| `GITHUB_OWNER` | Account that owns the repositories | `shernandezp` |
-| `GITHUB_REPO_SUFFIX` | Appended to every repository name | *(empty)* |
-| `GITHUB_BRANCH` | Branch to check out | `master` |
-| `GITHUB_USER` / `GITHUB_PASSWORD` | Credentials, private repositories only | *(empty)* |
+| `GITHUB_OWNER` | Account that owns the repository | `shernandezp` |
+| `GITHUB_REPO` | Repository name | `TrackHub` |
+| `GITHUB_BRANCH` | Branch to check out (`main` or `develop`) | `main` |
+| `GITHUB_USER` / `GITHUB_PASSWORD` | Credentials, private repository only | *(empty)* |
 
-For a private deployment, point it at your own copies:
+For a private deployment, point it at your own copy:
 
 ```bash
 GITHUB_OWNER=your-account
-GITHUB_REPO_SUFFIX=.Commercial
+GITHUB_REPO=TrackHub.Commercial
 GITHUB_USER=your-username
 GITHUB_PASSWORD=ghp_your_personal_access_token
 ```
+
+> `GITHUB_REPO_SUFFIX` from the per-repository layout is no longer read. An existing
+> `.env` that set `GITHUB_OWNER` plus a suffix still resolves correctly, but set
+> `GITHUB_REPO` explicitly if your repository is not named `TrackHub`.
 
 > `GITHUB_PASSWORD` must be a **Personal Access Token**, not your account password —
 > GitHub no longer accepts passwords over HTTPS. Create one at
@@ -239,14 +246,9 @@ schema is created by the Manager migrations).
 # .NET SDK + EF tooling
 dotnet tool install --global dotnet-ef
 
-# The services depend on TrackHubCommon.* packages that are NOT on nuget.org. Pack them
-# from source into a local feed, then register it — without this source, restore (and
-# therefore `dotnet ef`) fails.
-# `dotnet build` (not `dotnet pack`) — GeneratePackageOnBuild emits the .nupkg files
-dotnet build TrackHubCommon/src/Common.Web/Common.Web.csproj -c Release
-mkdir -p /opt/trackhub/local-nuget
-find TrackHubCommon/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /opt/trackhub/local-nuget/ \;
-dotnet nuget add source /opt/trackhub/local-nuget -n trackhub-local
+# TrackHubCommon needs no separate step — the services reference it as a
+# ProjectReference, so restore (and therefore `dotnet ef`) builds it from the
+# source in this checkout.
 ```
 
 Set the connection strings explicitly — **do not rely on the services' `appsettings.json`,
@@ -365,7 +367,7 @@ sudo mkdir -p /opt/trackhub
 sudo chown $USER:$USER /opt/trackhub
 cd /opt/trackhub
 
-# Clone repositories (as shown in Quick Start)
+# Clone the repository (as shown in Quick Start)
 ```
 
 ### Step 4: Database Setup
@@ -827,9 +829,9 @@ account data. Do not put these behind auth or an IP allowlist without removing t
 
 All services use the parent directory (`/opt/trackhub/`) as the Docker build context. This allows each Dockerfile to access:
 
-1. **Its own source repository** (e.g., `TrackHub.Manager/`)
-2. **The TrackHubCommon source** (`TrackHubCommon/`), packed into NuGet packages by each
-   Dockerfile's `common` stage, plus the NuGet feed config (`TrackHub.Deployment/nuget-packages/nuget.config`)
+1. **Its own source directory** (e.g., `TrackHub.Manager/`)
+2. **The TrackHubCommon source** (`TrackHubCommon/`), consumed as a `ProjectReference` —
+   the Dockerfile copies it in the repository layout and restore/build resolve it from source
 3. **Shared scripts** (`TrackHub.Deployment/scripts/`)
 
 Each Dockerfile has a matching `docker/<Dockerfile>.dockerignore` file that
@@ -859,11 +861,11 @@ runs, or manual cleanup:
 - **`--force-recreate`** guarantees containers are replaced by the freshly built
   images on every deploy.
 
-### TrackHubCommon Packages
+### TrackHubCommon (shared library)
 
-TrackHub services depend on the **TrackHubCommon** shared library, which is not published to nuget.org. Each Dockerfile packs TrackHubCommon from source in a dedicated first build stage (`FROM ... AS common`) that runs `dotnet build` on `Common.Web` (which builds all four `Common.*` projects; `GeneratePackageOnBuild` emits their `.nupkg` files) and collects the packages into `/local-nuget`. That output is copied to `/nuget-packages/` alongside `nuget-packages/nuget.config`, which configures both the local source and nuget.org for the restore step.
+TrackHub services depend on the **TrackHubCommon** shared library, which is not published to nuget.org. It is consumed as a `ProjectReference`: each Dockerfile copies the `TrackHubCommon/` sources into the image build context in the same layout as the repository, and `dotnet restore`/`build` resolve the `Common.*` projects directly from source. There is no packing stage and no local NuGet feed.
 
-Because packages are built from the `TrackHubCommon/` source inside the build context on every image build, updating TrackHubCommon requires **no manual repack** — just rebuild the affected services. Bump `<Version>` in `TrackHubCommon/Directory.Build.props` and the matching `TrackHubCommon.*` `PackageVersion` entries in each service's `Directory.Packages.props` in lockstep when you introduce a breaking change.
+Because the library is compiled from the `TrackHubCommon/` source on every image build, updating it requires nothing beyond rebuilding the affected services — and there are no per-service version pins to keep in lockstep; the `<Version>` on TrackHubCommon only stamps the assemblies and any packages `dotnet pack` produces.
 
 ### Reverse Proxy and HTTPS
 
@@ -973,20 +975,15 @@ the Manager migrations.
 | Manager | `TrackHub.Manager/src/Infrastructure/ManagerDB` | `TrackHub.Manager/src/Web` | `TrackHub` |
 | Geofencing | `TrackHub.Geofencing/src/Infrastructure/ManagerDB` | `TrackHub.Geofencing/src/Web` | `TrackHub` |
 
-Pack `TrackHubCommon.*` into a local feed once (they are not on nuget.org), then set the
-connection strings explicitly — the services'
+Set the connection strings explicitly — the services'
 `appsettings.json` holds a **localhost dev** connection string that EF would otherwise use
-silently:
+silently. (`TrackHubCommon` builds from source automatically — it is a `ProjectReference`,
+so no local feed setup is needed.)
 
 ```bash
 dotnet tool install --global dotnet-ef
 
 cd /opt/trackhub
-# `dotnet build` (not `dotnet pack`) — GeneratePackageOnBuild emits the .nupkg files
-dotnet build TrackHubCommon/src/Common.Web/Common.Web.csproj -c Release
-mkdir -p /opt/trackhub/local-nuget
-find TrackHubCommon/src -name 'TrackHubCommon.*.nupkg' -exec cp {} /opt/trackhub/local-nuget/ \;
-dotnet nuget add source /opt/trackhub/local-nuget -n trackhub-local
 
 export SECURITY_CONN="server=db.example.com;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword"
 export MANAGER_CONN="server=db.example.com;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword"
@@ -1248,29 +1245,28 @@ docker run --rm -v <volume-name>:/data -v "$PWD/backups:/backup" alpine \
   tar czf /backup/documents-preupgrade.tar.gz -C /data .
 ```
 
-### 2. Pull the new code (all repos)
+### 2. Pull the new code
 
-**Telemetry is a new repository** — an instance installed before this release does not
-have it on disk, and the build (`docker/Dockerfile.telemetry`) copies from
-`TrackHub.Telemetry/`. Clone it before anything else, or the deploy fails:
-
-```bash
-cd /opt/trackhub
-[ -d TrackHub.Telemetry ] || git clone https://github.com/shernandezp/TrackHub.Telemetry.git
-```
-
-**TrackHubCommon is also required on disk** — the backend images pack the
-`TrackHubCommon.*` NuGet packages from its source (the `common` build stage).
-`deploy.sh` clones it automatically if missing, but it must be pulled like any other
-repo to pick up changes:
+Everything ships in one repository, so a single pull brings every service —
+including `TrackHub.Telemetry/` and `TrackHubCommon/`, which older instances had to
+clone separately:
 
 ```bash
-cd /opt/trackhub
-[ -d TrackHubCommon ] || git clone https://github.com/shernandezp/TrackHubCommon.git
+cd /opt/trackhub && git pull
 ```
 
-Then pull the rest using the loop in [Update All Services](#update-all-services).
-No new repo is needed for **SyncWorker** — it builds from `TrackHubRouter`.
+**TrackHubCommon must be present on disk** — the services consume it as a
+`ProjectReference`, so the backend images build it straight from its source. It is
+part of this repository, so the pull above is all it takes; `deploy.sh` now reports a
+missing directory as a broken checkout rather than trying to clone it.
+
+No separate checkout is needed for **SyncWorker** — it builds from `TrackHubRouter/`.
+
+> Upgrading an instance that predates the single-repository layout? Its `/opt/trackhub`
+> holds one clone per service. Re-clone into a fresh directory
+> (`git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub-new`), copy your
+> `TrackHub.Deployment/.env`, `certificates/` and `generated/` across, then switch over.
+> Do not try to convert the old layout in place.
 
 ### 3. Reconcile your `.env` with the template
 
@@ -1375,16 +1371,17 @@ containers, and the frontend refreshes its static assets on every start. You do
 ### Update All Services
 
 ```bash
-# Pull latest code for every repository
-cd /opt/trackhub
-for repo in TrackHub TrackHub.AuthorityServer TrackHubSecurity TrackHub.Manager TrackHubRouter TrackHub.Geofencing TrackHub.Telemetry TrackHub.Reporting TrackHubCommon TrackHub.Deployment; do
-  cd /opt/trackhub/$repo && git pull
-done
+# Pull the latest code — one repository, so one pull covers every service,
+# the portal and this deployment folder.
+cd /opt/trackhub && git pull
 
 # Rebuild and deploy (cached, deterministic)
 cd /opt/trackhub/TrackHub.Deployment
 ./scripts/deploy.sh full --build
 ```
+
+`./scripts/clone-repos.sh` does the same pull and additionally verifies that no
+source directory is missing from the checkout.
 
 ### Zero-Downtime Updates
 
@@ -1583,7 +1580,7 @@ staleness:
 
 ```bash
 # 1. Confirm the latest code was actually pulled
-git -C /opt/trackhub/<repo> log -1 --oneline
+git -C /opt/trackhub log -1 --oneline
 
 # 2. Redeploy (normal cached build already rebuilds changed services)
 ./scripts/deploy.sh full --build
@@ -1630,18 +1627,18 @@ If you see `error:invalid_request` with `This server only accepts HTTPS requests
 2. Ensure `UseForwardedHeaders` is called **before** `UseHttpsRedirection` in `Program.cs`
 3. This is required because nginx terminates SSL and forwards HTTP internally
 
-#### NuGet package restore failures in Docker
+#### Restore failures in Docker (missing TrackHubCommon)
 
-If `dotnet restore` fails with missing TrackHubCommon packages:
+If `dotnet restore` fails because `Common.*` projects cannot be found: TrackHubCommon is a
+`ProjectReference` — there is no packing stage and no local NuGet feed — so this almost
+always means the build context is wrong or incomplete.
 
-1. Confirm the `common` build stage packed successfully — the build log should show four
-   `Successfully created package '/local-nuget/TrackHubCommon.*.nupkg'` lines
-2. Verify the packed `<Version>` in `TrackHubCommon/Directory.Build.props` matches the
-   `TrackHubCommon.*` `PackageVersion` entries in the service's `Directory.Packages.props`
-3. Verify `nuget-packages/nuget.config` exists with the `local` (`/nuget-packages`) source configured
-4. All Dockerfiles should use `--configfile /nuget-packages/nuget.config` on restore
-5. Ensure stale host-built packages under `TrackHubCommon/NugetPackages/` are not leaking into
-   the build context (they are excluded by the `.dockerignore` files)
+1. Verify `TrackHubCommon/` exists at the root of the checkout (the docker build context,
+   `context: ..`) — `./scripts/clone-repos.sh` verifies this and names any missing directory
+2. A `COPY` failure like `"/TrackHubCommon/...": not found` means the checkout is
+   partial — re-run `./scripts/clone-repos.sh`
+3. Ensure stale host build artifacts (`bin/`, `obj/`) are not leaking into the build
+   context (they are excluded by the `.dockerignore` files)
 
 #### 502 Bad Gateway
 

@@ -1,0 +1,179 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+# A second push to the same branch cancels the first — a superseded run has no value.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Which parts of the tree changed. Cheap, and every filtered job keys off it.
+  # ---------------------------------------------------------------------------
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.expand.outputs.services }}
+      portal: ${{ steps.filter.outputs.portal }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared:
+              - 'TrackHubCommon/**'
+              - '.github/workflows/ci.yml'
+            authorityserver: ['TrackHub.AuthorityServer/**']
+            geofencing:      ['TrackHub.Geofencing/**']
+            manager:         ['TrackHub.Manager/**']
+            reporting:       ['TrackHub.Reporting/**']
+            telemetry:       ['TrackHub.Telemetry/**']
+            tripmanagement:  ['TrackHub.TripManagement/**']
+            router:          ['TrackHubRouter/**']
+            security:        ['TrackHubSecurity/**']
+            portal:          ['TrackHub.Portal/**']
+            contracts:       ['TrackHub.IntegrationTests/**']
+
+      # Reverse dependencies. Compile breakage is caught by the unfiltered build
+      # below; this only decides whose TESTS run. Touching Manager must also
+      # exercise the services that consume ManagerApi, and anything shared
+      # exercises everything.
+      - id: expand
+        env:
+          CHANGED: ${{ steps.filter.outputs.changes }}
+        run: |
+          set -eu
+          ALL="authorityserver geofencing manager reporting telemetry tripmanagement router security"
+
+          # paths-filter emits a JSON array, e.g. ["manager","shared"].
+          changed=$(printf '%s' "$CHANGED" | tr -d '[]" ' | tr ',' ' ')
+
+          sel=""
+          case " $changed " in
+            *" shared "*) sel="$ALL" ;;
+            *)
+              for c in $changed; do
+                case " $ALL " in *" $c "*) sel="$sel $c" ;; esac
+              done
+              # Reverse dependencies: whose tests must also run. Compile breakage is
+              # already covered by the unfiltered build job.
+              case " $sel " in *" security "*)       sel="$sel manager" ;; esac
+              case " $sel " in *" manager "*)        sel="$sel geofencing" ;; esac
+              case " $sel " in *" telemetry "*)      sel="$sel router" ;; esac
+              case " $sel " in *" tripmanagement "*) sel="$sel router" ;; esac
+              ;;
+          esac
+
+          # Emit in ALL order, de-duplicated, as a JSON array.
+          out=""
+          for s in $ALL; do
+            case " $sel " in *" $s "*) out="$out\"$s\"," ;; esac
+          done
+          echo "services=[${out%,}]" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # Deliberately NOT path-filtered. Building the whole graph is what catches the
+  # cross-service breakage the polyrepo layout used to hide, and at this size it
+  # costs a few minutes.
+  # ---------------------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      # TrackHubCommon is a ProjectReference now, so one solution covers the whole
+      # graph and there is nothing to pack before restoring.
+      - name: Build the whole graph
+        run: dotnet build TrackHub.slnx -c Release
+
+  # ---------------------------------------------------------------------------
+  # Filtered: one job per changed service (plus its reverse dependencies).
+  # ---------------------------------------------------------------------------
+  test:
+    needs: [changes, build]
+    if: needs.changes.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.changes.outputs.services) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Resolve service directory
+        id: dir
+        run: |
+          case "${{ matrix.service }}" in
+            authorityserver) d=TrackHub.AuthorityServer ;;
+            geofencing)      d=TrackHub.Geofencing ;;
+            manager)         d=TrackHub.Manager ;;
+            reporting)       d=TrackHub.Reporting ;;
+            telemetry)       d=TrackHub.Telemetry ;;
+            tripmanagement)  d=TrackHub.TripManagement ;;
+            router)          d=TrackHubRouter ;;
+            security)        d=TrackHubSecurity ;;
+            *) echo "unknown service ${{ matrix.service }}" >&2; exit 1 ;;
+          esac
+          echo "dir=$d" >> "$GITHUB_OUTPUT"
+      - name: Test
+        run: dotnet test "${{ steps.dir.outputs.dir }}" -c Release
+
+  portal:
+    needs: changes
+    if: needs.changes.outputs.portal == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TrackHub.Portal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: TrackHub.Portal/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test --if-present
+      - run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # The ONLY job branch protection should require. Path-filtered jobs are skipped
+  # rather than failed, and a skipped required check never reports — the PR would
+  # wait forever on a job that will never run.
+  # ---------------------------------------------------------------------------
+  ci-ok:
+    if: always()
+    needs: [changes, build, test, portal]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if anything failed or was cancelled
+        run: |
+          if echo '${{ join(needs.*.result, ",") }}' | grep -qE 'failure|cancelled'; then
+            echo "results: ${{ join(needs.*.result, ',') }}"
+            exit 1
+          fi
+          echo "results: ${{ join(needs.*.result, ',') }}"

@@ -15,7 +15,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="TrackHubCommon.Web" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Web/Common.Web.csproj" />
     <PackageReference Include="HotChocolate.AspNetCore" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" />
   </ItemGroup>
