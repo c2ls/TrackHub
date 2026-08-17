@@ -37,7 +37,7 @@ namespace Common.Domain.Constants;
 ///   <item><term>platform-retention</term><description>Manager PlatformRetentionService — only when it purged at least one job run or alert event.</description></item>
 ///   <item><term>geofence-dwell-evaluation</term><description>Geofencing DwellEvaluationService — only when it raised a dwell alert.</description></item>
 ///   <item><term>workforce-expiration-scan</term><description>Manager WorkforceExpirationService — only per raised qualification-expiration alert.</description></item>
-///   <item><term>trip-eta-refresh</term><description>TripManagement TripEtaRefreshService — only when it refreshed an ETA for at least one in-progress trip.</description></item>
+///   <item><term>trip-eta-refresh</term><description>TripManagement TripEtaRefreshService — only when it refreshed an ETA for at least one in-progress trip, OR auto-completed a trip whose tracker went quiet; the cycle carries both because the auto-completion sweep is a fallback on this schedule rather than one of its own (spec 11a §5.2), and the recorded payload is <c>refreshed/completed</c>.</description></item>
 ///   <item><term>trip-schedule-reminder</term><description>TripManagement TripScheduleReminderService — only when it raised a start-due reminder.</description></item>
 /// </list>
 /// <para>
