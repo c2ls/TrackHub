@@ -17,6 +17,7 @@ public readonly record struct SynchronizeOperatorDevicesCommand(
 public class SynchronizeOperatorDevicesCommandHandler(
     IDeviceWriter deviceWriter,
     IDeviceReader deviceReader,
+    ITransporterReader transporterReader,
     ITransporterWriter transporterWriter,
     ITransporterDeviceAssignmentWriter assignmentWriter,
     IGroupReader groupReader,
@@ -191,28 +192,42 @@ public class SynchronizeOperatorDevicesCommandHandler(
 
         foreach (var (incoming, device) in devices)
         {
-            var transporter = await transporterWriter.CreateTransporterAsync(
-                new TransporterDto(
-                    ResolveTransporterName(incoming),
-                    ResolveTransporterTypeId(incoming.DeviceTypeId),
-                    accountId),
-                cancellationToken);
+            var name = ResolveTransporterName(incoming);
+
+            // Adopt an existing same-name transporter with no active device before provisioning a
+            // new one: a first sync against pre-existing data (re-onboarding, environment cutover)
+            // must reconcile with the account's fleet, not clone it. An adopted transporter keeps
+            // its group memberships — the account already manages its visibility.
+            var adoptedId = await transporterReader.FindAdoptableTransporterAsync(accountId, name, cancellationToken);
+            var transporterId = adoptedId ?? Guid.Empty;
+            if (adoptedId is null)
+            {
+                var transporter = await transporterWriter.CreateTransporterAsync(
+                    new TransporterDto(
+                        name,
+                        ResolveTransporterTypeId(incoming.DeviceTypeId),
+                        accountId),
+                    cancellationToken);
+                transporterId = transporter.TransporterId;
+
+                // Place every auto-provisioned transporter into the account's default group so plain
+                // (group-scoped) users can see it on the live map. Manual group management can move it
+                // later; the sync never moves it again.
+                await transporterGroupWriter.CreateTransporterGroupAsync(
+                    new TransporterGroupDto(transporterId, defaultGroupId),
+                    cancellationToken);
+            }
 
             await assignmentWriter.AssignAsync(
                 new TransporterDeviceAssignmentDto(
                     accountId,
-                    transporter.TransporterId,
+                    transporterId,
                     device.DeviceId,
                     Priority: 0,
                     IsPrimary: true,
-                    AssignmentReason: "Initial provider sync"),
-                cancellationToken);
-
-            // Place every auto-provisioned transporter into the account's default group so plain
-            // (group-scoped) users can see it on the live map. Manual group management can move it
-            // later; the sync never moves it again.
-            await transporterGroupWriter.CreateTransporterGroupAsync(
-                new TransporterGroupDto(transporter.TransporterId, defaultGroupId),
+                    AssignmentReason: adoptedId is null
+                        ? "Initial provider sync"
+                        : "Initial provider sync (adopted existing transporter)"),
                 cancellationToken);
         }
     }

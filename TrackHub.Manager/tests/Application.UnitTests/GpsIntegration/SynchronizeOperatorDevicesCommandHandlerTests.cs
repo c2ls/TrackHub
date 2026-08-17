@@ -11,6 +11,7 @@ public class SynchronizeOperatorDevicesCommandHandlerTests
 {
     private Mock<IDeviceWriter> _deviceWriter = null!;
     private Mock<IDeviceReader> _deviceReader = null!;
+    private Mock<ITransporterReader> _transporterReader = null!;
     private Mock<ITransporterWriter> _transporterWriter = null!;
     private Mock<ITransporterDeviceAssignmentWriter> _assignmentWriter = null!;
     private Mock<IGroupReader> _groupReader = null!;
@@ -26,6 +27,10 @@ public class SynchronizeOperatorDevicesCommandHandlerTests
     {
         _deviceWriter = new Mock<IDeviceWriter>();
         _deviceReader = new Mock<IDeviceReader>();
+        _transporterReader = new Mock<ITransporterReader>();
+        // Default: nothing to adopt -> the sync provisions a new transporter.
+        _transporterReader.Setup(x => x.FindAdoptableTransporterAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid?)null);
         _transporterWriter = new Mock<ITransporterWriter>();
         _assignmentWriter = new Mock<ITransporterDeviceAssignmentWriter>();
         _groupReader = new Mock<IGroupReader>();
@@ -50,6 +55,7 @@ public class SynchronizeOperatorDevicesCommandHandlerTests
     private SynchronizeOperatorDevicesCommandHandler CreateHandler() => new(
         _deviceWriter.Object,
         _deviceReader.Object,
+        _transporterReader.Object,
         _transporterWriter.Object,
         _assignmentWriter.Object,
         _groupReader.Object,
@@ -148,6 +154,79 @@ public class SynchronizeOperatorDevicesCommandHandlerTests
         _transporterGroupWriter.Verify(x => x.CreateTransporterGroupAsync(
             It.Is<TransporterGroupDto>(dto => dto.TransporterId == transporterId && dto.GroupId == DefaultGroupId),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // A first sync against pre-existing data must reconcile with the account's fleet, not clone
+    // it: a same-name transporter with no active device is adopted — assigned, not re-created,
+    // and its group memberships are left alone.
+    [Test]
+    public async Task Handle_NewDeviceMatchingUnassignedTransporter_AdoptsItInsteadOfCreating()
+    {
+        var accountId = Guid.NewGuid();
+        var operatorId = Guid.NewGuid();
+        var deviceId = Guid.NewGuid();
+        var existingTransporterId = Guid.NewGuid();
+        var device = new DeviceDto(
+            accountId,
+            operatorId,
+            "SER-1",
+            "Device 1",
+            101,
+            "Truck 101",
+            (short)DeviceType.OBDScanner,
+            null,
+            "hash",
+            "ACTIVE");
+        _deviceWriter.Setup(x => x.UpsertSynchronizedDeviceAsync(device, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeviceVm(
+                deviceId,
+                accountId,
+                operatorId,
+                device.Serial,
+                device.Name,
+                device.Identifier,
+                device.ProviderDisplayName,
+                DeviceType.OBDScanner,
+                device.DeviceTypeId,
+                device.Description,
+                device.ProviderMetadataHash,
+                device.ProviderStatus,
+                DetectedStatus.New,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                null,
+                null));
+        _transporterReader.Setup(x => x.FindAdoptableTransporterAsync(accountId, "Truck 101", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTransporterId);
+        _assignmentWriter.Setup(x => x.AssignAsync(It.IsAny<TransporterDeviceAssignmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TransporterDeviceAssignmentDto dto, CancellationToken _) => new TransporterDeviceAssignmentVm(
+                Guid.NewGuid(),
+                dto.AccountId,
+                dto.TransporterId,
+                dto.DeviceId,
+                DateTimeOffset.UtcNow,
+                null,
+                dto.Priority,
+                dto.IsPrimary,
+                AssignmentStatus.Active,
+                dto.AssignmentReason,
+                "ServiceClient",
+                "syncworker_client"));
+
+        await CreateHandler().Handle(
+            new SynchronizeOperatorDevicesCommand(accountId, operatorId, [device], "corr-adopt"),
+            CancellationToken.None);
+
+        _assignmentWriter.Verify(x => x.AssignAsync(
+            It.Is<TransporterDeviceAssignmentDto>(dto =>
+                dto.TransporterId == existingTransporterId
+                && dto.DeviceId == deviceId
+                && dto.IsPrimary
+                && dto.AssignmentReason == "Initial provider sync (adopted existing transporter)"),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _transporterWriter.Verify(x => x.CreateTransporterAsync(It.IsAny<TransporterDto>(), It.IsAny<CancellationToken>()), Times.Never);
+        _transporterGroupWriter.Verify(x => x.CreateTransporterGroupAsync(It.IsAny<TransporterGroupDto>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Test]

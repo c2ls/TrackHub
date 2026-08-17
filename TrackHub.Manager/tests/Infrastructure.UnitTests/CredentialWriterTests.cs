@@ -132,4 +132,53 @@ public class CredentialWriterTests
         Assert.That(updated.Token, Is.Not.Null);
         Assert.That(updated.RefreshToken, Is.Not.Null);
     }
+
+    [Test]
+    public async Task DeleteCredentialByOperatorAsync_CredentialExists_DeletesIt()
+    {
+        await using var context = NewContext(nameof(DeleteCredentialByOperatorAsync_CredentialExists_DeletesIt));
+        var accountId = Guid.NewGuid();
+        var @operator = new Operator("Provider", null, null, null, null, null, 1, accountId);
+        var credential = CredentialFor(@operator);
+        await context.Operators.AddAsync(@operator);
+        await context.Credentials.AddAsync(credential);
+        await context.SaveChangesAsync(CancellationToken.None);
+
+        var writer = new CredentialWriter(context as IApplicationDbContext, Principal(accountId));
+
+        await writer.DeleteCredentialByOperatorAsync(@operator.OperatorId, CancellationToken.None);
+
+        Assert.That(await context.Credentials.AnyAsync(c => c.OperatorId == @operator.OperatorId), Is.False);
+    }
+
+    [Test]
+    public async Task DeleteCredentialByOperatorAsync_NoCredential_IsNoOp()
+    {
+        await using var context = NewContext(nameof(DeleteCredentialByOperatorAsync_NoCredential_IsNoOp));
+        var accountId = Guid.NewGuid();
+        var @operator = new Operator("Provider", null, null, null, null, null, 1, accountId);
+        await context.Operators.AddAsync(@operator);
+        await context.SaveChangesAsync(CancellationToken.None);
+
+        var writer = new CredentialWriter(context as IApplicationDbContext, Principal(accountId));
+
+        Assert.DoesNotThrowAsync(async () =>
+            await writer.DeleteCredentialByOperatorAsync(@operator.OperatorId, CancellationToken.None));
+    }
+
+    [Test]
+    public async Task DeleteCredentialByOperatorAsync_PrincipalFromDifferentAccount_ThrowsForbidden()
+    {
+        await using var context = NewContext(nameof(DeleteCredentialByOperatorAsync_PrincipalFromDifferentAccount_ThrowsForbidden));
+        var @operator = new Operator("Provider", null, null, null, null, null, 1, Guid.NewGuid());
+        var credential = CredentialFor(@operator);
+        await context.Operators.AddAsync(@operator);
+        await context.Credentials.AddAsync(credential);
+        await context.SaveChangesAsync(CancellationToken.None);
+
+        var writer = new CredentialWriter(context as IApplicationDbContext, Principal(Guid.NewGuid()));
+
+        Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
+            await writer.DeleteCredentialByOperatorAsync(@operator.OperatorId, CancellationToken.None));
+    }
 }

@@ -90,7 +90,8 @@ public sealed class ReportReader(IApplicationDbContext context, ICurrentPrincipa
                 r.RequiredFeatureKey,
                 r.ManagerOnly,
                 r.SupportsPdf,
-                r.SortOrder))
+                r.SortOrder,
+                r.Filters))
             .FirstOrDefaultAsync(cancellationToken);
 
     private static IQueryable<ReportVm> OrderedActive(IQueryable<Report> query)
@@ -109,5 +110,6 @@ public sealed class ReportReader(IApplicationDbContext context, ICurrentPrincipa
                 r.RequiredFeatureKey,
                 r.ManagerOnly,
                 r.SupportsPdf,
-                r.SortOrder));
+                r.SortOrder,
+                r.Filters));
 }

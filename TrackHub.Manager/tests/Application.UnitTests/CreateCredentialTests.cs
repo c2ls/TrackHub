@@ -94,7 +94,7 @@ public class CreateCredentialTests
     }
 
     [Test]
-    public void Should_Have_Error_When_Uri_Does_Not_End_With_Slash()
+    public void Should_Not_Have_Error_When_Uri_Does_Not_End_With_Slash()
     {
         var command = new CreateCredentialCommand
         {
@@ -106,8 +106,7 @@ public class CreateCredentialTests
 
         var result = _validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(v => v.Credential.Uri)
-            .WithErrorMessage("Credential Uri must end with '/'");
+        result.ShouldNotHaveValidationErrorFor(v => v.Credential.Uri);
     }
 
     [Test]

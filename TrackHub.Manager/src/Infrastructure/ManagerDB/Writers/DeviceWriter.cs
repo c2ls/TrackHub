@@ -55,6 +55,8 @@ public sealed class DeviceWriter(IApplicationDbContext context, ICurrentPrincipa
         }
         else
         {
+            // The context is NoTracking by default; attach or the sync update never persists.
+            Context.Devices.Attach(existing);
             existing.Name = deviceDto.Name;
             existing.Identifier = deviceDto.Identifier;
             existing.Serial = deviceDto.Serial;
@@ -76,6 +78,105 @@ public sealed class DeviceWriter(IApplicationDbContext context, ICurrentPrincipa
         AddAuditEvent(accountId, created ? "SynchronizedDevice.Created" : "SynchronizedDevice.Updated",
             "SynchronizedDevice", device.DeviceId.ToString(), null, null);
         await Context.SaveChangesAsync(cancellationToken);
+
+        return new DeviceVm(
+            device.DeviceId,
+            device.AccountId,
+            device.OperatorId,
+            device.Serial,
+            device.Name,
+            device.Identifier,
+            device.ProviderDisplayName,
+            (DeviceType)device.DeviceTypeId,
+            device.DeviceTypeId,
+            device.Description,
+            device.ProviderMetadataHash,
+            device.ProviderStatus,
+            (DetectedStatus)device.DetectedStatus,
+            device.FirstSeenAt,
+            device.LastSeenAt,
+            device.LastSyncedAt,
+            device.LastAssignedAt,
+            device.IgnoredAt);
+    }
+
+    // Manual registration for providers without a device-catalog API (Prosegur) —
+    // sync can never discover their devices, so operators enter them by hand.
+    public async Task<DeviceVm> CreateManualDeviceAsync(DeviceDto deviceDto, CancellationToken cancellationToken)
+    {
+        var accountId = RequireAccountWriteAccess(deviceDto.AccountId);
+        var operatorAccountId = await Context.Operators
+            .Where(o => o.OperatorId == deviceDto.OperatorId)
+            .Select(o => (Guid?)o.AccountId)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new NotFoundException(nameof(Entities.Operator), deviceDto.OperatorId.ToString());
+        if (operatorAccountId != accountId)
+        {
+            throw new ForbiddenAccessException();
+        }
+
+        var identifier = deviceDto.Identifier;
+        if (identifier <= 0)
+        {
+            // Catalog-less providers supply no numeric id; allocate the next free one within
+            // the (account, operator) uniqueness scope of IX_devices_accountid_operatorid_identifier.
+            var max = await Context.Devices
+                .Where(d => d.AccountId == accountId && d.OperatorId == deviceDto.OperatorId)
+                .MaxAsync(d => (int?)d.Identifier, cancellationToken) ?? 0;
+            identifier = max + 1;
+        }
+        else
+        {
+            var taken = await Context.Devices.AnyAsync(
+                d => d.AccountId == accountId
+                    && d.OperatorId == deviceDto.OperatorId
+                    && d.Identifier == identifier,
+                cancellationToken);
+            if (taken)
+            {
+                throw new ConflictException($"A device with identifier {identifier} already exists for this operator.");
+            }
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var device = new Entities.Device(
+            deviceDto.Name,
+            identifier,
+            deviceDto.Serial,
+            deviceDto.DeviceTypeId,
+            deviceDto.Description,
+            // A manually registered device has no provider catalog behind it, so it carries no
+            // provider metadata — ignore any client-supplied values rather than persist (and
+            // risk over-length) fields that only the sync path legitimately fills.
+            providerDisplayName: null,
+            providerMetadataHash: null,
+            providerStatus: null,
+            (int)DetectedStatus.New,
+            deviceDto.OperatorId,
+            accountId)
+        {
+            FirstSeenAt = now,
+            LastSeenAt = now,
+            LastSyncedAt = now
+        };
+        await Context.Devices.AddAsync(device, cancellationToken);
+
+        AddAuditEvent(accountId, "SynchronizedDevice.CreatedManually",
+            "SynchronizedDevice", device.DeviceId.ToString(), null, null);
+        try
+        {
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // The unique (account, operator, identifier) index is the real guarantee: a
+            // concurrent auto-allocation or an explicit id that raced past the pre-check lands
+            // here. Surface it as a clean 409, not the unmapped generic error a bare
+            // DbUpdateException would produce.
+            Context.Devices.Entry(device).State = EntityState.Detached;
+            throw new ConflictException(
+                $"A device with identifier {identifier} already exists for this operator.");
+        }
 
         return new DeviceVm(
             device.DeviceId,

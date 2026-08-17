@@ -138,6 +138,24 @@ public sealed class CredentialWriter(IApplicationDbContext context, ICurrentPrin
         await Context.SaveChangesAsync(cancellationToken);
     }
 
+    // Delete-if-exists by operator: the operator-delete flow must clear the dependent credential
+    // regardless of whether the CALLER may view credential material (the read model redacts the
+    // credential for callers without Credentials/Custom, so "the VM has no credential" proves
+    // nothing about the row). Absence is not an error here.
+    public async Task DeleteCredentialByOperatorAsync(Guid operatorId, CancellationToken cancellationToken)
+    {
+        var credential = await Context.Credentials.Include(c => c.Operator)
+            .FirstOrDefaultAsync(c => c.OperatorId == operatorId, cancellationToken);
+        if (credential is null)
+        {
+            return;
+        }
+        RequireAccountWriteAccess(credential.Operator.AccountId);
+
+        Context.Credentials.Remove(credential);
+        await Context.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task RequireOperatorAccessAsync(Guid operatorId, CancellationToken cancellationToken)
     {
         var accountId = await Context.Operators

@@ -20,6 +20,9 @@ public interface ICredentialWriter
 {
     Task<CredentialVm> CreateCredentialAsync(CredentialDto credentialDto, byte[] salt, string key, CancellationToken cancellationToken);
     Task DeleteCredentialAsync(Guid credentialId, CancellationToken cancellationToken);
+    /// <summary>Deletes the operator's credential if one exists; no-op otherwise. For cleanup
+    /// flows (operator delete) that must not depend on the caller's credential-view permission.</summary>
+    Task DeleteCredentialByOperatorAsync(Guid operatorId, CancellationToken cancellationToken);
     Task UpdateCredentialAsync(UpdateCredentialDto credentialDto, byte[] salt, string key, CancellationToken cancellationToken);
     Task UpdateTokenAsync(UpdateTokenDto credentialDto, string key, CancellationToken cancellationToken);
 }
