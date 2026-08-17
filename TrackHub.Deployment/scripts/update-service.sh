@@ -33,8 +33,16 @@ print_info() {
     echo -e "${BLUE}ℹ $1${NC}"
 }
 
-# Valid services
-VALID_SERVICES=("frontend" "authority" "security" "manager" "router" "geofencing" "telemetry" "reporting" "syncworker" "nginx")
+# Valid services (names must match the compose service names)
+VALID_SERVICES=("frontend" "authority" "security" "manager" "router" "geofencing" "tripmanagement" "telemetry" "reporting" "syncworker" "nginx")
+
+# Convenience aliases: short name -> compose service name.
+resolve_service_alias() {
+    case "$1" in
+        trip) echo "tripmanagement" ;;
+        *)    echo "$1" ;;
+    esac
+}
 
 usage() {
     echo "Usage: $0 <service_name> [compose_file]"
@@ -48,9 +56,13 @@ usage() {
     echo "  compose_file - Specify compose file (default: docker-compose.yml)"
     echo "  --no-cache   - Force a full rebuild ignoring the Docker layer cache"
     echo ""
+    echo "Aliases:"
+    echo "  trip -> tripmanagement"
+    echo ""
     echo "Examples:"
     echo "  $0 frontend"
     echo "  $0 manager"
+    echo "  $0 trip"
     echo "  $0 security docker-compose.backend.yml"
 }
 
@@ -78,6 +90,21 @@ update_service() {
         exit 1
     fi
     
+    # Preserve the outgoing image BEFORE anything else touches it.
+    # The rebuild below overwrites "<project>-<service>:latest"; the image being replaced
+    # keeps no tag of its own and becomes dangling, so without this step the version
+    # running right now is unrecoverable and ./rollback.sh has nothing to roll back to.
+    # ":previous" is a one-step safety net — keep using "rollback.sh tag <service> <version>"
+    # for named releases you want to keep across several updates.
+    # rollback.sh owns the compose image-name resolution; call it instead of re-deriving
+    # the project name here. It exits non-zero when there is no :latest yet (first
+    # deployment of this service) and when the service uses an upstream image (nginx).
+    if [ "$service" != "nginx" ]; then
+        print_info "Preserving the current $service image as :previous (rollback point)..."
+        "$SCRIPT_DIR/rollback.sh" tag "$service" previous "$compose_file" \
+            || print_info "Nothing to preserve — first deployment of $service"
+    fi
+
     # Stop the service
     print_info "Stopping $service..."
     docker compose -f "$compose_file" stop "$service" || true
@@ -144,6 +171,9 @@ if [ -z "$SERVICE_NAME" ]; then
     usage
     exit 1
 fi
+
+# Resolve short aliases (e.g. trip -> tripmanagement) before validating
+SERVICE_NAME="$(resolve_service_alias "$SERVICE_NAME")"
 
 # Validate service name
 if ! validate_service "$SERVICE_NAME"; then

@@ -66,7 +66,8 @@ other service directories — which is exactly what the clone gives you.
 ## Step 3: Prepare the Database
 
 Connect to PostgreSQL **as a superuser** and create the two databases. The `postgis`
-extension is required by Geofencing and must be created by a superuser — a plain owner
+extension is required by Geofencing and TripManagement (they share the `TrackHub` database,
+so one `CREATE EXTENSION` covers both) and must be created by a superuser — a plain owner
 role cannot run `CREATE EXTENSION`.
 
 ```sql
@@ -123,7 +124,8 @@ nano .env
 | `CERTIFICATE_PASSWORD` | A strong password for the token-signing certificate |
 | `ENCRYPTION_KEY` | A GUID (generate with `uuidgen` or any GUID tool) |
 | `AUTHORITY_URL` | `https://trackhub.example.com/Identity` |
-| `SYNCWORKER_CLIENT_SECRET` / `ROUTER_CLIENT_SECRET` / `SECURITY_CLIENT_SECRET` / `GEOFENCE_CLIENT_SECRET` | Service-to-service secrets — must match `config/clients.json` (Step 6) |
+| `SYNCWORKER_CLIENT_SECRET` / `ROUTER_CLIENT_SECRET` / `SECURITY_CLIENT_SECRET` / `GEOFENCE_CLIENT_SECRET` / `TRIP_CLIENT_SECRET` | Service-to-service secrets — must match `config/clients.json` (Step 6) |
+| `ORS_API_KEY` | OpenRouteService key used by TripManagement for route planning. **Required** — free and same-day from <https://openrouteservice.org/dev/#/signup>, or point `ORS_BASE_URL` at a self-hosted instance. Leaving it empty is a deployment error: trips still work but every route plan fails with `ROUTING_NOT_CONFIGURED`. |
 
 Replace `DB_HOST` with your PostgreSQL server address (`localhost` if on the same server).
 
@@ -169,6 +171,15 @@ dotnet ef database update \
   --project TrackHubSecurity/src/Infrastructure/SecurityDB \
   --startup-project TrackHubSecurity/src/Web
 
+# AuthorityServer → TrackHubSecurity database, OpenIddict tables. MUST follow the Security step.
+# Required to issue tokens. On a deployment created before this step existed the tables are already
+# present without a migration history row — baseline it instead (see INSTALL.md §4).
+ConnectionStrings__Security="server=DB_HOST;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword" \
+dotnet ef database update \
+  --project TrackHub.AuthorityServer/src/Infrastructure \
+  --startup-project TrackHub.AuthorityServer/src/Web \
+  --context AuthorityDbContext
+
 # Manager → TrackHub database (also creates the telemetry schema)
 ConnectionStrings__DefaultConnection="server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword" \
 dotnet ef database update \
@@ -180,9 +191,20 @@ ConnectionStrings__DefaultConnection="server=DB_HOST;port=5432;database=TrackHub
 dotnet ef database update \
   --project TrackHub.Geofencing/src/Infrastructure/ManagerDB \
   --startup-project TrackHub.Geofencing/src/Web
+
+# TripManagement → TrackHub database, `trip` schema (requires the postgis extension from Step 3)
+ConnectionStrings__DefaultConnection="server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword" \
+dotnet ef database update \
+  --project TrackHub.TripManagement/src/Infrastructure/TripDB \
+  --startup-project TrackHub.TripManagement/src/Web
 ```
 
-Re-run these same three commands on **every upgrade that adds migrations**.
+Re-run these same five commands on **every upgrade that adds migrations**.
+
+> **Existing deployments must also re-run `db-init` after adding TripManagement.** The
+> migration creates the `trip` schema but seeds nothing — without the `trip_client`
+> registration and the `Trips`/`TripTracking`/`TollCatalog` resource + role seeding, **every
+> trip call returns `FORBIDDEN`** even for administrators, while the container looks healthy.
 
 ---
 
@@ -296,7 +318,7 @@ cd /opt/trackhub/TrackHub.Deployment
 ```
 
 Valid service names: `frontend`, `authority`, `security`, `manager`, `router`,
-`geofencing`, `telemetry`, `reporting`, `syncworker`, `nginx`.
+`geofencing`, `tripmanagement` (alias `trip`), `telemetry`, `reporting`, `syncworker`, `nginx`.
 
 > `syncworker` is built from the `TrackHubRouter` repo, so a Router code change means
 > updating **both** `router` and `syncworker`.
@@ -319,7 +341,9 @@ Valid service names: `frontend`, `authority`, `security`, `manager`, `router`,
 | Find the documents volume | `docker volume ls \| grep manager-documents` |
 | Back up uploaded documents | `docker run --rm -v <that-volume>:/d -v "$PWD/backups:/b" alpine tar czf /b/documents.tar.gz -C /d .` |
 | Tag a version | `./scripts/rollback.sh tag <service> v1.0.0` |
-| Rollback | `./scripts/rollback.sh rollback <service> v1.0.0` |
+| Undo the last update | `./scripts/rollback.sh rollback <service> previous` (`:previous` is tagged automatically by every update) |
+| Rollback to a named tag | `./scripts/rollback.sh rollback <service> v1.0.0` |
+| Which portal build is live? | Open `https://<domain>/status` — *Portal build* (no sign-in needed; hard-reload) |
 
 ---
 

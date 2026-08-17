@@ -264,7 +264,8 @@ public class ReportingToManagerRoundTripTests
                 RequiredFeatureKey: "gps.integration",
                 ManagerOnly: true,
                 SupportsPdf: true,
-                SortOrder: 42));
+                SortOrder: 42,
+                Filters: "[]"));
 
         var reader = new ReportCatalogReader(_factory, new MemoryCache(new MemoryCacheOptions()));
         var metadata = await reader.GetReportByCodeAsync(code, CancellationToken.None);
@@ -305,7 +306,8 @@ public class ReportingToManagerRoundTripTests
                 RequiredFeatureKey: null,
                 ManagerOnly: true,
                 SupportsPdf: true,
-                SortOrder: 5));
+                SortOrder: 5,
+                Filters: null));
 
         var reader = new ReportCatalogReader(_factory, new MemoryCache(new MemoryCacheOptions()));
         var metadata = await reader.GetReportByCodeAsync(code, CancellationToken.None);

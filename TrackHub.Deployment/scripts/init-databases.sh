@@ -119,7 +119,7 @@ cat > appsettings.json << EOF
 }
 EOF
 
-dotnet DBInitializer.dll || { print_error "Security DBInitializer failed"; exit 1; }
+dotnet TrackHub.Security.DBInitializer.dll || { print_error "Security DBInitializer failed"; exit 1; }
 print_success "Security DBInitializer completed successfully!"
 
 # -----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ cat > appsettings.json << EOF
 }
 EOF
 
-dotnet DBInitializer.dll || { print_error "Manager DBInitializer failed"; exit 1; }
+dotnet TrackHub.Manager.DBInitializer.dll || { print_error "Manager DBInitializer failed"; exit 1; }
 print_success "Manager DBInitializer completed successfully!"
 
 echo ""
