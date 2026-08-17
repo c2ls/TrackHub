@@ -91,6 +91,15 @@ export function validateHelpContent({ helpDir, routesFile }) {
     addError(routesFile, null, 'no route keys could be extracted from routes.tsx');
   }
 
+  // Edition extension point: routes registered in src/edition/routes.ts(x) are part of
+  // the merged route table, so their keys are valid help screens too.
+  for (const editionFile of ['routes.ts', 'routes.tsx'].map((name) =>
+    path.join(path.dirname(routesFile), 'edition', name))) {
+    if (fs.existsSync(editionFile)) {
+      routeKeys.push(...extractRouteKeys(fs.readFileSync(editionFile, 'utf8')));
+    }
+  }
+
   const languages = fs
     .readdirSync(helpDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && entry.name !== 'assets')

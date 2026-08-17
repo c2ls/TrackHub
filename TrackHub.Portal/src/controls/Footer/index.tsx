@@ -39,6 +39,8 @@ import ArgonTypography from "components/ArgonTypography";
 // Argon Dashboard 2 MUI base styles
 import typography from "assets/theme/base/typography";
 
+import { versionLabel } from "constants/appVersion";
+
 interface FooterCompany {
   href: string;
   name: string;
@@ -78,24 +80,15 @@ function Footer({
             &nbsp;{name}&nbsp;
           </ArgonTypography>
         </Link>
+        {/* Portal build, kept in the LEFT group on purpose: the settings button in App.tsx is
+            fixed at right/bottom 2rem and covers anything the footer puts on its right edge.
+            Deliberately unlabelled and untranslated — "v1.1.0" reads the same in every
+            language, and it is the quickest way to confirm which build a browser is actually
+            running after a deployment or a rollback. */}
+        <ArgonTypography variant="button" fontWeight="regular" color="text">
+          &middot;&nbsp;{versionLabel()}
+        </ArgonTypography>
       </ArgonBox>
-      <ArgonBox
-        component="ul"
-        sx={({ breakpoints }) => ({
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "center",
-          listStyle: "none",
-          mt: 3,
-          mb: 0,
-          p: 0,
-
-          [breakpoints.up("lg")]: {
-            mt: 0,
-          },
-        })}
-      ></ArgonBox>
     </ArgonBox>
   );
 }

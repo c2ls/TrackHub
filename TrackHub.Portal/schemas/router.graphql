@@ -17,6 +17,7 @@ type Query {
     @cost(weight: "10")
   tripsByTransporter(query: GetPositionTripsQueryInput!): [TripVm!]!
     @cost(weight: "10")
+  providerCapabilities: [ProviderCapabilitiesVm!]! @cost(weight: "10")
 }
 
 type Mutation {
@@ -69,6 +70,16 @@ type PositionVm {
   state: String
   country: String
   attributes: AttributesVm
+}
+
+type ProviderCapabilitiesVm {
+  protocolTypeId: Int!
+  protocol: String!
+  displayName: String!
+  realTimePositions: Boolean!
+  positionHistory: Boolean!
+  deviceCatalog: Boolean!
+  connectivityPing: Boolean!
 }
 
 type TripPointVm {

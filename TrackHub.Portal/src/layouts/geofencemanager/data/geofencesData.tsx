@@ -277,10 +277,15 @@ function useGeofencesTableData(
   const buildTableData = (mapSource: Geofence[], rowSource: Geofence[]): GeofenceTableData => ({
     geofences: mapSource.map(toMapPolygon),
     columns: [
+      // This is the only table in the portal with explicit widths — it lives in the
+      // narrow `lg:3` side panel next to the map, where the default even split leaves
+      // the name unreadable. The action share has to fit the delete button (see below)
+      // at the narrowest lg layout, or the button overflows and the scroll container
+      // (overflowX: hidden) clips it.
       { name: "name", title:t('geofence.name'), align: "left", width: "42%" },
-      { name: "type", title:t('geofence.type'), align: "left", width: "30%" },
-      { name: "color", title:t('geofence.color'), align: "left", width: "16%" },
-      { name: "action", title:t('generic.action'), align: "center", width: "12%" },
+      { name: "type", title:t('geofence.type'), align: "left", width: "28%" },
+      { name: "color", title:t('geofence.color'), align: "left", width: "14%" },
+      { name: "action", title:t('generic.action'), align: "center", width: "16%" },
       { name: "id" }
     ],
     rows: rowSource.map(geofence => ({
@@ -288,9 +293,14 @@ function useGeofencesTableData(
       type: <GeofenceTextCell>{t(`geofenceTypes.${toCamelCase(getGeofenceType(geofence.type))}` as 'geofenceTypes.office')}</GeofenceTextCell>,
       color: <GeofenceTextCell>{t(`colors.${getColor(geofence.color).toLowerCase()}` as 'colors.red')}</GeofenceTextCell>,
       action: (
+        // `iconOnly` drops MUI's 64px button min-width down to a square that fits the
+        // side panel's action column; a default text button is wider than the column.
         <ArgonButton
           variant="text"
           color="error"
+          size="small"
+          iconOnly
+          title={t('generic.delete')}
           onClick={() => handleOpenDelete(geofence.geofenceId)}>
           <Icon>delete</Icon>
         </ArgonButton>

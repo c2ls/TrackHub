@@ -17,6 +17,7 @@
 import type { TFunction } from 'i18next';
 import { getColor } from 'data/colors';
 import { getPoiType } from 'data/poiTypes';
+import { escapeHtml } from 'utils/htmlUtils';
 import type { MapPoi } from 'controls/Maps/core/mapTypes';
 
 type SvgIconFormat = 'svg' | 'dataURL';
@@ -50,13 +51,6 @@ export const getPoiTypeKey = (typeValue: number): string => {
   const label = getPoiType(typeValue);
   return label ? label.charAt(0).toLowerCase() + label.slice(1) : '';
 };
-
-const escapeHtml = (value: unknown): string =>
-  String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 
 /**
  * Creates the SVG pin used for POI markers.

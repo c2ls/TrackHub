@@ -4,7 +4,7 @@ title: Viajes y reproducción
 description: Consulte los viajes de una unidad por rango de fechas, lea las estadísticas, reproduzca el recorrido en el mapa y expórtelo a CSV.
 category: operation
 screens: [dashboard]
-related: [dashboard-live-map, reports]
+related: [dashboard-live-map, reports, trip-management]
 tags: [viajes, reproducción, historial, exportar]
 order: 20
 ---
@@ -14,6 +14,8 @@ order: 20
 Revise dónde ha estado una unidad: consulte sus viajes para cualquier rango de fechas, lea las estadísticas de distancia, tiempo y velocidad, reproduzca el recorrido en el mapa y exporte la trayectoria a una hoja de cálculo.
 
 Abra **Tablero** desde el menú de la izquierda y haga clic en la pestaña **Posiciones** (junto a **Unidades**). Esta pestaña es para recorridos históricos; la vista en vivo se cubre en [Mapa en vivo](topic:dashboard-live-map).
+
+Aquí un *viaje* es cualquier tramo que la unidad recorrió entre detenciones, reconstruido a partir de su historial de posiciones: no es un trabajo planificado ni despachado. Para recorridos planificados con varias paradas, ETA, peajes y enlace de seguimiento para el cliente, vea [Viajes y planificación de rutas](topic:trip-management), que tiene su propia reproducción del recorrido registrado contra la ruta planeada.
 
 ## Consultar viajes
 

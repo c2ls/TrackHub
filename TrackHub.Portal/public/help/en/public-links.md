@@ -4,7 +4,7 @@ title: Public links
 description: Grant limited, time-boxed, login-free access to a resource with a share token you can revoke at any time.
 category: administration
 screens: [manageAdmin]
-related: [management-overview, dashboard-live-map]
+related: [management-overview, dashboard-live-map, public-trip-tracking]
 tags: [public links, share token, revoke, access, expiry]
 order: 50
 ---
@@ -46,7 +46,7 @@ To stop an active link, press **Revoke Public Link** on its row. The link is dis
 
 ## Related sharing
 
-Document shares use the same public-link mechanism behind the scenes: sharing a file from the documents panel mints a link scoped to that document. See [Documents](topic:documents). Public links are also how you can expose a limited live view without handing out an account; for what your fleet sees on the map, see [Live map](topic:dashboard-live-map).
+Document shares use the same public-link mechanism behind the scenes: sharing a file from the documents panel mints a link scoped to that document. See [Documents](topic:documents). Trip tracking links work the same way — sharing a trip mints a link scoped to that trip, listed here alongside the rest; see [Customer trip tracking](topic:public-trip-tracking). Public links are also how you can expose a limited live view without handing out an account; for what your fleet sees on the map, see [Live map](topic:dashboard-live-map).
 
 ## Who can use this
 

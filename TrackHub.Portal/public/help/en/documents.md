@@ -4,7 +4,7 @@ title: Documents
 description: Store, classify, virus-scan, version and share your account's documents from the Account Management screen.
 category: administration
 screens: [manageAdmin]
-related: [management-overview, units-devices]
+related: [management-overview, units-devices, drivers-workforce]
 tags: [documents, files, upload, versions, expiry, virus scan]
 order: 40
 ---
@@ -35,6 +35,8 @@ An account-wide search across your documents.
 ## Expiring Documents
 
 A dashboard of documents nearing expiry. Columns: **Type**, **Owner**, **Expires At** and **Status**. Use it to catch licences, permits and certificates before they lapse.
+
+> Driver licences and certificates are tracked separately, on the driver’s qualification records, which have their own expiry list and their own alerts. Upload the scan here and reference it from the qualification’s **Linked Document** field. See [Drivers and workforce](topic:drivers-workforce).
 
 ## Document Types
 

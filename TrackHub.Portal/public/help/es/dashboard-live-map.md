@@ -109,4 +109,13 @@ A la derecha hay una lista desplazable de todas sus unidades, con columnas:
 
 Haga clic en una fila para seleccionar esa unidad, resaltarla y centrar el mapa en ella. El cuadro **Buscar unidades** de la parte superior derecha filtra esta lista. Encima de la lista, chips de color resumen cuántas unidades de cada tipo están reportando actualmente.
 
+## Por qué falta una unidad en el mapa
+
+El mapa muestra **unidades**, no dispositivos. Un dispositivo GPS solo aparece cuando se cumplen dos condiciones, y si falta una el resultado se parece exactamente a una falla de conexión aunque el proveedor esté funcionando con normalidad:
+
+1. **El dispositivo está vinculado a una unidad.** Sincronizar un operador llena la lista de dispositivos, pero un dispositivo por sí solo no tiene nada que dibujar. Vincúlelo en la página de [Integración GPS](topic:gps-integration).
+2. **La unidad pertenece a uno de sus grupos.** Usted solo ve las unidades de los grupos a los que pertenece. Una unidad sin grupo, o en un grupo del que usted no es miembro, le resulta invisible por muy bien que funcione su dispositivo: un administrador la ve y usted no.
+
+Revíselo en ese orden. Si la lista de dispositivos tiene datos pero el mapa está vacío, casi siempre es el vínculo o el grupo, y no el proveedor GPS. Un Gerente puede corregir ambos: vincule el dispositivo en Integración GPS y luego coloque la unidad en el grupo correcto desde [Administración de la cuenta](topic:units-devices).
+
 Para ver el mapa en vivo se requiere acceso a las posiciones. Consulte [Roles y permisos](topic:roles-and-permissions).

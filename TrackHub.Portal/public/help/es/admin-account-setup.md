@@ -4,7 +4,7 @@ title: Configuración de su cuenta
 description: Para un Gestor que configura una cuenta nueva — el orden en que hacer las cosas, qué saber antes de crear usuarios y operadores GPS, y los dos errores que todos cometen.
 category: getting-started
 screens: []
-related: [admin-platform-setup, feature-catalog, users-roles-groups, gps-integration, management-overview]
+related: [admin-platform-setup, feature-catalog, users-roles-groups, gps-integration, management-overview, drivers-workforce]
 tags: [configuración, puesta en marcha, gestor, usuarios, grupos, operadores, orden]
 order: 40
 ---
@@ -38,7 +38,7 @@ Presione **Guardar**.
 
 ## 3. Revise qué funcionalidades tiene
 
-Abra **Administración de Cuentas → Cuenta y Suscripción → Funcionalidades de Cuenta**. Verá las diez funcionalidades listadas con **Habilitada** en Sí o No.
+Abra **Administración de Cuentas → Cuenta y Suscripción → Funcionalidades de Cuenta**. Verá las once funcionalidades listadas con **Habilitada** en Sí o No.
 
 Esta lista es **de solo lectura para usted**. Qué funcionalidades tiene su cuenta es una decisión de facturación que toma el administrador de la plataforma, así que si falta algo que esperaba —geocercado, documentos, notificaciones— es a él a quien debe consultar.
 
@@ -107,7 +107,7 @@ Un **dispositivo** es el equipo rastreador; una **unidad** es el vehículo o act
 
 1. **Unidades** (**Administración de Cuentas → Flota y Rastreo → Unidades**) — haga clic en **+**, dele a la unidad un **Nombre** y un **Tipo**, y **Guarde**. El **Tipo** determina los umbrales de movimiento usados para decidir cuándo la unidad cuenta como detenida.
 2. **Asigne el dispositivo** — en la pantalla **Integración GPS**, bajo **Asignaciones de Dispositivos**, elija la unidad y un dispositivo sin asignar y presione **Asignar Dispositivo**. Solo se ofrecen los dispositivos que no están asignados actualmente a una unidad.
-3. **Conductores** (**Flota y Rastreo → Conductores**) — si registra quién conduce, agréguelos aquí. Un conductor puede llevar un **Transportador Predeterminado**, así que cree primero las unidades.
+3. **Conductores** (**Flota y Rastreo → Conductores**) — si registra quién conduce, agréguelos aquí. Un conductor puede llevar un **Transportador Predeterminado**, así que cree primero las unidades. Una vez que el conductor existe, también puede emitirle una **credencial de conductor** para la aplicación móvil, en la sección **Credenciales y Dispositivos del Conductor** justo debajo — esa parte funciona en cualquier cuenta. Vea [Conductores y personal](topic:drivers-workforce).
 4. **Puntos de Interés** (**Flota y Rastreo → Puntos de Interés**) — ubicaciones con nombre, como sitios de cliente, bodegas, estaciones de combustible y talleres, con un nombre, coordenadas, un tipo, un color y opcionalmente un grupo.
 
 Ahora vuelva a **Grupos** y complete el paso 5.3 — asigne las unidades a sus grupos.
@@ -120,6 +120,7 @@ Solo estarán las funcionalidades habilitadas para su cuenta. Una línea para ca
 - **Reglas de notificación** — decida qué genera una alerta y a dónde va. El correo y WhatsApp son derechos separados de la funcionalidad base de notificaciones, así que un canal que no puede seleccionar es una cuestión de facturación, no un fallo. Vea [Alertas y notificaciones](topic:alerts-notifications).
 - **Documentos** — guarde la documentación de vehículos y conductores, con seguimiento de vencimientos. Vea [Documentos](topic:documents).
 - **Enlaces Públicos** — comparta una vista limitada y con tiempo acotado con alguien que no tiene sesión. Vea [Enlaces públicos](topic:public-links).
+- **Personal** — registre las licencias, exámenes médicos y capacitaciones de sus conductores con sus fechas de vencimiento, reciba alertas antes de que caduquen y conserve un historial de quién condujo cada unidad. Vea [Conductores y personal](topic:drivers-workforce).
 
 ## 9. Verifique la configuración
 

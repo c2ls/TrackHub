@@ -89,6 +89,7 @@ function PoiFormDialog({ open, setOpen, handleSubmit, values, handleChange, erro
             label={t('poi.type')}
             value={values.type}
             required
+            errorMsg={errors.type}
           />
 
           <CustomTextField

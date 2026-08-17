@@ -102,6 +102,7 @@ function NotificationTemplateDialog({
           handleChange={handleChange}
           numericValue={false}
           required
+          errorMsg={errors.templateKey}
         />
         <CustomSelect
           list={channelOptions}
@@ -112,6 +113,7 @@ function NotificationTemplateDialog({
           handleChange={handleChange}
           numericValue={false}
           required
+          errorMsg={errors.channel}
         />
         <CustomSelect
           list={localeOptions}
@@ -122,6 +124,7 @@ function NotificationTemplateDialog({
           handleChange={handleChange}
           numericValue={false}
           required
+          errorMsg={errors.locale}
         />
         <CustomTextField
           margin="normal"

@@ -1,29 +1,29 @@
 ---
 id: feature-catalog
 title: Feature catalogue
-description: The ten account features — what each one turns on or off, its settings, who can change it, and what happens when a feature is switched off.
+description: The eleven account features — what each one turns on or off, its settings, who can change it, and what happens when a feature is switched off.
 category: reference
 screens: []
-related: [roles-and-permissions, admin-platform-setup, admin-account-setup, system-administration]
+related: [roles-and-permissions, admin-platform-setup, admin-account-setup, system-administration, drivers-workforce]
 tags: [features, subscription, billing, entitlements, reference, catalogue]
 order: 15
 ---
 
 # Feature catalogue
 
-Every account has a set of **features**. A feature is a billing entitlement: it decides which parts of TrackHub exist for that account. There are exactly **ten** features, and this page is the reference for all of them.
+Every account has a set of **features**. A feature is a billing entitlement: it decides which parts of TrackHub exist for that account. There are exactly **eleven** features, and this page is the reference for all of them.
 
 Two rules apply to every feature:
 
 - **Only a platform administrator can change them**, in **System Admin → Account Features**. Managers see their own account's list read-only in **Account Management → Account Features**.
 - **Features are off unless they are switched on.** A feature that has never been provisioned for an account behaves exactly like one that was switched off. Nothing is enabled implicitly.
 
-## The ten features at a glance
+## The eleven features at a glance
 
 | Feature | Key | Settings | What it gates |
 |---|---|---|---|
 | Geofencing | `geofencing` | — | The whole **Geofences** menu item, geofence alerts, and two reports |
-| Trip Management | `trip-management` | — | Nothing yet — reserved entitlement |
+| Trip Management | `trip-management` | — | The whole **Trips** menu item, customer tracking links, six reports, and two background jobs |
 | Driver Mobile | `driver-mobile` | — | Nothing in the portal — reserved entitlement |
 | Public Links | `public-links` | — | The **Public Links** section and creating new links |
 | Documents | `documents` | — | The **Documents** section and four document reports |
@@ -32,17 +32,19 @@ Two rules apply to every feature:
 | WhatsApp Notifications | `notifications.whatsapp` | — | WhatsApp as a delivery channel |
 | GPS Integration | `gps.integration` | Storing Interval (Seconds) | How positions are collected, and nine GPS reports |
 | GPS Position History | `gps.positionHistory` | Retention Days | Stored history, replay, and one report |
+| Workforce | `workforce` | Block assignment when the driver's license is expired | Driver qualifications, assignment history, expiration alerts, and three reports |
 
 Dependencies to keep in mind:
 
 - **Email Notifications** and **WhatsApp Notifications** only matter while the base **Notifications** feature is on. With Notifications off, the screens where you would choose a channel are not there at all.
 - **GPS Position History** is normally paired with **GPS Integration**: history is built from the positions the integration collects.
+- **Workforce** extends a driver area that is otherwise core: the driver registry and driver credentials work without it.
 
 ## Geofencing
 
 **Key:** `geofencing`. **Settings:** none.
 
-This is the only feature that removes a whole left-menu item. When it is off:
+This is one of the two features that remove a whole left-menu item — the other is Trip Management. When it is off:
 
 - **Geofences** disappears from the left menu, and its page cannot be opened.
 - Existing geofences are not evaluated, so no geofence entry or exit alerts are raised.
@@ -55,7 +57,21 @@ When it is switched back on, the geofences you drew before are still there.
 
 **Key:** `trip-management`. **Settings:** none.
 
-A reserved entitlement. It appears in both feature lists and can be switched on or off, but in the current release **nothing in the product changes** either way.
+The other feature that removes a whole left-menu item. When it is off:
+
+- **Trips** disappears from the left menu, and the dispatch board cannot be opened.
+- Everything behind the **Trips** resource is refused: trips and their stops, deliveries, proof of delivery, route planning, toll estimates, and the mapping of your own vehicles to toll classes.
+- Positions stop being matched against running trips — the **TripTracking** resource, which is how the tracking pipeline advances a trip, is refused too — so arrivals and departures are no longer detected automatically.
+- Customer tracking links stop resolving. The public tracking page is open to anyone with a link, so it does not disappear, but a link for the account answers as though it did not exist and the customer sees the "link is not valid" message. Nothing about the account is disclosed.
+- Six reports disappear from the report list — trip summary, trip stop detail, on-time performance, stop dwell, toll cost, and the proof-of-delivery register — along with the whole **Trips** report category, which has nothing else in it.
+- The two background jobs skip the account: **ETA refresh** (every 5 minutes) stops updating stop ETAs and stops raising trip-delay alerts, and **schedule reminder** (every 15 minutes) stops raising trip-start-due alerts.
+- The Trips and Customer trip tracking help topics are hidden from the help index.
+
+Trips, stops, deliveries, proof of delivery and issued tracking links are not deleted. Switching the feature back on restores the board exactly as it was.
+
+The platform's **toll catalog** — the stations, tariffs and vehicle classes behind the estimate — is **not** part of this feature. It is platform reference data held under the **TollCatalog** resource, maintained by a platform administrator in System Admin, and it stays exactly as it is whether or not any account has trip management. What the feature gates is the account's own use of it: the per-vehicle toll-class mapping and the estimate on a trip.
+
+Trip management also depends on **OpenRouteService**, an external routing service that supplies the driving route, the deviation corridor and the live ETAs. It is configured once for the deployment, not per account. When it is unreachable, route planning comes back as failed and ETAs fall back to the planned schedule — trips stay fully usable, just without live routing. Full detail is in [Trips and route planning](topic:trip-management).
 
 ## Driver Mobile
 
@@ -136,6 +152,24 @@ Controls whether a unit's past track is kept and can be replayed. When it is off
 **Retention Days** is how long positions are kept before the daily clean-up deletes them. Raising it keeps more history and uses more storage; lowering it is destructive, because positions older than the new limit are deleted on the next run.
 
 Managers can see both of these values, read-only, under **GPS Integration → Position Retention**.
+
+## Workforce
+
+**Key:** `workforce`. **Setting:** **Block assignment when the driver's license is expired**, default **off**.
+
+This feature does **not** control drivers as such. The **Drivers** registry and the **Driver Credentials & Devices** section are core platform: an authorised administrator can register drivers, and issue, activate, lock, reset, and revoke their mobile credentials, on every account, whether or not this feature is on. What Workforce adds is everything built *around* the driver.
+
+When it is off:
+
+- Three sections disappear from the **Fleet & Tracking** group: **Driver Qualifications**, **Driver Assignments**, and **Qualification Expirations (30 days)**.
+- Qualifications cannot be created, edited, or read, and assignment history cannot be recorded or queried.
+- The daily scan stops, so no **Driver Qualification Expiring** or **Driver Qualification Expired** alerts are raised for the account.
+- Three reports disappear from the report list: driver registry, qualification expirations, and driver assignment history — along with the whole **Workforce** report category, which has nothing else in it.
+- The driver's **Default Transporter** still works. It is a field on the driver record, not an assignment.
+
+Existing qualifications and assignments are not deleted; they simply cannot be reached until the feature is switched back on.
+
+The **Block assignment when the driver's license is expired** setting is the only per-account choice this feature carries, and it is off unless you turn it on. With it on, assigning a driver whose **License** qualification is expired or revoked is rejected with a validation error. Accounts differ on how strict they need to be, which is why this is a setting rather than a rule. Full detail is in [Drivers and workforce](topic:drivers-workforce).
 
 ## What a switched-off feature looks like
 

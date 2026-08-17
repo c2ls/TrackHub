@@ -20,10 +20,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import DynamicTableDialog from 'controls/Dialogs/TableDialogs/DynamicTableDialog';
 import CustomSelect from 'controls/Dialogs/CustomSelect';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
-import { useUsersByAccount } from 'queries/users';
+import { useUserLookupByAccount } from 'queries/users';
 import { useUsersByGroup, groupKeys } from 'queries/groups';
 import { createUserGroup, deleteUserGroup } from 'api/manager/groups';
-import type { GroupUser } from 'api/manager/groups';
 import { notifyApiError } from 'api/core/errors';
 import { LoadingContext } from 'LoadingContext';
 
@@ -43,7 +42,10 @@ function UserAllocatorDialog({ open, setOpen, groupId }: UserAllocatorDialogProp
 
   // Account users come from the security query layer; group membership now comes
   // from the manager groups query layer (invalidated after each add/remove).
-  const accountUsersQuery = useUsersByAccount({ enabled: open });
+  // Set difference: available = account users minus group members. Both operands
+  // must be complete, so the account side reads the unpaged lookup and the
+  // membership side is drained to exhaustion.
+  const accountUsersQuery = useUserLookupByAccount({ enabled: open });
   const accountUsers = accountUsersQuery.data ?? [];
   const assignedUsersQuery = useUsersByGroup(open ? groupId : undefined);
   const data = assignedUsersQuery.data ?? [];

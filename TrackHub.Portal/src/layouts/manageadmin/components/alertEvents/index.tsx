@@ -28,6 +28,7 @@ import type { AlertEvent } from "api/manager/alertEvents";
 import { notifyApiError } from "api/core/errors";
 import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from "utils/dateUtils";
+import { toCamelCase } from "utils/stringUtils";
 
 function TextCell({ children }: { children?: ReactNode }) {
   return (
@@ -102,17 +103,31 @@ function ManageAlertEvents() {
           { name: 'id' }
         ]}
         rows={alerts.map(alert => ({
-          type: <TextCell>{alert.eventType}</TextCell>,
-          status: <TextCell>{alert.status}</TextCell>,
+          type: (
+            <TextCell>
+              {t(
+                `alertEventTypes.${toCamelCase(alert.eventType)}` as 'alertEventTypes.geofenceEntered',
+                { defaultValue: alert.eventType }
+              )}
+            </TextCell>
+          ),
+          status: (
+            <TextCell>
+              {t(
+                `alertEvents.statuses.${alert.status}` as 'alertEvents.statuses.Open',
+                { defaultValue: alert.status }
+              )}
+            </TextCell>
+          ),
           modified: <TextCell>{formatDateTime(alert.lastSeenAt)}</TextCell>,
           action: (
             <>
-              {alert.status !== 'acknowledged' && alert.status !== 'resolved' && (
+              {alert.status !== 'Acknowledged' && alert.status !== 'Resolved' && (
                 <ArgonButton variant="text" color="dark" onClick={() => handleAcknowledge(alert)}>
                   <Icon>done</Icon>&nbsp;{t('alertEvents.acknowledge')}
                 </ArgonButton>
               )}
-              {alert.status !== 'resolved' && (
+              {alert.status !== 'Resolved' && (
                 <ArgonButton variant="text" color="success" onClick={() => handleResolve(alert)}>
                   <Icon>done_all</Icon>&nbsp;{t('alertEvents.resolve')}
                 </ArgonButton>

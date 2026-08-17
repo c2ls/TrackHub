@@ -14,8 +14,6 @@
 *  limitations under the License.
 */
 
-import { calculateDistance } from '../../../utils/distanceUtils';
-
 /**
  * Get marker color based on status and speed
  */
@@ -23,15 +21,6 @@ export const getMarkerColor = (speed: number, isOnline = true): string => {
     if (!isOnline) return '#808080'; // Gray for offline
     if (speed > 0) return '#00FF00'; // Green for moving
     return '#FF0000'; // Red for stopped
-};
-
-/**
- * Get status color based on speed and online status
- */
-export const getStatusColor = (speed: number, isOnline = true): string => {
-    if (!isOnline) return 'secondary';
-    if (speed > 0) return 'success';
-    return 'error';
 };
 
 /**
@@ -53,81 +42,4 @@ export const getStatusMarkerLabel = (status: string): string => {
     if (status === 'offline') return 'O';
     if (status === 'moving') return 'M';
     return 'S';
-};
-
-/**
- * Get marker text/label based on status
- */
-export const getMarkerLabel = (speed: number, isOnline = true): string => {
-    if (!isOnline) return 'O'; // Offline
-    if (speed > 0) return 'M'; // Moving
-    return 'S'; // Stopped
-};
-
-export interface MarkerFilters {
-    minSpeed?: number;
-    maxSpeed?: number;
-    status?: string;
-    searchText?: string;
-}
-
-/**
- * Filter markers by criteria
- */
-export const filterMarkers = <T extends { name?: string; speed: number }>(
-    markers: T[],
-    filters: MarkerFilters
-): T[] => {
-    let filtered = [...markers];
-
-    if (filters.minSpeed !== undefined) {
-        filtered = filtered.filter(m => m.speed >= filters.minSpeed!);
-    }
-
-    if (filters.maxSpeed !== undefined) {
-        filtered = filtered.filter(m => m.speed <= filters.maxSpeed!);
-    }
-
-    if (filters.status) {
-        filtered = filtered.filter(m => {
-            if (filters.status === 'moving') return m.speed > 0;
-            if (filters.status === 'stopped') return m.speed === 0;
-            return true;
-        });
-    }
-
-    if (filters.searchText) {
-        const search = filters.searchText.toLowerCase();
-        filtered = filtered.filter(m =>
-            m.name?.toLowerCase().includes(search)
-        );
-    }
-
-    return filtered;
-};
-
-/**
- * Find nearest marker to a given position
- */
-export const findNearestMarker = <T extends { lat: number; lng: number }>(
-    markers: T[],
-    position: { lat: number; lng: number }
-): T | null => {
-    if (!markers || markers.length === 0) return null;
-
-    let nearest: T | null = null;
-    let minDistance = Infinity;
-
-    markers.forEach(marker => {
-        const distance = calculateDistance(
-            position.lat, position.lng,
-            marker.lat, marker.lng
-        );
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearest = marker;
-        }
-    });
-
-    return nearest;
 };

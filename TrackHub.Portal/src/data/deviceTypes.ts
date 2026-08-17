@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 Sergio Hernandez. All rights reserved.
+* Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 *
 *  Licensed under the Apache License, Version 2.0 (the "License").
 *  You may not use this file except in compliance with the License.
@@ -14,26 +14,27 @@
 *  limitations under the License.
 */
 
+// Mirrors Common.Domain.Enums.DeviceType (server-side ids 1..15). The label is
+// the lookup segment for the `deviceTypes.*` i18n keys; translate at render time.
 const deviceTypes = [
-  { value: 0, label: 'Unknown' },
-  { value: 1, label: 'Aviation' },
-  { value: 2, label: 'Camera' },
-  { value: 3, label: 'Cycling' },
-  { value: 4, label: 'Cellular' },
-  { value: 5, label: 'Drones' },
-  { value: 6, label: 'Emergency Locator' },
-  { value: 7, label: 'Fitness' },
-  { value: 8, label: 'Handheld' },
-  { value: 9, label: 'Marine' },
-  { value: 10, label: 'OBD Scanner' },
-  { value: 11, label: 'Pet Tracking' },
-  { value: 12, label: 'Phone' },
-  { value: 13, label: 'Satellite' },
-  { value: 14, label: 'Smartwatch' },
-  { value: 15, label: 'Wearable' },
-] as const;
+    { value: 1, label: 'aviation' },
+    { value: 2, label: 'camera' },
+    { value: 3, label: 'cycling' },
+    { value: 4, label: 'cellular' },
+    { value: 5, label: 'drones' },
+    { value: 6, label: 'emergency_locator' },
+    { value: 7, label: 'fitness' },
+    { value: 8, label: 'handheld' },
+    { value: 9, label: 'marine' },
+    { value: 10, label: 'obd_scanner' },
+    { value: 11, label: 'pet_tracking' },
+    { value: 12, label: 'phone' },
+    { value: 13, label: 'satellite' },
+    { value: 14, label: 'smartwatch' },
+    { value: 15, label: 'wearable' },
+  ] as const;
 
-export type DeviceType = (typeof deviceTypes)[number];
-export type DeviceTypeValue = DeviceType['value'];
+  export type DeviceTypeOption = (typeof deviceTypes)[number];
+  export type DeviceTypeValue = DeviceTypeOption['value'];
 
-export default deviceTypes;
+  export default deviceTypes;

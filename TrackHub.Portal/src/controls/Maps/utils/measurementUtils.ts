@@ -14,7 +14,7 @@
 *  limitations under the License.
 */
 
-import { calculateDistance, toRadians } from '../../../utils/distanceUtils';
+import { calculateDistance } from '../../../utils/distanceUtils';
 
 interface LatLngPoint {
     lat: number;
@@ -59,51 +59,4 @@ export const formatDistance = (meters: number, unit: MeasurementUnit = 'metric')
     }
     const km = meters / 1000;
     return `${km.toFixed(2)} km`;
-};
-
-/**
- * Calculate area of a polygon
- */
-export const calculateArea = (latlngs: LatLngPoint[]): number => {
-    if (!latlngs || latlngs.length < 3) return 0;
-
-    const R = 6371000; // Earth's radius in meters
-    let area = 0;
-
-    const coords = [...latlngs];
-    if (coords[0] !== coords[coords.length - 1]) {
-        coords.push(coords[0]); // Close the polygon
-    }
-
-    for (let i = 0; i < coords.length - 1; i++) {
-        const p1 = coords[i];
-        const p2 = coords[i + 1];
-        area += toRadians(p2.lng - p1.lng) *
-                (2 + Math.sin(toRadians(p1.lat)) +
-                 Math.sin(toRadians(p2.lat)));
-    }
-
-    area = Math.abs(area * R * R / 2);
-    return area;
-};
-
-/**
- * Format area to human-readable string
- */
-export const formatArea = (squareMeters: number, unit: MeasurementUnit = 'metric'): string => {
-    if (unit === 'imperial') {
-        const sqFeet = squareMeters * 10.7639;
-        if (sqFeet < 43560) {
-            return `${Math.round(sqFeet)} ft²`;
-        }
-        const acres = sqFeet / 43560;
-        return `${acres.toFixed(2)} acres`;
-    }
-
-    // Metric
-    if (squareMeters < 10000) {
-        return `${Math.round(squareMeters)} m²`;
-    }
-    const sqKm = squareMeters / 1000000;
-    return `${sqKm.toFixed(2)} km²`;
 };

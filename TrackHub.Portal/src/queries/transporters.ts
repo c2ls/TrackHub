@@ -27,48 +27,69 @@ import type {
   UpdateTransporterDtoInput,
   TransporterDeviceAssignmentDtoInput,
 } from 'api/manager/transporters';
+import type { ListParams } from 'api/core/paging';
 
 export const transporterKeys = {
   all: ['transporters'] as const,
-  byAccount: () => [...transporterKeys.all, 'byAccount'] as const,
-  byUser: () => [...transporterKeys.all, 'byUser'] as const,
+  byAccount: (params: ListParams = {}) =>
+    [...transporterKeys.all, 'byAccount', params] as const,
+  byUser: (params: ListParams = {}) => [...transporterKeys.all, 'byUser', params] as const,
   byGroup: (groupId: number) => [...transporterKeys.all, 'byGroup', groupId] as const,
+  lookupByAccount: () => [...transporterKeys.all, 'lookupByAccount'] as const,
+  lookupByUser: () => [...transporterKeys.all, 'lookupByUser'] as const,
   detail: (id: string) => [...transporterKeys.all, 'detail', id] as const,
   assignments: ['transporterDeviceAssignments'] as const,
-  assignmentsByAccount: (accountId: string, activeOnly: boolean) =>
-    [...transporterKeys.assignments, 'byAccount', accountId, activeOnly] as const,
+  assignmentsByAccount: (accountId: string, activeOnly: boolean, params: ListParams = {}) =>
+    [...transporterKeys.assignments, 'byAccount', accountId, activeOnly, params] as const,
+  allAssignmentsByAccount: (accountId: string, activeOnly: boolean) =>
+    [...transporterKeys.assignments, 'allByAccount', accountId, activeOnly] as const,
   assignmentsByTransporter: (transporterId: string, activeOnly: boolean) =>
     [...transporterKeys.assignments, 'byTransporter', transporterId, activeOnly] as const,
 };
 
-export function useTransporter(transporterId: string | undefined) {
+/** One server page of the account's transporters, for the admin list screen. */
+export function useTransportersByAccount(
+  params: ListParams = {},
+  options: { enabled?: boolean } = {}
+) {
   return useQuery({
-    queryKey: transporterKeys.detail(transporterId ?? ''),
-    queryFn: () => api.getTransporter(transporterId as string),
-    enabled: !!transporterId,
-  });
-}
-
-export function useTransportersByAccount(options: { enabled?: boolean } = {}) {
-  return useQuery({
-    queryKey: transporterKeys.byAccount(),
-    queryFn: api.getTransportersByAccount,
+    queryKey: transporterKeys.byAccount(params),
+    queryFn: () => api.getTransportersByAccount(params),
     enabled: options.enabled ?? true,
   });
 }
 
-export function useTransportersByUser(options: { enabled?: boolean } = {}) {
+/**
+ * The account's transporters as id + name — the admin-side picker source. Kept
+ * separate from {@link useTransporterLookupByUser}: admin screens see the whole
+ * account, the dashboard/reports/tripmanager see only the user's own units.
+ */
+export function useTransporterLookupByAccount(options: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: transporterKeys.byUser(),
-    queryFn: api.getTransportersByUser,
+    queryKey: transporterKeys.lookupByAccount(),
+    queryFn: api.getTransporterLookupByAccount,
     enabled: options.enabled ?? true,
   });
 }
 
+/** The transporters the signed-in user may track, as id + name. */
+export function useTransporterLookupByUser(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: transporterKeys.lookupByUser(),
+    queryFn: api.getTransporterLookupByUser,
+    enabled: options.enabled ?? true,
+  });
+}
+
+/**
+ * A group's complete transporter membership (all server pages drained): the
+ * allocator dialog subtracts it from the account lookup, and a partial list
+ * would offer already-assigned units again.
+ */
 export function useTransportersByGroup(groupId: number | undefined) {
   return useQuery({
     queryKey: transporterKeys.byGroup(groupId ?? -1),
-    queryFn: () => api.getTransportersByGroup(groupId as number),
+    queryFn: () => api.getAllTransportersByGroup(groupId as number),
     enabled: groupId !== undefined,
   });
 }
@@ -101,26 +122,17 @@ export function useDeleteTransporter() {
   });
 }
 
+/** One server page of the account's device assignments (`{ items, totalCount }`). */
 export function useTransporterDeviceAssignmentsByAccount(
   accountId: string | undefined,
-  activeOnly = false
+  activeOnly = false,
+  params: ListParams = {}
 ) {
   return useQuery({
-    queryKey: transporterKeys.assignmentsByAccount(accountId ?? '', activeOnly),
-    queryFn: () => api.getTransporterDeviceAssignmentsByAccount(accountId as string, activeOnly),
-    enabled: !!accountId,
-  });
-}
-
-export function useTransporterDeviceAssignmentsByTransporter(
-  transporterId: string | undefined,
-  activeOnly = false
-) {
-  return useQuery({
-    queryKey: transporterKeys.assignmentsByTransporter(transporterId ?? '', activeOnly),
+    queryKey: transporterKeys.assignmentsByAccount(accountId ?? '', activeOnly, params),
     queryFn: () =>
-      api.getTransporterDeviceAssignmentsByTransporter(transporterId as string, activeOnly),
-    enabled: !!transporterId,
+      api.getTransporterDeviceAssignmentsByAccount(accountId as string, { activeOnly, ...params }),
+    enabled: !!accountId,
   });
 }
 

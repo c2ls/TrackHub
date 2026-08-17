@@ -17,18 +17,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Table from "controls/Tables/Table";
+import ServerPagination from "controls/Tables/ServerPagination";
+import ServerSearch from "controls/Tables/ServerSearch";
+import useServerList, { useClampPage } from "controls/Tables/useServerList";
 import TableAccordion from "controls/Accordions/TableAccordion";
 import PoiFormDialog from 'layouts/manageadmin/components/pois/PoiDialog';
 import useForm from 'controls/Dialogs/useForm';
 import ConfirmDialog from 'controls/Dialogs/ConfirmDialog';
 import usePoiTableData from "layouts/manageadmin/data/poisTableData";
-import type { PoiFormValues, PoiColumn, PoiRow } from "layouts/manageadmin/data/poisTableData";
+import type { PoiFormValues } from "layouts/manageadmin/data/poisTableData";
 
-// Change event shape emitted by the vendored dialog controls.
-type FormChangeHandler = (
-  event: { target: { name: string; value: string; type?: string; checked?: boolean } }
-) => void;
-
+const PAGE_SIZE = 10;
 
 function ManagePois() {
   const { t } = useTranslation();
@@ -47,15 +46,18 @@ function ManagePois() {
   };
 
   const [expanded, setExpanded] = useState(false);
+  const { page, setPage, searchDraft, setSearchDraft, params } = useServerList(PAGE_SIZE);
   const {
     data,
+    totalCount,
     groupOptions,
     open,
     confirmOpen,
     onSave,
     onDelete,
     setOpen,
-    setConfirmOpen} = usePoiTableData(expanded, handleEditClick, handleDeleteClick);
+    setConfirmOpen} = usePoiTableData(expanded, handleEditClick, handleDeleteClick, params);
+  useClampPage(page, PAGE_SIZE, totalCount, setPage);
 
   const [values, handleChange, setValues, setErrors, validate, errors] = useForm<PoiFormValues>({});
   const [toDelete, setToDelete] = useState<string | null>(null);
@@ -94,7 +96,15 @@ function ManagePois() {
         setOpen={setOpen}
         handleAddClick={handleAddClick}
         setExpanded={setExpanded}>
-        <Table columns={columns} rows={rows} selectedField='name' />
+        <ServerSearch value={searchDraft} onChange={setSearchDraft} />
+        <Table columns={columns} rows={rows} selectedField='name' serverPaged />
+        <ServerPagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          totalCount={totalCount}
+          pageLength={rows.length}
+          onPageChange={setPage}
+        />
       </TableAccordion>
 
       <PoiFormDialog

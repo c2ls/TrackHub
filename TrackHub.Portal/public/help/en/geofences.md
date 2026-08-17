@@ -5,7 +5,7 @@ description: Draw named zones on the map — polygons or circles — and get ent
 category: operation
 screens: [geofenceManager]
 featureKey: geofencing
-related: [dashboard-live-map, alerts-notifications]
+related: [dashboard-live-map, alerts-notifications, trip-management]
 tags: [geofence, zones, polygon, circle, alerts, dwell]
 order: 30
 ---
@@ -15,6 +15,8 @@ order: 30
 A geofence is an area you draw on the map and give a name, a type, and a colour. Once a zone exists, TrackHub can tell you which units are inside it, and — if you turn the options on — raise an alert when a unit enters, leaves, or lingers inside it. The **In Geofence** count on the [live map](topic:dashboard-live-map) is the number of units located within any of your geofences right now.
 
 Geofences are available only when the geofencing feature is enabled for your account, and managing them requires geofence permissions. See [Roles and permissions](topic:roles-and-permissions).
+
+Geofences are also reusable as trip stops: when planning a trip you can place a stop by selecting a zone, and arrival at that stop is then judged against the shape of the zone rather than a circle around a point. See [Trips and route planning](topic:trip-management).
 
 ## Opening the Geofence Manager
 

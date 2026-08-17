@@ -23,16 +23,32 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from 'api/manager/devices';
+import type { ListParams } from 'api/core/paging';
 
 export const deviceKeys = {
   all: ['devices'] as const,
-  byAccount: () => [...deviceKeys.all, 'byAccount'] as const,
+  byAccount: (params: ListParams = {}) => [...deviceKeys.all, 'byAccount', params] as const,
+  lookup: () => [...deviceKeys.all, 'lookup'] as const,
 };
 
-export function useDevicesByAccount(options: { enabled?: boolean } = {}) {
+/** One server page of devices (`{ items, totalCount }`) for the device list. */
+export function useDevicesByAccount(params: ListParams = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: deviceKeys.byAccount(),
-    queryFn: api.getDevicesByAccount,
+    queryKey: deviceKeys.byAccount(params),
+    queryFn: () => api.getDevicesByAccount(params),
+    enabled: options.enabled ?? true,
+  });
+}
+
+/**
+ * The account's devices as id + name, for pickers and deviceId→name maps. Keyed
+ * under {@link deviceKeys.all} so a device mutation refreshes it alongside the
+ * paged list.
+ */
+export function useDeviceLookup(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: deviceKeys.lookup(),
+    queryFn: api.getDeviceLookup,
     enabled: options.enabled ?? true,
   });
 }

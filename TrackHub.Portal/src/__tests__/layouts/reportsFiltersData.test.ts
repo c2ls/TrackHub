@@ -14,26 +14,13 @@
  *  limitations under the License.
  */
 
-import type { TFunction } from 'i18next';
-import type { SelectListItem } from 'controls/Dialogs/CustomSelect';
 import en from 'locales/en.json';
 import es from 'locales/es.json';
 import { toCamelCase } from 'utils/stringUtils';
-import {
-  REPORT_FILTER_SPECS,
-  DEFAULT_FILTER_SPEC,
-  getReportFilterSpec,
-  reportNeedsTransporters,
-  reportNeedsOperators,
-  getStringInputKinds,
-  buildFilterTableData,
-} from 'layouts/reports/data/filtersData';
+import { parseFilterDefinitions } from 'layouts/reports/data/filtersData';
 
-// Passthrough translator: returns the key so we can assert label wiring.
-const t = ((key: string) => key) as unknown as TFunction;
-
-// The 21 seeded report codes. Every one must have a strategy so the
-// silent empty-filter fallback is gone.
+// The 30 seeded report codes (Manager CoreReportCatalogContribution). The filter form is
+// catalog-driven, so this list only backs the i18n coverage gate below.
 const SEEDED_CODES = [
   'LiveReport',
   'PositionRecord',
@@ -53,112 +40,69 @@ const SEEDED_CODES = [
   'documents-missing-required',
   'documents-share-activity',
   'documents-upload-volume',
+  'workforce-driver-registry',
+  'workforce-qualification-expirations',
+  'workforce-assignment-history',
+  'trip-summary',
+  'trip-detail',
+  'trip-on-time-performance',
+  'trip-stop-dwell',
+  'trip-toll-cost',
+  'trip-pod-export',
   'accounts-by-status',
   'feature-enablement-matrix',
   'group-membership-export',
 ];
 
-describe('report filter strategies', () => {
-  test('every seeded report code has a registered strategy', () => {
-    expect(SEEDED_CODES).toHaveLength(21);
-    for (const code of SEEDED_CODES) {
-      expect(REPORT_FILTER_SPECS[code]).toBeDefined();
-    }
-    expect(Object.keys(REPORT_FILTER_SPECS)).toHaveLength(21);
-  });
+describe('parseFilterDefinitions', () => {
+  test('parses a catalog filters document (the GeofenceEvents shape)', () => {
+    const json = JSON.stringify([
+      { name: 'transporterId', type: 'guid', labelKey: 'reports.transporter', source: 'transporters' },
+      { name: 'geofenceId', type: 'guid', labelKey: 'reports.geofence', source: 'geofences' },
+      { name: 'from', type: 'datetime', labelKey: 'reports.from' },
+      { name: 'to', type: 'datetime', labelKey: 'reports.to' },
+    ]);
 
-  test('unknown code yields the explicit date-range default', () => {
-    expect(getReportFilterSpec('does-not-exist')).toEqual(['from', 'to']);
-    expect(getReportFilterSpec('does-not-exist')).toBe(DEFAULT_FILTER_SPEC);
-  });
+    const definitions = parseFilterDefinitions(json);
 
-  test('only transporter-scoped reports need the transporter list', () => {
-    const transporterReports = SEEDED_CODES.filter(reportNeedsTransporters);
-    expect(transporterReports).toEqual([
-      'PositionRecord',
-      'GeofenceEvents',
-      'gps.assignment-history',
-      'gps.position-history',
+    expect(definitions).toEqual([
+      { name: 'transporterId', type: 'guid', labelKey: 'reports.transporter', source: 'transporters' },
+      { name: 'geofenceId', type: 'guid', labelKey: 'reports.geofence', source: 'geofences' },
+      { name: 'from', type: 'datetime', labelKey: 'reports.from', source: undefined },
+      { name: 'to', type: 'datetime', labelKey: 'reports.to', source: undefined },
     ]);
   });
 
-  test('only operator-scoped reports need the operator list', () => {
-    const operatorReports = SEEDED_CODES.filter(reportNeedsOperators);
-    expect(operatorReports).toEqual([
-      'gps.provider-sync-history',
-      'gps.synchronized-device-inventory',
-      'gps.ignored-devices',
+  test('null, empty, malformed and non-array documents yield an empty filter set', () => {
+    expect(parseFilterDefinitions(null)).toEqual([]);
+    expect(parseFilterDefinitions(undefined)).toEqual([]);
+    expect(parseFilterDefinitions('')).toEqual([]);
+    expect(parseFilterDefinitions('not json')).toEqual([]);
+    expect(parseFilterDefinitions('{"name":"x"}')).toEqual([]);
+    expect(parseFilterDefinitions('[]')).toEqual([]);
+  });
+
+  test('drops malformed entries and keeps the valid ones', () => {
+    const json = JSON.stringify([
+      { name: 'from', type: 'datetime', labelKey: 'reports.from' },
+      { type: 'guid', labelKey: 'reports.transporter' }, // no name
+      { name: 'x', type: 'guid' }, // no labelKey
+      'not-an-object',
+      null,
     ]);
-  });
-});
 
-describe('buildFilterTableData', () => {
-  const transporters: SelectListItem[] = [{ value: 't-1', label: 'Unit 1' }];
-  const operators: SelectListItem[] = [{ value: 'o-1', label: 'Provider 1' }];
-  const pickers = { transporters, operators };
-
-  test('empty spec hides every filter', () => {
-    const data = buildFilterTableData([], pickers, t);
-    expect(data.stringFilter1.visible).toBe(false);
-    expect(data.stringFilter2.visible).toBe(false);
-    expect(data.dateTimeFilter1.visible).toBe(false);
-    expect(data.numericFilter1.visible).toBe(false);
+    expect(parseFilterDefinitions(json).map((d) => d.name)).toEqual(['from']);
   });
 
-  test('transporter + date range maps to stringFilter1 and dateTimeFilter1/2', () => {
-    const data = buildFilterTableData(['transporter', 'from', 'to'], pickers, t);
-    expect(data.stringFilter1.visible).toBe(true);
-    expect(data.stringFilter1.data).toBe(transporters);
-    expect(data.stringFilter1.label).toBe('reports.transporter');
-    expect(data.dateTimeFilter1.visible).toBe(true);
-    expect(data.dateTimeFilter1.label).toBe('reports.from');
-    expect(data.dateTimeFilter2.visible).toBe(true);
-    expect(data.dateTimeFilter2.label).toBe('reports.to');
-    expect(data.numericFilter1.visible).toBe(false);
-  });
+  // A newer backend may ship datatypes or picker sources this build does not know;
+  // the form must degrade to a free input, never break.
+  test('unknown datatype falls back to text; unknown source falls back to a free input', () => {
+    const json = JSON.stringify([
+      { name: 'weird', type: 'money', labelKey: 'reports.maxRows', source: 'drivers' },
+    ]);
 
-  test('operator maps the operator list onto stringFilter1', () => {
-    const data = buildFilterTableData(['operator'], pickers, t);
-    expect(data.stringFilter1.visible).toBe(true);
-    expect(data.stringFilter1.data).toBe(operators);
-    expect(data.stringFilter1.label).toBe('reports.operator');
-  });
-
-  test('device maps a free-text input onto stringFilter2', () => {
-    const data = buildFilterTableData(['transporter', 'device'], pickers, t);
-    expect(data.stringFilter2.visible).toBe(true);
-    expect(data.stringFilter2.label).toBe('reports.device');
-    expect(getStringInputKinds(['transporter', 'device'])).toEqual(['select', 'text', 'select']);
-  });
-
-  test('string slots default to select pickers', () => {
-    expect(getStringInputKinds(['transporter'])).toEqual(['select', 'select', 'select']);
-    expect(getStringInputKinds([])).toEqual(['select', 'select', 'select']);
-  });
-
-  test('maxRows maps to numericFilter1', () => {
-    const data = buildFilterTableData(['maxRows'], pickers, t);
-    expect(data.numericFilter1.visible).toBe(true);
-    expect(data.numericFilter1.label).toBe('reports.maxRows');
-  });
-
-  test('withinDays maps to numericFilter1', () => {
-    const data = buildFilterTableData(['withinDays'], pickers, t);
-    expect(data.numericFilter1.visible).toBe(true);
-    expect(data.numericFilter1.label).toBe('reports.withinDays');
-  });
-
-  test('status maps a five-option AccountStatus select onto stringFilter1', () => {
-    const data = buildFilterTableData(['status'], pickers, t);
-    expect(data.stringFilter1.visible).toBe(true);
-    expect(data.stringFilter1.label).toBe('reports.status');
-    expect(data.stringFilter1.data).toHaveLength(5);
-    expect((data.stringFilter1.data as SelectListItem[]).map((o) => o.value)).toEqual([
-      'TRIAL',
-      'ACTIVE',
-      'SUSPENDED',
-      'CANCELLED',
-      'ARCHIVED',
+    expect(parseFilterDefinitions(json)).toEqual([
+      { name: 'weird', type: 'text', labelKey: 'reports.maxRows', source: undefined },
     ]);
   });
 });
@@ -177,6 +121,29 @@ describe('report catalog i18n coverage (acceptance #9)', () => {
       const description = resolve(bundle, `reportDescriptions.${camel}`);
       expect(typeof label === 'string' && label.length > 0).toBe(true);
       expect(typeof description === 'string' && description.length > 0).toBe(true);
+    }
+  });
+
+  // Every label key the seeded catalog's filter definitions reference must resolve in both
+  // bundles — the backend ships keys, never localized strings.
+  const FILTER_LABEL_KEYS = [
+    'reports.transporter',
+    'reports.operator',
+    'reports.geofence',
+    'reports.device',
+    'reports.status',
+    'reports.from',
+    'reports.to',
+    'reports.maxRows',
+    'reports.withinDays',
+    'reports.lookbackHours',
+    'reports.all',
+  ];
+
+  test.each(FILTER_LABEL_KEYS)('%s resolves in EN + ES', (key) => {
+    for (const bundle of [en, es]) {
+      const label = resolve(bundle, key);
+      expect(typeof label === 'string' && label.length > 0).toBe(true);
     }
   });
 });

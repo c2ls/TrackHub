@@ -165,7 +165,7 @@ const MarkerInfoContent = ({ marker, t, onResolveAddress, resolveState }: Marker
                 {marker.attributes?.hourmeter !== undefined && marker.attributes?.hourmeter !== null && (
                     <div style={{ marginBottom: '4px' }}>
                         <strong style={{ color: '#667eea', fontSize: '12px' }}>⏲ {t('transporterMap.hourmeter') || 'Hourmeter'}:</strong>{' '}
-                        <span style={{ fontSize: '12px', color: '#333' }}>{Math.floor(marker.attributes.hourmeter / 3600000)} hrs</span>
+                        <span style={{ fontSize: '12px', color: '#333' }}>{Number(marker.attributes.hourmeter).toFixed(1)} hrs</span>
                     </div>
                 )}
 

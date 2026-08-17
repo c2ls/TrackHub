@@ -149,7 +149,7 @@ function ManageNotificationDeliveries() {
       title={t('notificationDeliveries.title')}
       expanded={expanded}
       setExpanded={setExpanded}>
-      <Grid container spacing={3} mb={2}>
+      <Grid container spacing={3} sx={{ mb: 2 }}>
         <Grid size={{ xs: 12, md: 4 }}>
           <DetailedStatisticsCard
             title={t('notificationDeliveries.sentCount')}

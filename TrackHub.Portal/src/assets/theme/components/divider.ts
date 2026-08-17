@@ -52,6 +52,23 @@ const divider = {
       borderLeft: 0,
       borderRight: 0,
       opacity: 0.25,
+
+      // Material UI v9 removed Divider's `light` prop, so the inverted treatment is
+      // opted into with this class instead (see controls/Sidenav).
+      "&.divider-light": {
+        backgroundColor: transparent.main,
+        backgroundImage: `linear-gradient(to right, ${rgba(white.main, 0)}, ${white.main}, ${rgba(
+          white.main,
+          0
+        )}) !important`,
+
+        "&.MuiDivider-vertical": {
+          backgroundImage: `linear-gradient(180deg, ${rgba(white.main, 0)}, ${white.main}, ${rgba(
+            white.main,
+            0
+          )}) !important`,
+        },
+      },
     },
 
     vertical: {
@@ -64,21 +81,6 @@ const divider = {
       height: "100%",
       margin: `0 ${pxToRem(16)}`,
       borderRight: "unset",
-    },
-
-    light: {
-      backgroundColor: transparent.main,
-      backgroundImage: `linear-gradient(to right, ${rgba(white.main, 0)}, ${white.main}, ${rgba(
-        white.main,
-        0
-      )}) !important`,
-
-      "&.MuiDivider-vertical": {
-        backgroundImage: `linear-gradient(180deg, ${rgba(white.main, 0)}, ${white.main}, ${rgba(
-          white.main,
-          0
-        )}) !important`,
-      },
     },
   },
 };

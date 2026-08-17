@@ -25,16 +25,37 @@ import type {
   PointOfInterestDtoInput,
   UpdatePointOfInterestDtoInput,
 } from 'api/manager/pointsOfInterest';
+import type { ListParams } from 'api/core/paging';
 
 export const poiKeys = {
   all: ['pointsOfInterest'] as const,
-  byAccount: () => [...poiKeys.all, 'byAccount'] as const,
+  byAccount: (params: ListParams = {}) => [...poiKeys.all, 'byAccount', params] as const,
+  lookup: () => [...poiKeys.all, 'lookup'] as const,
 };
 
-export function usePointsOfInterestByAccount(options: { enabled?: boolean } = {}) {
+/** One server page of POIs (`{ items, totalCount }`) for the POI list. */
+export function usePointsOfInterestByAccount(
+  params: ListParams = {},
+  options: { enabled?: boolean } = {}
+) {
   return useQuery({
-    queryKey: poiKeys.byAccount(),
-    queryFn: api.getPointsOfInterestByAccount,
+    queryKey: poiKeys.byAccount(params),
+    queryFn: () => api.getPointsOfInterestByAccount(params),
+    enabled: options.enabled ?? true,
+  });
+}
+
+/**
+ * The account's POIs as the map projection — coordinates, colour, type,
+ * description, address and the active flag, everything the overlays render.
+ * Unpaged by design (the server raises past its ceiling rather than
+ * truncating). Keyed under {@link poiKeys.all} so one invalidation refreshes it
+ * alongside the paged list.
+ */
+export function usePointOfInterestLookup(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: poiKeys.lookup(),
+    queryFn: api.getPointOfInterestLookup,
     enabled: options.enabled ?? true,
   });
 }

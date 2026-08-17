@@ -65,19 +65,21 @@ const CustomPasswordField = ({
         helperText={errorMsg}
         required={required}
         sx={textFieldSx}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                size="small"
-                onClick={() => setShowPassword((s) => !s)}
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                {showPassword ? <Visibility fontSize="small" /> : <VisibilityOff fontSize="small" />}
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  size="small"
+                  onClick={() => setShowPassword((s) => !s)}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {showPassword ? <Visibility fontSize="small" /> : <VisibilityOff fontSize="small" />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
         {...props}
       />

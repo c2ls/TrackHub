@@ -4,7 +4,7 @@ title: Documentos
 description: Almacene, clasifique, analice, versione y comparta los documentos de su cuenta desde la pantalla de Administración de Cuentas.
 category: administration
 screens: [manageAdmin]
-related: [management-overview, units-devices]
+related: [management-overview, units-devices, drivers-workforce]
 tags: [documentos, archivos, subir, versiones, vencimiento, análisis de virus]
 order: 40
 ---
@@ -35,6 +35,8 @@ Una búsqueda de los documentos de toda la cuenta.
 ## Documentos por Vencer
 
 Un panel de documentos próximos a vencer. Columnas: **Tipo**, **Propietario**, **Vence En** y **Estado**. Úselo para detectar licencias, permisos y certificados antes de que caduquen.
+
+> Las licencias y certificados de los conductores se controlan aparte, en las habilitaciones del conductor, que tienen su propia lista de vencimientos y sus propias alertas. Suba el escaneo aquí y refiéralo desde el campo **Documento Vinculado** de la habilitación. Vea [Conductores y personal](topic:drivers-workforce).
 
 ## Tipos de Documento
 

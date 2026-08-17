@@ -19,9 +19,8 @@ import { useTranslation } from 'react-i18next';
 import DynamicTableDialog from 'controls/Dialogs/TableDialogs/DynamicTableDialog';
 import CustomSelect from 'controls/Dialogs/CustomSelect';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
-import { useTransportersByAccount, useTransportersByGroup } from 'queries/transporters';
+import { useTransporterLookupByAccount, useTransportersByGroup } from 'queries/transporters';
 import { createTransporterGroup, deleteTransporterGroup } from 'api/manager/groups';
-import type { Transporter } from 'api/manager/transporters';
 import { notifyApiError } from 'api/core/errors';
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
@@ -40,7 +39,11 @@ function TransporterAllocatorDialog({ open, setOpen, groupId }: TransporterAlloc
   const { isAuthenticated } = useAuth();
   const [transporterId, setTransporterId] = useState('');
 
-  const accountTransportersQuery = useTransportersByAccount({ enabled: isAuthenticated });
+  // This dialog is a SET DIFFERENCE: available = account minus assigned. Both
+  // operands must be complete — a truncated one makes an already-assigned unit
+  // reappear as available and the operator creates a duplicate membership. So
+  // the account side reads the unpaged lookup and the assigned side is drained.
+  const accountTransportersQuery = useTransporterLookupByAccount({ enabled: isAuthenticated });
   const accountTransporters = accountTransportersQuery.data ?? [];
   // Assigned transporters only matter while the dialog is open.
   const assignedQuery = useTransportersByGroup(open ? groupId : undefined);

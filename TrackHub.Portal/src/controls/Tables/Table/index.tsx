@@ -58,6 +58,14 @@ export interface TableProps {
   horizontalScroll?: boolean;
   maxHeight?: string;
   defaultRowsPerPage?: number;
+  /**
+   * The rows are one SERVER page. Turns off the client-side pager, the
+   * `searchQuery` filter and the column-sort affordance: all three would
+   * silently operate within the page only, which reads as if they applied to
+   * the whole result set. Pair with `controls/Tables/ServerPagination` and push
+   * search/sort to the server query.
+   */
+  serverPaged?: boolean;
 }
 
 function Table({
@@ -72,6 +80,7 @@ function Table({
   horizontalScroll = false,
   maxHeight = "600px",
   defaultRowsPerPage = 10,
+  serverPaged = false,
 }: TableProps) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage);
@@ -105,7 +114,7 @@ function Table({
   };
 
   const filteredRows = useMemo(() => {
-    if (searchQuery) {
+    if (searchQuery && !serverPaged) {
       return rows.filter((row) =>
         columns.some((column) =>
           extractValue(row[column.name]).toString().toLowerCase().includes(searchQuery.toLowerCase())
@@ -113,10 +122,10 @@ function Table({
       );
     }
     return rows;
-  }, [rows, columns, searchQuery]);
+  }, [rows, columns, searchQuery, serverPaged]);
 
   const sortedRows = useMemo(() => {
-    if (orderBy) {
+    if (orderBy && !serverPaged) {
       return [...filteredRows].sort((a, b) => {
         const aValue = extractValue(a[orderBy]);
         const bValue = extractValue(b[orderBy]);
@@ -130,7 +139,7 @@ function Table({
       });
     }
     return filteredRows;
-  }, [filteredRows, order, orderBy]);
+  }, [filteredRows, order, orderBy, serverPaged]);
 
   // Auto-scroll to selected row in scrollable mode
   useEffect(() => {
@@ -166,22 +175,23 @@ function Table({
           orderBy={orderBy}
           order={order}
           handleSort={handleSort}
+          sortable={!serverPaged}
           compact={compact}
         />
         <TableBody
           columns={columns}
           rows={rows}
-          sortedRows={scrollable ? sortedRows : sortedRows}
+          sortedRows={sortedRows}
           selected={selected}
           selectedField={selectedField}
           handleRowSelection={handleRowSelection}
-          page={scrollable ? 0 : page}
-          rowsPerPage={scrollable ? sortedRows.length : rowsPerPage}
+          page={scrollable || serverPaged ? 0 : page}
+          rowsPerPage={scrollable || serverPaged ? sortedRows.length : rowsPerPage}
           compact={compact}
           rowRefs={rowRefs}
         />
       </MuiTable>
-      {!scrollable && filteredRows.length > 10 && (
+      {!scrollable && !serverPaged && filteredRows.length > 10 && (
         <TablePagination
           count={filteredRows.length}
           page={page}

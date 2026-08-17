@@ -25,7 +25,7 @@ import ArgonButton from "components/ArgonButton";
 import {
   useAccounts,
   useCreateAccount,
-  useUpdateAccount,
+  useUpdateAccountMaster,
   useChangeAccountStatus,
 } from "queries/accounts";
 import type { Account, AccountDtoInput, UpdateAccountDtoInput, AccountStatus } from "api/manager/accounts";
@@ -40,6 +40,7 @@ import {
   ALLOWED_TRANSITIONS
 } from "data/accountStatuses";
 import type { AccountStatusId } from "data/accountStatuses";
+import type { ListParams } from 'api/core/paging';
 
 /**
  * Dialog/form state for an account. Merges an API {@link Account} (when editing)
@@ -94,7 +95,8 @@ function useAccountsTableData(
   fetchData: boolean,
   handleEditClick: (account: AccountFormValues) => void,
   handleAddManagerClick: (accountId: string) => void,
-  handleStatusClick: (account: Account) => void
+  handleStatusClick: (account: Account) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -102,10 +104,11 @@ function useAccountsTableData(
   const [openStatus, setOpenStatus] = useState(false);
   const { setLoading } = useContext(LoadingContext);
 
-  const accountsQuery = useAccounts({ enabled: !!fetchData });
-  const accounts = accountsQuery.data ?? [];
+  const accountsQuery = useAccounts(listParams, { enabled: !!fetchData });
+  const accounts = accountsQuery.data?.items ?? [];
+  const totalCount = accountsQuery.data?.totalCount ?? 0;
   const createAccount = useCreateAccount();
-  const updateAccount = useUpdateAccount();
+  const updateAccountMaster = useUpdateAccountMaster();
   const changeAccountStatus = useChangeAccountStatus();
   const createManager = useCreateManager();
 
@@ -120,7 +123,7 @@ function useAccountsTableData(
       // validate(['name','typeId']) gates this call; assert the required create/
       // update input fields at the boundary.
       if (account.accountId) {
-        await updateAccount.mutateAsync({
+        await updateAccountMaster.mutateAsync({
           accountId: account.accountId,
           name: account.name,
           description: account.description,
@@ -263,6 +266,7 @@ function useAccountsTableData(
 
   return {
     data,
+    totalCount,
     open,
     openUser,
     openStatus,

@@ -10,7 +10,11 @@ declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'translation';
     resources: {
-      translation: typeof import('../locales/en.json');
+      // The runtime bundle is the core translations deep-merged with the edition
+      // bundle (src/edition/locales, empty in this repository), so the key space
+      // is the intersection type of both files.
+      translation: typeof import('../locales/en.json') &
+        typeof import('../edition/locales/en.json');
     };
     // i18next v25 / react-i18next v16 gate unknown-key compile errors behind
     // this flag; without it t() falls back to accepting any string.

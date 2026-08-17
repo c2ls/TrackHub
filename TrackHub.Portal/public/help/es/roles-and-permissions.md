@@ -39,7 +39,7 @@ Puede consultar qué roles tiene en su pantalla **Perfil**, en la tarjeta **Role
 
 - Ser **Administrador** desbloquea el área **Administrador del Sistema**.
 - Ser **Gestor** desbloquea las áreas **Administración de Cuentas** e **Integración GPS**, así como el botón de engranaje de **Configuración** en la esquina inferior derecha.
-- Todas las personas con acceso al portal (incluidos los **Usuarios** sencillos) pueden llegar al **Tablero**, a **Reportes**, a **Geocercas** (cuando está habilitado) y a su propio **Perfil**.
+- Todas las personas con acceso al portal (incluidos los **Usuarios** sencillos) pueden llegar al **Tablero**, a **Reportes**, a **Geocercas** (cuando está habilitado), a **Viajes** (cuando está habilitado) y a su propio **Perfil**. El despacho es deliberadamente una tarea de operador cotidiano: un **Usuario** sencillo puede crear viajes, planificar rutas, asignar un conductor, ejecutar un viaje y compartir un enlace de seguimiento para las unidades de sus grupos.
 
 > En una configuración típica, un Administrador también es un Gestor, por lo que un Administrador ve todo lo que ve un Gestor **más** el área Administrador del Sistema.
 
@@ -52,6 +52,7 @@ TrackHub decide lo que usted puede ver consultando al servicio de seguridad, en 
 | **Tablero** (mapa en vivo) | Sí | Sí | Sí |
 | **Reportes** | Sí | Sí | Sí |
 | **Geocercas** *(solo si el geocercado está habilitado)* | Sí | Sí | Sí |
+| **Viajes** *(solo si la gestión de viajes está habilitada)* | Sí | Sí | Sí |
 | **Perfil** | Sí | Sí | Sí |
 | **Administración de Cuentas** | — | Sí | Sí |
 | **Integración GPS** | — | Sí | Sí |
@@ -75,7 +76,7 @@ Vea [Resumen de Administración de Cuentas](topic:management-overview) para el d
 
 **Integración GPS** (Gestores y Administradores) es la sala de control de sus proveedores de GPS: un panel de resumen, **Operadores GPS**, **Dispositivos Sincronizados**, **Asignaciones de Dispositivos**, **Retención de Posiciones**, **Sincronizaciones Recientes** y **Alertas GPS Abiertas**. Vea [Integración GPS](topic:gps-integration).
 
-**Administrador del Sistema** (solo Administradores) sirve para administrar toda la plataforma entre cuentas, incluyendo **Cuentas**, **Clientes API**, **Permisos de Cliente de Servicio**, **Tipos de Unidades**, **Proveedores de Geocodificación**, **Funcionalidades de Cuenta**, **Concesiones de Soporte**, además de **Roles** y **Políticas** a nivel de plataforma. Vea [Administración del sistema](topic:system-administration).
+**Administrador del Sistema** (solo Administradores) sirve para administrar toda la plataforma entre cuentas, incluyendo **Cuentas**, **Clientes API**, **Permisos de Cliente de Servicio**, **Tipos de Unidades**, **Proveedores de Geocodificación**, **Funcionalidades de Cuenta**, **Concesiones de Soporte**, el **Catálogo de Peajes**, además de **Roles** y **Políticas** a nivel de plataforma. Vea [Administración del sistema](topic:system-administration).
 
 ## Funcionalidades de cuenta que activan o desactivan partes de la aplicación
 
@@ -88,7 +89,7 @@ Las funcionalidades de cuenta son:
 | **Integración GPS** | `gps.integration` | Cómo se recopilan las posiciones, más los reportes GPS. El elemento de menú **Integración GPS** permanece en ambos casos. |
 | **Historial de Posiciones GPS** | `gps.positionHistory` | El almacenamiento y la reproducción del recorrido pasado de una unidad (reproducción del historial). |
 | **Geocercado** | `geofencing` | Todo el elemento de menú **Geocercas** y las zonas del mapa. |
-| **Gestión de Viajes** | `trip-management` | Reservada — nada cambia en la versión actual. |
+| **Gestión de Viajes** | `trip-management` | Todo el elemento de menú **Viajes**, los enlaces de seguimiento para clientes y los seis reportes de viajes. |
 | **Móvil del Conductor** | `driver-mobile` | Reservada — nada cambia en el portal web. |
 | **Enlaces Públicos** | `public-links` | La creación de enlaces públicos para compartir. |
 | **Documentos** | `documents` | Las superficies de gestión de documentos (subir, compartir y hacer seguimiento de archivos). |
@@ -96,7 +97,7 @@ Las funcionalidades de cuenta son:
 | **Notificaciones por Correo** | `notifications.email` | La entrega de notificaciones por correo electrónico. |
 | **Notificaciones por WhatsApp** | `notifications.whatsapp` | La entrega de notificaciones por WhatsApp. |
 
-La funcionalidad **Geocercado** es la que oculta un elemento completo del menú lateral: cuando está desactivada, **Geocercas** desaparece del menú para todos en la cuenta. Las demás funcionalidades operan a nivel de sección: cuando una funcionalidad está desactivada, su sección, sus botones o su canal de entrega quedan ocultos dentro de la pantalla correspondiente (por ejemplo, las secciones **Documentos** o **Enlaces Públicos** de Administración de Cuentas), en lugar de eliminar un elemento del menú.
+**Geocercado** y **Gestión de Viajes** son las dos funcionalidades que ocultan un elemento completo del menú lateral: cuando una de ellas está desactivada, **Geocercas** o **Viajes** desaparece del menú para todos en la cuenta. Las demás funcionalidades operan a nivel de sección: cuando una funcionalidad está desactivada, su sección, sus botones o su canal de entrega quedan ocultos dentro de la pantalla correspondiente (por ejemplo, las secciones **Documentos** o **Enlaces Públicos** de Administración de Cuentas), en lugar de eliminar un elemento del menú.
 
 Para saber exactamente qué activa y desactiva cada funcionalidad, sus ajustes y qué ocurre con sus datos al desactivar una, vea el [Catálogo de funcionalidades](topic:feature-catalog).
 

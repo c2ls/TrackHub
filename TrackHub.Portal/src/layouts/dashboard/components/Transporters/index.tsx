@@ -23,17 +23,20 @@ import TransportersTable from "layouts/dashboard/components/TransportersTable";
 import RefreshCounter from 'layouts/dashboard/components/RefreshCounter';
 import FilterBar from 'layouts/dashboard/components/Transporters/FilterBar';
 import type { FilterOption, DashboardFilters } from 'layouts/dashboard/components/Transporters/FilterBar';
-import { getPointsOfInterestByAccount } from 'api/manager/pointsOfInterest';
-import type { PointOfInterest } from 'api/manager/pointsOfInterest';
-import { getGroups } from 'api/manager/groups';
-import type { Group } from 'api/manager/groups';
+import { getPointOfInterestLookup } from 'api/manager/pointsOfInterest';
+import type { PointOfInterestLookup } from 'api/manager/pointsOfInterest';
+import { getGroupLookup } from 'api/manager/groups';
+import type { GroupLookup } from 'api/manager/groups';
 import { useQueryClient } from '@tanstack/react-query';
-import { getTransportersByGroup, getTransporterDeviceAssignmentsByAccount } from 'api/manager/transporters';
+import {
+  getAllTransportersByGroup,
+  getAllTransporterDeviceAssignmentsByAccount,
+} from 'api/manager/transporters';
 import type { Transporter, TransporterAssignmentWithAudit } from 'api/manager/transporters';
-import { getOperators } from 'api/manager/operators';
-import type { OperatorSummary } from 'api/manager/operators';
-import { getDevicesByAccount } from 'api/manager/devices';
-import type { Device } from 'api/manager/devices';
+import { getOperatorLookup } from 'api/manager/operators';
+import type { OperatorLookup } from 'api/manager/operators';
+import { getDeviceLookup } from 'api/manager/devices';
+import type { DeviceLookup } from 'api/manager/devices';
 import { getAccountByUser } from 'api/manager/accounts';
 import { getAlertEvents } from 'api/manager/alertEvents';
 import { getDevicePositions } from 'api/router/router';
@@ -52,6 +55,7 @@ import { cleanString } from 'utils/stringUtils';
 import { LoadingContext } from 'LoadingContext';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from "AuthContext";
+import { useFeatures } from 'context/features';
 import { useArgonController } from 'context';
 
 // Dashboard layout components
@@ -61,6 +65,7 @@ import MapControlStyle from 'controls/Maps/styles/MapControl';
 import { countRecentDevices, countDevicesInMovement, getPercentage, filterPositions } from 'layouts/dashboard/utils/dashboard';
 
 const TRAIL_LENGTH = 10;
+const GEOFENCING_FEATURE_KEY = 'geofencing';
 
 /** A per-type total shown as a chip / stat summary. */
 interface TypeSummaryItem { name: string; total: number; }
@@ -78,6 +83,13 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   const queryClient = useQueryClient();
   const { setLoading } = useContext(LoadingContext);
   const { isAuthenticated } = useAuth();
+  // The live map is platform baseline and is never feature-gated (spec 07 §3).
+  // The in-geofence tile and the overlay toggle are the only geofencing-gated
+  // surfaces on this screen: without the feature the query answers
+  // FEATURE_DISABLED, so the tile is not rendered and the query never fires
+  // (spec 07 §16 acceptance 7).
+  const { isFeatureEnabled } = useFeatures();
+  const geofencingEnabled = isFeatureEnabled(GEOFENCING_FEATURE_KEY);
   const [controller] = useArgonController();
   const { darkMode } = controller;
   const [positions, setPositions] = useState<Position[]>([]);
@@ -101,7 +113,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   // Sets of transporterIds the selected group/operator maps to; null = no narrowing.
   const [groupTransporterIds, setGroupTransporterIds] = useState<Set<string> | null>(null);
   const [operatorTransporterIds, setOperatorTransporterIds] = useState<Set<string> | null>(null);
-  const [pois, setPois] = useState<PointOfInterest[]>([]);
+  const [pois, setPois] = useState<PointOfInterestLookup[]>([]);
   const [showPois, setShowPois] = useState(false);
   const [followMode, setFollowMode] = useState(false);
   const [showTrail, setShowTrail] = useState(false);
@@ -116,7 +128,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   const operatorMembershipCacheRef = useRef<Map<string | number, Set<string>>>(new Map());
   // Account-wide device list + device-transporter assignments, fetched once
   // on the first operator selection to map an operator to its transporters.
-  const operatorMappingRef = useRef<{ devices: Device[]; assignments: TransporterAssignmentWithAudit[] } | null>(null);
+  const operatorMappingRef = useRef<{ devices: DeviceLookup[]; assignments: TransporterAssignmentWithAudit[] } | null>(null);
 
   useEffect(() => {
     const typesObject = positions.reduce<Record<string, TypeSummaryItem>>((acc, position) => {
@@ -223,13 +235,16 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   };
 
   const calculateReference = async () => {
+    if (!geofencingEnabled) return;
     try {
       const result = await queryClient.fetchQuery({
         queryKey: geofenceKeys.transportersInGeofence,
         queryFn: () => getTransportersInGeofence(),
         staleTime: 0,
       });
-      setInGeofence(result.length);
+      // The query returns one row per (geofence, unit) pair; the tile counts units,
+      // and a unit inside two overlapping geofences is still one unit.
+      setInGeofence(new Set(result.map((item) => item.transporterId)).size);
     } catch(e) {
       // Failure is surfaced by the global toast; keep the previous count.
       console.error(e);
@@ -258,15 +273,15 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
       // A failed group read is surfaced by the global toast; keep the group
       // filter empty instead of rejecting the whole options load.
       queryClient.fetchQuery({
-        queryKey: groupKeys.byAccount(),
-        queryFn: getGroups,
-      }).catch((): Group[] => []),
+        queryKey: groupKeys.lookup(),
+        queryFn: getGroupLookup,
+      }).catch((): GroupLookup[] => []),
       // A failed operator read is surfaced by the global toast; keep the
       // operator filter empty instead of rejecting the whole options load.
       queryClient.fetchQuery({
-        queryKey: operatorKeys.summary(),
-        queryFn: getOperators,
-      }).catch((): OperatorSummary[] => []),
+        queryKey: operatorKeys.lookup(),
+        queryFn: getOperatorLookup,
+      }).catch((): OperatorLookup[] => []),
     ]);
     setGroupOptions((groupList || []).map(group => ({ value: group.groupId, label: group.name })));
     setOperatorOptions((operatorList || []).map(operator => ({ value: operator.operatorId, label: operator.name })));
@@ -302,9 +317,11 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
       try {
         // Group filter option values are numeric group ids; 'all' is filtered
         // out above, so a real selection is always a number at runtime.
+        // The group filter narrows the map to a membership set: read every page,
+        // or units in the group past the first page vanish from the map.
         transportersInGroup = await queryClient.fetchQuery({
           queryKey: transporterKeys.byGroup(groupId as number),
-          queryFn: () => getTransportersByGroup(groupId as number),
+          queryFn: () => getAllTransportersByGroup(groupId as number),
         });
       } catch {
         // Fetch failed (already surfaced by the global toast): keep the map
@@ -336,17 +353,20 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
     setLoading(true);
     try {
       if (!operatorMappingRef.current) {
-        let devices: Device[];
+        let devices: DeviceLookup[];
         let assignments: TransporterAssignmentWithAudit[];
         try {
+          // Both sides of the operator→device→transporter join must be complete;
+          // `deviceLookup` now carries operatorId, so the picker feed is enough.
           [devices, assignments] = await Promise.all([
             queryClient.fetchQuery({
-              queryKey: deviceKeys.byAccount(),
-              queryFn: getDevicesByAccount,
+              queryKey: deviceKeys.lookup(),
+              queryFn: getDeviceLookup,
             }),
             queryClient.fetchQuery({
-              queryKey: transporterKeys.assignmentsByAccount(settings?.accountId ?? '', true),
-              queryFn: () => getTransporterDeviceAssignmentsByAccount(settings?.accountId, true),
+              queryKey: transporterKeys.allAssignmentsByAccount(settings?.accountId ?? '', true),
+              queryFn: () =>
+                getAllTransporterDeviceAssignmentsByAccount(settings?.accountId as string, true),
             })
           ]);
         } catch {
@@ -386,10 +406,12 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   const handleTogglePois = async () => {
     if (!showPois && !poisLoadedRef.current) {
       setLoading(true);
+      // The overlay renders pin colours and popup type/description/address, all
+      // of which `pointOfInterestLookup` now carries.
       const result = await queryClient.fetchQuery({
-        queryKey: poiKeys.byAccount(),
-        queryFn: getPointsOfInterestByAccount,
-      }).catch((): PointOfInterest[] => []);
+        queryKey: poiKeys.lookup(),
+        queryFn: getPointOfInterestLookup,
+      }).catch((): PointOfInterestLookup[] => []);
       setPois(result);
       poisLoadedRef.current = true;
       setLoading(false);
@@ -428,10 +450,14 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
     return trails[key] || [];
   }, [selectedTransporter, positions, trails]);
 
+  // The row is 5-up with geofencing and 4-up without it; the lg width follows the
+  // tile count so dropping the geofence tile does not leave a gap in the row.
+  const statCardWidth = geofencingEnabled ? 2.4 : 3;
+
   return (
     <ArgonBox py={1}>
-        <Grid container spacing={3} mb={1}>
-            <Grid size={{xs: 12, md:6, lg:2.4}}>
+        <Grid container spacing={3} sx={{ mb: 1 }}>
+            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
                 <DetailedStatisticsCard
                     title={t("dashboard.totalTitle")}
                     count={positions.length}
@@ -439,7 +465,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                     percentage={{ color: "success", count: "", hide: true }}
                 />
             </Grid>
-            <Grid size={{xs: 12, md:6, lg:2.4}}>
+            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
                 <DetailedStatisticsCard
                     title={t("dashboard.activeTitle")}
                     count={active}
@@ -447,7 +473,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                     percentage={{ color: "success", count: `${getPercentage(active, positions.length)}%`, hide: false }}
                 />
             </Grid>
-            <Grid size={{xs: 12, md:6, lg:2.4}}>
+            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
                 <DetailedStatisticsCard
                     title={t("dashboard.movementTitle")}
                     count={movement}
@@ -455,7 +481,8 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                     percentage={{ color: "error", count: `${getPercentage(movement, positions.length)}%`, hide: false }}
                 />
             </Grid>
-            <Grid size={{xs: 12, md:6, lg:2.4}}>
+            {geofencingEnabled && (
+            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
                 <DetailedStatisticsCard
                     title={t("dashboard.inGeofence")}
                     count={inGeofence}
@@ -466,7 +493,8 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                     percentage={{ color: "success", count: `${getPercentage(inGeofence, positions.length)}%`, hide: false }}
                 />
             </Grid>
-            <Grid size={{xs: 12, md:6, lg:2.4}}>
+            )}
+            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
                 <DetailedStatisticsCard
                     title={t("dashboard.criticalAlerts")}
                     count={criticalAlerts}

@@ -3,6 +3,8 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
 
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8')) as { version: string };
+
 export default defineConfig(({ mode }) => {
   // PERMANENT: all REACT_APP_* reads are centralized
   // in src/api/core/endpoints.ts, which deliberately keeps the CRA
@@ -14,11 +16,23 @@ export default defineConfig(({ mode }) => {
   // NODE_ENV reads elsewhere need no shim — Vite defines those natively.
   const isTest = mode === 'test';
   const env = loadEnv(mode, process.cwd(), 'REACT_APP_');
-  const define = isTest
+  const envDefine = isTest
     ? {}
     : Object.fromEntries(
         Object.entries(env).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)])
       );
+
+  // Build stamp shown in the UI (src/constants/appVersion.ts). package.json "version" is
+  // the release identity; the build time makes two builds of the SAME version
+  // distinguishable, which is what a deploy/rollback check actually needs — the image is
+  // what gets rolled back, not the version number. Unlike the REACT_APP_* shim above these
+  // are defined in test mode too: they are plain globals, not process.env references, so
+  // there is nothing for a runtime assignment in a suite to conflict with.
+  const define = {
+    ...envDefine,
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  };
 
   const https =
     fs.existsSync('cert.crt') && fs.existsSync('cert.key')

@@ -51,7 +51,7 @@ export function usePolicyResources(policyId: number | undefined) {
 export function useUsersByPolicy(policyId: number | undefined) {
   return useQuery({
     queryKey: policyKeys.users(policyId ?? -1),
-    queryFn: () => api.getUsersByPolicy(policyId as number),
+    queryFn: () => api.getUserLookupByPolicy(policyId as number),
     enabled: policyId !== undefined && policyId > 0,
   });
 }

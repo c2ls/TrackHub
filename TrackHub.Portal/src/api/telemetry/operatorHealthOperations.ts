@@ -46,37 +46,3 @@ export const GetOperatorSyncRunsDocument = graphql(`
     }
   }
 `);
-
-export const GetOperatorHealthDocument = graphql(`
-  query GetOperatorHealth($operatorId: UUID!) {
-    operatorHealth(query: { operatorId: $operatorId }) {
-      operatorId
-      healthStatus
-      lastSuccessfulSyncAt
-      lastFailedSyncAt
-      lastDeviceSyncAt
-      lastPositionSyncAt
-      lastFailureCode
-      lastFailureMessage
-      lastLatencyMs
-    }
-  }
-`);
-
-export const GetOperatorHealthHistoryDocument = graphql(`
-  query GetOperatorHealthHistory($operatorId: UUID!, $take: Int!) {
-    operatorHealthHistory(query: { operatorId: $operatorId, take: $take }) {
-      operatorHealthCheckId
-      operatorId
-      checkType
-      status
-      latencyMs
-      startedAt
-      completedAt
-      errorCode
-      errorMessage
-      retryCount
-      correlationId
-    }
-  }
-`);

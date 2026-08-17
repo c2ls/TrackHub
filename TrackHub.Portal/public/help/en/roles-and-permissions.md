@@ -39,7 +39,7 @@ You can check which roles you have on your **Profile** screen, in the **Roles** 
 
 - Being an **Administrator** unlocks the **System Admin** area.
 - Being a **Manager** unlocks the **Account Management** and **GPS Integration** areas, and the **Account Settings** gear button in the bottom-right corner.
-- Everyone with portal access (including plain **Users**) can reach the **Dashboard**, **Reports**, **Geofences** (when enabled), and their own **Profile**.
+- Everyone with portal access (including plain **Users**) can reach the **Dashboard**, **Reports**, **Geofences** (when enabled), **Trips** (when enabled), and their own **Profile**. Dispatch is deliberately an everyday-operator job: a plain **User** can create trips, plan routes, assign a driver, run a trip and share a tracking link for the units in their groups.
 
 > In a typical setup an Administrator is also a Manager, so an Administrator sees everything a Manager sees **plus** the System Admin area.
 
@@ -52,6 +52,7 @@ TrackHub decides what you can see by asking the security service, in the backgro
 | **Dashboard** (live map) | Yes | Yes | Yes |
 | **Reports** | Yes | Yes | Yes |
 | **Geofences** *(only if geofencing is enabled)* | Yes | Yes | Yes |
+| **Trips** *(only if trip management is enabled)* | Yes | Yes | Yes |
 | **Profile** | Yes | Yes | Yes |
 | **Account Management** | — | Yes | Yes |
 | **GPS Integration** | — | Yes | Yes |
@@ -75,7 +76,7 @@ See [Account Management overview](topic:management-overview) for the details of 
 
 **GPS Integration** (Managers and Administrators) is the control room for your GPS providers: an overview dashboard, **GPS Operators**, **Synchronized Devices**, **Device Assignments**, **Position Retention**, **Recent Sync Runs**, and **Open GPS Alerts**. See [GPS integration](topic:gps-integration).
 
-**System Admin** (Administrators only) is for running the whole platform across accounts, including **Accounts**, **API Clients**, **Service Client Permissions**, **Unit Types**, **Geocoding Providers**, **Account Features**, **Support Grants**, plus platform-level **Roles** and **Policies**. See [System administration](topic:system-administration).
+**System Admin** (Administrators only) is for running the whole platform across accounts, including **Accounts**, **API Clients**, **Service Client Permissions**, **Unit Types**, **Geocoding Providers**, **Account Features**, **Support Grants**, the **Toll Catalog**, plus platform-level **Roles** and **Policies**. See [System administration](topic:system-administration).
 
 ## Account features that switch parts of the app on or off
 
@@ -88,7 +89,7 @@ The account features are:
 | **GPS Integration** | `gps.integration` | How positions are collected, plus the GPS reports. The **GPS Integration** menu item stays either way. |
 | **GPS Position History** | `gps.positionHistory` | Storing and replaying a unit's past track (history playback). |
 | **Geofencing** | `geofencing` | The whole **Geofences** menu item and map zones. |
-| **Trip Management** | `trip-management` | Reserved — nothing changes in the current release. |
+| **Trip Management** | `trip-management` | The whole **Trips** menu item, customer tracking links, and the six trip reports. |
 | **Driver Mobile** | `driver-mobile` | Reserved — nothing changes in the web portal. |
 | **Public Links** | `public-links` | Creating shareable public links. |
 | **Documents** | `documents` | The document management surfaces (uploading, sharing, and tracking files). |
@@ -96,7 +97,7 @@ The account features are:
 | **Email Notifications** | `notifications.email` | Delivering notifications by email. |
 | **WhatsApp Notifications** | `notifications.whatsapp` | Delivering notifications over WhatsApp. |
 
-The **Geofencing** feature is the one that hides a whole left-menu item: when it is off, **Geofences** disappears from the menu for everyone in the account. The other features work at the section level — when a feature is off, its section, buttons, or delivery channel are hidden inside the relevant screen (for example, the **Documents** or **Public Links** sections of Account Management), rather than removing a menu item.
+**Geofencing** and **Trip Management** are the two features that hide a whole left-menu item: when one of them is off, **Geofences** or **Trips** disappears from the menu for everyone in the account. The other features work at the section level — when a feature is off, its section, buttons, or delivery channel are hidden inside the relevant screen (for example, the **Documents** or **Public Links** sections of Account Management), rather than removing a menu item.
 
 For exactly what each feature turns on and off, its settings, and what happens to your data when one is switched off, see the [Feature catalogue](topic:feature-catalog).
 

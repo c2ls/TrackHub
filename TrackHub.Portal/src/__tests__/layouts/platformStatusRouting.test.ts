@@ -80,7 +80,11 @@ describe('platformStatus route definition', () => {
     expect(statusRoute?.featureKey).toBeUndefined();
   });
 
-  it('is the only public route (the flag is not applied accidentally elsewhere)', () => {
-    expect(allRoutes.filter((route) => route.public).map((route) => route.key)).toEqual(['platformStatus']);
+  // Only two screens are public: the status page, and the anonymous customer trip
+  // tracking page (spec 11 §8) whose visitors have no account to sign in with.
+  it('shares the public flag with no route beyond the known anonymous screens', () => {
+    expect(allRoutes.filter((route) => route.public).map((route) => route.key).sort()).toEqual(
+      ['platformStatus', 'tripTracking']
+    );
   });
 });

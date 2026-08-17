@@ -40,14 +40,6 @@ export const AccountSupportGrantItemFragment = graphql(`
   }
 `);
 
-export const GetSupportGrantStatusDocument = graphql(`
-  query GetSupportGrantStatus($accountSupportGrantId: UUID!) {
-    supportGrantStatus(query: { accountSupportGrantId: $accountSupportGrantId }) {
-      ...AccountSupportGrantItem
-    }
-  }
-`);
-
 export const GetAccountSupportGrantsDocument = graphql(`
   query GetAccountSupportGrants($accountId: UUID, $skip: Int!, $take: Int!) {
     accountSupportGrants(query: { accountId: $accountId, skip: $skip, take: $take }) {

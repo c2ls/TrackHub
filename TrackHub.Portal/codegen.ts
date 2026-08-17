@@ -1,7 +1,8 @@
+import { readdirSync } from 'node:fs';
 import type { CodegenConfig } from '@graphql-codegen/cli';
 
 /**
- * GraphQL codegen for the five TrackHub GraphQL backends (Reporting is
+ * GraphQL codegen for the six TrackHub GraphQL backends (Reporting is
  * REST-only). Schemas in schemas/<service>.graphql are exported by the
  * contract-test suite (TrackHub.IntegrationTests → SchemaSdlExport) — run
  * `dotnet test TrackHub.IntegrationTests/TrackHub.IntegrationTests.slnx`
@@ -28,7 +29,12 @@ const scalars = {
   JSON: 'unknown',
 };
 
-const backends = ['manager', 'security', 'geofencing', 'router', 'telemetry'] as const;
+// Discovered from schemas/ so registering a backend is just dropping its SDL export
+// there and creating src/api/<backend>/ — no config edit.
+const backends = readdirSync('schemas')
+  .filter((file) => file.endsWith('.graphql'))
+  .map((file) => file.replace(/\.graphql$/, ''))
+  .sort();
 
 const config: CodegenConfig = {
   generates: Object.fromEntries(

@@ -27,33 +27,37 @@ import type {
   PositionFieldsFragment as PositionFieldsType,
   TripFieldsFragment as TripFieldsType,
   AddressFieldsFragment as AddressFieldsType,
+  GetProviderCapabilitiesQuery,
   PositionSourceType,
-  GetProviderDevicesByOperatorQuery,
 } from './generated/graphql';
 import {
   PingOperatorDocument,
-  GetProviderDevicesByOperatorDocument,
   GetDevicePositionsByUserDocument,
   GetTripsByTransporterDocument,
-  GetPositionsByTransporterDocument,
   ReverseGeocodeDocument,
+  GetProviderCapabilitiesDocument,
 } from './routerOperations';
 
 export type Position = PositionFieldsType;
 export type Trip = TripFieldsType;
 export type Address = AddressFieldsType;
-export type ProviderDevice = GetProviderDevicesByOperatorQuery['providerDevicesByOperator'][number];
+export type ProviderCapabilities = GetProviderCapabilitiesQuery['providerCapabilities'][number];
 export type { PositionSourceType };
+
+/**
+ * The deployment's provider capability matrix, declared by the Router's registered
+ * provider assemblies. Doubles as the provider list for operator screens — the portal
+ * carries no local protocol table.
+ */
+export async function getProviderCapabilities(): Promise<ProviderCapabilities[]> {
+  const data = await executeGraphQL('router', GetProviderCapabilitiesDocument);
+  return data.providerCapabilities;
+}
 
 /** Silent op: tests connectivity with an operator. Throws on transport failure. */
 export async function pingOperator(operatorId: string): Promise<boolean> {
   const data = await executeGraphQL('router', PingOperatorDocument, { operatorId });
   return data.pingOperator;
-}
-
-export async function getProviderDevicesByOperator(operatorId: string): Promise<ProviderDevice[]> {
-  const data = await executeGraphQL('router', GetProviderDevicesByOperatorDocument, { operatorId });
-  return data.providerDevicesByOperator;
 }
 
 export async function getDevicePositions(): Promise<Position[]> {
@@ -74,21 +78,6 @@ export async function getTripsByTransporter(
     source,
   });
   return data.tripsByTransporter;
-}
-
-export async function getPositionsByTransporter(
-  transporterId: string,
-  from: string | Date,
-  to: string | Date,
-  source: PositionSourceType = 'PROVIDER'
-): Promise<Position[]> {
-  const data = await executeGraphQL('router', GetPositionsByTransporterDocument, {
-    transporterId,
-    from: formatDateTimeOffSet(from) as string,
-    to: formatDateTimeOffSet(to) as string,
-    source,
-  });
-  return data.positionsByTransporter;
 }
 
 /**

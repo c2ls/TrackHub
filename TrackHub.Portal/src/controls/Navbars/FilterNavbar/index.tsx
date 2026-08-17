@@ -36,7 +36,7 @@ function FilterNavbar({ list = [], values, handleChange, errors, handleSearch }:
 
   return (
     <ArgonBox py={3}>
-      <Grid container spacing={3} alignItems="center">
+      <Grid container spacing={3} sx={{ alignItems: "center" }}>
         <Grid size={{ xs: 12, sm: 3 }}>
           <CustomTextField
             label={t("filters.startDate")}
@@ -45,7 +45,7 @@ function FilterNavbar({ list = [], values, handleChange, errors, handleSearch }:
             id="startDate"
             value={values.startDate || ""}
             onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             errorMsg={errors.startDate}
             fullWidth
           />
@@ -58,7 +58,7 @@ function FilterNavbar({ list = [], values, handleChange, errors, handleSearch }:
             id="endDate"
             value={values.endDate || ""}
             onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             errorMsg={errors.endDate}
             fullWidth
           />
@@ -72,8 +72,8 @@ function FilterNavbar({ list = [], values, handleChange, errors, handleSearch }:
             label={t("filters.transporter")}
             value={values.selectedItem || ""}
             required
+            errorMsg={errors.selectedItem}
           />
-          {errors.selectedItem && <p>{errors.selectedItem}</p>}
         </Grid>
         <Grid size={{ xs: 12, sm: 3 }}>
           <ArgonButton variant="contained" color="primary" onClick={handleSearch} fullWidth>

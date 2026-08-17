@@ -106,6 +106,7 @@ function AlertSubscriptionDialog({
           handleChange={handleChange}
           numericValue={false}
           required
+          errorMsg={errors.principalType}
         />
         <CustomTextField
           margin="normal"
@@ -137,6 +138,7 @@ function AlertSubscriptionDialog({
           handleChange={handleChange}
           numericValue={false}
           required
+          errorMsg={errors.channel}
         />
         <CustomTextField
           margin="normal"

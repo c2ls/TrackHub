@@ -25,6 +25,15 @@ layers inside the current OSM/Google map hosts.
 | `PoiLayer` | `pois: PointOfInterestVm[]` | Colored SVG pin per POI (color per `data/colors.js` convention), name tooltip, popup with name/description/address/type label. |
 | `TrailLayer` | `points: {lat, lng}[]`, `color?` | Dashed polyline of the last N received points for the selected unit. |
 | `PlaybackMarker` | `position: {lat, lng, course?}` | Single marker positioned imperatively per playback tick (no React re-mount per frame). |
+| `RouteLayer` | `route`, `corridor`, `stops`, `tollStations`, `onMapClick?`, `onStopClick?` | Trip route planning overlay: planned-route polyline, corridor polygon, numbered stop pins coloured by stop status, and toll-station markers (hollow when the station has no tariff). `onMapClick` arms the stop-placement gesture. Shared SVG/colour factories live in `RouteLayer/routeStyles.ts`, so both adapters render identically. |
+
+### Route map hosts
+
+`controls/Maps/RouteMap` is the host pair for the trip screens: `OSM/OSMRouteMap`
+and `Google/GoogleRouteMap` implement the single `RouteMap/routeMapProps.ts`
+contract and render `RouteLayer`, `TrailLayer`, `PlaybackMarker` and `PoiLayer`
+inside their own base map. Consumers render the `RouteMap` dispatcher and pass
+the account's configured `mapType` — never a host directly.
 
 ## Adding a provider adapter (e.g. MapLibre GL)
 

@@ -37,6 +37,8 @@ Coded by www.creative-tim.com
 import { createContext, useContext, useReducer, useMemo } from "react";
 import type { Dispatch, ReactNode } from "react";
 
+import { readUiPreferences } from "utils/uiPreferences";
+
 // Global UI state controlled by the Argon dashboard shell.
 export interface ArgonControllerState {
   miniSidenav: boolean;
@@ -98,18 +100,27 @@ interface ArgonControllerProviderProps {
   children: ReactNode;
 }
 
-// Argon Dashboard 2 MUI context provider
-function ArgonControllerProvider({ children }: ArgonControllerProviderProps) {
-  const initialState: ArgonControllerState = {
-    miniSidenav: false,
-    darkSidenav: false,
+/**
+ * Start from the last-known preferences so the very first paint already matches the
+ * user's theme; App overwrites them once the authoritative settings query lands. Read
+ * lazily — this touches localStorage and only the mount value is ever used.
+ */
+function initialState(): ArgonControllerState {
+  const preferences = readUiPreferences();
+
+  return {
+    miniSidenav: preferences?.miniSidenav ?? false,
+    darkSidenav: preferences?.darkMode ?? false,
     transparentNavbar: true,
     openConfigurator: false,
     layout: "dashboard",
-    darkMode: false,
+    darkMode: preferences?.darkMode ?? false,
   };
+}
 
-  const [controller, dispatch] = useReducer(reducer, initialState);
+// Argon Dashboard 2 MUI context provider
+function ArgonControllerProvider({ children }: ArgonControllerProviderProps) {
+  const [controller, dispatch] = useReducer(reducer, undefined, initialState);
 
   const value = useMemo<ArgonControllerValue>(
     () => [controller, dispatch],

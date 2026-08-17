@@ -4,7 +4,7 @@ title: Alertas y notificaciones
 description: Vea los eventos de alerta registrados, gestiónelos, defina reglas de notificación y lea la campana de la barra superior.
 category: administration
 screens: [manageAdmin]
-related: [geofences, units-devices]
+related: [geofences, units-devices, drivers-workforce]
 tags: [alertas, notificaciones, reconocer, resolver, reglas, campana]
 order: 60
 ---
@@ -70,9 +70,12 @@ La lista **Evento Disparador** cubre los eventos que la plataforma puede generar
 | **Credencial GPS por Expirar** | Una credencial de integración GPS está por expirar. |
 | **Fallo de Sincronización del Operador GPS** | Una sincronización del operador GPS no se completó. |
 | **Documento por Vencer** / **Documento Vencido** | Un documento controlado se acerca o pasa su vencimiento. |
+| **Habilitación del Conductor por Vencer** / **Habilitación del Conductor Vencida** | Una licencia, examen médico, capacitación, verificación de antecedentes o permiso de materiales peligrosos de un conductor se acerca o pasa su vencimiento. |
 | **Fallo de Entrega de Notificación** | Una notificación no pudo entregarse. |
 
-Los eventos de geocerca provienen de las geocercas que usted define — vea [Geocercas](topic:geofences). Los eventos de pérdida de comunicación y de documentos se relacionan con sus [Unidades y dispositivos](topic:units-devices).
+Los eventos de geocerca provienen de las geocercas que usted define — vea [Geocercas](topic:geofences). Los eventos de pérdida de comunicación y de documentos se relacionan con sus [Unidades y dispositivos](topic:units-devices). Los eventos de habilitación de conductores provienen de la revisión diaria de vencimientos y requieren la funcionalidad de personal — vea [Conductores y personal](topic:drivers-workforce).
+
+Los dos eventos de habilitación del conductor se comportan de forma algo distinta a los demás: se generan a distancias fijas de la fecha de vencimiento — **30**, **15**, **7** y **0** días — y cada una de ellas se dispara exactamente una vez por habilitación. Los tres primeros son **Habilitación del Conductor por Vencer**; el día en que caduca es **Habilitación del Conductor Vencida**, con mayor severidad. No hay nada que configurar en la revisión misma; se ejecuta una vez al día para cada cuenta que tenga la funcionalidad de personal.
 
 > El icono **+** en **Reglas de Notificación** aparece solo cuando la funcionalidad de notificaciones está habilitada para su cuenta. Las opciones de canal **Correo** y **WhatsApp** aparecen solo cuando esos canales están provisionados; el aprovisionamiento lo gestiona el equipo de la plataforma en [Administración del sistema](topic:system-administration).
 

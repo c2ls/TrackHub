@@ -73,17 +73,22 @@ function useForm<T extends object>(initialValues: T | (() => T)): UseFormResult<
 
   /**
    * Handles the change event for form inputs.
+   *
+   * Functional updaters are required, not a style choice: pickers apply several
+   * fields in one synchronous handler (a stop's latitude, longitude, geofence,
+   * address, …). Spreading the render-time `values` snapshot would make each
+   * call overwrite the previous one's field, so only the last write survives.
    */
   const handleChange: FormChangeHandler = (event) => {
     const isCheckbox = event.target.type === 'checkbox';
-    setValues({
-      ...values,
+    setValues((previous) => ({
+      ...previous,
       [event.target.name]: isCheckbox ? event.target.checked : event.target.value,
-    } as T);
-    setTypes({
-      ...types,
+    }) as T);
+    setTypes((previous) => ({
+      ...previous,
       [event.target.name]: event.target.type,
-    });
+    }));
   };
 
   /**

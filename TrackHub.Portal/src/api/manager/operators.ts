@@ -22,18 +22,19 @@
  */
 
 import { executeGraphQL } from 'api/core/graphqlClient';
+import { fetchAllPages } from 'api/core/paging';
+import type { ListParams, Page } from 'api/core/paging';
 import type {
   OperatorDetailFragment as OperatorDetailType,
-  OperatorSummaryFragment as OperatorSummaryType,
   OperatorGpsFragment as OperatorGpsType,
+  GetOperatorLookupQuery,
   OperatorDtoInput,
   UpdateOperatorDtoInput,
   TriggerOperatorDeviceSyncCommandInput,
 } from './generated/graphql';
 import {
-  GetOperatorDocument,
   GetOperatorsByCurrentAccountDocument,
-  GetOperatorsSummaryDocument,
+  GetOperatorLookupDocument,
   GetGpsOperatorsDocument,
   CreateOperatorDocument,
   UpdateOperatorDocument,
@@ -43,8 +44,10 @@ import {
 } from './operatorOperations';
 
 export type Operator = OperatorDetailType;
-export type OperatorSummary = OperatorSummaryType;
+export type OperatorsPage = Page<Operator>;
+export type OperatorLookup = GetOperatorLookupQuery['operatorLookup'][number];
 export type GpsOperator = OperatorGpsType;
+export type GpsOperatorsPage = Page<GpsOperator>;
 export type { OperatorDtoInput, UpdateOperatorDtoInput, TriggerOperatorDeviceSyncCommandInput };
 
 const DEFAULT_SYNC_INTERVAL_MINUTES = 30;
@@ -55,26 +58,43 @@ function positiveIntOr(value: unknown, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export async function getOperator(operatorId: string): Promise<Operator> {
-  const data = await executeGraphQL('manager', GetOperatorDocument, { id: operatorId });
-  return data.operator;
-}
-
-export async function getOperatorsByCurrentAccount(): Promise<Operator[]> {
-  const data = await executeGraphQL('manager', GetOperatorsByCurrentAccountDocument);
+export async function getOperatorsByCurrentAccount(
+  params: ListParams = {}
+): Promise<OperatorsPage> {
+  const data = await executeGraphQL('manager', GetOperatorsByCurrentAccountDocument, {
+    skip: params.skip ?? null,
+    take: params.take ?? null,
+    search: params.search ?? null,
+  });
   return data.operatorsByCurrentAccount;
 }
 
-/** Minimal id + name list for the dashboard operator filter. */
-export async function getOperators(): Promise<OperatorSummary[]> {
-  const data = await executeGraphQL('manager', GetOperatorsSummaryDocument);
+/**
+ * Minimal id + name list for the dashboard and report operator filters. Unpaged
+ * by design — the server raises past its own ceiling rather than truncating.
+ */
+export async function getOperatorLookup(): Promise<OperatorLookup[]> {
+  const data = await executeGraphQL('manager', GetOperatorLookupDocument);
+  return data.operatorLookup;
+}
+
+/** Operator page (name map + sync metadata) for the GPS-integration screens. */
+export async function getGpsOperators(params: ListParams = {}): Promise<GpsOperatorsPage> {
+  const data = await executeGraphQL('manager', GetGpsOperatorsDocument, {
+    skip: params.skip ?? null,
+    take: params.take ?? null,
+    search: params.search ?? null,
+  });
   return data.operatorsByCurrentAccount;
 }
 
-/** Operator list (name map + sync metadata) for the GPS-integration screens. */
-export async function getGpsOperators(): Promise<GpsOperator[]> {
-  const data = await executeGraphQL('manager', GetGpsOperatorsDocument);
-  return data.operatorsByCurrentAccount;
+/**
+ * Every operator with its sync metadata, all server pages drained. The GPS
+ * screens filter and label rows by operator, and the lookup carries only
+ * id + name, so the full record set is genuinely required here.
+ */
+export async function getAllGpsOperators(): Promise<GpsOperator[]> {
+  return fetchAllPages(async (skip, take) => (await getGpsOperators({ skip, take })).items);
 }
 
 export async function createOperator(operator: OperatorDtoInput): Promise<Operator> {

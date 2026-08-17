@@ -75,6 +75,14 @@ El color sigue la importancia: azul para información, ámbar para advertencia y
 
 Si falta la barra de anuncios mientras el indicador *Gestión de flota* está en rojo, es lo esperado: los anuncios se almacenan allí, por lo que una interrupción los oculta. Los indicadores siguen funcionando de todos modos.
 
+## ¿Qué versión estoy usando?
+
+Al final de la página, debajo del recordatorio para guardarla en favoritos, verá **Versión del portal** seguida de una versión y una fecha — por ejemplo *v1.1.0 · 2026-07-28 14:32 UTC*. La misma versión aparece también en el pie de página dentro del portal.
+
+Identifica exactamente qué compilación de las pantallas de TrackHub está ejecutando su navegador, y conviene indicarla cada vez que reporte un problema. También es la forma de confirmar que una actualización se aplicó: si su proveedor le informa que se instaló una versión nueva y la versión no cambió, recargue la página con **Ctrl+Shift+R** (**Cmd+Shift+R** en Mac) para descartar la copia que su navegador tenía en caché.
+
+La versión mostrada corresponde a las pantallas. Los servicios que están detrás los controla su proveedor y no se listan aquí.
+
 ## Para gerentes y administradores
 
 **Sincronización GPS** — los **gerentes y administradores de la plataforma** que han iniciado sesión ven un indicador adicional para el sincronizador en segundo plano. Es el complemento de la pantalla Integración GPS: esa pantalla muestra los operadores de su cuenta, este indicador muestra si el sincronizador está funcionando. No tiene un punto de verificación propio, por lo que su estado se deduce de qué tan recientemente trabajó: verde cuando registró actividad en los últimos cinco minutos. Si ninguna cuenta tiene la integración GPS habilitada, muestra **Desconocido** con *«no hay nada que sincronizar»* — eso es normal, no una falla.

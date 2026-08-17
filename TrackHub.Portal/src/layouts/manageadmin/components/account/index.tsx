@@ -19,11 +19,7 @@ import TableAccordion from "controls/Accordions/TableAccordion";
 import Table from "controls/Tables/Table";
 import useForm from 'controls/Dialogs/useForm';
 import useAccountTableData from "layouts/manageadmin/data/accountTableData";
-import type {
-  AccountFormValues,
-  AccountTableColumn,
-  AccountTableRow,
-} from "layouts/manageadmin/data/accountTableData";
+import type { AccountFormValues } from "layouts/manageadmin/data/accountTableData";
 import AccountFormDialog from 'layouts/manageadmin/components/account/AccountDialog';
 import { useTranslation } from 'react-i18next';
 

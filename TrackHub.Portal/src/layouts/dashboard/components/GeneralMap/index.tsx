@@ -22,7 +22,7 @@ import { getStatusMarkerColor, getStatusMarkerLabel } from 'controls/Maps/utils/
 import type { MapMarker, MapPoi } from 'controls/Maps/core/mapTypes';
 import type { Position } from 'api/router/router';
 import type { Geofence } from 'api/geofencing/geofencing';
-import type { PointOfInterest } from 'api/manager/pointsOfInterest';
+import type { PointOfInterestLookup } from 'api/manager/pointsOfInterest';
 import { MAP_CONTAINER_CLASS } from 'controls/Maps/core/mapConfig';
 import 'controls/Maps/css/map.css';
 
@@ -38,7 +38,7 @@ interface GeneralMapProps {
   showGeofence?: boolean;
   handleSelected?: (value: string | null) => void;
   onlineInterval?: number;
-  pois?: PointOfInterest[];
+  pois?: PointOfInterestLookup[];
   showPois?: boolean;
   trail?: TrailPoint[];
   showTrail?: boolean;

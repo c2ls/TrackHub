@@ -84,18 +84,6 @@ export const PingOperatorDocument = graphql(`
   }
 `);
 
-export const GetProviderDevicesByOperatorDocument = graphql(`
-  query GetProviderDevicesByOperator($operatorId: UUID!) {
-    providerDevicesByOperator(query: { operatorId: $operatorId }) {
-      identifier
-      name
-      serial
-      deviceTypeId
-      transporterTypeId
-    }
-  }
-`);
-
 export const GetDevicePositionsByUserDocument = graphql(`
   query GetDevicePositionsByUser {
     devicePositionsByUser {
@@ -119,27 +107,26 @@ export const GetTripsByTransporterDocument = graphql(`
   }
 `);
 
-export const GetPositionsByTransporterDocument = graphql(`
-  query GetPositionsByTransporter(
-    $transporterId: UUID!
-    $from: DateTime!
-    $to: DateTime!
-    $source: PositionSourceType!
-  ) {
-    positionsByTransporter(
-      query: { transporterId: $transporterId, from: $from, to: $to, source: $source }
-    ) {
-      ...PositionFields
-    }
-  }
-`);
-
 export const ReverseGeocodeDocument = graphql(`
   query ReverseGeocode($latitude: Float!, $longitude: Float!, $transporterId: UUID) {
     reverseGeocode(
       query: { latitude: $latitude, longitude: $longitude, transporterId: $transporterId }
     ) {
       ...AddressFields
+    }
+  }
+`);
+
+export const GetProviderCapabilitiesDocument = graphql(`
+  query GetProviderCapabilities {
+    providerCapabilities {
+      protocolTypeId
+      protocol
+      displayName
+      realTimePositions
+      positionHistory
+      deviceCatalog
+      connectivityPing
     }
   }
 `);

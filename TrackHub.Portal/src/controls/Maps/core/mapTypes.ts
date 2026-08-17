@@ -95,3 +95,40 @@ export interface PlaybackPosition {
   lng: number;
   course?: number;
 }
+
+/** A `{ lat, lng }` vertex of a planned route polyline or corridor ring. */
+export interface RoutePoint {
+  lat: number;
+  lng: number;
+}
+
+/**
+ * A trip stop rendered as a numbered marker. `status` drives the pin colour so a
+ * dispatcher reads progress off the map (pending / arrived / departed / skipped).
+ */
+export interface RouteStop {
+  id?: string;
+  sequence: number;
+  name: string;
+  lat: number;
+  lng: number;
+  status?: string;
+  address?: string | null;
+  etaAt?: string | null;
+}
+
+/**
+ * A toll station matched to the planned route. `hasTariff: false` means the
+ * station is on the route but is NOT priced for the trip's vehicle class — the
+ * marker must show that gap rather than imply a zero cost (spec 11 §18.9).
+ */
+export interface RouteTollStation {
+  id?: string;
+  name: string;
+  lat: number;
+  lng: number;
+  hasTariff: boolean;
+  amount?: number | null;
+  currency?: string | null;
+  roadName?: string | null;
+}

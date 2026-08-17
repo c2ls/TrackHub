@@ -20,14 +20,21 @@
 
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import type { ReactNode } from 'react';
 
 import enTranslations from 'locales/en.json';
+import { PROBED_SERVICES } from 'api/core/healthProbe';
 import { TestWrapper } from '../components/testHelpers';
+
+// TT-07: this file runs a real i18n.init and eleven render-and-waitFor cases whose probes each go
+// through the health-probe timeout path. Under vitest's 5s default it passes in isolation and
+// fails intermittently on a loaded machine — a flake, not a regression. The work is genuinely
+// slow rather than hung, so the file gets its own budget instead of the suite-wide default.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const mockIsAdmin = vi.fn();
 const mockIsManager = vi.fn();
@@ -49,6 +56,7 @@ vi.mock('api/core/endpoints', () => ({
     telemetry: 'https://example.test/Telemetry/health',
     geofencing: 'https://example.test/Geofence/health',
     reporting: 'https://example.test/Reporting/health',
+    tripManagement: 'https://example.test/Trip/health',
   },
   GRAPHQL_ENDPOINTS: {},
   REST_ENDPOINTS: { managerPlatformAnnouncements: 'https://example.test/Manager/api/PlatformStatus/announcements' },
@@ -128,10 +136,10 @@ describe('/status with zero backends reachable', () => {
     await waitFor(() => {
       expect(screen.getByText(enTranslations.platformStatus.overall.down)).toBeInTheDocument();
     });
-    // Seven tiles, all down — a total outage must not blank the page.
+    // Every probed service tile is down — a total outage must not blank the page.
     await waitFor(() => {
       const tiles = screen.getAllByTestId('service-tile');
-      expect(tiles).toHaveLength(7);
+      expect(tiles).toHaveLength(PROBED_SERVICES.length);
       expect(tiles.every((tile) => tile.getAttribute('data-state') === 'down')).toBe(true);
     });
   });

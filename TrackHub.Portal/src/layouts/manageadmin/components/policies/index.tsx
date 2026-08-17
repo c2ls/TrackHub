@@ -20,7 +20,6 @@ import Table from "controls/Tables/Table";
 import TableAccordion from "controls/Accordions/TableAccordion";
 import PolicyAllocatorDialog from 'layouts/manageadmin/components/policies/PolicyAllocatorDialog';
 import usePolicyTableData from "layouts/manageadmin/data/policiesTableData";
-import type { PolicyTableColumn, PolicyTableRow } from "layouts/manageadmin/data/policiesTableData";
 
 function ManagePolicies() {
   const { t } = useTranslation();

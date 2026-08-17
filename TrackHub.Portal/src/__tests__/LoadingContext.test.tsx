@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { LoadingContext } from 'LoadingContext';

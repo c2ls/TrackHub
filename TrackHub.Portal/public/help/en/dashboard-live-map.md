@@ -109,4 +109,13 @@ On the right is a scrollable list of all your units, with columns:
 
 Click a row to select that unit, highlight it, and centre the map on it. The **Search units** box at the top right filters this list. Above the list, coloured chips summarise how many units of each type are currently reporting.
 
+## Why a unit is missing from the map
+
+The map shows **units**, not devices. A GPS device only appears once two things are true, and a missing one of them looks exactly like a broken connection even though the provider is working normally:
+
+1. **The device is linked to a unit.** Synchronising an operator fills the device list, but a device on its own has nothing to draw. Link it on the [GPS integration](topic:gps-integration) page.
+2. **The unit is in one of your groups.** You only see units in the groups you belong to. A unit in no group, or in a group you are not a member of, is invisible to you however healthy its device is — an administrator sees it and you do not.
+
+Check them in that order. If the device list is populated but the map is empty, it is almost always the link or the group rather than the GPS provider. A Manager can fix both: link the device under GPS integration, then put the unit in the right group from [Account Management](topic:units-devices).
+
 Viewing the live map requires access to positions. See [Roles and permissions](topic:roles-and-permissions).

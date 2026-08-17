@@ -60,13 +60,12 @@ export const GetResourcesByPolicyDocument = graphql(`
   }
 `);
 
-export const GetUsersByPolicyDocument = graphql(`
-  query GetUsersByPolicy($policyId: Int!) {
-    usersByPolicy(query: { policyId: $policyId }) {
+/** Id + username only: the allocator dialog's "assigned" operand, unpaged by design. */
+export const GetUserLookupByPolicyDocument = graphql(`
+  query GetUserLookupByPolicy($policyId: Int!) {
+    userLookupByPolicy(query: { policyId: $policyId }) {
       userId
       username
-      firstName
-      lastName
     }
   }
 `);

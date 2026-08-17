@@ -84,8 +84,10 @@ function IndexView({ manifest, lang, onOpenTopic }: IndexViewProps) {
           <ListItemText
             primary={title}
             secondary={description}
-            primaryTypographyProps={{ variant: 'button', fontWeight: 'medium' }}
-            secondaryTypographyProps={{ variant: 'caption' }}
+            slotProps={{
+              primary: { variant: 'button', sx: { fontWeight: 'medium' } },
+              secondary: { variant: 'caption' },
+            }}
           />
         </ListItemButton>
       );

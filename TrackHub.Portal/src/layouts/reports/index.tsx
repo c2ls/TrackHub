@@ -83,6 +83,7 @@ function Reports() {
               <ArgonBox mb={3}>
                 <ReportFilters
                   selectedReport={selected.code}
+                  filtersJson={selected.filters}
                   supportsPdf={selected.supportsPdf}
                   running={running}
                   onRun={handleRun}

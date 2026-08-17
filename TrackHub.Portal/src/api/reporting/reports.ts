@@ -25,24 +25,17 @@
 import i18n from 'i18next';
 import { restRequest, downloadFile } from 'api/core/restClient';
 import { REST_ENDPOINTS } from 'api/core/endpoints';
-import { formatJSONValue, formatDateTimeOffSet } from 'utils/dataUtils';
 
 /** The output format the caller requested. Backend defaults to xlsx when absent. */
 export type ReportFormat = 'xlsx' | 'pdf';
 
-/** Raw filter values collected by the report filter form. */
-export interface ReportFilterValues {
-  selectedItem1?: string | null;
-  selectedItem2?: string | null;
-  selectedItem3?: string | null;
-  selectedDate1?: string | number | Date | null;
-  selectedDate2?: string | number | Date | null;
-  selectedDate3?: string | number | Date | null;
-  // Number inputs surface their value as a string; coerced to a number in buildFilters.
-  selectedNumber1?: number | string | null;
-  selectedNumber2?: number | string | null;
-  selectedNumber3?: number | string | null;
-}
+/**
+ * Named filter values, already wire-formatted by the filter form (filter name →
+ * string value or null): dates as ISO-8601 strings, numbers with a dot decimal
+ * separator. The names come from the catalog row's filter definitions; the
+ * Reporting factories read the same names. Null/absent means "no filter".
+ */
+export type ReportFilterValues = Record<string, string | null>;
 
 /** A preview column: positional `name` key plus its already-localized header. */
 export interface ReportPreviewColumn {
@@ -61,30 +54,12 @@ export interface ReportPreview {
   truncated: boolean;
 }
 
-/**
- * Coerces a form field to a number for the FilterDto `double?` numeric slots.
- * Form controls surface values as strings; empty/invalid input becomes null.
- */
-function toNumberOrNull(value: unknown): number | null {
-  if (value === null || value === undefined || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 /** Builds the FilterDto payload shared by download and preview requests. */
 function buildFilters(name: string, filters: ReportFilterValues) {
   return {
     name,
-    stringFilter1: formatJSONValue(filters.selectedItem1),
-    stringFilter2: formatJSONValue(filters.selectedItem2),
-    stringFilter3: formatJSONValue(filters.selectedItem3),
-    dateTimeFilter1: formatDateTimeOffSet(filters.selectedDate1),
-    dateTimeFilter2: formatDateTimeOffSet(filters.selectedDate2),
-    dateTimeFilter3: formatDateTimeOffSet(filters.selectedDate3),
-    numericFilter1: toNumberOrNull(filters.selectedNumber1),
-    numericFilter2: toNumberOrNull(filters.selectedNumber2),
-    numericFilter3: toNumberOrNull(filters.selectedNumber3),
     language: i18n.language || 'en',
+    values: filters,
   };
 }
 

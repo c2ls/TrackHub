@@ -30,8 +30,6 @@ type Mutation {
     @cost(weight: "10")
   recordOperatorSyncRun(command: RecordOperatorSyncRunCommandInput!): OperatorSyncRunVm!
     @cost(weight: "10")
-  purgeExpiredPositionHistory(command: PurgeExpiredPositionHistoryCommandInput!): Int!
-    @cost(weight: "10")
   appendPositionHistory(command: AppendPositionHistoryCommandInput!): Boolean!
     @cost(weight: "10")
   appendPositionHistoryBatch(command: AppendPositionHistoryBatchCommandInput!): Int!
@@ -270,11 +268,6 @@ input PersistResolvedAddressCommandInput {
   city: String
   state: String
   country: String
-}
-
-input PurgeExpiredPositionHistoryCommandInput {
-  accountId: UUID!
-  cutoff: DateTime!
 }
 
 input RecordOperatorHealthCommandInput {

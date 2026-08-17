@@ -48,20 +48,13 @@ export const OperatorDetailFragment = graphql(`
   }
 `);
 
-/** Minimal operator record for pickers/filters (id + display name). */
-export const OperatorSummaryFragment = graphql(`
-  fragment OperatorSummary on OperatorVm {
-    operatorId
-    name
-  }
-`);
-
 /** Operator record for the GPS-integration lists (name map + sync metadata). */
 export const OperatorGpsFragment = graphql(`
   fragment OperatorGps on OperatorVm {
     operatorId
     name
     protocolType
+    protocolTypeId
     enabled
     lastDeviceSyncAt
     lastPositionSyncAt
@@ -69,34 +62,34 @@ export const OperatorGpsFragment = graphql(`
   }
 `);
 
-export const GetOperatorDocument = graphql(`
-  query GetOperator($id: UUID!) {
-    operator(query: { id: $id }) {
-      ...OperatorDetail
-    }
-  }
-`);
-
 export const GetOperatorsByCurrentAccountDocument = graphql(`
-  query GetOperatorsByCurrentAccount {
-    operatorsByCurrentAccount {
-      ...OperatorDetail
+  query GetOperatorsByCurrentAccount($skip: Int, $take: Int, $search: String) {
+    operatorsByCurrentAccount(query: { skip: $skip, take: $take, search: $search }) {
+      items {
+        ...OperatorDetail
+      }
+      totalCount
     }
   }
 `);
 
-export const GetOperatorsSummaryDocument = graphql(`
-  query GetOperatorsSummary {
-    operatorsByCurrentAccount {
-      ...OperatorSummary
+/** Id + display name only: the picker/filter projection, unpaged by design. */
+export const GetOperatorLookupDocument = graphql(`
+  query GetOperatorLookup {
+    operatorLookup {
+      operatorId
+      name
     }
   }
 `);
 
 export const GetGpsOperatorsDocument = graphql(`
-  query GetGpsOperators {
-    operatorsByCurrentAccount {
-      ...OperatorGps
+  query GetGpsOperators($skip: Int, $take: Int, $search: String) {
+    operatorsByCurrentAccount(query: { skip: $skip, take: $take, search: $search }) {
+      items {
+        ...OperatorGps
+      }
+      totalCount
     }
   }
 `);

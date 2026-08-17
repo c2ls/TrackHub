@@ -25,25 +25,46 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from 'api/manager/groups';
 import type { GroupDtoInput, UpdateGroupDtoInput } from 'api/manager/groups';
+import type { ListParams } from 'api/core/paging';
 
 export const groupKeys = {
   all: ['groups'] as const,
-  byAccount: () => [...groupKeys.all, 'byAccount'] as const,
+  byAccount: (params: ListParams = {}) => [...groupKeys.all, 'byAccount', params] as const,
+  lookup: () => [...groupKeys.all, 'lookup'] as const,
   usersByGroup: (groupId: number) => [...groupKeys.all, 'users', groupId] as const,
 };
 
-export function useGroups(options: { enabled?: boolean } = {}) {
+/** One server page of groups (`{ items, totalCount }`) for the group list. */
+export function useGroups(params: ListParams = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: groupKeys.byAccount(),
-    queryFn: api.getGroups,
+    queryKey: groupKeys.byAccount(params),
+    queryFn: () => api.getGroups(params),
     enabled: options.enabled ?? true,
   });
 }
 
+/**
+ * The account's groups as id + name, for pickers and groupId→name maps. Keyed
+ * under {@link groupKeys.all} so a group mutation refreshes it alongside the
+ * paged list.
+ */
+export function useGroupLookup(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: groupKeys.lookup(),
+    queryFn: api.getGroupLookup,
+    enabled: options.enabled ?? true,
+  });
+}
+
+/**
+ * A group's complete membership (every server page drained). The allocator
+ * dialog subtracts it from the account's users, so a partial list would offer
+ * already-assigned users again.
+ */
 export function useUsersByGroup(groupId: number | undefined) {
   return useQuery({
     queryKey: groupKeys.usersByGroup(groupId ?? -1),
-    queryFn: () => api.getUsersByGroup(groupId as number),
+    queryFn: () => api.getAllUsersByGroup(groupId as number),
     enabled: groupId !== undefined,
   });
 }

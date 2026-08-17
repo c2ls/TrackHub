@@ -58,6 +58,8 @@ import SystemAdmin from "layouts/systemadmin";
 import Reports from "layouts/reports";
 import GpsIntegration from "layouts/gpsintegration";
 import GeofenceManager from "layouts/geofencemanager";
+import TripManager from "layouts/tripmanager";
+import TripTracking from "layouts/triptracking";
 import Profile from "layouts/profile";
 import PlatformStatus from "layouts/platformstatus";
 import Callback from "layouts/authentication/callback";
@@ -65,6 +67,7 @@ import AuthorizeRedirect from "layouts/authentication/authorizeredirect";
 import ErrorPage from "layouts/authentication/error";
 import PrincipalTypes from "constants/principalTypes";
 import type { PrincipalType } from "constants/principalTypes";
+import { editionRoutes } from "edition/routes";
 
 // Argon Dashboard 2 MUI components
 import ArgonBox from "components/ArgonBox";
@@ -156,6 +159,37 @@ const routes: RouteDefinition[] = [
     component: <GeofenceManager />,
   },
   {
+    // Dispatcher-level: no hardcoded role branch in App.tsx. Visibility is the
+    // `trip-management` feature flag alone — an account without it never sees
+    // the entry, and the backend answers FEATURE_DISABLED anyway (acceptance 9).
+    type: "route",
+    name: "screen.tripManager",
+    key: "tripManager",
+    route: "/tripManager",
+    principalTypes: [PrincipalTypes.User],
+    featureKey: "trip-management",
+    icon: (
+      <ArgonBox component="i" color="info" fontSize="14px" className="ni ni-delivery-fast" />
+    ),
+    component: <TripManager />,
+  },
+  {
+    // Anonymous customer tracking. `public: true` bypasses the role and
+    // principal-type gates entirely — the recipient of a shared link is not a
+    // platform principal. Deliberately a `route` (not `hidden`) so it carries a
+    // help topic; the Sidenav filters the key out (it is not a portal
+    // destination — the page is meaningless without a link token).
+    type: "route",
+    name: "screen.tripTracking",
+    key: "tripTracking",
+    route: "/track",
+    public: true,
+    icon: (
+      <ArgonBox component="i" color="info" fontSize="14px" className="ni ni-world-2" />
+    ),
+    component: <TripTracking />,
+  },
+  {
     type: "route",
     name: "screen.reports",
     key: "reports",
@@ -213,6 +247,9 @@ const routes: RouteDefinition[] = [
     route: "/authentication/authorize",
     component: <AuthorizeRedirect />,
   },
+  // Edition extension point (src/edition/routes.ts): additional routes registered by
+  // distributions built on this codebase; empty in this repository.
+  ...editionRoutes,
   {
     type: "hidden",
     name: "Error",

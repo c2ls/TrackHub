@@ -7,6 +7,10 @@
     "jsx": "react-jsx",
     "strict": true,
     "noFallthroughCasesInSwitch": true,
+    // Dead imports/locals keep otherwise-unreachable modules alive and hide real dead
+    // code from reachability analysis. Parameters are deliberately NOT checked: several
+    // handlers match a library-imposed signature (e.g. MUI's onChange(event, value)).
+    "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

@@ -40,14 +40,6 @@ export const PublicLinkGrantFieldsFragment = graphql(`
   }
 `);
 
-export const GetPublicLinkGrantDocument = graphql(`
-  query GetPublicLinkGrant($publicLinkGrantId: UUID!) {
-    publicLinkGrant(query: { publicLinkGrantId: $publicLinkGrantId }) {
-      ...PublicLinkGrantFields
-    }
-  }
-`);
-
 export const GetPublicLinkGrantsByAccountDocument = graphql(`
   query GetPublicLinkGrantsByAccount($accountId: UUID!, $skip: Int!, $take: Int!) {
     publicLinkGrantsByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) {

@@ -30,6 +30,7 @@ import {
   useUnlockUser,
 } from "queries/users";
 import type { AccountUser, CreateUserDtoInput, UpdateUserDtoInput } from "api/security/users";
+import type { ListParams } from "api/core/paging";
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
 
@@ -69,7 +70,8 @@ function useUserTableData(
   fetchData: boolean,
   handleEditClick: (user: UserFormValues) => void,
   handleUpdatePasswordClick: (user: PasswordFormValues) => void,
-  handleDeleteClick: (userId: string) => void
+  handleDeleteClick: (userId: string) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -78,8 +80,11 @@ function useUserTableData(
   const { setLoading } = useContext(LoadingContext);
   const { isAuthenticated } = useAuth();
 
-  const usersQuery = useUsersByAccount({ enabled: !!fetchData && isAuthenticated });
-  const users = usersQuery.data ?? [];
+  const usersQuery = useUsersByAccount(listParams, {
+    enabled: !!fetchData && isAuthenticated,
+  });
+  const users = usersQuery.data?.items ?? [];
+  const totalCount = usersQuery.data?.totalCount ?? 0;
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
@@ -232,6 +237,7 @@ function useUserTableData(
 
   return {
     data,
+    totalCount,
     open,
     openPassword,
     confirmOpen,

@@ -1,221 +1,118 @@
-# TrackHub Aplicación Web
+# TrackHub Web
 
-## Características Principales
+[← Volver a la página principal](README.md) · [English](README.en.md)
 
-- **Seguimiento GPS en Tiempo Real**: Visualización en vivo de transportadores y dispositivos con actualizaciones automáticas de posición
-- **Integración Multi-Operador**: Interfaz unificada para gestionar múltiples proveedores de GPS (CommandTrack, Traccar, Flespi, GeoTab y más)
-- **Gestión de Geocercas**: Crear, editar y monitorear límites geográficos para activos con alertas en tiempo real
-- **Control de Acceso Basado en Roles**: Gestión granular de permisos con políticas personalizables y grupos de usuarios
-- **Gestión de Dispositivos y Transportadores**: Operaciones CRUD completas para dispositivos, transportadores y credenciales de operadores
-- **Reportes y Análisis**: Exportación de datos operacionales en formato Excel con filtros personalizables, incluyendo posiciones en vivo, historial de posiciones, estado de geocercas y historial de eventos de geocercas
-- **Soporte Multi-Idioma**: Internacionalización completa con interfaces en inglés y español
-- **Tema Oscuro/Claro**: Apariencia de interfaz personalizable para una experiencia de usuario óptima
-- **Autenticación Segura**: Integración OAuth 2.0/OpenID Connect con flujo PKCE mediante OpenIdDict
-- **Manejo de Errores**: React Error Boundary para recuperación de fallos con notificaciones toast MUI Snackbar
-- **Endurecimiento de Seguridad**: Protección contra inyección GraphQL, tiempos de espera de solicitudes, manejo de condición de carrera en renovación de tokens y encabezados meta de seguridad
+TrackHub Web es el **portal en React** — la interfaz de usuario orientada al operador para toda la plataforma. Es una aplicación de página única (single-page application) en React 19 + TypeScript 7, construida con Vite 8 y probada con Vitest 4, que se sirve en producción como archivos estáticos mediante nginx.
+
+Es también donde vive la **documentación de usuario**: los temas de ayuda contextual en `public/help/` se incluyen en cada build del portal.
 
 ---
 
-## Inicio Rápido
+## Qué proporciona
 
-### Requisitos Previos
+- **Seguimiento GPS en tiempo real** — un mapa en vivo de transportistas y dispositivos, con actualizaciones automáticas de posición, reproducción (replay) y segmentación de viajes
+- **Integración multioperador** — una sola interfaz para cada proveedor GPS conectado, con gestión de dispositivos, sincronización manual, ping de conectividad y estado de salud
+- **Geofencing** — un editor de polígonos y círculos en ambos proveedores de mapas, con listas paginadas del lado del servidor y superposiciones (overlays) en el panel
+- **Gestión de viajes** — un tablero de despacho para viajes, paradas, entregas, planes de ruta, peajes, prueba de entrega y enlaces públicos de seguimiento
+- **Documentos y fuerza laboral (workforce)** — cargas versionadas con firmas y compartición; el registro de conductores, calificaciones y asignaciones
+- **Alertas y notificaciones** — el feed dentro de la aplicación, reglas de notificación, suscripciones y plantillas
+- **Reportes** — el catálogo de reportes gobernado, con vista previa dentro de la aplicación y exportación a Excel/PDF
+- **Administración** — cuentas, usuarios, grupos, permisos, features y clientes de servicio (service clients)
+- **Página pública de estado** — `/status` se renderiza sin necesidad de iniciar sesión, e informa el estado de salud por servicio y los anuncios de la plataforma
+- **Ayuda contextual integrada** — botón de Ayuda o **F1** en cada pantalla, con un índice navegable y búsqueda del lado del cliente, en inglés y español
+- **Interfaz bilingüe** (EN/ES) y un tema oscuro/claro
 
-- Node.js 18+
-- npm o yarn
-- Acceso a los servicios backend de TrackHub (Authority Server, Manager, Router, Security, Geofencing, Reporting APIs)
+Detalle completo: **[Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend)** en la wiki.
 
-### Instalación
+---
 
-1. **Clonar el repositorio**:
+## Inicio rápido
+
+### Requisitos previos
+
+- Node.js 20+
+- Acceso a los servicios backend de TrackHub — AuthorityServer, Security, Manager, Router, Telemetry, Geofencing, TripManagement y Reporting
+
+### Pasos
+
+1. **Clonar e instalar**
+
    ```bash
    git clone https://github.com/shernandezp/TrackHub.git
    cd TrackHub
-   ```
-
-2. **Instalar dependencias**:
-   ```bash
    npm install
    ```
 
-3. **Configurar variables de entorno**:
-   ```bash
-   cp .env.example .env
-   ```
+2. **Configurar el entorno.** Editar `.env` (los valores predeterminados de desarrollo apuntan a `https://localhost`); `.env.production.template` es la referencia para el despliegue.
 
-4. **Configurar certificados HTTPS** (requerido para OAuth):
+3. **Configurar certificados HTTPS.** OAuth requiere HTTPS, y el callback está registrado en `https://localhost:3000/...`:
+
    ```bash
-   npm install --save-dev mkcert
    npx mkcert create-ca
    npx mkcert create-cert
    ```
 
-5. **Iniciar el servidor de desarrollo**:
+   Esto genera `ca.key` / `ca.crt` y `cert.key` / `cert.crt` en la raíz del proyecto. Vite los detecta automáticamente cuando existen tanto `cert.crt` como `cert.key`. Están en el gitignore — nunca deben confirmarse (commit). El navegador advertirá sobre el certificado autofirmado; eso es esperado en desarrollo.
+
+4. **Ejecutar**
+
    ```bash
-   npm start
+   npm run dev
    ```
 
-6. **Abrir el navegador** en `https://localhost:3000`
+   Abrir `https://localhost:3000`.
+
+### Scripts
+
+| Comando | Propósito |
+|---|---|
+| `npm run dev` (o `npm start`) | Servidor de desarrollo — también ejecuta primero el validador de ayuda |
+| `npm run build` | `tsc --noEmit` y luego un build de producción — también ejecuta primero el validador de ayuda |
+| `npm run typecheck` | Solo TypeScript |
+| `npm test` / `npm run test:watch` | Vitest |
+| `npm run codegen` | Regenera los documentos GraphQL tipados a partir de `schemas/*.graphql` |
+| `npm run help:check` | Valida el contrato de autoría de ayuda sin compilar |
+| `npm run lint` | ESLint |
+
+**El gate es `npm run typecheck && npm test && npm run build`.**
 
 ---
 
-## Componentes y Recursos Utilizados
+## Notas específicas del proyecto
 
-| Componente                | Descripción                                             | Documentación                                                                 |
-|---------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------|
-| Argon Dashboard 2 MUI - v3.0.1             | Plantilla basada en React JS y MUI        | [Documentación Creative Tim](https://www.creative-tim.com/product/argon-dashboard-material-ui)                           |
-| React JS 18.3.1               | Biblioteca para interfaces de usuario nativas y web     | [Documentación React JS](https://react.dev/) |
-
----
-
-## Descripción General de la Aplicación
-
-La aplicación TrackHub es un cliente web desarrollado con React, basado en la plantilla Argon de [Creative Tim](https://www.creative-tim.com/). Este cliente sirve como la interfaz de usuario para los servicios de TrackHub, permitiendo a los usuarios gestionar varios aspectos del sistema, como cuentas, operadores, dispositivos, transportistas, usuarios y permisos. Además, proporciona herramientas para la visualización de datos geográficos en tiempo real, como la ubicación de dispositivos GPS, con las etiquetas correspondientes.
-
----
-
-## Página de inicio de sesión
-*El flujo de autenticación se inicia en la página de inicio de sesión, que apunta al Servidor de Autoridad de TrackHub como el método de autenticación para el cliente web.* 
-
-![Image](https://github.com/shernandezp/TrackHub/blob/main/src/assets/images/login.png?raw=true)
+- **Los componentes nunca tocan la red.** Cada llamada pasa por tres capas: `src/api/<backend>/<domain>Operations.ts` (documentos GraphQL vía el tag generado `graphql()`) → `src/api/<backend>/<domain>.ts` (funciones tipadas que lanzan `ApiError`) → `src/queries/<domain>.ts` (hooks de TanStack Query que gestionan las claves de caché e invalidación). Las URLs de endpoints viven **únicamente** en `src/api/core/endpoints.ts`.
+- **Los valores viajan solo como variables GraphQL.** No hay interpolación de cadenas de entrada de usuario en los documentos — el antiguo helper de escapado `formatValue` ya no existe.
+- **La deriva (drift) del backend es un error de compilación.** El conjunto de pruebas de contrato exporta el SDL de cada productor a `schemas/<service>.graphql`; `npm run codegen` valida cada operación del portal contra ellos. Después de cualquier cambio de GraphQL en el backend: ejecutar las pruebas de contrato y luego `npm run codegen`.
+- **`src/` es 100% TypeScript.** `allowJs` está desactivado y un guard de ESLint marca error ante cualquier archivo nuevo `.js` o `.jsx` bajo `src/`.
+- **Los componentes y controles de Argon exportan tipos de props reales** — importarlos y usarlos directamente. Nunca reintroducir interfaces locales de recorte de props (prop-slice) ni casts de frontera `as unknown as` en los sitios de llamada; si un control carece de una prop que se debe pasar, ampliar el tipo de prop **exportado del control**. Las extensiones de tema viven en `src/types/mui-theme.d.ts`.
+- **El shim de define `process.env.REACT_APP_*` en `vite.config.ts` es permanente por decisión** — todas las lecturas se centralizan en `api/core/endpoints.ts`, y mantener la convención de CRA hace que los archivos `.env` existentes y la documentación de despliegue sigan siendo válidos. Está deshabilitado en modo de prueba, porque los conjuntos de pruebas asignan las variables de entorno en tiempo de ejecución.
+- **Las claves de i18n se verifican en tiempo de compilación.** Agregar cada clave tanto a `locales/en.json` como a `locales/es.json`; las claves dinámicas se castean solo en la expresión de la clave.
+- **Escapar todo lo que se interpole en un popup de mapa.** `bindPopup`/`bindTooltip` de Leaflet y el InfoWindow de Google asignan su argumento vía `innerHTML`, por lo que el escapado de React no aplica — usar `escapeHtml` (`src/utils/htmlUtils.ts`). Los nombres de transportistas son texto libre editable por la cuenta, y las direcciones provienen de un geocodificador de terceros.
+- **La conversión `datetime-local` ⇄ UTC pasa por `toDateTimeLocalInput` / `fromDateTimeLocalInput`** (`src/utils/dateUtils.ts`). El control conserva la hora *local* de pared (wall time), por lo que el instante se desplaza en ambas direcciones. Un helper que se salte ese desplazamiento solo produce un round-trip correcto bajo `TZ=UTC` — que es exactamente lo que corren las máquinas de desarrollo y CI. Verificar la propiedad de round-trip, nunca un valor literal.
+- **El contenido de ayuda se valida en tiempo de build.** `scripts/build-help.mjs` se ejecuta en `predev` y `prebuild` y verifica la paridad entre idiomas, que el id sea igual al nombre de archivo, `screens:` ↔ `routes.tsx` **en ambas direcciones**, los destinos de enlace `topic:`, la ausencia de HTML crudo y la existencia de assets. Agregar o renombrar una pantalla sin actualizar el frontmatter del tema **hace fallar el build**.
+- **`/status` debe seguir funcionando sin token.** Sus dos fetches anónimos (`api/core/healthProbe.ts` y `getVisibleAnnouncements`) son las únicas excepciones sancionadas a la regla de capas de la API; ambas están documentadas en los encabezados de sus archivos y se alcanzan únicamente a través de `src/queries/platformStatus.ts`.
+- **`RouteDefinition.principalTypes` tiene por defecto `[User]`.** Una ruta alcanzable por principals de tipo driver o de enlace público debe establecer `public: true` explícitamente, o esos principals rebotarán entre esa ruta y `/dashboard` indefinidamente.
+- **`typescript-eslint` está deshabilitado** hasta que soporte TypeScript 7. `tsc` es el gate de lint de TypeScript.
+- Reporting es solo REST (`api/BasicReports`), y la base REST de documentos de Manager es `~/documents` — **sin prefijo `api/`**.
 
 ---
 
-## Panel principal
-*Una vez iniciada la sesión, los usuarios se presentan con el panel principal, que incluye un mapa que muestra datos en tiempo real relacionados con la ubicación de los dispositivos y otra información geográfica. Este cliente web se comunica con los servicios de TrackHub utilizando endpoints de GraphQL para realizar consultas y manipular datos de manera eficiente.*
+## Una nota sobre la configuración
 
-![Image](https://github.com/shernandezp/TrackHub/blob/main/src/assets/images/dashboard.png?raw=true)
-![Image](https://github.com/shernandezp/TrackHub/blob/main/src/assets/images/trips.png?raw=true)
+El objetivo de TrackHub es estandarizar y simplificar la integración de diferentes proveedores de monitoreo, pero su configuración, despliegue y mantenimiento requieren conocimientos intermedios a avanzados de .NET y React.
 
----
-
-## Geocercas
-*TrackHub permite crear, actualizar y eliminar geocercas para monitorear las unidades en función de su ubicación geográfica.*
-
-![Image](https://github.com/shernandezp/TrackHub/blob/main/src/assets/images/geofence.png?raw=true)
+A lo largo de esta aplicación y de los servicios backend, el repositorio contiene contraseñas, certificados, variables de entorno y otros secretos de desarrollo. **Esto es intencional** — permite levantar un nuevo entorno de desarrollo sin necesidad de configurar secretos manualmente. Los despliegues de producción deben sobrescribirlos todos.
 
 ---
 
-## Pantalla de gestión de configuración
-*La pantalla de configuración permite a los administradores gestionar los datos del sistema, como cuentas de usuario, permisos y configuraciones de operadores.*
+## Documentación
 
-![Image](https://github.com/shernandezp/TrackHub/blob/main/src/assets/images/manage.png?raw=true)
-
----
-
-## Informes
-*Exportación de datos de unidades en formato Excel.*
-
-![Image](https://github.com/shernandezp/TrackHub/blob/main/src/assets/images/reports.png?raw=true)
+- **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology), [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
+- **Usuario** — en la aplicación: el botón de Ayuda o **F1** en cualquier pantalla. Los temas fuente viven en `public/help/{en,es}/`.
+- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
 
 ---
-
-## Capas principales:
-
-1. **Componentes reutilizables de UI (components)**  
-   El directorio de componentes contiene componentes reutilizables de UI utilizados en toda la aplicación. Estos componentes están diseñados para ser modulares y se pueden integrar fácilmente en diferentes partes de la aplicación.
-
-2. **Gestión global de estado con Context API (context)**  
-   El directorio de contexto contiene proveedores de contexto que gestionan el estado global en toda la aplicación. Los proveedores de contexto se usan para compartir estado y funciones entre los componentes sin pasar manualmente las propiedades en cada nivel. La API de Contexto ayuda a evitar el "prop drilling", especialmente en aplicaciones más grandes, mejorando la mantenibilidad y escalabilidad.
-
-3. **Controles personalizados y UI específica (controls)**  
-   El directorio de controles contiene controles personalizados y elementos de UI específicos para los requisitos de la aplicación. Estos controles se construyen sobre los componentes base y proporcionan funcionalidades y estilos adicionales.
-
-4. **Gestión y transformación de datos (data)**  
-   El directorio de datos contiene archivos relacionados con datos, incluidos datos simulados, modelos de datos y funciones de transformación de datos. Esta capa es responsable de gestionar los datos de la aplicación y asegurarse de que estén en el formato adecuado para su uso por los componentes.
-
-5. **Estructura y organización de diseño (layouts)**  
-   El directorio de layouts contiene componentes de diseño que definen la estructura y organización de diferentes secciones de la aplicación. Los componentes de diseño se utilizan para crear layouts consistentes y navegación a través de la aplicación.
-
-6. **Soporte multilingüe (locales)**  
-   El directorio de locales contiene archivos de localización que proporcionan soporte para varios idiomas. Esta capa es responsable de gestionar las traducciones y garantizar que la aplicación pueda ser utilizada en diferentes idiomas.
-
-7. **Servicios de negocio y llamadas a la API (services)**  
-   El directorio de servicios contiene archivos de servicio que gestionan la obtención de datos y la lógica de negocio. Los servicios son responsables de realizar llamadas a la API, procesar datos y proporcionar funciones que puedan ser utilizadas por los componentes y proveedores de contexto.
-
-8. **Funciones utilitarias para la aplicación util**  
-   El directorio de utilidades contiene funciones utilitarias que proporcionan funcionalidad común utilizada en toda la aplicación. Estas funciones están diseñadas para ser reutilizables y se pueden integrar fácilmente en diferentes partes de la aplicación.
-
----
-
-## Variables de entorno
-
-El archivo `.env` contiene las siguientes variables de entorno utilizadas en la aplicación:
-
-- **`REACT_APP_DEFAULT_LAT=4.624335`**  
-- **`REACT_APP_DEFAULT_LNG=-74.063644`**  
-  Estas dos variables definen el centro predeterminado del mapa en caso de que el usuario deniegue los permisos de ubicación en el navegador.
-
-- **`REACT_APP_CLIENT_ID=web_client`**  
-  Define el ID de cliente para la aplicación web. Este valor se utiliza para la autenticación e identificación durante las llamadas a la API y el inicio de sesión del usuario.
-
-- **`REACT_APP_AUTHORIZATION_ENDPOINT=https://localhost/Identity/authorize`**  
-  Especifica el punto final para la autorización del usuario. Esta URL se utiliza durante el proceso de autenticación cuando el cliente solicita un token.
-
-- **`REACT_APP_TOKEN_ENDPOINT=https://localhost/Identity/token`**  
-  Define el punto final para intercambiar un código de autorización por un token de acceso. Esta URL es utilizada por el cliente para solicitar un token OAuth después de una autorización exitosa del usuario.
-
-- **`REACT_APP_CALLBACK_ENDPOINT=https://localhost:3000/authentication/callback`**  
-  Especifica la URL de devolución de llamada a donde el proveedor de autenticación redirigirá al usuario después de un inicio de sesión exitoso. Aquí es donde se enviará el token de acceso.
-
-- **`REACT_APP_REVOKE_TOKEN_ENDPOINT=https://localhost/Identity/revoke`**  
-  Define el punto final utilizado para revocar un token de acceso. Esto se utiliza típicamente durante el cierre de sesión o cuando el token ya no es necesario.
-
-- **`REACT_APP_LOGOUT_ENDPOINT=https://localhost/Identity/logout`**  
-  Especifica el punto final de cierre de sesión. Esta URL se utiliza para cerrar la sesión del usuario y terminar la sesión activa con el proveedor de autenticación.
-
-- **`REACT_APP_MANAGER_ENDPOINT=https://localhost/Manager/graphql`**  
-  Define el punto final de GraphQL para gestionar la aplicación. Este punto final se utiliza para interactuar con el sistema backend para funciones administrativas como gestionar usuarios, dispositivos y servicios.
-
-- **`REACT_APP_ROUTER_ENDPOINT=https://localhost/Router/graphql`**  
-  Especifica el punto final de GraphQL para tareas relacionadas con el enrutamiento. Maneja los datos de enrutamiento y ubicación, permitiendo la interacción con los servicios de GPS y mapeo.
-
-- **`REACT_APP_SECURITY_ENDPOINT=https://localhost/Security/graphql`**  
-  Define el punto final de GraphQL para operaciones relacionadas con la seguridad, como la autenticación, el control de acceso y la protección de recursos dentro de la aplicación.
-
-- **`REACT_APP_GEOFENCING_ENDPOINT=https://localhost/Geofence/graphql`**  
-  Especifica el endpoint GraphQL para operaciones de geocercas. Se usa para gestionar geocercas dentro del sistema.
-
-- **`REACT_APP_REPORTING_ENDPOINT=https://localhost/Reporting/`**  
-  Define el endpoint REST para operaciones de generación de informes. Este endpoint recupera archivos de Excel en formato binario según la solicitud del usuario.
-
-Estas variables de entorno son críticas para configurar varios aspectos de la aplicación, incluyendo la autenticación, las llamadas a la API y la gestión del sistema.
-
----
-
-## Configuración de HTTPS para desarrollo local
-
-La aplicación React está configurada para ejecutarse con HTTPS habilitado. Para configurar los certificados SSL para el desarrollo local:
-
-### Paso 1: Instalar mkcert vía npm
-```bash
-npm install --save-dev mkcert
-```
-
-### Paso 2: Generar certificados
-```bash
-npx mkcert create-ca
-npx mkcert create-cert
-```
-
-Esto creará los siguientes archivos en la raíz de tu proyecto:
-- `ca.key` y `ca.crt` (Autoridad Certificadora)
-- `cert.key` y `cert.crt` (Certificado SSL para localhost)
-
-### Paso 3: Iniciar la aplicación
-```bash
-npm start
-```
-
-La aplicación se ejecutará en `https://localhost:3000` utilizando los certificados generados.
-
-**Nota:** Los archivos de certificados ya están configurados en `.gitignore` y no deben ser incluidos en el repositorio. Es posible que veas advertencias del navegador sobre certificados autofirmados - puedes continuar de forma segura para el desarrollo local.
-
-## Notas  
-Aunque el objetivo de TrackHub es estandarizar y simplificar el código para unificar diferentes proveedores de monitoreo (operadores), su configuración, despliegue y mantenimiento requieren conocimientos intermedios a avanzados de .NET Core y React.
-
-No solo para esta aplicación, sino para todos los servicios en general, el código incluye contraseñas, certificados, variables de entorno y algunos secretos. Esta información se proporciona para facilitar y acelerar la configuración de un nuevo entorno de desarrollo. Sin embargo, todas estas configuraciones y secretos deben ser gestionados adecuadamente en los entornos de producción.
 
 ## Licencia
 
-Este proyecto está bajo la Licencia Apache 2.0. Consulta el archivo [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.
-
+Licencia Apache 2.0. Consulte el [archivo LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para más información.

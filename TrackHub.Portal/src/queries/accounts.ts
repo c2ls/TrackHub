@@ -27,10 +27,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from 'api/manager/accounts';
 import type { AccountDtoInput, UpdateAccountDtoInput, AccountStatus } from 'api/manager/accounts';
+import type { ListParams } from 'api/core/paging';
 
 export const accountKeys = {
   all: ['accounts'] as const,
-  list: () => [...accountKeys.all, 'list'] as const,
+  list: (params: ListParams = {}) => [...accountKeys.all, 'list', params] as const,
   byUser: () => [...accountKeys.all, 'byUser'] as const,
   detail: (id: string) => [...accountKeys.all, 'detail', id] as const,
 };
@@ -44,19 +45,12 @@ export function useAccountByUser(options: { enabled?: boolean } = {}) {
   });
 }
 
-export function useAccounts(options: { enabled?: boolean } = {}) {
+/** One server page of accounts (`{ items, totalCount }`) for the systemadmin list. */
+export function useAccounts(params: ListParams = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: accountKeys.list(),
-    queryFn: api.getAccounts,
+    queryKey: accountKeys.list(params),
+    queryFn: () => api.getAccounts(params),
     enabled: options.enabled ?? true,
-  });
-}
-
-export function useAccount(accountId: string | undefined) {
-  return useQuery({
-    queryKey: accountKeys.detail(accountId ?? ''),
-    queryFn: () => api.getAccount(accountId as string),
-    enabled: !!accountId,
   });
 }
 
@@ -76,6 +70,23 @@ export function useUpdateAccount() {
       ...account
     }: Omit<UpdateAccountDtoInput, 'accountId'> & { accountId: string }) =>
       api.updateAccount(accountId, account),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.all }),
+  });
+}
+
+/**
+ * Platform-side account edit for the systemadmin console (Administrator-only).
+ * `useUpdateAccount` stays the account-scoped hook an account administrator uses
+ * on its own account.
+ */
+export function useUpdateAccountMaster() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      accountId,
+      ...account
+    }: Omit<UpdateAccountDtoInput, 'accountId'> & { accountId: string }) =>
+      api.updateAccountMaster(accountId, account),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.all }),
   });
 }

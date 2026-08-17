@@ -21,6 +21,7 @@ import { Name, Description } from "controls/Tables/components/tableComponents";
 import Icon from "@mui/material/Icon";
 import ArgonButton from "components/ArgonButton";
 import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup } from 'queries/groups';
+import type { ListParams } from 'api/core/paging';
 import type { Group, GroupDtoInput, UpdateGroupDtoInput } from 'api/manager/groups';
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
@@ -55,7 +56,8 @@ function useGroupTableData(
   handleEditClick: (group: GroupFormValues) => void,
   handleDeleteClick: (groupId: number) => void,
   handleUserClick: (groupId: number) => void,
-  handleTransporterClick: (groupId: number) => void
+  handleTransporterClick: (groupId: number) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -63,8 +65,9 @@ function useGroupTableData(
   const { setLoading } = useContext(LoadingContext);
   const { isAuthenticated } = useAuth();
 
-  const groupsQuery = useGroups({ enabled: !!fetchData && isAuthenticated });
-  const groups = groupsQuery.data ?? [];
+  const groupsQuery = useGroups(listParams, { enabled: !!fetchData && isAuthenticated });
+  const groups = groupsQuery.data?.items ?? [];
+  const totalCount = groupsQuery.data?.totalCount ?? 0;
   const createGroup = useCreateGroup();
   const updateGroup = useUpdateGroup();
   const deleteGroup = useDeleteGroup();
@@ -187,6 +190,7 @@ function useGroupTableData(
 
   return {
     data,
+    totalCount,
     open,
     confirmOpen,
     onSave,

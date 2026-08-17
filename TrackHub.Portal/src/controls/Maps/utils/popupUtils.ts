@@ -16,6 +16,7 @@
 
 import type { TFunction } from 'i18next';
 import { formatDateTime } from "utils/dateUtils";
+import { escapeHtml } from 'utils/htmlUtils';
 import type { MapMarker } from 'controls/Maps/core/mapTypes';
 
 /**
@@ -31,14 +32,6 @@ export const getWhatsAppShareUrl = (lat: number, lng: number, name: string): str
  */
 export const getStreetViewUrl = (lat: number, lng: number): string => {
     return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
-};
-
-/**
- * Formats a value with unit, returns null if value is not available
- */
-const formatWithUnit = (value: unknown, unit: string): string | null => {
-    if (value === undefined || value === null) return null;
-    return `${value} ${unit}`;
 };
 
 /**
@@ -71,8 +64,8 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
     let content = `
         <div style="min-width: 240px; font-family: Arial, sans-serif; font-size: 13px;">
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; margin: -15px -20px 6px -20px; border-radius: 3px 3px 0 0;">
-                <h3 style="margin: 0; font-size: 15px; font-weight: bold;">${name}</h3>
-                ${transporterType ? `<p style="margin: 2px 0 0 0; font-size: 12px; opacity: 0.9;">${transporterType}</p>` : ''}
+                <h3 style="margin: 0; font-size: 15px; font-weight: bold;">${escapeHtml(name)}</h3>
+                ${transporterType ? `<p style="margin: 2px 0 0 0; font-size: 12px; opacity: 0.9;">${escapeHtml(transporterType)}</p>` : ''}
             </div>
 
             <div style="padding: 0;">
@@ -84,7 +77,7 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
 
                 <div style="margin-bottom: 4px;">
                     <strong style="color: #667eea; font-size: 12px;">🚗 ${t('transporterMap.speed')}:</strong>
-                    <span style="font-size: 13px; font-weight: bold; color: ${speed > 0 ? '#10b981' : '#ef4444'};">${speed} km/h</span>
+                    <span style="font-size: 13px; font-weight: bold; color: ${speed > 0 ? '#10b981' : '#ef4444'};">${escapeHtml(speed)} km/h</span>
                     <span style="margin-left: 4px; padding: 2px 5px; background: ${speed > 0 ? '#d1fae5' : '#fee2e2'}; color: ${speed > 0 ? '#065f46' : '#991b1b'}; border-radius: 2px; font-size: 10px;">
                         ${speed > 0 ? t('transporterMap.moving') || 'Moving' : t('transporterMap.stopped') || 'Stopped'}
                     </span>
@@ -104,12 +97,14 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
             content += `
                 <div style="margin-bottom: 4px;">
                     <strong style="color: #667eea; font-size: 12px;">🌡 ${t('transporterMap.temperature') || 'Temperature'}:</strong>
-                    <span style="font-size: 12px;">${attributes.temperature}°C</span>
+                    <span style="font-size: 12px;">${escapeHtml(attributes.temperature)}°C</span>
                 </div>`;
         }
 
         if (attributes.hourmeter !== undefined && attributes.hourmeter !== null) {
-            const hours = Math.floor(attributes.hourmeter / 3600000);
+            // `hourmeter` is expressed in HOURS (AttributesVm.Hourmeter). Its only producer is
+            // CommandTrack's `hobbsMeter`, an aviation Hobbs meter reading decimal engine hours.
+            const hours = Number(attributes.hourmeter).toFixed(1);
             content += `
                 <div style="margin-bottom: 4px;">
                     <strong style="color: #667eea; font-size: 12px;">⏲ ${t('transporterMap.hourmeter') || 'Hourmeter'}:</strong>
@@ -131,7 +126,7 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
             content += `
                 <div style="margin-bottom: 4px;">
                     <strong style="color: #667eea; font-size: 12px;">🛰 ${t('transporterMap.satellites') || 'Satellites'}:</strong>
-                    <span style="font-size: 12px;">${attributes.satellites}</span>
+                    <span style="font-size: 12px;">${escapeHtml(attributes.satellites)}</span>
                 </div>`;
         }
     }
@@ -141,7 +136,7 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
         content += `
             <div style="margin-bottom: 4px;">
                 <strong style="color: #667eea; font-size: 12px;">⛰ ${t('transporterMap.altitude') || 'Altitude'}:</strong>
-                <span style="font-size: 12px;">${altitude} m</span>
+                <span style="font-size: 12px;">${escapeHtml(altitude)} m</span>
             </div>`;
     }
 
@@ -150,7 +145,7 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
         content += `
             <div style="margin-bottom: 4px;">
                 <strong style="color: #667eea; font-size: 12px;">📍 ${t('transporterMap.address') || 'Address'}:</strong><br/>
-                <span style="font-size: 11px;">${address}</span>
+                <span style="font-size: 11px;">${escapeHtml(address)}</span>
             </div>`;
     } else {
         if (city || state || country) {
@@ -158,7 +153,7 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
             content += `
             <div style="margin-bottom: 4px;">
                 <strong style="color: #667eea; font-size: 12px;">📍 ${t('transporterMap.location') || 'Location'}:</strong><br/>
-                <span style="font-size: 11px;">${location}</span>
+                <span style="font-size: 11px;">${escapeHtml(location)}</span>
             </div>`;
         }
         if (lat !== undefined && lat !== null && lng !== undefined && lng !== null) {
@@ -166,7 +161,7 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
             <div style="margin-bottom: 4px;">
                 <strong style="color: #667eea; font-size: 12px;">📍 ${t('transporterMap.coordinates') || 'Coordinates'}:</strong>
                 <span style="font-size: 11px;">${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}</span><br/>
-                <button type="button" class="th-resolve-address" data-lat="${lat}" data-lng="${lng}" data-transporter-id="${id ?? ''}"
+                <button type="button" class="th-resolve-address" data-lat="${escapeHtml(lat)}" data-lng="${escapeHtml(lng)}" data-transporter-id="${escapeHtml(id ?? '')}"
                     style="margin-top: 4px; padding: 3px 8px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
                     ${t('transporterMap.resolveAddress') || 'Resolve address'}
                 </button>

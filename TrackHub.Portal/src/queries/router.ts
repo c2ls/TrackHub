@@ -22,6 +22,8 @@
  * called directly and intentionally have no cache entry.
  */
 
+import { useQuery } from '@tanstack/react-query';
+import { getProviderCapabilities } from 'api/router/router';
 import type { PositionSourceType } from 'api/router/router';
 
 export const routerKeys = {
@@ -29,4 +31,19 @@ export const routerKeys = {
   devicePositions: () => [...routerKeys.all, 'devicePositions'] as const,
   trips: (transporterId: string, from: string, to: string, source: PositionSourceType) =>
     [...routerKeys.all, 'trips', transporterId, from, to, source] as const,
+  providerCapabilities: () => [...routerKeys.all, 'providerCapabilities'] as const,
 };
+
+/**
+ * The deployment's provider capability matrix (and provider list). Static per
+ * deployment — the Router builds it at startup from its registered provider
+ * assemblies — so it never goes stale within a session.
+ */
+export function useProviderCapabilities(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: routerKeys.providerCapabilities(),
+    queryFn: getProviderCapabilities,
+    staleTime: Infinity,
+    enabled: options.enabled ?? true,
+  });
+}

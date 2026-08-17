@@ -20,7 +20,7 @@ import FormDialog from "controls/Dialogs/FormDialog";
 import CustomTextField from 'controls/Dialogs/CustomTextField';
 import CustomSelect from 'controls/Dialogs/CustomSelect';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
-import protocolTypes from 'data/protocolTypes';
+import { useProviderCapabilities } from 'queries/router';
 import type { OperatorFormValues } from 'layouts/gpsintegration/data/operatorsTableData';
 
 interface OperatorFormDialogProps {
@@ -34,6 +34,13 @@ interface OperatorFormDialogProps {
 
 function OperatorFormDialog({ open, setOpen, handleSubmit, values, handleChange, errors }: OperatorFormDialogProps) {
   const { t } = useTranslation();
+  // The deployment's registered providers, straight from the Router — the portal
+  // carries no local protocol list. Placeholder-only entries (no capabilities at
+  // all) are reserved values, not selectable providers.
+  const { data: providerCapabilities } = useProviderCapabilities({ enabled: open });
+  const protocolOptions = (providerCapabilities ?? [])
+    .filter((p) => p.realTimePositions || p.positionHistory || p.deviceCatalog || p.connectivityPing)
+    .map((p) => ({ value: p.protocolTypeId, label: p.displayName }));
   return (
     <FormDialog
           title={t('operator.details')}
@@ -122,13 +129,14 @@ function OperatorFormDialog({ open, setOpen, handleSubmit, values, handleChange,
           />
 
           <CustomSelect
-            list={[...protocolTypes]}
+            list={protocolOptions}
             handleChange={handleChange}
             name="protocolTypeId"
             id="protocolTypeId"
             label={t('operator.type')}
             value={values.protocolTypeId}
             required
+            errorMsg={errors.protocolTypeId}
           />
           {errors.protocolTypeId && <p>{errors.protocolTypeId}</p>}
         </form>

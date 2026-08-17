@@ -40,10 +40,6 @@ import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from "utils/dateUtils";
 
 // Change event shape emitted by the vendored dialog controls.
-type FormChangeHandler = (
-  event: { target: { name: string; value: string; type?: string; checked?: boolean } }
-) => void;
-
 
 const PUBLIC_LINKS_FEATURE_KEY = "public-links";
 

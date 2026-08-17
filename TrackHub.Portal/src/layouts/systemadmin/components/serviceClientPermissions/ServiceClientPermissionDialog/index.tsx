@@ -127,7 +127,7 @@ function ServiceClientPermissionDialog({ open, setOpen, handleSubmit, values, ha
           label={t('serviceClientPermissions.effectiveFrom')}
           type="datetime-local"
           fullWidth
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           value={values.effectiveFrom || ''}
           onChange={handleChange}
         />
@@ -138,7 +138,7 @@ function ServiceClientPermissionDialog({ open, setOpen, handleSubmit, values, ha
           label={t('serviceClientPermissions.effectiveTo')}
           type="datetime-local"
           fullWidth
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           value={values.effectiveTo || ''}
           onChange={handleChange}
         />

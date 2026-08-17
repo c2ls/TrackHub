@@ -25,7 +25,6 @@ import type {
   AccountSupportGrantDtoInput,
 } from './generated/graphql';
 import {
-  GetSupportGrantStatusDocument,
   GetAccountSupportGrantsDocument,
   CreateAccountSupportGrantDocument,
   ApproveAccountSupportGrantDocument,
@@ -34,15 +33,6 @@ import {
 
 export type AccountSupportGrant = AccountSupportGrantItemType;
 export type { AccountSupportGrantDtoInput };
-
-export async function getSupportGrantStatus(
-  accountSupportGrantId: string
-): Promise<AccountSupportGrant> {
-  const data = await executeGraphQL('manager', GetSupportGrantStatusDocument, {
-    accountSupportGrantId,
-  });
-  return data.supportGrantStatus;
-}
 
 export async function getAccountSupportGrants(
   accountId: string | null,

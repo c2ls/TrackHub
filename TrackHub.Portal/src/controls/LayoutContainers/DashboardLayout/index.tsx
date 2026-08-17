@@ -32,8 +32,8 @@ Coded by www.creative-tim.com
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 
-// react-router-dom components
-import { useLocation } from "react-router-dom";
+// react-router components
+import { useLocation } from "react-router";
 
 // Argon Dashboard 2 MUI components
 import ArgonBox from "components/ArgonBox";

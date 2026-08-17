@@ -50,12 +50,15 @@ interface DocumentPanelProps {
   ownerEntityId?: string | null;
   canManage?: boolean;
   categories?: DocumentTypeVm[];
+  /** Fired after every (re)load so an embedding screen can refresh its own
+   *  document-derived state — e.g. the driver qualification document picker. */
+  onDocumentsChanged?: (documents: DocumentVm[]) => void;
 }
 
 // Reusable, owner-scoped document panel. Lists an owner's documents and provides upload
 // (drag-drop), download, new-version, void, remove-reference, and share. Embeddable on any owner detail
 // surface; gated by the OWNER module's feature (pass canManage), not the `documents` feature.
-function DocumentPanel({ accountId = null, ownerEntityType, ownerEntityId = null, canManage = true, categories = [] }: DocumentPanelProps) {
+function DocumentPanel({ accountId = null, ownerEntityType, ownerEntityId = null, canManage = true, categories = [], onDocumentsChanged }: DocumentPanelProps) {
   const { t } = useTranslation();
   const { setLoading } = useContext(LoadingContext);
   const [docs, setDocs] = useState<DocumentVm[]>([]);
@@ -64,14 +67,16 @@ function DocumentPanel({ accountId = null, ownerEntityType, ownerEntityId = null
   const [shareOpen, setShareOpen] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmState>({ open: false });
   const [active, setActive] = useState<DocumentVm | null>(null);
-  const loaded = useRef(false);
+  const changedRef = useRef(onDocumentsChanged);
+  changedRef.current = onDocumentsChanged;
 
   const load = async () => {
-    if (!accountId || !ownerEntityId) return;
+    if (!accountId || !ownerEntityId) { setDocs([]); return; }
     setLoading(true);
     try {
       const items = await getDocumentsForOwner(accountId, ownerEntityType, ownerEntityId);
       setDocs(items || []);
+      changedRef.current?.(items || []);
     } catch (error) {
       notifyApiError(error);
     } finally {
@@ -79,10 +84,13 @@ function DocumentPanel({ accountId = null, ownerEntityType, ownerEntityId = null
     }
   };
 
+  // Reload whenever the owner changes: the panel is embeddable on surfaces that
+  // switch owner in place (e.g. the driver picker on the qualifications screen),
+  // where a one-shot load would keep showing the previous owner's documents.
   useEffect(() => {
-    if (!loaded.current) { loaded.current = true; load(); }
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accountId, ownerEntityId]);
+  }, [accountId, ownerEntityType, ownerEntityId]);
 
   const handleUpload = async ({ file, category, classification, title, description, expiresAt }: UploadPayload) => {
     setLoading(true);

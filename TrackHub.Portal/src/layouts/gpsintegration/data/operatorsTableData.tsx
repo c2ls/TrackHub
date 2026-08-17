@@ -23,6 +23,8 @@ import ArgonTypography from "components/ArgonTypography";
 import ArgonBadge from "components/ArgonBadge";
 import ArgonButton from "components/ArgonButton";
 import { getCredentialByOperator, createCredential, updateCredential } from "api/manager/credential";
+import { getAccountByUser } from "api/manager/accounts";
+import { getOperatorSyncRuns } from "api/telemetry/operatorHealth";
 import type { Credential, CredentialFormInput } from "api/manager/credential";
 import { notifyApiError } from "api/core/errors";
 import { pingOperator } from "api/router/router";
@@ -35,6 +37,7 @@ import {
   useTriggerOperatorDeviceSync,
 } from "queries/operators";
 import type { Operator, OperatorDtoInput, UpdateOperatorDtoInput } from "api/manager/operators";
+import type { ListParams } from 'api/core/paging';
 import { formatDateTime } from "utils/dateUtils";
 import { handleSaveCredential, handleTestCredential } from "layouts/gpsintegration/actions/credentialActions";
 import { LoadingContext } from 'LoadingContext';
@@ -96,7 +99,8 @@ function useOperatorTableData(
   fetchData: boolean,
   handleEditClick: (operator: OperatorFormValues) => void,
   handleEditCredentialClick: (credential: CredentialFormValues) => void,
-  handleDeleteClick: (operatorId: string) => void
+  handleDeleteClick: (operatorId: string) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -109,8 +113,11 @@ function useOperatorTableData(
   const { setLoading } = useContext(LoadingContext);
   const { isAuthenticated } = useAuth();
 
-  const operatorsQuery = useOperatorsByCurrentAccount({ enabled: !!fetchData && isAuthenticated });
-  const operators = operatorsQuery.data ?? [];
+  const operatorsQuery = useOperatorsByCurrentAccount(listParams, {
+    enabled: !!fetchData && isAuthenticated,
+  });
+  const operators = operatorsQuery.data?.items ?? [];
+  const totalCount = operatorsQuery.data?.totalCount ?? 0;
   const createOperator = useCreateOperator();
   const updateOperator = useUpdateOperator();
   const deleteOperator = useDeleteOperator();
@@ -240,6 +247,31 @@ function useOperatorTableData(
     }
   };
 
+  // The mutation only returns acceptance; the recorded sync run is the source of
+  // truth for what actually happened, so read the freshest run back for the
+  // confirmation message. A read failure never hides the confirmation itself.
+  const describeCompletedSync = async (operatorId: string): Promise<string> => {
+    try {
+      const account = await getAccountByUser();
+      if (account?.accountId) {
+        const [run] = await getOperatorSyncRuns(account.accountId, operatorId, 1);
+        if (run) {
+          return (run.devicesSeen ?? 0) === 0
+            ? t('gpsIntegration.actions.syncCompletedNoDevices')
+            : t('gpsIntegration.actions.syncCompletedCounts', {
+                seen: run.devicesSeen ?? 0,
+                added: run.devicesAdded ?? 0,
+                updated: run.devicesUpdated ?? 0,
+                removed: run.devicesRemoved ?? 0,
+              });
+        }
+      }
+    } catch {
+      // Fall back to the plain confirmation below.
+    }
+    return t('gpsIntegration.actions.syncCompleted');
+  };
+
   const handleSync = async (operator: Operator, resetDeviceCatalog = false) => {
     setLoading(true);
     try {
@@ -248,11 +280,11 @@ function useOperatorTableData(
         operatorId: operator.operatorId,
         resetDeviceCatalog,
       });
-      if (!completed) {
-        setTestTitle(t('gpsIntegration.actions.sync'));
-        setTestMessage(t('gpsIntegration.actions.syncNotCompleted'));
-        setTestOpen(true);
-      }
+      setTestTitle(t('gpsIntegration.actions.sync'));
+      setTestMessage(completed
+        ? await describeCompletedSync(operator.operatorId)
+        : t('gpsIntegration.actions.syncNotCompleted'));
+      setTestOpen(true);
       notifyGpsIntegrationRefresh();
     } catch {
       // Failure is surfaced by the global toast.
@@ -371,6 +403,7 @@ function useOperatorTableData(
 
   return {
     data,
+    totalCount,
     open,
     openCredential,
     confirmOpen,

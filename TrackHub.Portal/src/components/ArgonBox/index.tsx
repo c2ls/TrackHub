@@ -31,11 +31,27 @@ Coded by www.creative-tim.com
 
 import { forwardRef } from "react";
 import type { BoxProps } from "@mui/material/Box";
+import type { Theme } from "@mui/material/styles";
+import { unstable_extendSxProp as extendSxProp } from "@mui/system";
+import type { SystemProps } from "@mui/system";
 
 // Custom styles for ArgonBox
 import ArgonBoxRoot from "components/ArgonBox/ArgonBoxRoot";
 
-export interface ArgonBoxProps extends Omit<BoxProps, "color" | "borderRadius"> {
+/**
+ * Material UI v9 dropped the system shorthands (`mt`, `display`, `width`, …) from
+ * Box in favour of `sx`. ArgonBox is this portal's layout primitive and the Argon
+ * template uses the shorthand form at several hundred call sites, so the shorthand
+ * stays part of ArgonBox's own contract instead: it is declared here and folded into
+ * `sx` at render time by the very helper Box itself used to call.
+ *
+ * The six Argon-specific props below deliberately shadow their system namesakes
+ * (`color` takes a palette key like "white", not a CSS colour) — they are
+ * destructured off before the fold, so they keep reaching ArgonBoxRoot's ownerState.
+ */
+export interface ArgonBoxProps
+  extends Omit<BoxProps, "color" | "borderRadius">,
+    Omit<SystemProps<Theme>, "color" | "borderRadius" | "opacity"> {
   variant?: "contained" | "gradient";
   bgColor?: string;
   color?: string;
@@ -49,6 +65,18 @@ export interface ArgonBoxProps extends Omit<BoxProps, "color" | "borderRadius"> 
   src?: string;
   alt?: string;
 }
+
+/**
+ * `extendSxProp` moves every system shorthand it finds into `sx`, but its published
+ * signature returns the input type unchanged — narrow the result to what Box accepts.
+ */
+const foldSystemPropsIntoSx = (props: Omit<ArgonBoxProps, keyof ArgonBoxOwnProps>): BoxProps =>
+  extendSxProp(props) as BoxProps;
+
+type ArgonBoxOwnProps = Pick<
+  ArgonBoxProps,
+  "variant" | "bgColor" | "color" | "opacity" | "borderRadius" | "shadow"
+>;
 
 const ArgonBox = forwardRef<HTMLDivElement, ArgonBoxProps>(
   (
@@ -64,7 +92,7 @@ const ArgonBox = forwardRef<HTMLDivElement, ArgonBoxProps>(
     ref
   ) => (
     <ArgonBoxRoot
-      {...rest}
+      {...foldSystemPropsIntoSx(rest)}
       ref={ref}
       ownerState={{ variant, bgColor, color, opacity, borderRadius, shadow }}
     />

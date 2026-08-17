@@ -133,6 +133,7 @@ function AccountsFormDialog({ open, setOpen, handleSubmit, values, handleChange,
             label={t('account.type')}
             value={values.typeId}
             required
+            errorMsg={errors.typeId}
           />
           {errors.typeId && <p>{errors.typeId}</p>}
 

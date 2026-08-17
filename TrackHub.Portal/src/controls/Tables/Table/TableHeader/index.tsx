@@ -25,10 +25,13 @@ export interface TableHeaderProps {
   orderBy: string;
   order: string;
   handleSort: (name: string) => void;
+  /** Whether the header offers click-to-sort. Server-paged tables pass `false`:
+   *  the sort only ever reordered the loaded page, which reads as a full sort. */
+  sortable?: boolean;
   compact?: boolean;
 }
 
-const TableHeader = ({ columns, handleSort, compact = false }: TableHeaderProps) => {
+const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: TableHeaderProps) => {
   const { size, fontWeightBold } = typography;
   const { borderWidth } = borders;
 
@@ -76,8 +79,8 @@ const TableHeader = ({ columns, handleSort, compact = false }: TableHeaderProps)
                     "#fff",
                   zIndex: 10,
                 })}
-                onClick={() => handleSort(name)}
-                style={{ cursor: "pointer" }}
+                onClick={sortable ? () => handleSort(name) : undefined}
+                style={{ cursor: sortable ? "pointer" : "default" }}
               >
                 {(title || name).toUpperCase()}
               </ArgonBox>

@@ -81,6 +81,52 @@ The services used to turn coordinates into street addresses; only one provider i
 
 Row actions let you **Edit** a provider, **Delete** it, or **Activate** one that is not currently active (which deactivates the previous one).
 
+Only one provider is active platform-wide, and it is used for **reverse** geocoding — turning a coordinate into a street address. TrackHub does not do forward geocoding (address to coordinate) anywhere, which is why there is no address search box when placing a trip stop. **OpenRouteService** requires an API key; Nominatim does not. Route planning for [Trips](topic:trip-management) uses its own separate routing credentials and is unaffected by which provider you activate here.
+
+## Toll Catalog
+
+Platform-wide reference data for the toll estimates shown on the [Trips](topic:trip-management) screen. It belongs to the platform rather than to any one account: an account administrator can read the resulting estimates but cannot change tariffs.
+
+TrackHub ships this catalog **empty on purpose**. There is no bundled national tariff feed, so an operator enters the classes, stations and tariffs their own routes actually cross. Until you do, trips report *No stations* and no estimate — never a fabricated figure and never an error.
+
+The section has three parts.
+
+### Vehicle classes
+
+The tariff bands your prices are quoted in — for example a two-axle truck versus a six-axle articulated one. Each class has a **Code** (required, the value stored on trips and tariffs), a **Name** (required), an optional **Description**, and a **Order** that controls where it appears in pickers.
+
+Classes are **deactivated**, never deleted: existing tariffs and past trip estimates keep referring to them, so removing a class outright would make historical estimates unreadable. A deactivated class stops being offered on new trips.
+
+### Toll stations
+
+One row per physical toll plaza. The **Toll Station Details** dialog collects:
+
+- **Name** (required) and an optional **Code**.
+- **Latitude** and **Longitude** (required). Press **Pick on map** to click the position on a map, or type the coordinates directly — both paths fill the same two fields.
+- **Country**, **Region**, **Road**, **Direction**, **Operator** and **Notes** — all optional, and used to tell nearby plazas apart in the breakdown a dispatcher sees.
+
+Stations are matched against a planned route by proximity, so the coordinates need to be on the right side of a divided road for the direction you intend. Stations are **deactivated** rather than deleted; a deactivated station stops matching new routes but stays attached to the trips that already crossed it.
+
+Click the **Tariffs** action on a station row to load its tariffs into the panel beside the list.
+
+### Tariffs
+
+Prices are **effective-dated**, one row per vehicle class per date range:
+
+- **Vehicle class** (required) — chosen from the active classes.
+- **Amount** and **Currency** (required).
+- **Effective from** (required) and **Effective to**. Leave the end date empty for the price that is currently in force.
+
+This is why a price change is entered as a **new row** with a new start date rather than an edit of the old one: closing the previous window and opening a new one keeps a trip planned last quarter reproducible at last quarter's price. The tariff panel lists every window, newest first, including superseded ones.
+
+Two windows for the same station and class may not overlap; attempting it is rejected. If a route crosses a station that has no tariff covering the trip's class and date, the trip's estimate is reported as **Partial** and lists the unpriced stations, so the gap is visible rather than silently counted as zero.
+
+### CSV import
+
+**Import CSV** takes a file — or pasted text — with one row per station tariff, for populating the catalog in bulk.
+
+The import never fails as a batch. Valid rows are applied and the result panel reports how many rows were read, how many stations were created and updated, and how many tariffs were created. Rows that could not be applied are listed individually with their **row number**, an error **code** and a **message**, so you can correct just those lines and re-import. Re-importing a station that already exists updates it rather than duplicating it.
+
 ## Roles
 
 Roles bundle permissions that are then assigned to users. This section opens a permission matrix: pick a **Role** from the dropdown, then a grid of **Resources** (rows) and **Actions** (columns — Read, Edit, Export, Execute, Write, Delete, Custom). Tick a checkbox to grant that action on that resource for the role, or untick it to revoke. Each change is saved as you make it.
@@ -93,13 +139,13 @@ Policies work the same way as roles but define reusable permission sets that can
 
 Turn optional features on or off per account and set their tier and storage settings. This is the master control; managers can only view their own account's features in Account Management.
 
-The list is grouped by account, showing each feature's **Account**, **Feature**, **Enabled** (Yes/No badge), **Tier**, and **Source**, with an **Edit** action. Click the **+** icon (**Add Feature to Account**) to choose an **Account** and a **Feature**, then set the options. Editing an existing row fixes the account and feature and lets you change:
+Pick an **Account** from the dropdown at the top of the section; the list then shows that account's features with **Feature**, **Enabled** (Yes/No badge), **Tier**, and **Source**, plus an **Edit** action. Click the **+** icon (**Add Feature to Account**) to choose an **Account** (the filtered one is preselected) and a **Feature**, then set the options. Editing an existing row fixes the account and feature and lets you change:
 
 - **Enabled** — the on/off switch for that feature on that account.
 - **Tier** — the subscription tier (defaults to `default`).
-- A storage value for certain features: **Storing Interval (Seconds)** for GPS integration (default 360), or **Retention Days** for GPS position history (default 30).
+- A storage value for certain features: **Storing Interval (Seconds)** for GPS integration (default 360), **Retention Days** for GPS position history (default 30), or **Block assignment when the driver’s license is expired** for workforce (default off).
 
-There are exactly ten manageable features: GPS integration, GPS position history, geofencing, trip management, driver mobile, public links, documents, notifications, email notifications, and WhatsApp notifications. When a feature is disabled for an account, the related menu items, sections, buttons, delivery channels, and reports are hidden from its users, and anything that still reaches the server is refused with a "feature not enabled" message (see [Troubleshooting](topic:troubleshooting)). Disabling a feature never deletes data.
+There are exactly eleven manageable features: GPS integration, GPS position history, geofencing, trip management, driver mobile, public links, documents, notifications, email notifications, WhatsApp notifications, and workforce. When a feature is disabled for an account, the related menu items, sections, buttons, delivery channels, and reports are hidden from its users, and anything that still reaches the server is refused with a "feature not enabled" message (see [Troubleshooting](topic:troubleshooting)). Disabling a feature never deletes data.
 
 What each feature actually turns on and off — key by key, including which reports and sections disappear — is set out in the [Feature catalogue](topic:feature-catalog).
 

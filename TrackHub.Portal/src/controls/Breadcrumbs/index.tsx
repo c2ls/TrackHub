@@ -31,8 +31,8 @@ Coded by www.creative-tim.com
 
 import type { ReactNode } from "react";
 
-// react-router-dom components
-import { Link } from "react-router-dom";
+// react-router components
+import { Link } from "react-router";
 
 // @mui material components
 import { Breadcrumbs as MuiBreadcrumbs } from "@mui/material";

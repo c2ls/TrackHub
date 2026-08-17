@@ -44,7 +44,7 @@ export interface ArgonPaginationItemOwnerState {
 export default styled(ArgonButton)<{ ownerState: ArgonPaginationItemOwnerState }>(
   ({ theme, ownerState }) => {
     const { borders, functions, typography, palette } = theme;
-    const { variant, paginationSize, active } = ownerState;
+    const { paginationSize, active } = ownerState;
 
     const { borderColor } = borders;
     const { pxToRem } = functions;

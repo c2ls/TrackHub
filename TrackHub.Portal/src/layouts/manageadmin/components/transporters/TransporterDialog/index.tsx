@@ -69,6 +69,7 @@ function TransporterFormDialog({ open, setOpen, handleSubmit, values, handleChan
             label={t('transporter.type')}
             value={values.transporterTypeId}
             required
+            errorMsg={errors.transporterTypeId}
           />
           {errors.transporterTypeId && <p>{errors.transporterTypeId}</p>}
 

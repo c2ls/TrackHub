@@ -4,7 +4,7 @@ title: Alerts and notifications
 description: See recorded alert events, acknowledge and resolve them, set notification rules, and read the navbar notification bell.
 category: administration
 screens: [manageAdmin]
-related: [geofences, units-devices]
+related: [geofences, units-devices, drivers-workforce]
 tags: [alerts, notifications, acknowledge, resolve, rules, bell]
 order: 60
 ---
@@ -70,9 +70,12 @@ The **Trigger Event** list covers the events the platform can raise:
 | **GPS Credential Expiring** | A GPS integration credential is about to expire. |
 | **GPS Operator Sync Failed** | A GPS operator sync did not complete. |
 | **Document Expiring** / **Document Expired** | A tracked document nears or passes its expiry. |
+| **Driver Qualification Expiring** / **Driver Qualification Expired** | A driver licence, medical exam, training, background check or HAZMAT permit nears or passes its expiry. |
 | **Notification Delivery Failed** | A notification could not be delivered. |
 
-Geofence events come from the geofences you define — see [Geofences](topic:geofences). Communication-loss and document events tie back to your [Units and devices](topic:units-devices).
+Geofence events come from the geofences you define — see [Geofences](topic:geofences). Communication-loss and document events tie back to your [Units and devices](topic:units-devices). Driver qualification events come from the daily expiration scan and need the workforce feature — see [Drivers and workforce](topic:drivers-workforce).
+
+The two driver-qualification events behave a little differently from the rest: they are raised at fixed distances from the expiry date — **30**, **15**, **7**, and **0** days — and each of those fires exactly once per qualification. The first three are **Driver Qualification Expiring**; the day it lapses is **Driver Qualification Expired**, at a higher severity. There is nothing to configure on the scan itself; it runs once a day for every account that has the workforce feature.
 
 > The **+** icon on **Notification Rules** appears only when the notifications feature is enabled for your account. The **Email** and **WhatsApp** channel options appear only when those channels are provisioned; provisioning is handled by the platform team in [System administration](topic:system-administration).
 

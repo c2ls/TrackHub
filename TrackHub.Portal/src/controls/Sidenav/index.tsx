@@ -32,8 +32,8 @@ Coded by www.creative-tim.com
 import { useEffect } from "react";
 import type { MouseEventHandler, ReactNode } from "react";
 
-// react-router-dom components
-import { useLocation, NavLink } from "react-router-dom";
+// react-router components
+import { useLocation, NavLink } from "react-router";
 
 // @mui material components
 import List from "@mui/material/List";
@@ -106,7 +106,10 @@ function Sidenav({
     return () => window.removeEventListener("resize", handleMiniSidenav);
   }, [dispatch, location]);
 
-  const keysToFilterOut = ["authorize-redirect", "callback"];
+  // `tripTracking` is a real route (it needs a help topic and a <Route>), but it
+  // is an anonymous customer page reached only through a shared link token — a
+  // Sidenav entry would lead a portal user to an "invalid link" screen.
+  const keysToFilterOut = ["authorize-redirect", "callback", "tripTracking"];
   // Render all the routes (except keysToFilterOut) from the routes.js
   const renderRoutes = routes
     .filter(({ key }) => !keysToFilterOut.includes(key))
@@ -153,7 +156,7 @@ function Sidenav({
           </ArgonTypography>
         );
       } else if (type === "divider") {
-        returnValue = <Divider key={key} light={darkSidenav} />;
+        returnValue = <Divider key={key} className={darkSidenav ? "divider-light" : undefined} />;
       }
 
       if (key === "systemAdmin" && !isAdmin) {
@@ -166,7 +169,7 @@ function Sidenav({
     });
 
   const brandLinkProps = { component: NavLink, to: "/" };
-  const brandImgProps = { component: "img" as const, src: brand, alt: "Argon Logo" };
+  const brandImgProps = { component: "img" as const, src: brand, alt: t("sidenav.brandAlt") };
 
   return (
     <SidenavRoot {...rest} variant="permanent" ownerState={{ darkSidenav, miniSidenav, layout }}>
@@ -201,7 +204,7 @@ function Sidenav({
           </ArgonBox>
         </ArgonBox>
       </ArgonBox>
-      <Divider light={darkSidenav} />
+      <Divider className={darkSidenav ? "divider-light" : undefined} />
       <List>{renderRoutes}</List>
     </SidenavRoot>
   );

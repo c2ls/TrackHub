@@ -109,7 +109,7 @@ function SupportGrantDialog({ open, setOpen, handleSubmit, values, handleChange,
           label={t('supportGrants.startsAt')}
           type="datetime-local"
           fullWidth
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           value={values.startsAt || ''}
           onChange={handleChange}
           required
@@ -122,7 +122,7 @@ function SupportGrantDialog({ open, setOpen, handleSubmit, values, handleChange,
           label={t('supportGrants.endsAt')}
           type="datetime-local"
           fullWidth
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           value={values.endsAt || ''}
           onChange={handleChange}
           required

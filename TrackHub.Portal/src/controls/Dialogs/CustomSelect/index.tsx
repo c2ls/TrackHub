@@ -17,6 +17,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import type { SelectChangeEvent } from '@mui/material/Select';
@@ -24,6 +25,7 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ArgonBox from 'components/ArgonBox';
 import FieldLabel from 'controls/Dialogs/FieldLabel';
+import { errorFieldSx } from 'controls/Dialogs/fieldStyles';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
 
 // Make the chevron visible (the theme hides it globally) and reserve space for it
@@ -49,7 +51,7 @@ export interface SelectListItem {
     label: ReactNode;
 }
 
-interface CustomSelectProps {
+export interface CustomSelectProps {
     list: SelectListItem[];
     handleChange?: FormChangeHandler;
     name: string;
@@ -60,6 +62,14 @@ interface CustomSelectProps {
     required?: boolean;
     fullWidth?: boolean;
     placeholder?: string;
+    /**
+     * Makes the empty option a real, selectable choice (labeled via `placeholder`,
+     * e.g. "All") instead of a disabled prompt — for optional filters where empty
+     * means "no filter" and the user must be able to return to it.
+     */
+    allowEmpty?: boolean;
+    /** Validation message for this field; mirrors CustomTextField's `errorMsg`. */
+    errorMsg?: string;
 }
 
 function CustomSelect({
@@ -73,6 +83,8 @@ function CustomSelect({
     required = false,
     fullWidth = true,
     placeholder,
+    allowEmpty = false,
+    errorMsg,
 }: CustomSelectProps) {
     const { t } = useTranslation();
     const emptyValue: number | string = numericValue ? 0 : '';
@@ -87,7 +99,12 @@ function CustomSelect({
             {label && (
                 <FieldLabel htmlFor={id} required={required}>{label}</FieldLabel>
             )}
-            <FormControl fullWidth={fullWidth} variant="outlined">
+            <FormControl
+                fullWidth={fullWidth}
+                variant="outlined"
+                error={!!errorMsg}
+                sx={errorMsg ? errorFieldSx : undefined}
+            >
                 <Select
                     id={id}
                     name={name}
@@ -96,9 +113,15 @@ function CustomSelect({
                     displayEmpty
                     IconComponent={KeyboardArrowDownIcon}
                     inputProps={{ 'aria-label': typeof label === 'string' ? label : id }}
+                    // The listbox trigger is the display div, not the hidden native input
+                    // MUI puts `inputProps` on — aria has to be set there to be announced.
+                    // `error` on the FormControl already supplies aria-invalid.
+                    SelectDisplayProps={
+                        errorMsg ? { 'aria-describedby': `${id}-error` } : undefined
+                    }
                     sx={selectSx}
                 >
-                    <MenuItem value={emptyValue} disabled>
+                    <MenuItem value={emptyValue} disabled={!allowEmpty}>
                         {placeholder || t('generic.selectItem')}
                     </MenuItem>
                     {list.map((item, index) => (
@@ -107,6 +130,7 @@ function CustomSelect({
                         </MenuItem>
                     ))}
                 </Select>
+                {errorMsg && <FormHelperText id={`${id}-error`}>{errorMsg}</FormHelperText>}
             </FormControl>
         </ArgonBox>
     );

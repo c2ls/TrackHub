@@ -36,6 +36,7 @@ export const ReportFieldsFragment = graphql(`
     managerOnly
     supportsPdf
     sortOrder
+    filters
   }
 `);
 

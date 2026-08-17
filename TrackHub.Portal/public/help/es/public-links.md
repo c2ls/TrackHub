@@ -4,7 +4,7 @@ title: Enlaces públicos
 description: Otorgue acceso limitado y con tiempo definido a un recurso, sin inicio de sesión, con un token que puede revocar cuando quiera.
 category: administration
 screens: [manageAdmin]
-related: [management-overview, dashboard-live-map]
+related: [management-overview, dashboard-live-map, public-trip-tracking]
 tags: [enlaces públicos, token, revocar, accesos, vencimiento]
 order: 50
 ---
@@ -46,7 +46,7 @@ Para detener un enlace activo, presione **Revocar Enlace Público** en su fila. 
 
 ## Compartir relacionado
 
-Los documentos compartidos usan el mismo mecanismo de enlace público internamente: compartir un archivo desde el panel de documentos genera un enlace acotado a ese documento. Vea [Documentos](topic:documents). Los enlaces públicos también sirven para exponer una vista en vivo limitada sin entregar una cuenta; para lo que su flota muestra en el mapa, vea [Mapa en vivo](topic:dashboard-live-map).
+Los documentos compartidos usan el mismo mecanismo de enlace público internamente: compartir un archivo desde el panel de documentos genera un enlace acotado a ese documento. Vea [Documentos](topic:documents). Los enlaces de seguimiento de viajes funcionan igual: compartir un viaje genera un enlace acotado a ese viaje, listado aquí junto con los demás; vea [Seguimiento de viajes para clientes](topic:public-trip-tracking). Los enlaces públicos también sirven para exponer una vista en vivo limitada sin entregar una cuenta; para lo que su flota muestra en el mapa, vea [Mapa en vivo](topic:dashboard-live-map).
 
 ## Quién puede usar esto
 

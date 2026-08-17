@@ -20,7 +20,16 @@ declare namespace NodeJS {
     readonly REACT_APP_GEOFENCING_ENDPOINT: string;
     readonly REACT_APP_REPORTING_ENDPOINT: string;
     readonly REACT_APP_TELEMETRY_ENDPOINT: string;
+    readonly REACT_APP_TRIPMANAGEMENT_ENDPOINT: string;
     readonly REACT_APP_DEFAULT_LAT: string;
     readonly REACT_APP_DEFAULT_LNG: string;
   }
 }
+
+/**
+ * Build stamp injected by vite.config.ts `define`. Read only through
+ * src/constants/appVersion.ts, which guards against the (non-Vite) case where the
+ * replacement never happened.
+ */
+declare const __APP_VERSION__: string;
+declare const __BUILD_TIME__: string;

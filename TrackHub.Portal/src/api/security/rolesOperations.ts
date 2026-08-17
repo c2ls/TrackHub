@@ -60,14 +60,12 @@ export const GetResourcesByRoleDocument = graphql(`
   }
 `);
 
-export const GetUsersByRoleDocument = graphql(`
-  query GetUsersByRole($roleId: Int!) {
-    usersByRole(query: { roleId: $roleId }) {
+/** Id + username only: the allocator dialog's "assigned" operand, unpaged by design. */
+export const GetUserLookupByRoleDocument = graphql(`
+  query GetUserLookupByRole($roleId: Int!) {
+    userLookupByRole(query: { roleId: $roleId }) {
       userId
       username
-      emailAddress
-      firstName
-      lastName
     }
   }
 `);

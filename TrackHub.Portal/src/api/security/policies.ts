@@ -25,12 +25,12 @@ import { executeGraphQL } from 'api/core/graphqlClient';
 import type {
   PolicyItemFragment as PolicyItemType,
   GetResourcesByPolicyQuery,
-  GetUsersByPolicyQuery,
+  GetUserLookupByPolicyQuery,
 } from './generated/graphql';
 import {
   GetPoliciesDocument,
   GetResourcesByPolicyDocument,
-  GetUsersByPolicyDocument,
+  GetUserLookupByPolicyDocument,
   CreateResourceActionPolicyDocument,
   DeleteResourceActionPolicyDocument,
   CreateUserPolicyDocument,
@@ -39,7 +39,7 @@ import {
 
 export type Policy = PolicyItemType;
 export type PolicyResources = GetResourcesByPolicyQuery['resourcesByPolicy'];
-export type PolicyUser = GetUsersByPolicyQuery['usersByPolicy'][number];
+export type PolicyUser = GetUserLookupByPolicyQuery['userLookupByPolicy'][number];
 
 export async function getPolicies(): Promise<Policy[]> {
   const data = await executeGraphQL('security', GetPoliciesDocument);
@@ -51,9 +51,9 @@ export async function getResourcesByPolicy(policyId: number): Promise<PolicyReso
   return data.resourcesByPolicy;
 }
 
-export async function getUsersByPolicy(policyId: number): Promise<PolicyUser[]> {
-  const data = await executeGraphQL('security', GetUsersByPolicyDocument, { policyId });
-  return data.usersByPolicy;
+export async function getUserLookupByPolicy(policyId: number): Promise<PolicyUser[]> {
+  const data = await executeGraphQL('security', GetUserLookupByPolicyDocument, { policyId });
+  return data.userLookupByPolicy;
 }
 
 export async function createResourceActionPolicy(

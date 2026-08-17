@@ -20,7 +20,6 @@ import Table from "controls/Tables/Table";
 import TableAccordion from "controls/Accordions/TableAccordion";
 import RoleAllocatorDialog from 'layouts/manageadmin/components/roles/RoleAllocatorDialog';
 import useRoleTableData from "layouts/manageadmin/data/rolesTableData";
-import type { RoleTableColumn, RoleTableRow } from "layouts/manageadmin/data/rolesTableData";
 
 function ManageRoles() {
   const { t } = useTranslation();

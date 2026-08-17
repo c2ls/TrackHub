@@ -4,7 +4,7 @@ title: Trips and replay
 description: Query a unit's trips for any date range, read the summary stats, replay the journey on the map, and export the track to CSV.
 category: operation
 screens: [dashboard]
-related: [dashboard-live-map, reports]
+related: [dashboard-live-map, reports, trip-management]
 tags: [trips, replay, history, export]
 order: 20
 ---
@@ -14,6 +14,8 @@ order: 20
 Look back at where a unit has been: query its trips for any date range, read the distance, time, and speed stats, replay the journey on the map, and export the track to a spreadsheet.
 
 Open **Dashboard** from the left-hand menu and click the **Positions** tab (next to **Units**). This tab is for historical journeys; the live view is covered in [Live map](topic:dashboard-live-map).
+
+A *trip* here means any stretch of driving a unit did between stops, reconstructed from its position history — it is not a planned, dispatched job. For planned multi-stop journeys with stops, ETAs, tolls and a customer tracking link, see [Trips and route planning](topic:trip-management), which has a replay of its own showing the recorded track against the planned route.
 
 ## Querying trips
 

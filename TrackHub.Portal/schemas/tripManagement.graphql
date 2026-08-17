@@ -1,0 +1,972 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  tollStations(query: GetTollStationsQueryInput!): TollStationsPageVm!
+    @cost(weight: "10")
+  tollStationDetail(query: GetTollStationDetailQueryInput!): TollStationDetailVm!
+    @cost(weight: "10")
+  tollVehicleClasses: [TollVehicleClassVm!]! @cost(weight: "10")
+  transporterTollClasses: [TransporterTollClassVm!]! @cost(weight: "10")
+  estimateTolls(query: EstimateTollsQueryInput!): TollEstimateVm!
+    @cost(weight: "10")
+  trips(query: GetTripsQueryInput!): TripsPageVm! @cost(weight: "10")
+  tripDetail(query: GetTripDetailQueryInput!): TripDetailVm! @cost(weight: "10")
+  activeTrips: [TripVm!]! @cost(weight: "10")
+  tripTimeline(query: GetTripTimelineQueryInput!): TripTimelinePageVm!
+    @cost(weight: "10")
+  tripRouteReplay(query: GetTripRouteReplayQueryInput!): RouteReplayVm!
+    @cost(weight: "10")
+  tripReportData(query: GetTripReportDataQueryInput!): TripReportPageVm!
+    @cost(weight: "10")
+  tripStopReportData(query: GetTripStopReportDataQueryInput!): TripStopReportPageVm!
+    @cost(weight: "10")
+  tripTollReportData(query: GetTripTollReportDataQueryInput!): TripTollReportPageVm!
+    @cost(weight: "10")
+  tripPodReportData(query: GetTripPodReportDataQueryInput!): TripPodReportPageVm!
+    @cost(weight: "10")
+}
+
+type Mutation {
+  createDelivery(command: CreateDeliveryCommandInput!): DeliveryVm!
+    @cost(weight: "10")
+  updateDelivery(command: UpdateDeliveryCommandInput!): Boolean!
+    @cost(weight: "10")
+  updateDeliveryOutcome(command: UpdateDeliveryOutcomeCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteDelivery(id: UUID!): UUID! @cost(weight: "10")
+  recordProofOfDelivery(command: RecordProofOfDeliveryCommandInput!): ProofOfDeliveryVm!
+    @cost(weight: "10")
+  createTollVehicleClass(command: CreateTollVehicleClassCommandInput!): TollVehicleClassVm!
+    @cost(weight: "10")
+  updateTollVehicleClass(command: UpdateTollVehicleClassCommandInput!): Boolean!
+    @cost(weight: "10")
+  deactivateTollVehicleClass(id: UUID!): UUID! @cost(weight: "10")
+  createTollStation(command: CreateTollStationCommandInput!): TollStationVm!
+    @cost(weight: "10")
+  updateTollStation(command: UpdateTollStationCommandInput!): Boolean!
+    @cost(weight: "10")
+  deactivateTollStation(id: UUID!): UUID! @cost(weight: "10")
+  createTollTariff(command: CreateTollTariffCommandInput!): TollTariffVm!
+    @cost(weight: "10")
+  updateTollTariff(command: UpdateTollTariffCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteTollTariff(id: UUID!): UUID! @cost(weight: "10")
+  importTollCatalog(command: ImportTollCatalogCommandInput!): TollCatalogImportResultVm!
+    @cost(weight: "10")
+  setTransporterTollClass(command: SetTransporterTollClassCommandInput!): TransporterTollClassVm!
+    @cost(weight: "10")
+  createTrip(command: CreateTripCommandInput!): TripVm! @cost(weight: "10")
+  updateTrip(command: UpdateTripCommandInput!): Boolean! @cost(weight: "10")
+  deleteTrip(id: UUID!): UUID! @cost(weight: "10")
+  assignTrip(command: AssignTripCommandInput!): TripAssignmentVm!
+    @cost(weight: "10")
+  importTripsCsv(command: ImportTripsCsvCommandInput!): TripCsvImportResultVm!
+    @cost(weight: "10")
+  planTripRoute(command: PlanTripRouteCommandInput!): RoutePlanVm!
+    @cost(weight: "10")
+  startTrip(id: UUID!): Boolean! @cost(weight: "10")
+  declareTripInTransit(command: DeclareTripInTransitCommandInput!): TripStartBackfillResultVm!
+    @cost(weight: "10")
+  pauseTrip(id: UUID!): Boolean! @cost(weight: "10")
+  resumeTrip(id: UUID!): Boolean! @cost(weight: "10")
+  completeTrip(command: CompleteTripCommandInput!): Boolean! @cost(weight: "10")
+  cancelTrip(command: CancelTripCommandInput!): Boolean! @cost(weight: "10")
+  abortTrip(command: AbortTripCommandInput!): Boolean! @cost(weight: "10")
+  shareTrip(command: ShareTripCommandInput!): TripShareVm! @cost(weight: "10")
+  revokeTripShare(command: RevokeTripShareCommandInput!): UUID!
+    @cost(weight: "10")
+  addTripStop(command: AddTripStopCommandInput!): TripStopVm!
+    @cost(weight: "10")
+  updateTripStop(command: UpdateTripStopCommandInput!): Boolean!
+    @cost(weight: "10")
+  removeTripStop(id: UUID!): UUID! @cost(weight: "10")
+  reorderTripStops(command: ReorderTripStopsCommandInput!): Boolean!
+    @cost(weight: "10")
+  recordStopArrival(command: RecordStopArrivalCommandInput!): Boolean!
+    @cost(weight: "10")
+  recordStopDeparture(command: RecordStopDepartureCommandInput!): Boolean!
+    @cost(weight: "10")
+  skipStop(command: SkipStopCommandInput!): Boolean! @cost(weight: "10")
+  processTripPositions(command: ProcessTripPositionsCommandInput!): TripProcessingResultVm!
+    @cost(weight: "10")
+  importTrips(command: ImportTripsCommandInput!): [TripImportResultVm!]!
+    @cost(weight: "10")
+  updateTripStatus(command: UpdateTripStatusCommandInput!): [TripImportResultVm!]!
+    @cost(weight: "10")
+}
+
+type CoordinateVm {
+  latitude: Float!
+  longitude: Float!
+}
+
+type DeliveryVm {
+  deliveryId: UUID!
+  accountId: UUID!
+  tripStopId: UUID!
+  reference: String
+  clientName: String!
+  branchName: String
+  productsSummary: String
+  status: String!
+  observations: String
+  sequenceIndex: Int!
+}
+
+type GeometryLineVm {
+  coordinates: [CoordinateVm!]!
+}
+
+type ProofOfDeliveryVm {
+  proofOfDeliveryId: UUID!
+  accountId: UUID!
+  tripStopId: UUID!
+  deliveryId: UUID
+  receiverName: String!
+  receiverDocument: String
+  capturedAt: DateTime!
+  latitude: Float
+  longitude: Float
+  notes: String
+  documents: [TripDocumentVm!]!
+}
+
+type RoutePlanVm {
+  routePlanId: UUID!
+  accountId: UUID!
+  tripId: UUID!
+  provider: String!
+  geometry: GeometryLineVm
+  corridor: GeometryLineVm
+  corridorMeters: Int!
+  plannedDistanceMeters: Float!
+  plannedDurationSeconds: Int!
+  waypointsJson: String
+  legsJson: String
+  computedAt: DateTime!
+  status: String!
+  errorCode: String
+  errorMessage: String
+  tollVehicleClass: String
+  estimatedTollAmount: Decimal
+  tollCurrency: String
+  tollStatus: String!
+  tollStations: [TollStationMatchVm!]!
+}
+
+type RouteReplayPointVm {
+  latitude: Float!
+  longitude: Float!
+  deviceTimestamp: DateTime!
+  speed: Float
+}
+
+type RouteReplayVm {
+  points: [RouteReplayPointVm!]!
+  truncated: Boolean!
+}
+
+type TollCatalogImportErrorVm {
+  rowNumber: Int!
+  errorCode: String!
+  message: String!
+}
+
+type TollCatalogImportResultVm {
+  rowsRead: Int!
+  stationsCreated: Int!
+  stationsUpdated: Int!
+  tariffsCreated: Int!
+  errors: [TollCatalogImportErrorVm!]!
+}
+
+type TollEstimateVm {
+  tollVehicleClass: String!
+  estimatedTollAmount: Decimal
+  currency: String
+  tollStatus: String!
+  stations: [TollStationMatchVm!]!
+}
+
+type TollStationDetailVm {
+  station: TollStationVm!
+  tariffs: [TollTariffVm!]!
+}
+
+type TollStationMatchVm {
+  tollStationId: UUID!
+  name: String!
+  code: String
+  latitude: Float!
+  longitude: Float!
+  roadName: String
+  direction: String
+  amount: Decimal
+  currency: String
+  hasTariff: Boolean!
+}
+
+type TollStationsPageVm {
+  items: [TollStationVm!]!
+  totalCount: Int!
+}
+
+type TollStationVm {
+  tollStationId: UUID!
+  name: String!
+  code: String
+  latitude: Float!
+  longitude: Float!
+  country: String
+  region: String
+  roadName: String
+  direction: String
+  operator: String
+  notes: String
+  active: Boolean!
+}
+
+type TollTariffVm {
+  tollTariffId: UUID!
+  tollStationId: UUID!
+  tollVehicleClassCode: String!
+  amount: Decimal!
+  currency: String!
+  effectiveFrom: LocalDate!
+  effectiveTo: LocalDate
+}
+
+type TollVehicleClassVm {
+  tollVehicleClassId: UUID!
+  code: String!
+  name: String!
+  description: String
+  sortOrder: Int!
+  active: Boolean!
+}
+
+type TransporterTollClassVm {
+  transporterTollClassId: UUID!
+  accountId: UUID!
+  transporterTypeId: Short
+  transporterId: UUID
+  tollVehicleClassCode: String!
+}
+
+type TripAssignmentVm {
+  tripAssignmentId: UUID!
+  accountId: UUID!
+  tripId: UUID!
+  driverId: UUID!
+  transporterId: UUID!
+  status: String!
+  assignedAt: DateTime!
+  acknowledgedAt: DateTime
+  endedAt: DateTime
+}
+
+type TripCsvImportErrorVm {
+  rowNumber: Int!
+  errorCode: String!
+  message: String!
+}
+
+type TripCsvImportResultVm {
+  rowsRead: Int!
+  tripsCreated: Int!
+  errors: [TripCsvImportErrorVm!]!
+}
+
+type TripDetailVm {
+  trip: TripVm!
+  stops: [TripStopVm!]!
+  assignment: TripAssignmentVm
+  routePlan: RoutePlanVm
+  proofsOfDelivery: [ProofOfDeliveryVm!]!
+  shares: [TripShareVm!]!
+}
+
+type TripDocumentVm {
+  tripDocumentId: UUID!
+  accountId: UUID!
+  tripId: UUID!
+  tripStopId: UUID
+  proofOfDeliveryId: UUID
+  documentId: UUID!
+  kind: String!
+}
+
+type TripEventVm {
+  tripEventId: UUID!
+  accountId: UUID!
+  tripId: UUID!
+  tripStopId: UUID
+  eventType: String!
+  occurredAt: DateTime!
+  source: String!
+  payloadJson: String
+}
+
+type TripImportResultVm {
+  externalReference: String!
+  succeeded: Boolean!
+  tripId: UUID
+  errorCode: String
+  errorMessage: String
+}
+
+type TripPodReportPageVm {
+  items: [TripPodReportRowVm!]!
+  totalCount: Int!
+  nextSkip: Int!
+  hasMore: Boolean!
+}
+
+type TripPodReportRowVm {
+  proofOfDeliveryId: UUID!
+  tripId: UUID!
+  tripCode: String!
+  tripStopId: UUID!
+  stopSequence: Int!
+  stopName: String!
+  receiverName: String!
+  receiverDocument: String
+  capturedAt: DateTime!
+  latitude: Float
+  longitude: Float
+  documentCount: Int!
+}
+
+type TripProcessingResultVm {
+  processedCount: Int!
+  stopsArrived: Int!
+  stopsDeparted: Int!
+  deviationsRaised: Int!
+}
+
+type TripReportPageVm {
+  items: [TripReportRowVm!]!
+  totalCount: Int!
+  nextSkip: Int!
+  hasMore: Boolean!
+}
+
+type TripReportRowVm {
+  tripId: UUID!
+  accountId: UUID!
+  code: String!
+  status: String!
+  transporterId: UUID!
+  driverId: UUID
+  routePlanId: UUID
+  serviceOrderId: UUID
+  externalReference: String
+  customerName: String
+  originName: String!
+  originLatitude: Float!
+  originLongitude: Float!
+  plannedStartAt: DateTime!
+  plannedEndAt: DateTime
+  actualStartAt: DateTime
+  actualEndAt: DateTime
+  originArrivedAt: DateTime
+  originDepartedAt: DateTime
+  loadingMinutes: Int
+  transitMinutes: Int
+  totalMinutes: Int
+  notes: String
+  lastPositionAt: DateTime
+  lastLatitude: Float
+  lastLongitude: Float
+  actualDistanceMeters: Float!
+  tollVehicleClass: String
+  deviationOpenedAt: DateTime
+  cancellationReason: String
+  stopCount: Int!
+  lastModified: DateTime!
+  transporterName: String
+  driverName: String
+  plannedDistanceMeters: Float
+  estimatedTollAmount: Decimal
+  tollCurrency: String
+  tollStatus: String
+}
+
+type TripShareVm {
+  tripShareId: UUID!
+  accountId: UUID!
+  tripId: UUID!
+  publicLinkGrantId: UUID!
+  includeDriverName: Boolean!
+  includeVehicle: Boolean!
+  includeLivePosition: Boolean!
+  includeStopDetail: Boolean!
+  includePodSummary: Boolean!
+  includeRoute: Boolean!
+  createdByPrincipalId: String!
+  expiresAt: DateTime!
+  revokedAt: DateTime
+  token: String
+}
+
+type TripsPageVm {
+  items: [TripVm!]!
+  totalCount: Int!
+}
+
+type TripStartBackfillResultVm {
+  started: Boolean!
+  backfilled: Boolean!
+  startedAt: DateTime
+  stopsReplayed: Int!
+}
+
+type TripStopReportPageVm {
+  items: [TripStopReportRowVm!]!
+  totalCount: Int!
+  nextSkip: Int!
+  hasMore: Boolean!
+}
+
+type TripStopReportRowVm {
+  tripStopId: UUID!
+  tripId: UUID!
+  tripCode: String!
+  transporterName: String
+  driverName: String
+  customerName: String
+  sequence: Int!
+  name: String!
+  activity: String!
+  status: String!
+  plannedArrivalFrom: DateTime
+  plannedArrivalTo: DateTime
+  actualArrivalAt: DateTime
+  actualDepartureAt: DateTime
+  deliveryCount: Int!
+  deliveredCount: Int!
+  failedDeliveryCount: Int!
+  partialDeliveryCount: Int!
+}
+
+type TripStopVm {
+  tripStopId: UUID!
+  accountId: UUID!
+  tripId: UUID!
+  sequence: Int!
+  name: String!
+  address: String
+  city: String
+  latitude: Float!
+  longitude: Float!
+  geofenceId: UUID
+  arrivalRadiusMeters: Int!
+  activity: String!
+  plannedArrivalFrom: DateTime
+  plannedArrivalTo: DateTime
+  status: String!
+  actualArrivalAt: DateTime
+  actualDepartureAt: DateTime
+  etaAt: DateTime
+  etaSource: String!
+  delayAlertedAt: DateTime
+  requiresPod: Boolean!
+  priority: Short!
+  observations: String
+  deliveries: [DeliveryVm!]!
+}
+
+type TripTimelinePageVm {
+  items: [TripEventVm!]!
+  totalCount: Int!
+}
+
+type TripTollReportPageVm {
+  items: [TripTollReportRowVm!]!
+  totalCount: Int!
+  nextSkip: Int!
+  hasMore: Boolean!
+}
+
+type TripTollReportRowVm {
+  tripId: UUID!
+  tripCode: String!
+  routePlanId: UUID!
+  plannedStartAt: DateTime!
+  tollVehicleClass: String
+  tollStationId: UUID!
+  stationName: String!
+  stationCode: String
+  roadName: String
+  direction: String
+  amount: Decimal
+  currency: String
+  hasTariff: Boolean!
+}
+
+type TripVm {
+  tripId: UUID!
+  accountId: UUID!
+  code: String!
+  status: String!
+  transporterId: UUID!
+  driverId: UUID
+  routePlanId: UUID
+  serviceOrderId: UUID
+  externalReference: String
+  customerName: String
+  originName: String!
+  originLatitude: Float!
+  originLongitude: Float!
+  originGeofenceId: UUID
+  originRadiusMeters: Int!
+  plannedStartAt: DateTime!
+  plannedEndAt: DateTime
+  actualStartAt: DateTime
+  actualEndAt: DateTime
+  armedAt: DateTime
+  originArrivedAt: DateTime
+  originDepartedAt: DateTime
+  phase: String!
+  phaseStopName: String
+  phaseStopActivity: String
+  phaseEtaAt: DateTime
+  phaseDelayed: Boolean!
+  notes: String
+  lastPositionAt: DateTime
+  lastLatitude: Float
+  lastLongitude: Float
+  actualDistanceMeters: Float!
+  tollVehicleClass: String
+  deviationOpenedAt: DateTime
+  cancellationReason: String
+  stopCount: Int!
+  pendingStopCount: Int!
+  lastModified: DateTime!
+}
+
+input AbortTripCommandInput {
+  tripId: UUID!
+  reason: String!
+}
+
+input AddTripStopCommandInput {
+  tripId: UUID!
+  stop: TripStopDtoInput!
+}
+
+input AssignTripCommandInput {
+  tripId: UUID!
+  driverId: UUID!
+  transporterId: UUID
+}
+
+input CancelTripCommandInput {
+  tripId: UUID!
+  reason: String!
+}
+
+input CompleteTripCommandInput {
+  tripId: UUID!
+  force: Boolean!
+}
+
+input CreateDeliveryCommandInput {
+  tripStopId: UUID!
+  delivery: DeliveryDtoInput!
+}
+
+input CreateTollStationCommandInput {
+  station: TollStationDtoInput!
+}
+
+input CreateTollTariffCommandInput {
+  tariff: TollTariffDtoInput!
+}
+
+input CreateTollVehicleClassCommandInput {
+  vehicleClass: TollVehicleClassDtoInput!
+}
+
+input CreateTripCommandInput {
+  trip: TripDtoInput!
+}
+
+input DeclareTripInTransitCommandInput {
+  tripId: UUID!
+  startedAt: DateTime
+}
+
+input DeliveryDtoInput {
+  reference: String
+  clientName: String!
+  branchName: String
+  productsSummary: String
+  observations: String
+  sequenceIndex: Int!
+}
+
+input EstimateTollsQueryInput {
+  routePlanId: UUID!
+  tollVehicleClass: String
+}
+
+input GetTollStationDetailQueryInput {
+  tollStationId: UUID!
+}
+
+input GetTollStationsQueryInput {
+  search: String
+  country: String
+  active: Boolean
+  skip: Int
+  take: Int
+}
+
+input GetTripDetailQueryInput {
+  tripId: UUID!
+}
+
+input GetTripPodReportDataQueryInput {
+  accountId: UUID!
+  from: DateTime!
+  to: DateTime!
+  transporterId: UUID
+  driverId: UUID
+  skip: Int
+  take: Int
+}
+
+input GetTripReportDataQueryInput {
+  accountId: UUID!
+  from: DateTime!
+  to: DateTime!
+  transporterId: UUID
+  driverId: UUID
+  skip: Int
+  take: Int
+}
+
+input GetTripRouteReplayQueryInput {
+  tripId: UUID!
+  maxPoints: Int
+}
+
+input GetTripsQueryInput {
+  statuses: [String!]
+  from: DateTime
+  to: DateTime
+  transporterId: UUID
+  driverId: UUID
+  customer: String
+  search: String
+  skip: Int
+  take: Int
+}
+
+input GetTripStopReportDataQueryInput {
+  accountId: UUID!
+  from: DateTime!
+  to: DateTime!
+  transporterId: UUID
+  driverId: UUID
+  skip: Int
+  take: Int
+}
+
+input GetTripTimelineQueryInput {
+  tripId: UUID!
+  skip: Int
+  take: Int
+}
+
+input GetTripTollReportDataQueryInput {
+  accountId: UUID!
+  from: DateTime!
+  to: DateTime!
+  transporterId: UUID
+  driverId: UUID
+  skip: Int
+  take: Int
+}
+
+input ImportTollCatalogCommandInput {
+  csv: String!
+}
+
+input ImportTripsCommandInput {
+  accountId: UUID!
+  trips: [TripImportDtoInput!]!
+}
+
+input ImportTripsCsvCommandInput {
+  csv: String!
+}
+
+input PlanTripRouteCommandInput {
+  tripId: UUID!
+  corridorMeters: Int
+  tollVehicleClass: String
+}
+
+input ProcessTripPositionsCommandInput {
+  accountId: UUID!
+  positions: [TransporterPositionDtoInput!]!
+}
+
+input ProofOfDeliveryDtoInput {
+  tripStopId: UUID!
+  deliveryId: UUID
+  receiverName: String!
+  receiverDocument: String
+  notes: String
+  capturedAt: DateTime!
+  latitude: Float
+  longitude: Float
+  documentIds: [UUID!]!
+  clientEventId: UUID!
+}
+
+input RecordProofOfDeliveryCommandInput {
+  tripId: UUID!
+  proofOfDelivery: ProofOfDeliveryDtoInput!
+}
+
+input RecordStopArrivalCommandInput {
+  tripId: UUID!
+  tripStopId: UUID!
+  occurredAt: DateTime!
+  latitude: Float
+  longitude: Float
+  clientEventId: UUID!
+}
+
+input RecordStopDepartureCommandInput {
+  tripId: UUID!
+  tripStopId: UUID!
+  occurredAt: DateTime!
+  latitude: Float
+  longitude: Float
+  clientEventId: UUID!
+}
+
+input ReorderTripStopsCommandInput {
+  tripId: UUID!
+  orderedStopIds: [UUID!]!
+}
+
+input RevokeTripShareCommandInput {
+  tripId: UUID!
+  tripShareId: UUID!
+}
+
+input SetTransporterTollClassCommandInput {
+  transporterTypeId: Short
+  transporterId: UUID
+  tollVehicleClassCode: String!
+}
+
+input ShareTripCommandInput {
+  tripId: UUID!
+  expiresAt: DateTime!
+  purpose: String!
+  fieldFlags: TripShareFieldFlagsDtoInput!
+}
+
+input SkipStopCommandInput {
+  tripId: UUID!
+  tripStopId: UUID!
+  occurredAt: DateTime!
+  reason: String!
+  clientEventId: UUID!
+}
+
+input TollStationDtoInput {
+  name: String!
+  code: String
+  latitude: Float!
+  longitude: Float!
+  country: String
+  region: String
+  roadName: String
+  direction: String
+  operator: String
+  notes: String
+}
+
+input TollTariffDtoInput {
+  tollStationId: UUID!
+  tollVehicleClassCode: String!
+  amount: Decimal!
+  currency: String!
+  effectiveFrom: LocalDate!
+  effectiveTo: LocalDate
+}
+
+input TollVehicleClassDtoInput {
+  code: String!
+  name: String!
+  description: String
+  sortOrder: Int!
+}
+
+input TransporterPositionDtoInput {
+  transporterId: UUID!
+  latitude: Float!
+  longitude: Float!
+  deviceDateTime: DateTime!
+}
+
+input TripDtoInput {
+  code: String!
+  transporterId: UUID!
+  driverId: UUID
+  serviceOrderId: UUID
+  externalReference: String
+  customerName: String
+  originName: String!
+  originLatitude: Float!
+  originLongitude: Float!
+  originGeofenceId: UUID
+  originRadiusMeters: Int!
+  plannedStartAt: DateTime!
+  plannedEndAt: DateTime
+  notes: String
+  tollVehicleClass: String
+}
+
+input TripImportDtoInput {
+  externalReference: String!
+  code: String!
+  transporterId: UUID!
+  driverId: UUID
+  customerName: String
+  originName: String!
+  originLatitude: Float!
+  originLongitude: Float!
+  originGeofenceId: UUID
+  plannedStartAt: DateTime!
+  plannedEndAt: DateTime
+  startedAt: DateTime
+  notes: String
+  stops: [TripStopDtoInput!]!
+}
+
+input TripShareFieldFlagsDtoInput {
+  includeDriverName: Boolean!
+  includeVehicle: Boolean!
+  includeLivePosition: Boolean!
+  includeStopDetail: Boolean!
+  includePodSummary: Boolean!
+  includeRoute: Boolean!
+}
+
+input TripStatusUpdateItemInput {
+  externalReference: String!
+  status: String!
+  reason: String
+}
+
+input TripStopDtoInput {
+  name: String!
+  address: String
+  city: String
+  latitude: Float!
+  longitude: Float!
+  geofenceId: UUID
+  arrivalRadiusMeters: Int!
+  activity: String
+  plannedArrivalFrom: DateTime
+  plannedArrivalTo: DateTime
+  requiresPod: Boolean!
+  priority: Short!
+  observations: String
+}
+
+input UpdateDeliveryCommandInput {
+  deliveryId: UUID!
+  delivery: DeliveryDtoInput!
+}
+
+input UpdateDeliveryOutcomeCommandInput {
+  tripId: UUID!
+  deliveryId: UUID!
+  status: String!
+  observations: String
+  clientEventId: UUID!
+}
+
+input UpdateTollStationCommandInput {
+  tollStationId: UUID!
+  station: TollStationDtoInput!
+}
+
+input UpdateTollTariffCommandInput {
+  tollTariffId: UUID!
+  tariff: TollTariffDtoInput!
+}
+
+input UpdateTollVehicleClassCommandInput {
+  tollVehicleClassId: UUID!
+  vehicleClass: TollVehicleClassDtoInput!
+}
+
+input UpdateTripCommandInput {
+  tripId: UUID!
+  trip: TripDtoInput!
+}
+
+input UpdateTripStatusCommandInput {
+  accountId: UUID!
+  updates: [TripStatusUpdateItemInput!]!
+}
+
+input UpdateTripStopCommandInput {
+  tripStopId: UUID!
+  stop: TripStopDtoInput!
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"The `Decimal` scalar type represents a decimal floating-point number with high precision."
+scalar Decimal
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/decimal.html")
+
+"The `LocalDate` scalar type represents a date without time or time zone information."
+scalar LocalDate
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/local-date.html")
+
+"The `Short` scalar type represents a signed 16-bit integer."
+scalar Short
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/short.html")
+
+"The `UUID` scalar type represents a Universally Unique Identifier (UUID) as defined by RFC 9562."
+scalar UUID
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/uuid.html")
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost(
+  "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
+  weight: String!
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION

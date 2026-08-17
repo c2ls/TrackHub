@@ -91,6 +91,7 @@ function GeofenceFormDialog({ open, setOpen, handleSubmit, handleCancel, values,
               label={t('geofence.type')}
               value={values.type}
               required
+              errorMsg={errors.type}
             />
 
             <CustomSelect
@@ -101,6 +102,7 @@ function GeofenceFormDialog({ open, setOpen, handleSubmit, handleCancel, values,
               label={t('geofence.color')}
               value={values.color}
               required
+              errorMsg={errors.color}
             />
 
             {values.shape === 'circle' && (
@@ -116,7 +118,7 @@ function GeofenceFormDialog({ open, setOpen, handleSubmit, handleCancel, values,
                   onChange={handleChange}
                   helperText={errors.circleRadiusMeters || t('geofence.radiusHelp')}
                   error={!!errors.circleRadiusMeters}
-                  inputProps={{ min: 10, max: 100000 }}
+                  slotProps={{ htmlInput: { min: 10, max: 100000 } }}
                 />
                 <CustomTextField
                   margin="normal"
@@ -146,7 +148,7 @@ function GeofenceFormDialog({ open, setOpen, handleSubmit, handleCancel, values,
               onChange={handleChange}
               helperText={errors.dwellThresholdMinutes || t('geofence.dwellThresholdHelp')}
               error={!!errors.dwellThresholdMinutes}
-              inputProps={{ min: 1, max: 10080 }}
+              slotProps={{ htmlInput: { min: 1, max: 10080 } }}
             />
 
             <CustomCheckbox

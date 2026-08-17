@@ -15,11 +15,28 @@
 */
 
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from "react-router";
+import { useNavigate } from 'react-router';
 import { exchangeAuthorizationCode } from "services/auth";
 import type { TokenResponse } from "services/auth";
 import { useAuth } from "AuthContext";
+
+// Helpers for the stale-callback recovery below. A browser that blocks
+// sessionStorage (strict privacy mode) can never pass the state check;
+// detect it so we fail with a clear message instead of restarting.
+const sessionStorageWorks = (): boolean => {
+  try {
+    sessionStorage.setItem('__storage_probe', '1');
+    const ok = sessionStorage.getItem('__storage_probe') === '1';
+    sessionStorage.removeItem('__storage_probe');
+    return ok;
+  } catch {
+    return false;
+  }
+};
+
+const RESTART_COUNT_KEY = 'auth_restart_count';
+const MAX_AUTH_RESTARTS = 2;
 
 const CallbackPage = () => {
   const location = useLocation();
@@ -49,6 +66,19 @@ const CallbackPage = () => {
     const returnedState = searchParams.get('state');
     const expectedState = sessionStorage.getItem('oauth_state');
     sessionStorage.removeItem('oauth_state');
+    // Stale-callback recovery: no stored state means no attempt is in flight in
+    // this tab — a bookmarked sign-in/callback URL, a restored tab, or
+    // back-navigation after the state was consumed. That is not an attack:
+    // restart the flow so a fresh state is minted and verified, bounded so a
+    // browser that silently drops storage cannot redirect forever.
+    if (!expectedState && sessionStorageWorks()) {
+      const restarts = Number(sessionStorage.getItem(RESTART_COUNT_KEY) ?? '0');
+      if (restarts < MAX_AUTH_RESTARTS) {
+        sessionStorage.setItem(RESTART_COUNT_KEY, String(restarts + 1));
+        navigate("/", { replace: true });
+        return;
+      }
+    }
     if (!expectedState || returnedState !== expectedState) {
       if (process.env.NODE_ENV !== 'production') {
         console.error('OAuth state mismatch — possible CSRF or stale callback.');
@@ -68,6 +98,7 @@ const CallbackPage = () => {
         setIsLoggingIn(false); // Reset logging in state
         resetAuthError(); // Reset error state on successful auth
         sessionStorage.removeItem('auth_error');
+        sessionStorage.removeItem(RESTART_COUNT_KEY); // successful sign-in resets the stale-callback restart budget
         // Redirect to dashboard
         navigate("/dashboard", { replace: true });
       })

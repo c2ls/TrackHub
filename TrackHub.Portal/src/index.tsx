@@ -32,8 +32,23 @@ Coded by www.creative-tim.com
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import enTranslations from 'locales/en.json'; 
+import enTranslations from 'locales/en.json';
 import esTranslations from 'locales/es.json';
+import editionEnTranslations from 'edition/locales/en.json';
+import editionEsTranslations from 'edition/locales/es.json';
+
+// Deep-merges the edition bundle (src/edition/locales, empty in this repository) over a
+// core bundle, so additional screens bring their own keys without touching the core files.
+function mergeTranslations(core: unknown, edition: unknown): unknown {
+  if (core === null || edition === null || typeof core !== 'object' || typeof edition !== 'object') {
+    return edition ?? core;
+  }
+  const merged: Record<string, unknown> = { ...(core as Record<string, unknown>) };
+  for (const [key, value] of Object.entries(edition)) {
+    merged[key] = key in merged ? mergeTranslations(merged[key], value) : value;
+  }
+  return merged;
+}
 
 i18n
   .use(LanguageDetector)
@@ -41,10 +56,10 @@ i18n
   .init({
     resources: {
       en: {
-        translation: enTranslations
+        translation: mergeTranslations(enTranslations, editionEnTranslations) as typeof enTranslations & typeof editionEnTranslations
       },
       es: {
-        translation: esTranslations
+        translation: mergeTranslations(esTranslations, editionEsTranslations) as typeof esTranslations & typeof editionEsTranslations
       }
     },
     fallbackLng: 'en', // use 'en' as the fallback language
@@ -55,7 +70,7 @@ i18n
   });
 
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "queries/queryClient";
 import App from "App";

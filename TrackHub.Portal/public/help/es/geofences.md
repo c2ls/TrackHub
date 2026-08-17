@@ -5,7 +5,7 @@ description: Dibuje zonas con nombre en el mapa —polígonos o círculos— y r
 category: operation
 screens: [geofenceManager]
 featureKey: geofencing
-related: [dashboard-live-map, alerts-notifications]
+related: [dashboard-live-map, alerts-notifications, trip-management]
 tags: [geocerca, zonas, polígono, círculo, alertas, permanencia]
 order: 30
 ---
@@ -15,6 +15,8 @@ order: 30
 Una geocerca es un área que usted dibuja en el mapa y a la que le asigna un nombre, un tipo y un color. Una vez que existe una zona, TrackHub puede indicarle qué unidades están dentro de ella y —si activa las opciones— generar una alerta cuando una unidad entra, sale o permanece dentro de ella. El conteo **En Geocerca** del [mapa en vivo](topic:dashboard-live-map) es el número de unidades ubicadas dentro de cualquiera de sus geocercas en este momento.
 
 Las geocercas solo están disponibles cuando la función de geocercas está habilitada para su cuenta, y administrarlas requiere permisos de geocercas. Consulte [Roles y permisos](topic:roles-and-permissions).
+
+Las geocercas también se reutilizan como paradas de viaje: al planificar un viaje puede ubicar una parada seleccionando una zona, y la llegada a esa parada se evalúa entonces contra la forma de la zona y no contra un círculo alrededor de un punto. Vea [Viajes y planificación de rutas](topic:trip-management).
 
 ## Abrir el administrador de Geocercas
 

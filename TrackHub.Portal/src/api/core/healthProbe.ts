@@ -28,6 +28,7 @@
  */
 
 import { HEALTH_ENDPOINTS } from './endpoints';
+import { editionHealthEndpoints } from 'edition/endpoints';
 
 /** Probe budget. A service that has not answered in this long is treated as Down. */
 export const HEALTH_TIMEOUT_MS = 6000;
@@ -50,9 +51,11 @@ export interface HealthProbeResult {
 /**
  * The services shown as tiles, in display order. `id` is both the i18n key
  * suffix and the React key. Plain-language names live in i18n (ST-08) — this
- * module deliberately carries no display strings.
+ * module deliberately carries no display strings. Backends registered through
+ * the edition extension point (src/edition/endpoints.ts) get their tiles
+ * appended after the core services.
  */
-export const PROBED_SERVICES = [
+const CORE_PROBED_SERVICES = [
   'authority',
   'security',
   'manager',
@@ -60,9 +63,17 @@ export const PROBED_SERVICES = [
   'telemetry',
   'geofencing',
   'reporting',
+  'tripManagement',
 ] as const;
 
-export type ProbedService = (typeof PROBED_SERVICES)[number];
+export const PROBED_SERVICES: readonly ProbedService[] = [
+  ...CORE_PROBED_SERVICES,
+  ...(Object.keys(editionHealthEndpoints) as (keyof typeof editionHealthEndpoints)[]),
+];
+
+export type ProbedService =
+  | (typeof CORE_PROBED_SERVICES)[number]
+  | keyof typeof editionHealthEndpoints;
 
 /** Health URL per probed service, or undefined when that backend is not configured. */
 export function healthUrlFor(service: ProbedService): string | undefined {

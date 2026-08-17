@@ -16,8 +16,15 @@
 
 /**
  * Single source of truth for backend endpoints. All env access for API URLs
- * lives here; nothing else in src/api reads process.env.
+ * lives here or in the edition extension file (src/edition/endpoints.ts, empty
+ * in this repository) — nothing else in src/api reads process.env.
  */
+
+import {
+  editionGraphQLEndpoints,
+  editionRestEndpoints,
+  editionHealthEndpoints,
+} from 'edition/endpoints';
 
 export const GRAPHQL_ENDPOINTS = {
   manager: process.env.REACT_APP_MANAGER_ENDPOINT,
@@ -25,6 +32,8 @@ export const GRAPHQL_ENDPOINTS = {
   geofencing: process.env.REACT_APP_GEOFENCING_ENDPOINT,
   router: process.env.REACT_APP_ROUTER_ENDPOINT,
   telemetry: process.env.REACT_APP_TELEMETRY_ENDPOINT,
+  tripManagement: process.env.REACT_APP_TRIPMANAGEMENT_ENDPOINT,
+  ...editionGraphQLEndpoints,
 } as const;
 
 export type GraphQLBackend = keyof typeof GRAPHQL_ENDPOINTS;
@@ -34,6 +43,9 @@ export type GraphQLBackend = keyof typeof GRAPHQL_ENDPOINTS;
  * fallback only matters under Vitest, where env vars are absent at load time.
  */
 const managerRestBase = (GRAPHQL_ENDPOINTS.manager ?? '').replace(/graphql\/?$/, '');
+
+/** TripManagement REST base — the anonymous public tracking snapshot lives outside GraphQL. */
+const tripManagementRestBase = (GRAPHQL_ENDPOINTS.tripManagement ?? '').replace(/graphql\/?$/, '');
 
 export const REST_ENDPOINTS = {
   /** Report generation — xlsx/pdf file bytes (Reporting service, REST). */
@@ -52,6 +64,14 @@ export const REST_ENDPOINTS = {
    * visitor who cannot sign in. See TrackHub.Manager Web/Endpoints/PlatformStatus.cs.
    */
   managerPlatformAnnouncements: `${managerRestBase}api/PlatformStatus/announcements`,
+  /**
+   * Anonymous customer trip tracking (TripManagement service, REST). Mapped at
+   * `~/public/trips/{publicLinkGrantId}` (no `api/` segment) — see
+   * TrackHub.TripManagement Web/Endpoints/PublicTrips.cs. Deliberately
+   * unauthenticated: the recipient of a shared link is not a platform principal.
+   */
+  tripManagementPublicTrips: `${tripManagementRestBase}public/trips`,
+  ...editionRestEndpoints,
 } as const;
 
 /**
@@ -65,7 +85,7 @@ export const REST_ENDPOINTS = {
 const toHealthUrl = (base: string | undefined): string | undefined =>
   base ? `${base.replace(/graphql\/?$/, '').replace(/\/+$/, '')}/health` : undefined;
 
-export const HEALTH_ENDPOINTS = {
+const CORE_HEALTH_ENDPOINTS = {
   get authority() {
     // The AuthorityServer base carries its /Identity path base; the token
     // endpoint is the only configured URL that reliably points at it.
@@ -90,7 +110,20 @@ export const HEALTH_ENDPOINTS = {
   get reporting() {
     return toHealthUrl(process.env.REACT_APP_REPORTING_ENDPOINT);
   },
+  get tripManagement() {
+    return toHealthUrl(process.env.REACT_APP_TRIPMANAGEMENT_ENDPOINT);
+  },
 } as const;
+
+// Property-descriptor merge so the lazy getters stay lazy (a plain spread would
+// evaluate every env read at module load and freeze the values for tests).
+export const HEALTH_ENDPOINTS = Object.defineProperties(
+  {},
+  {
+    ...Object.getOwnPropertyDescriptors(CORE_HEALTH_ENDPOINTS),
+    ...Object.getOwnPropertyDescriptors(editionHealthEndpoints),
+  }
+) as typeof CORE_HEALTH_ENDPOINTS & typeof editionHealthEndpoints;
 
 /** Default map center (Bogotá) used before real positions load. */
 export const MAP_DEFAULTS = {

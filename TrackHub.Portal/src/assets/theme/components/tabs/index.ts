@@ -51,7 +51,10 @@ const tabs = {
       padding: pxToRem(4),
     },
 
-    flexContainer: {
+    // The indicator is a full-height opaque pill rendered AFTER the tabs in the DOM, so
+    // the tab list has to be lifted above it or it paints over the selected tab's label.
+    // Slot named `flexContainer` until Material UI renamed it to `list` — keep in sync.
+    list: {
       height: "100%",
       position: "relative",
       zIndex: 10,

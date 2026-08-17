@@ -28,13 +28,14 @@ import {
   useUpdatePointOfInterest,
   useDeletePointOfInterest,
 } from 'queries/pointsOfInterest';
-import { useGroups } from 'queries/groups';
-import type { Group } from 'api/manager/groups';
+import { useGroupLookup } from 'queries/groups';
+import type { GroupLookup } from 'api/manager/groups';
 import type {
   PointOfInterest,
   PointOfInterestDtoInput,
   UpdatePointOfInterestDtoInput,
 } from 'api/manager/pointsOfInterest';
+import type { ListParams } from 'api/core/paging';
 import { getPoiType } from "data/poiTypes";
 import { toCamelCase } from 'utils/stringUtils';
 import { LoadingContext } from 'LoadingContext';
@@ -80,7 +81,8 @@ export interface PoiTableData { columns: PoiColumn[]; rows: PoiRow[]; }
 function usePoiTableData(
   fetchData: boolean,
   handleEditClick: (poi: PoiFormValues) => void,
-  handleDeleteClick: (pointOfInterestId: string) => void
+  handleDeleteClick: (pointOfInterestId: string) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -89,9 +91,12 @@ function usePoiTableData(
   const { isAuthenticated } = useAuth();
 
   const enabled = !!fetchData && isAuthenticated;
-  const poisQuery = usePointsOfInterestByAccount({ enabled });
-  const pois = poisQuery.data ?? [];
-  const groupsQuery = useGroups({ enabled });
+  const poisQuery = usePointsOfInterestByAccount(listParams, { enabled });
+  const pois = poisQuery.data?.items ?? [];
+  const totalCount = poisQuery.data?.totalCount ?? 0;
+  // The group select and the table's groupId->name map must cover every group,
+  // not the page the group LIST happens to be showing: hence the lookup.
+  const groupsQuery = useGroupLookup({ enabled });
   const groups = groupsQuery.data ?? [];
   const createPoi = useCreatePointOfInterest();
   const updatePoi = useUpdatePointOfInterest();
@@ -168,7 +173,7 @@ function usePoiTableData(
     setConfirmOpen(true);
   };
 
-  const buildTableData = (poiList: PointOfInterest[], groupList: Group[]): PoiTableData => ({
+  const buildTableData = (poiList: PointOfInterest[], groupList: GroupLookup[]): PoiTableData => ({
     columns: [
       { name: "name", title:t('poi.name'), align: "left" },
       { name: "type", title:t('poi.type'), align: "left" },
@@ -226,6 +231,7 @@ function usePoiTableData(
 
   return {
     data,
+    totalCount,
     groupOptions,
     open,
     confirmOpen,

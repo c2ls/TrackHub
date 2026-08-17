@@ -22,6 +22,8 @@
  */
 
 import { executeGraphQL } from 'api/core/graphqlClient';
+import { fetchAllPages } from 'api/core/paging';
+import type { ListParams, Page } from 'api/core/paging';
 import type {
   AccountItemFragment as AccountItemType,
   AccountDtoInput,
@@ -30,32 +32,42 @@ import type {
   GetAccountContextQuery,
 } from './generated/graphql';
 import {
-  GetAccountDocument,
   GetAccountByUserDocument,
   GetAccountsDocument,
   CreateAccountDocument,
   UpdateAccountDocument,
+  UpdateAccountMasterDocument,
   ChangeAccountStatusDocument,
   GetAccountContextDocument,
 } from './accountOperations';
 
 export type Account = AccountItemType;
+export type AccountsPage = Page<Account>;
 export type AccountContext = GetAccountContextQuery['accountContext'];
 export type { AccountDtoInput, UpdateAccountDtoInput, AccountStatus };
-
-export async function getAccount(accountId: string): Promise<Account> {
-  const data = await executeGraphQL('manager', GetAccountDocument, { id: accountId });
-  return data.account;
-}
 
 export async function getAccountByUser(): Promise<Account> {
   const data = await executeGraphQL('manager', GetAccountByUserDocument);
   return data.accountByUser;
 }
 
-export async function getAccounts(): Promise<Account[]> {
-  const data = await executeGraphQL('manager', GetAccountsDocument);
+export async function getAccounts(params: ListParams = {}): Promise<AccountsPage> {
+  const data = await executeGraphQL('manager', GetAccountsDocument, {
+    skip: params.skip ?? null,
+    take: params.take ?? null,
+    search: params.search ?? null,
+  });
   return data.accounts;
+}
+
+/**
+ * Every account on the platform, all server pages drained. There is no account
+ * lookup endpoint, and the systemadmin account pickers (feature editor, …) must
+ * offer the whole platform, so this is the one place an exhaustive account read
+ * is genuinely required.
+ */
+export async function getAllAccounts(): Promise<Account[]> {
+  return fetchAllPages(async (skip, take) => (await getAccounts({ skip, take })).items);
 }
 
 export async function createAccount(account: AccountDtoInput): Promise<Account> {
@@ -89,6 +101,27 @@ export async function updateAccount(
     },
   });
   return data.updateAccount;
+}
+
+/**
+ * Platform-side account edit for the systemadmin console: the only account write
+ * that may target an account other than the caller's own.
+ */
+export async function updateAccountMaster(
+  accountId: string,
+  account: Omit<UpdateAccountDtoInput, 'accountId'>
+): Promise<boolean> {
+  const data = await executeGraphQL('manager', UpdateAccountMasterDocument, {
+    id: accountId,
+    account: {
+      accountId,
+      name: account.name,
+      description: account.description,
+      typeId: account.typeId,
+      active: account.active,
+    },
+  });
+  return data.updateAccountMaster;
 }
 
 export async function changeAccountStatus(

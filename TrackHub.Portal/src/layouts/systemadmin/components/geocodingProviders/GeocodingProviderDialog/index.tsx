@@ -71,6 +71,7 @@ function GeocodingProviderFormDialog({ open, setOpen, handleSubmit, values, hand
             label={t('geocodingProviders.type')}
             value={values.type}
             required
+            errorMsg={errors.type}
           />
 
           <CustomTextField

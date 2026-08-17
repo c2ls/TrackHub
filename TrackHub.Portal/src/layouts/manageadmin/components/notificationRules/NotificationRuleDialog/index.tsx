@@ -291,6 +291,7 @@ function NotificationRuleDialog({
           handleChange={handleChange}
           numericValue={false}
           required
+          errorMsg={errors.triggerEvent}
         />
         {errors.triggerEvent && (
           <ArgonTypography variant="caption" color="error">

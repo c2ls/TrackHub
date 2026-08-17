@@ -47,7 +47,8 @@ const { borderRadius } = borders;
 const tooltip = {
   defaultProps: {
     arrow: true,
-    TransitionComponent: Fade,
+    // v9 replaced Tooltip's TransitionComponent prop with the transition slot.
+    slots: { transition: Fade },
   },
 
   styleOverrides: {

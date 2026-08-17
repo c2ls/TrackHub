@@ -31,34 +31,55 @@ export const TransporterItemFragment = graphql(`
   }
 `);
 
-export const GetTransporterDocument = graphql(`
-  query GetTransporter($id: UUID!) {
-    transporter(query: { id: $id }) {
-      ...TransporterItem
-    }
-  }
-`);
-
 export const GetTransportersByAccountDocument = graphql(`
-  query GetTransportersByAccount {
-    transportersByAccount {
-      ...TransporterItem
-    }
-  }
-`);
-
-export const GetTransportersByUserDocument = graphql(`
-  query GetTransportersByUser {
-    transportersByUser {
-      ...TransporterItem
+  query GetTransportersByAccount($skip: Int, $take: Int, $search: String) {
+    transportersByAccount(query: { skip: $skip, take: $take, search: $search }) {
+      items {
+        ...TransporterItem
+      }
+      totalCount
     }
   }
 `);
 
 export const GetTransportersByGroupDocument = graphql(`
-  query GetTransportersByGroup($groupId: Long!) {
-    transportersByGroup(query: { groupId: $groupId }) {
-      ...TransporterItem
+  query GetTransportersByGroup($groupId: Long!, $skip: Int, $take: Int, $search: String) {
+    transportersByGroup(
+      query: { groupId: $groupId, skip: $skip, take: $take, search: $search }
+    ) {
+      items {
+        ...TransporterItem
+      }
+      totalCount
+    }
+  }
+`);
+
+/**
+ * Id + name + type, unpaged by design. Two separate fields on purpose: the
+ * admin screens see the whole account, the dashboard/reports/tripmanager see
+ * only what the signed-in user may track. Never collapse them into one. The
+ * type travels with the projection because the toll-class dialog derives its
+ * whole transporter-type list from the picker feed.
+ */
+export const GetTransporterLookupByAccountDocument = graphql(`
+  query GetTransporterLookupByAccount {
+    transporterLookupByAccount {
+      transporterId
+      name
+      transporterType
+      transporterTypeId
+    }
+  }
+`);
+
+export const GetTransporterLookupByUserDocument = graphql(`
+  query GetTransporterLookupByUser {
+    transporterLookupByUser {
+      transporterId
+      name
+      transporterType
+      transporterTypeId
     }
   }
 `);
@@ -99,21 +120,21 @@ export const AssignmentFieldsFragment = graphql(`
 `);
 
 export const GetTransporterDeviceAssignmentsByAccountDocument = graphql(`
-  query GetTransporterDeviceAssignmentsByAccount($accountId: UUID!, $activeOnly: Boolean!) {
-    transporterDeviceAssignmentsByAccount(query: { accountId: $accountId, activeOnly: $activeOnly }) {
-      ...AssignmentFields
-      createdByPrincipalType
-      createdByPrincipalId
-    }
-  }
-`);
-
-export const GetTransporterDeviceAssignmentsByTransporterDocument = graphql(`
-  query GetTransporterDeviceAssignmentsByTransporter($transporterId: UUID!, $activeOnly: Boolean!) {
-    transporterDeviceAssignmentsByTransporter(
-      query: { transporterId: $transporterId, activeOnly: $activeOnly }
+  query GetTransporterDeviceAssignmentsByAccount(
+    $accountId: UUID!
+    $activeOnly: Boolean!
+    $skip: Int
+    $take: Int
+  ) {
+    transporterDeviceAssignmentsByAccount(
+      query: { accountId: $accountId, activeOnly: $activeOnly, skip: $skip, take: $take }
     ) {
-      ...AssignmentFields
+      items {
+        ...AssignmentFields
+        createdByPrincipalType
+        createdByPrincipalId
+      }
+      totalCount
     }
   }
 `);

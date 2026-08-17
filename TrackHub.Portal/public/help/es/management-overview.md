@@ -4,7 +4,7 @@ title: Administración de Cuentas
 description: Donde un Gestor configura su propia cuenta — los seis grupos de secciones, cómo funcionan las secciones plegables y quién puede abrir la pantalla.
 category: administration
 screens: [manageAdmin]
-related: [users-roles-groups, units-devices, documents, public-links, alerts-notifications, admin-account-setup]
+related: [users-roles-groups, units-devices, drivers-workforce, documents, public-links, alerts-notifications, admin-account-setup]
 tags: [administración, cuenta, secciones, permisos]
 order: 10
 ---
@@ -42,7 +42,7 @@ La pantalla está organizada en seis **grupos** con etiqueta, siempre en el mism
 ### Flota y Rastreo
 
 - **Dispositivos** y **Unidades** — sus dispositivos de rastreo y las unidades para las que reportan. Vea [Unidades y dispositivos](topic:units-devices).
-- **Conductores** — los conductores asociados con sus unidades.
+- **Conductores**, **Credenciales y Dispositivos del Conductor**, **Habilitaciones del Conductor**, **Asignaciones del Conductor** y **Vencimientos de Habilitaciones (30 días)** — las personas que operan sus unidades: el registro, su ingreso a la aplicación móvil y los dispositivos registrados, sus licencias y certificados con fechas de vencimiento, y el registro de quién condujo qué y cuándo. Las dos primeras siempre están disponibles; las tres últimas requieren la funcionalidad de personal. Vea [Conductores y personal](topic:drivers-workforce).
 - **Grupos** — organice unidades y usuarios juntos, por ejemplo por sucursal o región. Vea [Usuarios, roles y grupos](topic:users-roles-groups).
 - **Puntos de Interés** — ubicaciones con nombre (sitios de clientes, bodegas, estaciones de combustible, talleres, etc.) que pueden mostrarse en el mapa.
 
@@ -66,4 +66,4 @@ La pantalla está organizada en seis **grupos** con etiqueta, siempre en el mism
 
 ## Si falta una sección o un botón
 
-Una sección, un botón **+** o una acción de fila puede faltar porque no tiene el permiso correspondiente, o porque la funcionalidad relacionada no está habilitada para su cuenta. En particular, Enlaces Públicos y Documentos solo aparecen con la funcionalidad correspondiente activada. Vea [Solución de problemas](topic:troubleshooting).
+Una sección, un botón **+** o una acción de fila puede faltar porque no tiene el permiso correspondiente, o porque la funcionalidad relacionada no está habilitada para su cuenta. En particular, Enlaces Públicos, Documentos y las secciones de habilitaciones, asignaciones y vencimientos de conductores solo aparecen con la funcionalidad correspondiente activada. Vea [Solución de problemas](topic:troubleshooting).

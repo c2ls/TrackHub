@@ -75,7 +75,7 @@ function TopicView({ manifest, topic, lang, anchor }: TopicViewProps) {
 
   if (isPending) {
     return (
-      <Box display="flex" justifyContent="center" py={6}>
+      <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
         <CircularProgress size={28} />
       </Box>
     );
@@ -94,7 +94,7 @@ function TopicView({ manifest, topic, lang, anchor }: TopicViewProps) {
 
   return (
     <div ref={contentRef}>
-      <Box display="flex" alignItems="center" gap={1} mb={1}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
         <Chip
           size="small"
           label={t(`help.category.${topic.category}` as 'help.category.operation')}
@@ -115,7 +115,7 @@ function TopicView({ manifest, topic, lang, anchor }: TopicViewProps) {
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 1 }}>
             {t('help.related')}
           </Typography>
-          <Box display="flex" flexWrap="wrap" gap={1}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {relatedTopics.map((related) => (
               <Chip
                 key={related.id}

@@ -130,36 +130,6 @@ export const GetDocumentDocument = graphql(`
   }
 `);
 
-export const GetDocumentVersionsDocument = graphql(`
-  query GetDocumentVersions($documentId: UUID!, $skip: Int!, $take: Int!) {
-    documentVersions(query: { documentId: $documentId, skip: $skip, take: $take }) {
-      ...DocumentVersionFields
-    }
-  }
-`);
-
-export const GetDocumentSignaturesDocument = graphql(`
-  query GetDocumentSignatures($documentId: UUID!) {
-    documentSignatures(query: { documentId: $documentId }) {
-      ...DocumentSignatureFields
-    }
-  }
-`);
-
-export const GetActiveDocumentByCategoryDocument = graphql(`
-  query GetActiveDocumentByCategory(
-    $ownerEntityType: String!
-    $ownerEntityId: String!
-    $category: String!
-  ) {
-    activeDocumentByCategory(
-      query: { ownerEntityType: $ownerEntityType, ownerEntityId: $ownerEntityId, category: $category }
-    ) {
-      ...DocumentFields
-    }
-  }
-`);
-
 export const SearchDocumentsDocument = graphql(`
   query SearchDocuments($filter: DocumentSearchFilterInput!, $skip: Int!, $take: Int!) {
     searchDocuments(query: { filter: $filter, skip: $skip, take: $take }) {
@@ -172,14 +142,6 @@ export const GetExpiringDocumentsDocument = graphql(`
   query GetExpiringDocuments($withinDays: Int!, $skip: Int!, $take: Int!) {
     expiringDocuments(query: { withinDays: $withinDays, skip: $skip, take: $take }) {
       ...DocumentFields
-    }
-  }
-`);
-
-export const GetDocumentSharesDocument = graphql(`
-  query GetDocumentShares($documentId: UUID!) {
-    documentShares(query: { documentId: $documentId }) {
-      ...PublicLinkGrantFields
     }
   }
 `);

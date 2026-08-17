@@ -26,7 +26,6 @@ import type {
   PublicLinkGrantDtoInput,
 } from './generated/graphql';
 import {
-  GetPublicLinkGrantDocument,
   GetPublicLinkGrantsByAccountDocument,
   CreatePublicLinkGrantDocument,
   RevokePublicLinkGrantDocument,
@@ -34,11 +33,6 @@ import {
 
 export type PublicLinkGrant = PublicLinkGrantFieldsType;
 export type { PublicLinkGrantDtoInput };
-
-export async function getPublicLinkGrant(publicLinkGrantId: string): Promise<PublicLinkGrant> {
-  const data = await executeGraphQL('manager', GetPublicLinkGrantDocument, { publicLinkGrantId });
-  return data.publicLinkGrant;
-}
 
 export async function getPublicLinkGrantsByAccount(
   accountId: string,

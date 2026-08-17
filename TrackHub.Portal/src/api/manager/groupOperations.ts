@@ -33,9 +33,22 @@ export const GroupItemFragment = graphql(`
 `);
 
 export const GetGroupsDocument = graphql(`
-  query GetGroups {
-    groupsByAccount {
-      ...GroupItem
+  query GetGroups($skip: Int, $take: Int, $search: String) {
+    groupsByAccount(query: { skip: $skip, take: $take, search: $search }) {
+      items {
+        ...GroupItem
+      }
+      totalCount
+    }
+  }
+`);
+
+/** Id + display name only: the picker/name-map projection, unpaged by design. */
+export const GetGroupLookupDocument = graphql(`
+  query GetGroupLookup {
+    groupLookup {
+      groupId
+      name
     }
   }
 `);
@@ -61,12 +74,15 @@ export const DeleteGroupDocument = graphql(`
 `);
 
 export const GetUsersByGroupDocument = graphql(`
-  query GetUsersByGroup($groupId: Long!) {
-    usersByGroup(query: { groupId: $groupId }) {
-      userId
-      username
-      active
-      accountId
+  query GetUsersByGroup($groupId: Long!, $skip: Int, $take: Int, $search: String) {
+    usersByGroup(query: { groupId: $groupId, skip: $skip, take: $take, search: $search }) {
+      items {
+        userId
+        username
+        active
+        accountId
+      }
+      totalCount
     }
   }
 `);

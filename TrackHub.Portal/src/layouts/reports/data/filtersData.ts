@@ -14,223 +14,142 @@
 *  limitations under the License.
 */
 
-import { useEffect, useState, useContext } from "react";
-import type { TFunction } from "i18next";
-import { useTransportersByUser } from 'queries/transporters';
-import { useOperators } from 'queries/operators';
-import { buildTableData } from 'utils/reportUtils';
-import type { TableData } from 'utils/reportUtils';
+import { useEffect, useMemo, useContext } from 'react';
+import { useTransporterLookupByUser } from 'queries/transporters';
+import { useOperatorLookup } from 'queries/operators';
+import { useAllGeofences } from 'queries/geofences';
 import type { SelectListItem } from 'controls/Dialogs/CustomSelect';
 import { ACCOUNT_STATUS_NAME, ACCOUNT_STATUS_I18N } from 'data/accountStatuses';
-import { LoadingContext } from "LoadingContext";
+import { LoadingContext } from 'LoadingContext';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from "AuthContext";
+import { useAuth } from 'AuthContext';
 
 /**
- * A filter field a report consumes. Each kind maps to exactly one FilterDto
- * slot, so a report's spec is an unordered set of these:
- *   transporter | operator | status → stringFilter1 (selectedItem1)
- *   device                 → stringFilter2 (selectedItem2, free-text GUID)
- *   from                   → dateTimeFilter1 (selectedDate1)
- *   to                     → dateTimeFilter2 (selectedDate2)
- *   maxRows|withinDays|lookbackHours → numericFilter1 (selectedNumber1)
+ * The report filter form is CATALOG-DRIVEN: each catalog row carries its filter
+ * definitions as JSON (Manager `reports.filters`, seeded from the backend catalog
+ * contributions), so adding a report or a filter is a backend-only change. A
+ * definition names the value key the Reporting request sends back
+ * (`filters.values[name]`), its datatype, the portal picker list feeding it
+ * (absent = free input by type) and its i18n label key.
+ *
+ * Every filter is optional by contract: pickers render a selectable "All" empty
+ * option and an empty value means "no filter" server-side.
  */
-export type FilterFieldKind =
-  | 'transporter'
-  | 'operator'
-  | 'device'
-  | 'status'
-  | 'from'
-  | 'to'
-  | 'maxRows'
-  | 'withinDays'
-  | 'lookbackHours';
+export type FilterDataType = 'text' | 'guid' | 'datetime' | 'number';
+export type FilterPickerSource = 'transporters' | 'operators' | 'geofences' | 'accountStatus';
 
-/** How a string-filter slot is entered: a picker (`select`) or free text. */
-export type StringInputKind = 'select' | 'text';
+export interface ReportFilterDefinition {
+  name: string;
+  type: FilterDataType;
+  labelKey: string;
+  source?: FilterPickerSource;
+}
+
+const DATA_TYPES: readonly FilterDataType[] = ['text', 'guid', 'datetime', 'number'];
+const PICKER_SOURCES: readonly FilterPickerSource[] = [
+  'transporters',
+  'operators',
+  'geofences',
+  'accountStatus',
+];
 
 /**
- * Which FilterDto fields each seeded report consumes — derived from the Reporting
- * report factories. Codes are the server's report codes, NOT
- * hardcoded UI ordering; the catalog is still rendered from whatever the server
- * returns. Reports consuming nothing get an explicit empty spec.
+ * Parses a catalog row's `filters` JSON defensively: a malformed document yields an
+ * empty filter set (the report still runs, unfiltered), a malformed entry is dropped,
+ * an unknown datatype falls back to free text and an unknown picker source falls back
+ * to a free input — a newer backend must never break the form.
  */
-export const REPORT_FILTER_SPECS: Record<string, FilterFieldKind[]> = {
-  // Operations
-  LiveReport: [],
-  PositionRecord: ['transporter', 'from', 'to'],
-  TransportersInGeofence: [],
-  GeofenceEvents: ['transporter', 'from', 'to'],
-  // Gps
-  'gps.provider-health-summary': ['lookbackHours'],
-  'gps.provider-sync-history': ['operator', 'maxRows', 'from', 'to'],
-  'gps.sync-statistics': ['maxRows', 'from', 'to'],
-  'gps.synchronized-device-inventory': ['operator'],
-  'gps.recently-added-devices': ['withinDays', 'from'],
-  'gps.unassigned-devices': [],
-  'gps.ignored-devices': ['operator'],
-  'gps.assignment-history': ['transporter', 'from', 'to'],
-  'gps.latest-position-freshness': [],
-  'gps.position-history': ['transporter', 'device', 'maxRows', 'from', 'to'],
-  // Documents
-  'documents-expiring': ['withinDays'],
-  'documents-missing-required': [],
-  'documents-share-activity': [],
-  'documents-upload-volume': ['from', 'to'],
-  // Administration (manager-only)
-  'accounts-by-status': ['status'],
-  'feature-enablement-matrix': [],
-  'group-membership-export': [],
-};
+export function parseFilterDefinitions(json: string | null | undefined): ReportFilterDefinition[] {
+  if (!json) return [];
 
-/**
- * Explicit default for any code without a registered strategy: a date-range
- * filter (language is always sent). Replaces the former silent empty fallback.
- */
-export const DEFAULT_FILTER_SPEC: FilterFieldKind[] = ['from', 'to'];
-
-/** Returns the registered filter spec for a report code, or the date-range default. */
-export function getReportFilterSpec(reportCode: string): FilterFieldKind[] {
-  return REPORT_FILTER_SPECS[reportCode] ?? DEFAULT_FILTER_SPEC;
-}
-
-/** True when the report's filter form needs the transporter list loaded. */
-export function reportNeedsTransporters(reportCode: string): boolean {
-  return getReportFilterSpec(reportCode).includes('transporter');
-}
-
-/** True when the report's filter form needs the operator list loaded. */
-export function reportNeedsOperators(reportCode: string): boolean {
-  return getReportFilterSpec(reportCode).includes('operator');
-}
-
-/** Picker option lists a filter form may wire into its string selects. */
-export interface FilterPickerOptions {
-  transporters: SelectListItem[];
-  operators: SelectListItem[];
-}
-
-/**
- * Input kind for each of the three string-filter slots (`stringFilter1..3`).
- * Slots are pickers by default; `device` (stringFilter2) is a free-text GUID.
- */
-export function getStringInputKinds(spec: FilterFieldKind[]): [StringInputKind, StringInputKind, StringInputKind] {
-  const kinds: [StringInputKind, StringInputKind, StringInputKind] = ['select', 'select', 'select'];
-  if (spec.includes('device')) {
-    kinds[1] = 'text';
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    return [];
   }
-  return kinds;
-}
+  if (!Array.isArray(parsed)) return [];
 
-/** AccountStatus options (enum name value + localized label) for the status filter. */
-function statusOptions(t: TFunction): SelectListItem[] {
-  return Object.values(ACCOUNT_STATUS_NAME).map((name) => ({
-    value: name,
-    label: t(ACCOUNT_STATUS_I18N[name]),
-  }));
-}
-
-/**
- * Builds the visibility/label/data {@link TableData} for a report's filter spec.
- * Pure given its inputs — the hook wires in the picker lists and translator.
- * Slot mapping (kept in sync with {@link getStringInputKinds}):
- *   transporter|operator|status → stringFilter1 · device → stringFilter2 (text).
- */
-export function buildFilterTableData(
-  spec: FilterFieldKind[],
-  pickers: FilterPickerOptions,
-  t: TFunction
-): TableData {
-  const visibility = [false, false, false, false, false, false, false, false, false];
-  const labels = ['', '', '', '', '', '', '', '', ''];
-  let list1: SelectListItem[] = [];
-
-  for (const field of spec) {
-    switch (field) {
-      case 'transporter':
-        visibility[0] = true;
-        labels[0] = t('reports.transporter');
-        list1 = pickers.transporters;
-        break;
-      case 'operator':
-        visibility[0] = true;
-        labels[0] = t('reports.operator');
-        list1 = pickers.operators;
-        break;
-      case 'status':
-        visibility[0] = true;
-        labels[0] = t('reports.status');
-        list1 = statusOptions(t);
-        break;
-      case 'device':
-        // Free-text GUID (no device picker source); rendered as a text input.
-        visibility[1] = true;
-        labels[1] = t('reports.device');
-        break;
-      case 'from':
-        visibility[3] = true;
-        labels[3] = t('reports.from');
-        break;
-      case 'to':
-        visibility[4] = true;
-        labels[4] = t('reports.to');
-        break;
-      case 'maxRows':
-        visibility[6] = true;
-        labels[6] = t('reports.maxRows');
-        break;
-      case 'withinDays':
-        visibility[6] = true;
-        labels[6] = t('reports.withinDays');
-        break;
-      case 'lookbackHours':
-        visibility[6] = true;
-        labels[6] = t('reports.lookbackHours');
-        break;
+  const definitions: ReportFilterDefinition[] = [];
+  for (const entry of parsed) {
+    if (typeof entry !== 'object' || entry === null) continue;
+    const { name, type, labelKey, source } = entry as Record<string, unknown>;
+    if (typeof name !== 'string' || name === '' || typeof labelKey !== 'string' || labelKey === '') {
+      continue;
     }
+    definitions.push({
+      name,
+      type: DATA_TYPES.includes(type as FilterDataType) ? (type as FilterDataType) : 'text',
+      labelKey,
+      source: PICKER_SOURCES.includes(source as FilterPickerSource)
+        ? (source as FilterPickerSource)
+        : undefined,
+    });
   }
-
-  return buildTableData({ list1, visibility, labels });
+  return definitions;
 }
 
-/** Resolves the filter form model (TableData + per-string-slot input kinds). */
-function useFiltersData(reportCode: string): {
-  data: TableData;
-  stringKinds: [StringInputKind, StringInputKind, StringInputKind];
-} {
+/** The resolved form model: definitions plus the option list behind each picker source. */
+export interface ReportFiltersModel {
+  definitions: ReportFilterDefinition[];
+  optionsBySource: Record<FilterPickerSource, SelectListItem[]>;
+}
+
+/**
+ * Resolves the filter form model for the selected catalog row: parses its filter
+ * definitions and loads exactly the picker lists those definitions reference.
+ */
+function useFiltersData(filtersJson: string | null | undefined): ReportFiltersModel {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { setLoading } = useContext(LoadingContext);
-  const [data, setData] = useState<TableData>(buildTableData({}));
 
-  const spec = getReportFilterSpec(reportCode);
-  const needsTransporters = reportNeedsTransporters(reportCode);
-  const needsOperators = reportNeedsOperators(reportCode);
-  const transportersQuery = useTransportersByUser({ enabled: isAuthenticated && needsTransporters });
-  const operatorsQuery = useOperators({ enabled: isAuthenticated && needsOperators });
+  const definitions = useMemo(() => parseFilterDefinitions(filtersJson), [filtersJson]);
+  const needs = (source: FilterPickerSource) => definitions.some((d) => d.source === source);
+
+  const transportersQuery = useTransporterLookupByUser({
+    enabled: isAuthenticated && needs('transporters'),
+  });
+  const operatorsQuery = useOperatorLookup({ enabled: isAuthenticated && needs('operators') });
+  const geofencesQuery = useAllGeofences(false, {}, {
+    enabled: isAuthenticated && needs('geofences'),
+  });
 
   // Keep the global spinner UX while the picker lists load.
   useEffect(() => {
-    setLoading(transportersQuery.isFetching || operatorsQuery.isFetching);
-  }, [transportersQuery.isFetching, operatorsQuery.isFetching, setLoading]);
+    setLoading(
+      transportersQuery.isFetching || operatorsQuery.isFetching || geofencesQuery.isFetching
+    );
+  }, [
+    transportersQuery.isFetching,
+    operatorsQuery.isFetching,
+    geofencesQuery.isFetching,
+    setLoading,
+  ]);
 
-  useEffect(() => {
-    if (!reportCode || !isAuthenticated) return;
+  const optionsBySource = useMemo<Record<FilterPickerSource, SelectListItem[]>>(
+    () => ({
+      transporters: (transportersQuery.data ?? []).map((transporter) => ({
+        value: transporter.transporterId,
+        label: transporter.name,
+      })),
+      operators: (operatorsQuery.data ?? []).map((operator) => ({
+        value: operator.operatorId,
+        label: operator.name,
+      })),
+      // Deactivated geofences stay listed: recorded visit history keeps referencing them.
+      geofences: (geofencesQuery.data ?? [])
+        .map((geofence) => ({ value: geofence.geofenceId as string, label: geofence.name }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+      accountStatus: Object.values(ACCOUNT_STATUS_NAME).map((name) => ({
+        value: name,
+        label: t(ACCOUNT_STATUS_I18N[name]),
+      })),
+    }),
+    [transportersQuery.data, operatorsQuery.data, geofencesQuery.data, t]
+  );
 
-    const transporters: SelectListItem[] = (transportersQuery.data ?? []).map((transporter) => ({
-      value: transporter.transporterId,
-      label: transporter.name,
-    }));
-    const operators: SelectListItem[] = (operatorsQuery.data ?? []).map((operator) => ({
-      value: operator.operatorId,
-      label: operator.name,
-    }));
-
-    setData(buildFilterTableData(getReportFilterSpec(reportCode), { transporters, operators }, t));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportCode, isAuthenticated, transportersQuery.data, operatorsQuery.data]);
-
-  return { data, stringKinds: getStringInputKinds(spec) };
+  return { definitions, optionsBySource };
 }
 
 export default useFiltersData;

@@ -4,7 +4,7 @@ title: Account Management
 description: Where a Manager configures their own account — the six section groups, how the collapsible sections work, and who can open the screen.
 category: administration
 screens: [manageAdmin]
-related: [users-roles-groups, units-devices, documents, public-links, alerts-notifications, admin-account-setup]
+related: [users-roles-groups, units-devices, drivers-workforce, documents, public-links, alerts-notifications, admin-account-setup]
 tags: [management, account, administration, sections, permissions]
 order: 10
 ---
@@ -42,7 +42,7 @@ The screen is organised into six labelled **groups**, always shown in the same o
 ### Fleet & Tracking
 
 - **Devices** and **Units** — your tracking devices and the units they report for. See [Units and devices](topic:units-devices).
-- **Drivers** — the drivers associated with your units.
+- **Drivers**, **Driver Credentials & Devices**, **Driver Qualifications**, **Driver Assignments**, and **Qualification Expirations (30 days)** — the people who operate your units: the registry, their mobile-app sign-in and enrolled devices, their licences and certificates with expiry dates, and the record of who drove what and when. The first two are always available; the last three need the workforce feature. See [Drivers and workforce](topic:drivers-workforce).
 - **Groups** — organise units and users together, for example by branch or region. See [Users, roles, and groups](topic:users-roles-groups).
 - **Points of Interest** — named locations (client sites, warehouses, fuel stations, workshops, and so on) that can be shown on the map.
 
@@ -66,4 +66,4 @@ The screen is organised into six labelled **groups**, always shown in the same o
 
 ## If a section or button is missing
 
-A section, a **+** button, or a row action can be absent because you do not hold the matching permission, or because the related feature is not enabled for your account. Public Links and Documents in particular only appear with the relevant feature turned on. See [Troubleshooting](topic:troubleshooting).
+A section, a **+** button, or a row action can be absent because you do not hold the matching permission, or because the related feature is not enabled for your account. Public Links, Documents, and the driver qualification, assignment, and expiration sections in particular only appear with the relevant feature turned on. See [Troubleshooting](topic:troubleshooting).

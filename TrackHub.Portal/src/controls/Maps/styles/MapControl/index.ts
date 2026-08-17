@@ -23,6 +23,10 @@ const MapControlStyle = styled('div')({
     top: 8,
     right: 8,
     background: 'white',
+    // The pill is white in both themes, so the text colour has to be pinned too:
+    // inherited, it follows the page and turns near-white on white under the dark
+    // theme (this is the refresh countdown, RefreshCounter). Matches .mapcontrol-label.
+    color: '#333',
     padding: '5px 8px',
     borderRadius: '15px',
     border: '1px solid #ccc',

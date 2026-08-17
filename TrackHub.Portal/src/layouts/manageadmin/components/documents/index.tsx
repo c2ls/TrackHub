@@ -39,10 +39,6 @@ import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from "utils/dateUtils";
 
 // Change event shape emitted by the vendored dialog controls.
-type FormChangeHandler = (
-  event: { target: { name: string; value: string; type?: string; checked?: boolean } }
-) => void;
-
 
 interface FilterValues { category?: string; status?: string; }
 

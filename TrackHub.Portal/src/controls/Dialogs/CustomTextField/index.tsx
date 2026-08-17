@@ -19,7 +19,7 @@ import TextField from '@mui/material/TextField';
 import type { TextFieldProps } from '@mui/material/TextField';
 import ArgonBox from 'components/ArgonBox';
 import FieldLabel from 'controls/Dialogs/FieldLabel';
-import { textFieldSx } from 'controls/Dialogs/fieldStyles';
+import { textFieldSx, errorFieldSx } from 'controls/Dialogs/fieldStyles';
 
 // The rendered field forwards any extra MUI TextField prop (value, onChange,
 // type, placeholder, …); `label` is rendered through FieldLabel instead, and
@@ -56,7 +56,7 @@ const CustomTextField = ({
         error={!!errorMsg}
         helperText={errorMsg}
         required={required}
-        sx={textFieldSx}
+        sx={errorMsg ? [textFieldSx, errorFieldSx] : textFieldSx}
         {...props}
       />
     </ArgonBox>

@@ -18,8 +18,10 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import FormDialog from "controls/Dialogs/FormDialog";
 import CustomCheckbox from 'controls/Dialogs/CustomCheckbox';
+import CustomSelect from 'controls/Dialogs/CustomSelect';
 import CustomTextField from 'controls/Dialogs/CustomTextField';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
+import { useTransporterLookupByAccount } from 'queries/transporters';
 
 /**
  * Dialog/form state for a driver. Merges an API {@link Driver} (when editing)
@@ -52,6 +54,9 @@ interface DriverDialogProps {
 
 function DriverDialog({ open, setOpen, handleSubmit, values, handleChange, errors }: DriverDialogProps) {
   const { t } = useTranslation();
+  // The default transporter is picked from the account's units, not typed by hand.
+  const transportersQuery = useTransporterLookupByAccount({ enabled: open });
+  const transporters = transportersQuery.data ?? [];
 
   return (
     <FormDialog
@@ -134,15 +139,18 @@ function DriverDialog({ open, setOpen, handleSubmit, values, handleChange, error
           value={values.licenseExpiresAt ? values.licenseExpiresAt.substring(0, 10) : ''}
           onChange={handleChange}
         />
-        <CustomTextField
-          margin="normal"
+        <CustomSelect
+          list={transporters.map((transporter) => ({
+            value: transporter.transporterId,
+            label: transporter.name,
+          }))}
           name="defaultTransporterId"
           id="defaultTransporterId"
           label={t('driver.defaultTransporter')}
-          type="text"
-          fullWidth
           value={values.defaultTransporterId || ''}
-          onChange={handleChange}
+          handleChange={handleChange}
+          numericValue={false}
+          placeholder={t('workforce.assignments.selectTransporter')}
         />
         <CustomCheckbox
           name="active"

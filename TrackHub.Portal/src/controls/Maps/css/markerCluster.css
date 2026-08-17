@@ -1,0 +1,18 @@
+/* Overrides for leaflet.markercluster's stock MarkerCluster.Default.css.
+
+   The vendor stylesheet colours the cluster bubble but never sets a text colour, so the
+   count inherits the page colour. Under the dark theme that is near-white on a pale
+   green/amber/orange bubble — roughly 2:1 contrast, effectively invisible. Light mode
+   inherits a dark colour and happened to look fine, which is why it read as dark-mode-only.
+
+   The bubble colours are left exactly as shipped; only the count is pinned, to a colour
+   that clears 4.5:1 on all three bubble sizes in either theme. Selectors are scoped under
+   .leaflet-container purely to outrank the vendor rules on specificity rather than relying
+   on stylesheet order. */
+
+.leaflet-container .marker-cluster div {
+    color: #172b4d;
+    /* The vendor `font:` shorthand resets weight to normal; digits over a mid-tone
+       bubble need a little more body. */
+    font-weight: 600;
+}

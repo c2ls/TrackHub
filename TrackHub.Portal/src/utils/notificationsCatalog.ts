@@ -32,6 +32,18 @@ export const ALERT_EVENT_TYPES = [
   'DocumentExpiring',
   'DocumentExpired',
   'NotificationDeliveryFailed',
+  'DriverQualificationExpiring',
+  'DriverQualificationExpired',
+  'TripAssigned',
+  'TripStarted',
+  'TripStopArrived',
+  'TripStopDeparted',
+  'TripDelayed',
+  'TripRouteDeviation',
+  'TripPodSubmitted',
+  'TripCompleted',
+  'TripCancelled',
+  'TripStartDue',
 ] as const;
 
 /** Rule delivery channels. Push is not yet available and is intentionally hidden. */

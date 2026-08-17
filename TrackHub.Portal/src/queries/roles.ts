@@ -51,7 +51,7 @@ export function useRoleResources(roleId: number | undefined) {
 export function useUsersByRole(roleId: number | undefined) {
   return useQuery({
     queryKey: roleKeys.users(roleId ?? -1),
-    queryFn: () => api.getUsersByRole(roleId as number),
+    queryFn: () => api.getUserLookupByRole(roleId as number),
     enabled: roleId !== undefined && roleId > 0,
   });
 }

@@ -25,16 +25,15 @@ import ArgonTypography from "components/ArgonTypography";
 import useForm from "controls/Dialogs/useForm";
 import DriverDialog from "layouts/manageadmin/components/drivers/DriverDialog";
 import type { DriverFormValues } from "layouts/manageadmin/components/drivers/DriverDialog";
+import ManageDriverCredentials from "layouts/manageadmin/components/drivers/DriverCredentials";
+import ManageDriverQualifications from "layouts/manageadmin/components/drivers/DriverQualifications";
+import ManageDriverAssignments from "layouts/manageadmin/components/drivers/DriverAssignments";
+import QualificationExpirations from "layouts/manageadmin/components/drivers/QualificationExpirations";
+import { useFeatures } from "context/features";
 import { useAccountByUser } from "queries/accounts";
 import { useDriversByAccount, useCreateDriver, useUpdateDriver, useDeactivateDriver } from 'queries/drivers';
 import type { Driver, DriverDtoInput } from 'api/manager/drivers';
 import { LoadingContext } from 'LoadingContext';
-
-// Change event shape emitted by the vendored dialog controls.
-type FormChangeHandler = (
-  event: { target: { name: string; value: string; type?: string; checked?: boolean } }
-) => void;
-
 
 function TextCell({ children }: { children?: ReactNode }) {
   return (
@@ -44,9 +43,18 @@ function TextCell({ children }: { children?: ReactNode }) {
   );
 }
 
+/**
+ * The extended workforce capabilities (qualifications, assignment history,
+ * expirations) are billable; the driver registry and credential/device
+ * administration are core platform and stay visible regardless (spec 09 §3, §8).
+ */
+const WORKFORCE_FEATURE_KEY = 'workforce';
+
 function ManageDrivers() {
   const { t } = useTranslation();
   const { setLoading } = useContext(LoadingContext);
+  const { isFeatureEnabled } = useFeatures();
+  const workforceEnabled = isFeatureEnabled(WORKFORCE_FEATURE_KEY);
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [values, handleChange, setValues, setErrors, validate, errors] = useForm<DriverFormValues>({ active: true });
@@ -148,6 +156,20 @@ function ManageDrivers() {
           selectedField="name"
         />
       </TableAccordion>
+
+      {/* Core: driver identity administration is never feature-gated. */}
+      <ManageDriverCredentials />
+
+      {/* Billable workforce surfaces — hidden without the feature (cosmetic
+          only; the backend gate is authoritative). */}
+      {workforceEnabled && (
+        <>
+          <ManageDriverQualifications />
+          <ManageDriverAssignments />
+          <QualificationExpirations />
+        </>
+      )}
+
       <DriverDialog
         open={open}
         setOpen={setOpen}

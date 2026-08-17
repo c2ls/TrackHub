@@ -30,7 +30,7 @@ Coded by www.creative-tim.com
 */
 
 // react-router components
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "AuthContext";
 import { useState } from "react";

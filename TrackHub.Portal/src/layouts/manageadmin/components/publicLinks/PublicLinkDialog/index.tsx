@@ -71,7 +71,7 @@ function PublicLinkDialog({ open, setOpen, handleSubmit, values, handleChange, e
               multiline
               minRows={2}
               value={mintedToken}
-              InputProps={{ readOnly: true }}
+              slotProps={{ input: { readOnly: true } }}
               onChange={() => { }}
             />
           </ArgonBox>
@@ -132,7 +132,7 @@ function PublicLinkDialog({ open, setOpen, handleSubmit, values, handleChange, e
             label={t('publicLinks.expiresAt')}
             type="datetime-local"
             fullWidth
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             value={values.expiresAt || ''}
             onChange={handleChange}
             required

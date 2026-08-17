@@ -17,6 +17,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Table from "controls/Tables/Table";
+import ServerPagination from "controls/Tables/ServerPagination";
+import ServerSearch from "controls/Tables/ServerSearch";
+import useServerList, { useClampPage } from "controls/Tables/useServerList";
 import TableAccordion from "controls/Accordions/TableAccordion";
 import OperatorFormDialog from 'layouts/gpsintegration/components/operators/OperatorDialog';
 import CredentialFormDialog from 'layouts/gpsintegration/components/operators/CredentialDialog';
@@ -27,9 +30,9 @@ import useOperatorTableData from "layouts/gpsintegration/data/operatorsTableData
 import type {
   OperatorFormValues,
   CredentialFormValues,
-  OperatorTableColumn,
-  OperatorTableRow,
 } from "layouts/gpsintegration/data/operatorsTableData";
+
+const PAGE_SIZE = 10;
 
 function ManageOperators() {
   const { t } = useTranslation();
@@ -53,8 +56,10 @@ function ManageOperators() {
   };
 
   const [expanded, setExpanded] = useState(false);
+  const { page, setPage, searchDraft, setSearchDraft, params } = useServerList(PAGE_SIZE);
   const {
     data,
+    totalCount,
     open,
     openCredential,
     confirmOpen,
@@ -68,7 +73,8 @@ function ManageOperators() {
     setOpenCredential,
     setConfirmOpen,
     setTestOpen
-  } = useOperatorTableData(expanded, handleEditClick, handleEditCredentialClick, handleDeleteClick);
+  } = useOperatorTableData(expanded, handleEditClick, handleEditCredentialClick, handleDeleteClick, params);
+  useClampPage(page, PAGE_SIZE, totalCount, setPage);
   const [operatorValues, handleOperatorChange, setOperatorValues, setOperatorErrors, validateOperator, operatorErrors] = useForm<OperatorFormValues>({});
   const [credentialValues, handleCredentialChange, setCredentialValues, setCredentialErrors, validateCredential, credentialErrors] = useForm<CredentialFormValues>({});
   const [toDelete, setToDelete] = useState<string | null>(null);
@@ -95,7 +101,15 @@ function ManageOperators() {
         setOpen={setOpen}
         handleAddClick={handleAddClick}
         setExpanded={setExpanded}>
-        <Table columns={columns} rows={rows} selectedField='name' />
+        <ServerSearch value={searchDraft} onChange={setSearchDraft} />
+        <Table columns={columns} rows={rows} selectedField='name' serverPaged />
+        <ServerPagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          totalCount={totalCount}
+          pageLength={rows.length}
+          onPageChange={setPage}
+        />
       </TableAccordion>
 
       <OperatorFormDialog

@@ -30,6 +30,7 @@ import ArgonTypography from 'components/ArgonTypography';
 import ArgonInput from 'components/ArgonInput';
 import ArgonButton from 'components/ArgonButton';
 import FormDialog from 'controls/Dialogs/FormDialog';
+import { toDateTimeLocalInput, fromDateTimeLocalInput } from 'utils/dateUtils';
 import type {
   PlatformAnnouncement,
   PlatformAnnouncementDtoInput,
@@ -70,18 +71,13 @@ const emptyDraft = (): DraftState => ({
   active: true,
 });
 
-/** `datetime-local` value ⇄ UTC ISO. Empty string means "unscheduled" (null). */
-const toIsoOrNull = (value: string): string | null =>
-  value ? new Date(value).toISOString() : null;
+/**
+ * `datetime-local` value ⇄ UTC ISO. Empty string means "unscheduled" (null).
+ * Both directions come from `utils/dateUtils` so this dialog and the trip manager cannot drift apart.
+ */
+const toIsoOrNull = (value: string): string | null => fromDateTimeLocalInput(value);
 
-const toLocalInput = (value: string | null | undefined): string => {
-  if (!value) return '';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '';
-  // datetime-local wants local wall time without the zone suffix.
-  const offsetMs = parsed.getTimezoneOffset() * 60_000;
-  return new Date(parsed.getTime() - offsetMs).toISOString().slice(0, 16);
-};
+const toLocalInput = (value: string | null | undefined): string => toDateTimeLocalInput(value);
 
 /**
  * Administrator-only announcement CRUD. Rendered only when the current principal

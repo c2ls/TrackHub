@@ -23,6 +23,7 @@ import ArgonBadge from "components/ArgonBadge";
 import ArgonButton from "components/ArgonButton";
 import { useDevicesByAccount, useDeleteDevice } from 'queries/devices';
 import type { Device } from 'api/manager/devices';
+import type { ListParams } from 'api/core/paging';
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
 
@@ -33,15 +34,17 @@ export interface DeviceTableData { columns: DeviceTableColumn[]; rows: DeviceTab
 
 function useDeviceTableData(
   fetchData: boolean,
-  handleDeleteClick: (deviceId: string) => void
+  handleDeleteClick: (deviceId: string) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { setLoading } = useContext(LoadingContext);
   const { isAuthenticated } = useAuth();
 
-  const devicesQuery = useDevicesByAccount({ enabled: !!fetchData && isAuthenticated });
-  const devices = devicesQuery.data ?? [];
+  const devicesQuery = useDevicesByAccount(listParams, { enabled: !!fetchData && isAuthenticated });
+  const devices = devicesQuery.data?.items ?? [];
+  const totalCount = devicesQuery.data?.totalCount ?? 0;
   const deleteDevice = useDeleteDevice();
 
   // Keep the global spinner UX for the initial load / invalidation refetch.
@@ -104,6 +107,7 @@ function useDeviceTableData(
 
   return {
     data,
+    totalCount,
     confirmOpen,
     onDelete,
     setConfirmOpen

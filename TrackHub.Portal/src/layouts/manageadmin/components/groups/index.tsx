@@ -17,6 +17,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Table from "controls/Tables/Table";
+import ServerPagination from "controls/Tables/ServerPagination";
+import ServerSearch from "controls/Tables/ServerSearch";
+import useServerList, { useClampPage } from "controls/Tables/useServerList";
 import TableAccordion from "controls/Accordions/TableAccordion";
 import GroupFormDialog from 'layouts/manageadmin/components/groups/GroupDialog';
 import TransporterAllocatorDialog from 'layouts/manageadmin/components/groups/TransporterAllocatorDialog';
@@ -24,7 +27,9 @@ import UserAllocatorDialog from 'layouts/manageadmin/components/groups/UserAlloc
 import useForm from 'controls/Dialogs/useForm';
 import ConfirmDialog from 'controls/Dialogs/ConfirmDialog';
 import useGroupTableData from "layouts/manageadmin/data/groupsTableData";
-import type { GroupFormValues, GroupColumn, GroupRow } from "layouts/manageadmin/data/groupsTableData";
+import type { GroupFormValues } from "layouts/manageadmin/data/groupsTableData";
+
+const PAGE_SIZE = 10;
 
 function ManageGroups() {
   const { t } = useTranslation();
@@ -53,14 +58,17 @@ function ManageGroups() {
   };
 
   const [expanded, setExpanded] = useState(false);
+  const { page, setPage, searchDraft, setSearchDraft, params } = useServerList(PAGE_SIZE);
   const {
     data,
+    totalCount,
     open,
     confirmOpen,
     onSave,
     onDelete,
     setOpen,
-    setConfirmOpen} = useGroupTableData(expanded, handleEditClick, handleDeleteClick, handleUserClick, handleTransporterClick);
+    setConfirmOpen} = useGroupTableData(expanded, handleEditClick, handleDeleteClick, handleUserClick, handleTransporterClick, params);
+  useClampPage(page, PAGE_SIZE, totalCount, setPage);
 
   const [values, handleChange, setValues, setErrors, validate, errors] = useForm<GroupFormValues>({});
   const [toDelete, setToDelete] = useState<number | null>(null);
@@ -86,7 +94,15 @@ function ManageGroups() {
         setOpen={setOpen}
         handleAddClick={handleAddClick}
         setExpanded={setExpanded}>
-        <Table columns={columns} rows={rows} selectedField='group' />
+        <ServerSearch value={searchDraft} onChange={setSearchDraft} />
+        <Table columns={columns} rows={rows} selectedField='group' serverPaged />
+        <ServerPagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          totalCount={totalCount}
+          pageLength={rows.length}
+          onPageChange={setPage}
+        />
       </TableAccordion>
 
       <GroupFormDialog

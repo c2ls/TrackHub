@@ -50,24 +50,25 @@ describe('downloadReport', () => {
     expect((body as { format: string }).format).toBe('pdf');
   });
 
-  test('maps form values onto the FilterDto shape with numeric coercion', async () => {
+  test('wraps the named filter values into the FilterDto shape', async () => {
     await downloadReport(
       'gps.position-history',
       'GPS Position History',
-      { selectedItem1: 't-1', selectedDate1: '2026-07-01T00:00', selectedNumber1: '250' },
+      { transporterId: 't-1', from: '2026-07-01T00:00:00-05:00', maxRows: '250', deviceId: null },
       'xlsx'
     );
 
     const [, body] = vi.mocked(downloadFile).mock.calls[0];
     const filters = (body as { filters: Record<string, unknown> }).filters;
     expect(filters.name).toBe('GPS Position History');
-    expect(filters.stringFilter1).toBe('t-1');
-    expect(filters.dateTimeFilter1).not.toBeNull();
-    // NumericFilter1 is a `double?` server-side — must be a real number, not a string.
-    expect(filters.numericFilter1).toBe(250);
-    expect(typeof filters.numericFilter1).toBe('number');
-    expect(filters.numericFilter2).toBeNull();
     expect(filters.language).toBe('en');
+    // Values travel verbatim under their catalog-defined names; the backend parses types.
+    expect(filters.values).toEqual({
+      transporterId: 't-1',
+      from: '2026-07-01T00:00:00-05:00',
+      maxRows: '250',
+      deviceId: null,
+    });
   });
 });
 
@@ -84,16 +85,16 @@ describe('previewReport', () => {
     vi.mocked(restRequest).mockResolvedValue(payload);
 
     const result = await previewReport('accounts-by-status', 'Accounts by Status', {
-      selectedItem1: 'ACTIVE',
+      status: 'ACTIVE',
     });
 
     expect(result).toBe(payload);
     const config = vi.mocked(restRequest).mock.calls[0][0];
     expect(config.method).toBe('POST');
     expect(config.url).toBe('https://reporting/api/BasicReports/preview');
-    const data = config.data as { reportCode: string; filters: Record<string, unknown> };
+    const data = config.data as { reportCode: string; filters: { values: Record<string, unknown> } };
     expect(data.reportCode).toBe('accounts-by-status');
-    expect(data.filters.stringFilter1).toBe('ACTIVE');
+    expect(data.filters.values.status).toBe('ACTIVE');
     // Preview body carries no `format` field.
     expect(data).not.toHaveProperty('format');
   });

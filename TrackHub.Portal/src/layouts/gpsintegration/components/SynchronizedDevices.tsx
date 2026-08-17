@@ -24,19 +24,28 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Table from 'controls/Tables/Table';
+import ServerPagination from 'controls/Tables/ServerPagination';
+import useServerList, { useClampPage } from 'controls/Tables/useServerList';
 import TableAccordion from 'controls/Accordions/TableAccordion';
 import ArgonBadge from 'components/ArgonBadge';
 import ArgonButton from 'components/ArgonButton';
 import ArgonTypography from 'components/ArgonTypography';
 import ArgonBox from 'components/ArgonBox';
 import { getAccountByUser } from 'api/manager/accounts';
-import { getSynchronizedDevices, setSynchronizedDeviceIgnored, deleteDevice } from 'api/manager/devices';
+import { getSynchronizedDevices, setSynchronizedDeviceIgnored, deleteDevice, registerManualDevice } from 'api/manager/devices';
 import type { SynchronizedDevice } from 'api/manager/devices';
+import type { DetectedStatus } from 'api/manager/generated/graphql';
 import { notifyApiError } from 'api/core/errors';
 import { useGpsOperators } from 'queries/operators';
+import { useProviderCapabilities } from 'queries/router';
+import useForm from 'controls/Dialogs/useForm';
+import DeviceFormDialog from 'layouts/gpsintegration/components/devices/DeviceDialog';
+import type { ManualDeviceFormValues } from 'layouts/gpsintegration/components/devices/DeviceDialog';
 import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from 'utils/dateUtils';
 import { GPS_INTEGRATION_REFRESH_EVENT } from 'layouts/gpsintegration/gpsIntegrationEvents';
+
+const PAGE_SIZE = 10;
 
 function TextCell({ children }: { children?: ReactNode }) {
   return (
@@ -64,18 +73,34 @@ function ManageSynchronizedDevices() {
   const { setLoading } = useContext(LoadingContext);
   const [expanded, setExpanded] = useState(false);
   const [devices, setDevices] = useState<SynchronizedDevice[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [operatorFilter, setOperatorFilter] = useState('');
-  const [search, setSearch] = useState('');
   const [unassignedOnly, setUnassignedOnly] = useState(false);
   const [recentOnly, setRecentOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const loaded = useRef(false);
-  // Operator name map / filter options come from the query layer; the device
-  // list stays on the legacy device service (migrated in a later batch).
+  // The device list is one SERVER page: status, operator and free-text search
+  // are query arguments, not post-filters over the loaded rows.
+  const { page, setPage, searchDraft, setSearchDraft, params } = useServerList(PAGE_SIZE);
+  useClampPage(page, PAGE_SIZE, totalCount, setPage);
   const operatorsQuery = useGpsOperators({ enabled: expanded });
   const operators = operatorsQuery.data ?? [];
+  const capabilitiesQuery = useProviderCapabilities({ enabled: expanded });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deviceValues, handleDeviceChange, setDeviceValues, setDeviceErrors, validateDevice, deviceErrors] =
+    useForm<ManualDeviceFormValues>({});
+
+  // Manual registration is meant for providers whose API exposes no device catalog
+  // (e.g. Prosegur): sync can never discover their devices. Offering it for a
+  // catalog provider is a footgun — the next sync, which keys removal on the
+  // provider's identifier, would flag the hand-entered device as removed.
+  const catalogLessProtocolIds = new Set(
+    (capabilitiesQuery.data ?? []).filter((p) => !p.deviceCatalog).map((p) => p.protocolTypeId)
+  );
+  const manualOperators = operators.filter((o) => catalogLessProtocolIds.has(o.protocolTypeId));
+  const canAddManual = manualOperators.length > 0;
 
   const statusLabel = (status: string): string => {
     const key = (status || '').toLowerCase();
@@ -86,8 +111,15 @@ function ManageSynchronizedDevices() {
     if (!acct) return;
     setLoading(true);
     try {
-      const result = await getSynchronizedDevices(acct);
-      setDevices(result);
+      const result = await getSynchronizedDevices(acct, {
+        ...params,
+        detectedStatus: (statusFilter || null) as DetectedStatus | null,
+        operatorId: operatorFilter || null,
+        unassignedOnly,
+        recentOnly,
+      });
+      setDevices(result.items);
+      setTotalCount(result.totalCount);
     } catch (e) {
       // Preserve the legacy toast-on-error behavior; keep the inline notice too.
       notifyApiError(e);
@@ -106,7 +138,6 @@ function ManageSynchronizedDevices() {
             return;
           }
           setAccountId(acct.accountId);
-          await refresh(acct.accountId);
         } catch {
           setError(t('gpsIntegration.errors.devicesLoad'));
         }
@@ -114,13 +145,21 @@ function ManageSynchronizedDevices() {
     }
   }, [expanded]);
 
+  // Every filter and the page index are server arguments, so any change is a
+  // refetch — never a narrowing of the rows already on screen.
+  useEffect(() => {
+    if (accountId) refresh(accountId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId, params, statusFilter, operatorFilter, unassignedOnly, recentOnly]);
+
   useEffect(() => {
     const handleRefresh = () => {
       if (loaded.current) refresh();
     };
     window.addEventListener(GPS_INTEGRATION_REFRESH_EVENT, handleRefresh);
     return () => window.removeEventListener(GPS_INTEGRATION_REFRESH_EVENT, handleRefresh);
-  }, [accountId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId, params, statusFilter, operatorFilter, unassignedOnly, recentOnly]);
 
   const handleIgnore = async (device: SynchronizedDevice, ignore: boolean) => {
     setLoading(true);
@@ -139,6 +178,41 @@ function ManageSynchronizedDevices() {
       await deleteDevice(device.deviceId);
       await refresh();
     } catch (e) {
+      notifyApiError(e);
+    } finally { setLoading(false); }
+  };
+
+  const handleAddClick = () => {
+    setDeviceValues({
+      operatorId: manualOperators[0]?.operatorId ?? '',
+      deviceTypeId: 4, // Cellular — the usual GPS tracker
+      identifier: 0,
+      autoAssign: true,
+    });
+    setDeviceErrors({});
+  };
+
+  const handleRegisterDevice = async () => {
+    if (!accountId) return;
+    if (!validateDevice(['operatorId', 'name', 'serial', 'deviceTypeId'])) return;
+    setLoading(true);
+    try {
+      await registerManualDevice(
+        {
+          accountId,
+          operatorId: deviceValues.operatorId!,
+          name: (deviceValues.name ?? '').trim(),
+          serial: (deviceValues.serial ?? '').trim(),
+          deviceTypeId: Number(deviceValues.deviceTypeId),
+          identifier: Number(deviceValues.identifier ?? 0),
+          description: deviceValues.description?.trim() || null,
+        },
+        deviceValues.autoAssign !== false
+      );
+      setDialogOpen(false);
+      await refresh();
+    } catch (e) {
+      // Keep the dialog open so the operator can correct a duplicate identifier etc.
       notifyApiError(e);
     } finally { setLoading(false); }
   };
@@ -178,30 +252,15 @@ function ManageSynchronizedDevices() {
   }));
 
   const statuses = ['AVAILABLE', 'ASSIGNED', 'IGNORED', 'REMOVED'];
-  const filterOperators = Array.from(new Set(devices.map(d => d.operatorId).filter(Boolean)));
 
-  const filteredRows = rows.filter(r => {
-    const raw = devices.find(d => d.deviceId === r.id);
-    if (!raw) return false;
-    if (statusFilter && (raw.detectedStatus || '').toUpperCase() !== statusFilter) return false;
-    if (operatorFilter && raw.operatorId !== operatorFilter) return false;
-    if (unassignedOnly && (raw.detectedStatus || '').toUpperCase() === 'ASSIGNED') return false;
-    if (recentOnly) {
-      const ts = raw.firstSeenAt ? new Date(raw.firstSeenAt).getTime() : 0;
-      if (!ts || (Date.now() - ts) > 24 * 60 * 60 * 1000) return false;
-    }
-    if (search) {
-      const value = `${raw.identifier || ''} ${raw.serial || ''} ${raw.providerDisplayName || ''} ${raw.name || ''}`.toLowerCase();
-      if (!value.includes(search.toLowerCase())) return false;
-    }
-    return true;
-  });
-
+  // The bulk actions apply to the devices actually on screen — one server page,
+  // the only set the operator has reviewed. The buttons say "(this page)" so the
+  // scope is explicit rather than implying the whole filtered result set.
   const bulkSetIgnored = async (ignored: boolean) => {
-    if (!filteredRows.length) return;
+    if (!devices.length) return;
     setLoading(true);
     try {
-      await Promise.all(filteredRows.map(r => setSynchronizedDeviceIgnored(r.id, ignored)));
+      await Promise.all(devices.map(d => setSynchronizedDeviceIgnored(d.deviceId, ignored)));
       await refresh();
     } catch (e) {
       notifyApiError(e);
@@ -209,21 +268,29 @@ function ManageSynchronizedDevices() {
   };
 
   return (
-    <TableAccordion title={t('gpsIntegration.sections.devices')} expanded={expanded} setExpanded={setExpanded}>
+    <>
+    <TableAccordion
+      title={t('gpsIntegration.sections.devices')}
+      expanded={expanded}
+      setExpanded={setExpanded}
+      showAddIcon={canAddManual}
+      setOpen={setDialogOpen}
+      handleAddClick={handleAddClick}>
       {error
         ? <ArgonBox><ArgonTypography variant="button" color="error">{error}</ArgonTypography></ArgonBox>
-        : devices.length === 0 && loaded.current
-          ? <ArgonTypography variant="caption" color="secondary">{t('gpsIntegration.empty.devices')}</ArgonTypography>
-          : <>
+        : <>
+              {/* The filter bar stays mounted even on an empty result: the
+                  filters are server arguments now, so hiding them would strand
+                  the user on a search that matched nothing. */}
               <ArgonBox mb={1}>
-                <Grid container spacing={1} alignItems="center">
+                <Grid container spacing={1} sx={{ alignItems: "center" }}>
                   <Grid size={{ xs: 12, lg: 4 }}>
                     <TextField
                       fullWidth
                       size="small"
                       label={t('filters.search')}
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      value={searchDraft}
+                      onChange={(e) => setSearchDraft(e.target.value)}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
@@ -232,7 +299,7 @@ function ManageSynchronizedDevices() {
                       label={t('gpsIntegration.columns.detectedStatus')}
                       helperText={t('gpsIntegration.filters.statusHelp')}
                       value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
+                      onChange={(e) => { setPage(0); setStatusFilter(e.target.value); }}
                     >
                       <MenuItem value="">--</MenuItem>
                       {statuses.map(s => <MenuItem key={s} value={s}>{statusLabel(s)}</MenuItem>)}
@@ -244,11 +311,21 @@ function ManageSynchronizedDevices() {
                       label={t('operator.title')}
                       helperText={t('gpsIntegration.filters.operatorHelp')}
                       value={operatorFilter}
-                      onChange={(e) => setOperatorFilter(e.target.value)}
+                      onChange={(e) => { setPage(0); setOperatorFilter(e.target.value); }}
                     >
                       <MenuItem value="">--</MenuItem>
-                      {filterOperators.map(s => <MenuItem key={s} value={s}>{operatorNames[s] || s}</MenuItem>)}
+                      {operators.map(o => <MenuItem key={o.operatorId} value={o.operatorId}>{operatorNames[o.operatorId] || o.operatorId}</MenuItem>)}
                     </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <FormControlLabel
+                      control={<Switch checked={unassignedOnly} onChange={(e) => { setPage(0); setUnassignedOnly(e.target.checked); }} />}
+                      label={t('gpsIntegration.actions.showUnassignedOnly')}
+                    />
+                    <FormControlLabel
+                      control={<Switch checked={recentOnly} onChange={(e) => { setPage(0); setRecentOnly(e.target.checked); }} />}
+                      label={t('gpsIntegration.actions.showRecentlyAddedOnly')}
+                    />
                   </Grid>
                   <Grid size={{ xs: 12 }}>
                     <ArgonButton variant="text" color="dark" onClick={() => bulkSetIgnored(true)}>
@@ -257,19 +334,17 @@ function ManageSynchronizedDevices() {
                     <ArgonButton variant="text" color="dark" onClick={() => bulkSetIgnored(false)}>
                       {t('gpsIntegration.actions.bulkUnignore')}
                     </ArgonButton>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <FormControlLabel
-                      control={<Switch checked={unassignedOnly} onChange={(e) => setUnassignedOnly(e.target.checked)} />}
-                      label={t('gpsIntegration.actions.showUnassignedOnly')}
-                    />
-                    <FormControlLabel
-                      control={<Switch checked={recentOnly} onChange={(e) => setRecentOnly(e.target.checked)} />}
-                      label={t('gpsIntegration.actions.showRecentlyAddedOnly')}
-                    />
+                    <ArgonTypography variant="caption" color="secondary" display="block">
+                      {t('gpsIntegration.actions.bulkScopeHint')}
+                    </ArgonTypography>
                   </Grid>
                 </Grid>
               </ArgonBox>
+              {devices.length === 0 && loaded.current && (
+                <ArgonTypography variant="caption" color="secondary">
+                  {t('gpsIntegration.empty.devices')}
+                </ArgonTypography>
+              )}
               <Table
                 columns={[
                   { name: 'name', title: t('device.name'), align: 'left' },
@@ -281,12 +356,30 @@ function ManageSynchronizedDevices() {
                   { name: 'actions', title: t('generic.action'), align: 'center' },
                   { name: 'id' }
                 ]}
-                rows={filteredRows}
+                rows={rows}
                 selectedField="name"
+                serverPaged
+              />
+              <ServerPagination
+                page={page}
+                pageSize={PAGE_SIZE}
+                totalCount={totalCount}
+                pageLength={rows.length}
+                onPageChange={setPage}
               />
             </>
       }
     </TableAccordion>
+    <DeviceFormDialog
+      open={dialogOpen}
+      setOpen={setDialogOpen}
+      handleSubmit={handleRegisterDevice}
+      values={deviceValues}
+      handleChange={handleDeviceChange}
+      errors={deviceErrors}
+      operators={manualOperators}
+    />
+    </>
   );
 }
 

@@ -27,11 +27,13 @@ import type {
   UpdateUserDtoInput,
   UpdateCurrentUserDtoInput,
 } from 'api/security/users';
+import type { ListParams } from 'api/core/paging';
 
 export const userKeys = {
   all: ['users'] as const,
   current: () => [...userKeys.all, 'current'] as const,
-  byAccount: () => [...userKeys.all, 'byAccount'] as const,
+  byAccount: (params: ListParams = {}) => [...userKeys.all, 'byAccount', params] as const,
+  lookupByAccount: () => [...userKeys.all, 'lookupByAccount'] as const,
   integration: () => [...userKeys.all, 'integration'] as const,
 };
 
@@ -43,10 +45,28 @@ export function useCurrentUser(options: { enabled?: boolean } = {}) {
   });
 }
 
-export function useUsersByAccount(options: { enabled?: boolean } = {}) {
+/**
+ * One server page of the account's users (`{ items, totalCount }`). Security's
+ * `usersByAccount` now carries the unpaged total and a server-side `search`, so
+ * the caller renders an exact range and a real search box.
+ */
+export function useUsersByAccount(params: ListParams = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: userKeys.byAccount(),
-    queryFn: () => api.getUsersByAccount(),
+    queryKey: userKeys.byAccount(params),
+    queryFn: () => api.getUsersByAccount(params),
+    enabled: options.enabled ?? true,
+  });
+}
+
+/**
+ * The account's users as id + username, for the allocator dialogs' pickers.
+ * Unpaged by design — a truncated "available" operand makes already-assigned
+ * users reappear and the operator creates a duplicate membership.
+ */
+export function useUserLookupByAccount(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: userKeys.lookupByAccount(),
+    queryFn: api.getUserLookupByAccount,
     enabled: options.enabled ?? true,
   });
 }
@@ -63,7 +83,7 @@ export function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (user: CreateUserDtoInput) => api.createUser(user),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.byAccount() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
   });
 }
 
@@ -81,7 +101,7 @@ export function useUpdateUser() {
       userId,
       ...user
     }: Omit<UpdateUserDtoInput, 'userId'> & { userId: string }) => api.updateUser(userId, user),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.byAccount() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
   });
 }
 
@@ -104,7 +124,7 @@ export function useDeleteUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => api.deleteUser(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.byAccount() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
   });
 }
 
@@ -112,6 +132,6 @@ export function useUnlockUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => api.unlockUser(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.byAccount() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
   });
 }

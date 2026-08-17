@@ -23,19 +23,12 @@
 import { executeGraphQL } from 'api/core/graphqlClient';
 import type {
   GetOperatorSyncRunsQuery,
-  GetOperatorHealthQuery,
-  GetOperatorHealthHistoryQuery,
 } from './generated/graphql';
 import {
   GetOperatorSyncRunsDocument,
-  GetOperatorHealthDocument,
-  GetOperatorHealthHistoryDocument,
 } from './operatorHealthOperations';
 
 export type OperatorSyncRun = GetOperatorSyncRunsQuery['operatorSyncRuns'][number];
-export type OperatorHealth = GetOperatorHealthQuery['operatorHealth'];
-export type OperatorHealthCheck =
-  GetOperatorHealthHistoryQuery['operatorHealthHistory'][number];
 
 export async function getOperatorSyncRuns(
   accountId: string | null = null,
@@ -48,20 +41,4 @@ export async function getOperatorSyncRuns(
     take,
   });
   return data.operatorSyncRuns;
-}
-
-export async function getOperatorHealth(operatorId: string): Promise<OperatorHealth> {
-  const data = await executeGraphQL('telemetry', GetOperatorHealthDocument, { operatorId });
-  return data.operatorHealth;
-}
-
-export async function getOperatorHealthHistory(
-  operatorId: string,
-  take = 50
-): Promise<OperatorHealthCheck[]> {
-  const data = await executeGraphQL('telemetry', GetOperatorHealthHistoryDocument, {
-    operatorId,
-    take,
-  });
-  return data.operatorHealthHistory;
 }

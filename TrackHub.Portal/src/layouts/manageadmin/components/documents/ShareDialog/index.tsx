@@ -90,7 +90,7 @@ function ShareDialog({ open, setOpen, accountId = null, document = null }: Share
           <ArgonBox mt={2}>
             <CustomTextField
               margin="normal" name="shareUrl" id="shareUrl" label="URL" type="text" fullWidth multiline minRows={2}
-              value={share.url} InputProps={{ readOnly: true }} onChange={() => { }}
+              value={share.url} slotProps={{ input: { readOnly: true } }} onChange={() => { }}
             />
           </ArgonBox>
         </ArgonBox>
@@ -102,7 +102,7 @@ function ShareDialog({ open, setOpen, accountId = null, document = null }: Share
           />
           <CustomTextField
             margin="normal" name="expiresAt" id="expiresAt" label={t('documentManagement.expiresAt')} type="datetime-local"
-            fullWidth InputLabelProps={{ shrink: true }} value={values.expiresAt || ''} onChange={handleChange}
+            fullWidth slotProps={{ inputLabel: { shrink: true } }} value={values.expiresAt || ''} onChange={handleChange}
             required errorMsg={errors.expiresAt}
           />
         </form>

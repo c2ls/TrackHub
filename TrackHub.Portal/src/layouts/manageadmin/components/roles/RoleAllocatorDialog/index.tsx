@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import DynamicTableDialog from 'controls/Dialogs/TableDialogs/DynamicTableDialog';
 import CustomSelect from 'controls/Dialogs/CustomSelect';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
-import { useUsersByAccount } from 'queries/users';
+import { useUserLookupByAccount } from 'queries/users';
 import { useUsersByRole, useCreateUserRole, useDeleteUserRole } from 'queries/roles';
 import { LoadingContext } from 'LoadingContext';
 
@@ -34,7 +34,9 @@ function RoleAllocatorDialog({ open, setOpen, roleId }: RoleAllocatorDialogProps
   const { setLoading } = useContext(LoadingContext);
   const [userId, setUserId] = useState('');
 
-  const accountUsersQuery = useUsersByAccount({ enabled: open });
+  // Set difference: available = account users minus assigned. Both operands come
+  // from unpaged lookups so a truncated one cannot offer an assigned user again.
+  const accountUsersQuery = useUserLookupByAccount({ enabled: open });
   const accountUsers = accountUsersQuery.data ?? [];
   // Assigned users only matter while the dialog is open.
   const assignedQuery = useUsersByRole(open ? roleId : undefined);

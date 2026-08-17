@@ -4,7 +4,7 @@ title: Glossary
 description: Plain-language meaning of the terms and on-screen information you meet across TrackHub.
 category: reference
 screens: []
-related: [getting-started, dashboard-live-map, gps-integration]
+related: [getting-started, dashboard-live-map, gps-integration, drivers-workforce]
 tags: [glossary, terms, definitions, reference]
 order: 10
 ---
@@ -94,6 +94,20 @@ A synchronised device's own state is shown as **Unassigned** (not yet linked to 
 **Alert Status** — Where the alert is in its lifecycle. You **Acknowledge** an alert to show you have seen it, and **Resolve** it once it has been dealt with.
 
 **Notification Rule** — A rule that decides when an alert should be raised and who should be told. A rule has a trigger event, a severity, the recipients, and delivery settings, and can be **enabled** or **disabled**.
+
+## Drivers and workforce
+
+**Driver** — A person who operates your units. A driver is *not* a portal user: they never sign in to the web portal. They have a name, an identity document, an optional employee code, and a primary licence.
+
+**Driver Credential** — The login and password a driver uses in the driver mobile app. One per driver, with its own lifecycle: **Pending Activation, Active, Locked,** or **Revoked**. Revoking it also stops the sessions already running on the driver’s phone.
+
+**Device Registration** — A phone or tablet a driver has enrolled from the mobile app, with its platform, app version, and a masked push token. Revoking one registration forces that device to enrol again; the credential is untouched.
+
+**Qualification** — A credentialed fact about a driver with an expiry date: a **License, Medical Exam, Training, Background Check, HAZMAT Permit,** or **Other**. Each carries a category, a number, issue and expiry dates, an issuing authority, a status (**Valid, Expired, Revoked**), and optionally a linked document.
+
+**Assignment** — A time-bounded record that a driver operated a unit, with a start, an optional end, a type (**Regular** or **Temporary**), and a status (**Active, Ended, Cancelled**). Only one can be open per driver-and-unit pair, and an ended assignment cannot be changed.
+
+**Default Transporter** — The unit a driver normally operates, set on the driver record. It is a single pre-selection, not a history — assignments are the historical record.
 
 ## Documents
 

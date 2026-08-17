@@ -14,7 +14,7 @@
 *  limitations under the License.
 */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { probeService, overallState, PROBED_SERVICES } from 'api/core/healthProbe';
 import type { HealthProbeResult, ProbedService } from 'api/core/healthProbe';
 import { deriveSyncWorkerState, SYNC_WORKER_FRESH_MS } from 'api/telemetry/platformStatus';

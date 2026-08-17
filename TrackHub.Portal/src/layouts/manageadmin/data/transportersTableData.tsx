@@ -33,6 +33,7 @@ import type {
   TransporterDtoInput,
   UpdateTransporterDtoInput,
 } from 'api/manager/transporters';
+import type { ListParams } from 'api/core/paging';
 import { cleanString } from 'utils/stringUtils';
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
@@ -58,7 +59,8 @@ export interface TransporterTableData { columns: TransporterTableColumn[]; rows:
 function useTransporterTableData(
   fetchData: boolean,
   handleEditClick: (transporter: TransporterFormValues) => void,
-  handleDeleteClick: (transporterId: string) => void
+  handleDeleteClick: (transporterId: string) => void,
+  listParams: ListParams
 ) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -66,8 +68,11 @@ function useTransporterTableData(
   const { setLoading } = useContext(LoadingContext);
   const { isAuthenticated } = useAuth();
 
-  const transportersQuery = useTransportersByAccount({ enabled: !!fetchData && isAuthenticated });
-  const transporters = transportersQuery.data ?? [];
+  const transportersQuery = useTransportersByAccount(listParams, {
+    enabled: !!fetchData && isAuthenticated,
+  });
+  const transporters = transportersQuery.data?.items ?? [];
+  const totalCount = transportersQuery.data?.totalCount ?? 0;
   const createTransporter = useCreateTransporter();
   const updateTransporter = useUpdateTransporter();
   const deleteTransporter = useDeleteTransporter();
@@ -173,6 +178,7 @@ function useTransporterTableData(
 
   return {
     data,
+    totalCount,
     open,
     confirmOpen,
     onSave,

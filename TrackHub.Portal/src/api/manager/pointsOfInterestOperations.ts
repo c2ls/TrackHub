@@ -39,9 +39,35 @@ export const PointOfInterestItemFragment = graphql(`
 `);
 
 export const GetPointsOfInterestByAccountDocument = graphql(`
-  query GetPointsOfInterestByAccount {
-    pointsOfInterestByAccount {
-      ...PointOfInterestItem
+  query GetPointsOfInterestByAccount($skip: Int, $take: Int, $search: String) {
+    pointsOfInterestByAccount(query: { skip: $skip, take: $take, search: $search }) {
+      items {
+        ...PointOfInterestItem
+      }
+      totalCount
+    }
+  }
+`);
+
+/**
+ * The map projection, unpaged by design (the server raises past its ceiling
+ * rather than truncating). Carries what the overlays draw — coordinates place
+ * the pin, colour paints it, type/description/address fill the popup — so the
+ * dashboard and route planner render from this instead of draining full pages.
+ * accountId/groupId stay off it because nothing renders them.
+ */
+export const GetPointOfInterestLookupDocument = graphql(`
+  query GetPointOfInterestLookup {
+    pointOfInterestLookup {
+      pointOfInterestId
+      name
+      latitude
+      longitude
+      color
+      type
+      description
+      address
+      active
     }
   }
 `);

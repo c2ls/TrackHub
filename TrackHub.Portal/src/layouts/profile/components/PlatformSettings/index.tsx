@@ -46,6 +46,7 @@ import CustomSelect from 'controls/Dialogs/CustomSelect';
 import { getUserSettings, updateUserSettings } from 'api/manager/settings';
 import type { UserSettings, UserSettingsDtoInput } from 'api/manager/settings';
 import { notifyApiError } from 'api/core/errors';
+import { isDarkStyle, isMiniSidenav, writeUiPreferences } from 'utils/uiPreferences';
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
 import {
@@ -80,8 +81,8 @@ function PlatformSettings() {
       setLoading(true);
       try {
         const userSettings = await getUserSettings();
-        setStyle(userSettings.style !== 'light');
-        setSideNav(userSettings.navbar !== 'none');
+        setStyle(isDarkStyle(userSettings.style));
+        setSideNav(isMiniSidenav(userSettings.navbar));
         setUserSettings(userSettings);
       } catch (error) {
         notifyApiError(error);
@@ -102,6 +103,9 @@ function PlatformSettings() {
         userSettings.userId!,
         userSettings as Omit<UserSettingsDtoInput, 'userId'>
       );
+      // Keep the first-paint mirror in step with what the backend will now return,
+      // so the next sign-in opens straight into the saved theme.
+      writeUiPreferences(userSettings);
     } catch (error) {
       notifyApiError(error);
     } finally {

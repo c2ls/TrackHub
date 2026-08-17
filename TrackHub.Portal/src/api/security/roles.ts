@@ -25,12 +25,12 @@ import { executeGraphQL } from 'api/core/graphqlClient';
 import type {
   RoleItemFragment as RoleItemType,
   GetResourcesByRoleQuery,
-  GetUsersByRoleQuery,
+  GetUserLookupByRoleQuery,
 } from './generated/graphql';
 import {
   GetRolesDocument,
   GetResourcesByRoleDocument,
-  GetUsersByRoleDocument,
+  GetUserLookupByRoleDocument,
   CreateResourceActionRoleDocument,
   DeleteResourceActionRoleDocument,
   CreateUserRoleDocument,
@@ -39,7 +39,7 @@ import {
 
 export type Role = RoleItemType;
 export type RoleResources = GetResourcesByRoleQuery['resourcesByRole'];
-export type RoleUser = GetUsersByRoleQuery['usersByRole'][number];
+export type RoleUser = GetUserLookupByRoleQuery['userLookupByRole'][number];
 
 export async function getRoles(): Promise<Role[]> {
   const data = await executeGraphQL('security', GetRolesDocument);
@@ -51,9 +51,9 @@ export async function getResourcesByRole(roleId: number): Promise<RoleResources>
   return data.resourcesByRole;
 }
 
-export async function getUsersByRole(roleId: number): Promise<RoleUser[]> {
-  const data = await executeGraphQL('security', GetUsersByRoleDocument, { roleId });
-  return data.usersByRole;
+export async function getUserLookupByRole(roleId: number): Promise<RoleUser[]> {
+  const data = await executeGraphQL('security', GetUserLookupByRoleDocument, { roleId });
+  return data.userLookupByRole;
 }
 
 export async function createResourceActionRole(

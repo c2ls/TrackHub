@@ -35,16 +35,11 @@ import type {
   DocumentSignatureDtoInput,
   DocumentTypeDtoInput,
 } from './generated/graphql';
-import type { PublicLinkGrant } from './publicLinks';
 import {
   GetDocumentsForOwnerDocument,
   GetDocumentDocument,
-  GetDocumentVersionsDocument,
-  GetDocumentSignaturesDocument,
-  GetActiveDocumentByCategoryDocument,
   SearchDocumentsDocument,
   GetExpiringDocumentsDocument,
-  GetDocumentSharesDocument,
   GetDocumentTypesDocument,
   VoidDocumentDocument,
   ExpireDocumentDocument,
@@ -86,37 +81,6 @@ export async function getDocument(documentId: string): Promise<DocumentVm> {
   return data.document;
 }
 
-export async function getDocumentVersions(
-  documentId: string,
-  skip = 0,
-  take = 50
-): Promise<DocumentVersionVm[]> {
-  const data = await executeGraphQL('manager', GetDocumentVersionsDocument, {
-    documentId,
-    skip,
-    take,
-  });
-  return data.documentVersions;
-}
-
-export async function getDocumentSignatures(documentId: string): Promise<DocumentSignatureVm[]> {
-  const data = await executeGraphQL('manager', GetDocumentSignaturesDocument, { documentId });
-  return data.documentSignatures;
-}
-
-export async function getActiveDocumentByCategory(
-  ownerEntityType: string,
-  ownerEntityId: string,
-  category: string
-): Promise<DocumentVm | null | undefined> {
-  const data = await executeGraphQL('manager', GetActiveDocumentByCategoryDocument, {
-    ownerEntityType,
-    ownerEntityId,
-    category,
-  });
-  return data.activeDocumentByCategory;
-}
-
 export async function searchDocuments(
   filter: DocumentSearchFilterInput = {},
   skip = 0,
@@ -137,11 +101,6 @@ export async function getExpiringDocuments(
     take,
   });
   return data.expiringDocuments;
-}
-
-export async function getDocumentShares(documentId: string): Promise<PublicLinkGrant[]> {
-  const data = await executeGraphQL('manager', GetDocumentSharesDocument, { documentId });
-  return data.documentShares;
 }
 
 export async function getDocumentTypes(

@@ -148,6 +148,7 @@ function DocumentUploadDialog({ open, setOpen, onUpload, categories = [], replac
             value={values.category || ''}
             handleChange={handleChange}
             required
+            errorMsg={errors.category}
           />
         ) : (
           <CustomTextField
@@ -197,7 +198,7 @@ function DocumentUploadDialog({ open, setOpen, onUpload, categories = [], replac
             label={t('documentManagement.expiresAt')}
             type="datetime-local"
             fullWidth
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             value={values.expiresAt || ''}
             onChange={handleChange}
           />

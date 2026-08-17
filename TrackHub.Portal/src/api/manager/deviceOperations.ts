@@ -57,9 +57,27 @@ export const SynchronizedDeviceFragment = graphql(`
 `);
 
 export const GetDevicesByAccountDocument = graphql(`
-  query GetDevicesByAccount {
-    devicesByAccount {
-      ...DeviceItem
+  query GetDevicesByAccount($skip: Int, $take: Int, $search: String) {
+    devicesByAccount(query: { skip: $skip, take: $take, search: $search }) {
+      items {
+        ...DeviceItem
+      }
+      totalCount
+    }
+  }
+`);
+
+/**
+ * Id + display name + owning operator: the picker/name-map projection, unpaged
+ * by design. `operatorId` is here so the dashboard's operator→device→transporter
+ * join reads the lookup instead of draining the full device pages.
+ */
+export const GetDeviceLookupDocument = graphql(`
+  query GetDeviceLookup {
+    deviceLookup {
+      deviceId
+      name
+      operatorId
     }
   }
 `);
@@ -71,19 +89,50 @@ export const DeleteDeviceDocument = graphql(`
 `);
 
 export const GetSynchronizedDevicesDocument = graphql(`
-  query GetSynchronizedDevices($accountId: UUID!, $detectedStatus: DetectedStatus, $operatorId: UUID) {
+  query GetSynchronizedDevices(
+    $accountId: UUID!
+    $detectedStatus: DetectedStatus
+    $operatorId: UUID
+    $skip: Int
+    $take: Int
+    $search: String
+    $unassignedOnly: Boolean
+    $recentOnly: Boolean
+  ) {
     synchronizedDevices(
-      query: { accountId: $accountId, detectedStatus: $detectedStatus, operatorId: $operatorId }
+      query: {
+        accountId: $accountId
+        detectedStatus: $detectedStatus
+        operatorId: $operatorId
+        skip: $skip
+        take: $take
+        search: $search
+        unassignedOnly: $unassignedOnly
+        recentOnly: $recentOnly
+      }
     ) {
-      ...SynchronizedDevice
+      items {
+        ...SynchronizedDevice
+      }
+      totalCount
     }
   }
 `);
 
 export const GetUnassignedSynchronizedDevicesDocument = graphql(`
-  query GetUnassignedSynchronizedDevices($accountId: UUID!) {
-    unassignedSynchronizedDevices(query: { accountId: $accountId }) {
-      ...SynchronizedDevice
+  query GetUnassignedSynchronizedDevices(
+    $accountId: UUID!
+    $skip: Int
+    $take: Int
+    $search: String
+  ) {
+    unassignedSynchronizedDevices(
+      query: { accountId: $accountId, skip: $skip, take: $take, search: $search }
+    ) {
+      items {
+        ...SynchronizedDevice
+      }
+      totalCount
     }
   }
 `);
@@ -91,5 +140,18 @@ export const GetUnassignedSynchronizedDevicesDocument = graphql(`
 export const SetSynchronizedDeviceIgnoredDocument = graphql(`
   mutation SetSynchronizedDeviceIgnored($deviceId: UUID!, $ignored: Boolean!) {
     setSynchronizedDeviceIgnored(command: { deviceId: $deviceId, ignored: $ignored })
+  }
+`);
+
+/**
+ * Manual registration for providers without a device-catalog API (e.g. Prosegur):
+ * sync can never discover their devices, so the operator enters them by hand.
+ * identifier 0 lets the server allocate the next free one for the operator.
+ */
+export const RegisterManualDeviceDocument = graphql(`
+  mutation RegisterManualDevice($device: DeviceDtoInput!, $autoAssign: Boolean!) {
+    registerManualDevice(command: { device: $device, autoAssign: $autoAssign }) {
+      ...SynchronizedDevice
+    }
   }
 `);

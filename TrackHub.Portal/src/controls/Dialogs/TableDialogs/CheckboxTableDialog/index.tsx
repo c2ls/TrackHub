@@ -27,6 +27,7 @@ interface CheckboxTableRow {
 interface CheckboxTableColumn {
     value: string | number;
     name: ReactNode;
+    label?: ReactNode;
 }
 
 interface CheckboxTableDialogProps {
@@ -79,7 +80,7 @@ const CheckboxTableDialog = ({ children, rows, columns, data, title, handleSave 
                         <tr>
                             <th className="th">{title}</th>
                             {columns.map(column => (
-                                <th key={column.value} className="th">{column.name}</th>
+                                <th key={column.value} className="th">{column.label ?? column.name}</th>
                             ))}
                         </tr>
                     </thead>

@@ -10,26 +10,46 @@ We believe in the strength of community collaboration to create effective and ac
 
 ![Image](https://github.com/shernandezp/TrackHub.AuthorityServer/blob/master/src/Web/wwwroot/images/logo.png)
 
+---
+
+## Overview
+
+TrackHub Web is the React portal — the operator-facing user interface for the platform. It talks to the Security, Management, Router, Telemetry, Geofencing, Trip Management and Reporting APIs, and renders the live map and replay, GPS integration and device management, geofencing, trip planning and tracking, documents and workforce, reporting, account administration, and the public status page.
+
+It is also where **user documentation lives**: the contextual help topics under `public/help/` ship with every portal build.
+
+---
+
+## Documentation
+
+| | |
+|---|---|
+| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology) and [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview) |
+| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
+| **Deployment** | [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) |
 
 ---
 
 ## Modules in this repository
 
-| Service Name       | Repository Link                                             |
-|-----------------------------|----------------------------------------------------|
-| **Common Library**          | [TrackHubCommon](../TrackHubCommon)    |
-| **Authorization Service**   | [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) |
-| **Security API**            | [TrackHubSecurity](../TrackHubSecurity)  |
-| **Management API**          | [TrackHub.Manager](../TrackHub.Manager)  |
-| **Router API**              | [TrackHubRouter](../TrackHubRouter)    |
-| **Geofencing API**          | [TrackHub.Geofencing](../TrackHub.Geofencing)    |
-| **Reporting API**           | [TrackHub.Reporting](../TrackHub.Reporting)    |
-| **Telemetry API**           | [TrackHub.Telemetry](../TrackHub.Telemetry)    |
-| **TrackHub Web**            | [TrackHub.Portal](../TrackHub.Portal) (this module) |
-| **TrackHub Mobile**         | [https://github.com/shernandezp/TrackHubMobile](https://github.com/shernandezp/TrackHubMobile)   |
+| Module | Purpose |
+|---|---|
+| [TrackHubCommon](../TrackHubCommon) | Shared library, consumed as a ProjectReference |
+| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
+| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
+| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
+| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
+| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
+| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
+| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
+| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
+| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) — this module |
+| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
+| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
+| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application (separate repository) |
 
+---
 
+## License
 
-## Overview
-
-TrackHub Web is the React web portal — the operator-facing UI for the platform. It talks to the Security, Management, Router, Geofencing, Reporting, and Telemetry APIs and renders the live map, replay, GPS integration and device management, geofencing, reporting, and account administration.
+Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.

@@ -59,6 +59,7 @@ function AccountStatusDialog({ open, setOpen, handleSubmit, values, handleChange
           label={t('account.targetStatus')}
           value={values.targetStatus || ''}
           required
+          errorMsg={errors.targetStatus}
         />
         {errors.targetStatus && <p>{errors.targetStatus}</p>}
 

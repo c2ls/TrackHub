@@ -17,6 +17,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Table from "controls/Tables/Table";
+import ServerPagination from "controls/Tables/ServerPagination";
+import ServerSearch from "controls/Tables/ServerSearch";
+import useServerList, { useClampPage } from "controls/Tables/useServerList";
 import TableAccordion from "controls/Accordions/TableAccordion";
 import AccountFormDialog from 'layouts/systemadmin/components/accounts/AccountsDialog';
 import AccountStatusDialog from 'layouts/systemadmin/components/accounts/AccountStatusDialog';
@@ -31,6 +34,8 @@ import type {
 import type { Account } from 'api/manager/accounts';
 import { requiresReason } from 'data/accountStatuses';
 import type { AccountStatusName } from 'data/accountStatuses';
+
+const PAGE_SIZE = 10;
 
 function ManageAccounts() {
   const { t } = useTranslation();
@@ -55,8 +60,10 @@ function ManageAccounts() {
   };
 
   const [expanded, setExpanded] = useState(false);
+  const { page, setPage, searchDraft, setSearchDraft, params } = useServerList(PAGE_SIZE);
   const {
     data,
+    totalCount,
     open,
     openUser,
     openStatus,
@@ -65,7 +72,8 @@ function ManageAccounts() {
     onChangeStatus,
     setOpen,
     setOpenUser,
-    setOpenStatus} = useAccountsTableData(expanded, handleEditClick, handleAddManagerClick, handleStatusClick);
+    setOpenStatus} = useAccountsTableData(expanded, handleEditClick, handleAddManagerClick, handleStatusClick, params);
+  useClampPage(page, PAGE_SIZE, totalCount, setPage);
 
   const [accountValues, handleAccountChange, setAccountValues, setAccountErrors, validateAccount, accountErrors] = useForm<AccountFormValues>({});
   const [userValues, handleUserChange, setUserValues, setUserErrors, validateUser, userErrors] = useForm<AccountUserFormValues>({});
@@ -103,7 +111,15 @@ function ManageAccounts() {
         setOpen={setOpen}
         handleAddClick={handleAddClick}
         setExpanded={setExpanded}>
-        <Table columns={columns} rows={rows} selectedField='name'/>
+        <ServerSearch value={searchDraft} onChange={setSearchDraft} />
+        <Table columns={columns} rows={rows} selectedField='name' serverPaged />
+        <ServerPagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          totalCount={totalCount}
+          pageLength={rows.length}
+          onPageChange={setPage}
+        />
       </TableAccordion>
 
       <AccountFormDialog

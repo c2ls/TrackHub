@@ -31,6 +31,9 @@ Coded by www.creative-tim.com
 import { forwardRef } from "react";
 import type { ReactNode } from "react";
 import type { TypographyProps } from "@mui/material/Typography";
+import type { Theme } from "@mui/material/styles";
+import { unstable_extendSxProp as extendSxProp } from "@mui/system";
+import type { SystemProps } from "@mui/system";
 
 // Custom styles for ArgonTypography
 import ArgonTypographyRoot from "components/ArgonTypography/ArgonTypographyRoot";
@@ -38,8 +41,16 @@ import ArgonTypographyRoot from "components/ArgonTypography/ArgonTypographyRoot"
 // Argon Dashboard 2 MUI context
 import { useArgonController } from "context";
 
+/**
+ * As with ArgonBox, Material UI v9 dropped the system shorthands (`display`, `mb`,
+ * `fontSize`, …) from Typography; they stay part of ArgonTypography's own contract and
+ * are folded into `sx` at render time. `color`, `fontWeight` and `textTransform` below
+ * shadow their system namesakes (they take Argon tokens, not CSS values) and are
+ * destructured off before the fold so they still drive ownerState.
+ */
 export interface ArgonTypographyProps
-  extends Omit<TypographyProps, "color" | "fontWeight" | "textTransform"> {
+  extends Omit<TypographyProps, "color" | "fontWeight" | "textTransform">,
+    Omit<SystemProps<Theme>, "color" | "fontWeight" | "textTransform" | "opacity"> {
   color?:
     | "inherit"
     | "primary"
@@ -80,6 +91,16 @@ export interface ArgonTypographyProps
   children: ReactNode;
 }
 
+type ArgonTypographyOwnProps = Pick<
+  ArgonTypographyProps,
+  "color" | "fontWeight" | "textTransform" | "verticalAlign" | "textGradient" | "opacity" | "children"
+>;
+
+/** See ArgonBox: `extendSxProp` reports the input type, so narrow to what Typography takes. */
+const foldSystemPropsIntoSx = (
+  props: Omit<ArgonTypographyProps, keyof ArgonTypographyOwnProps>
+): TypographyProps => extendSxProp(props) as TypographyProps;
+
 const ArgonTypography = forwardRef<HTMLSpanElement, ArgonTypographyProps>(
   (
     {
@@ -99,7 +120,7 @@ const ArgonTypography = forwardRef<HTMLSpanElement, ArgonTypographyProps>(
 
     return (
       <ArgonTypographyRoot
-        {...rest}
+        {...foldSystemPropsIntoSx(rest)}
         ref={ref}
         ownerState={{
           color,

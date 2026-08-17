@@ -28,7 +28,7 @@ import type { AccountFeature } from "api/manager/accountFeatures";
 import { notifyApiError } from "api/core/errors";
 import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from "utils/dateUtils";
-import { toCamelCase } from "utils/stringUtils";
+import { featureLabel, sourceLabel, tierLabel } from "utils/featureLabels";
 
 // Managers only visualize their account features; enabling/disabling is a billing decision
 // owned by the SuperAdministrator.
@@ -42,7 +42,8 @@ const displayFeatures = [
   'documents',
   'notifications',
   'notifications.email',
-  'notifications.whatsapp'
+  'notifications.whatsapp',
+  'workforce'
 ];
 
 function TextCell({ children }: { children?: ReactNode }) {
@@ -95,10 +96,10 @@ function ManageAccountFeatures() {
     };
 
     return {
-      feature: <TextCell>{t(`resources.${toCamelCase(feature.featureKey || '')}` as 'resources.geofencing', { defaultValue: feature.featureKey })}</TextCell>,
+      feature: <TextCell>{featureLabel(t, feature.featureKey || '')}</TextCell>,
       enabled: <ArgonBadge variant="gradient" color={feature.enabled ? 'success' : 'secondary'} size="xs" container badgeContent={feature.enabled ? t('generic.yes') : t('generic.no')} />,
-      tier: <TextCell>{feature.tier}</TextCell>,
-      source: <TextCell>{feature.source}</TextCell>,
+      tier: <TextCell>{tierLabel(t, feature.tier)}</TextCell>,
+      source: <TextCell>{sourceLabel(t, feature.source)}</TextCell>,
       modified: <TextCell>{formatDateTime(feature.lastModified)}</TextCell>,
       id: feature.featureKey
     };

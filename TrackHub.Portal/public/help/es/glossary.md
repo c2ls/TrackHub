@@ -4,7 +4,7 @@ title: Glosario
 description: Significado en lenguaje sencillo de los términos y de la información en pantalla que encontrará en TrackHub.
 category: reference
 screens: []
-related: [getting-started, dashboard-live-map, gps-integration]
+related: [getting-started, dashboard-live-map, gps-integration, drivers-workforce]
 tags: [glosario, términos, definiciones, referencia]
 order: 10
 ---
@@ -94,6 +94,20 @@ El estado propio de un dispositivo sincronizado se muestra como **Sin asignar** 
 **Estado de la alerta** — En qué punto de su ciclo de vida está la alerta. Usted usa **Reconocer Alerta** para indicar que la ha visto, y **Resolver Alerta** una vez que ha sido atendida.
 
 **Regla de Notificación** — Una regla que decide cuándo debe generarse una alerta y a quién debe avisarse. Una regla tiene un evento disparador, una severidad, los destinatarios y ajustes de entrega, y puede estar **habilitada** o deshabilitada.
+
+## Conductores y personal
+
+**Conductor** — Una persona que opera sus unidades. Un conductor *no* es un usuario del portal: nunca inicia sesión en el portal web. Tiene un nombre, un documento de identidad, un código de empleado opcional y una licencia principal.
+
+**Credencial de Conductor** — El usuario y la contraseña con los que un conductor ingresa a la aplicación móvil del conductor. Una por conductor, con su propio ciclo de vida: **Pendiente de Activación, Activa, Bloqueada** o **Revocada**. Revocarla también detiene las sesiones que ya estaban en curso en el teléfono del conductor.
+
+**Registro de Dispositivo** — Un teléfono o tableta que un conductor registró desde la aplicación móvil, con su plataforma, versión de la app y un token push enmascarado. Revocar un registro obliga a ese dispositivo a registrarse de nuevo; la credencial no se toca.
+
+**Habilitación** — Un hecho acreditado sobre un conductor, con fecha de vencimiento: una **Licencia, Examen Médico, Capacitación, Verificación de Antecedentes, Permiso de Materiales Peligrosos** u **Otra**. Cada una lleva una categoría, un número, fechas de emisión y vencimiento, una autoridad emisora, un estado (**Vigente, Vencida, Revocada**) y opcionalmente un documento vinculado.
+
+**Asignación** — Un registro acotado en el tiempo de que un conductor operó una unidad, con un inicio, un fin opcional, un tipo (**Regular** o **Temporal**) y un estado (**Activa, Finalizada, Cancelada**). Solo puede haber una abierta por pareja de conductor y unidad, y una asignación finalizada no se puede modificar.
+
+**Transportador Predeterminado** — La unidad que un conductor opera habitualmente, definida en el registro del conductor. Es una única preselección, no un historial — las asignaciones son el registro histórico.
 
 ## Documentos
 

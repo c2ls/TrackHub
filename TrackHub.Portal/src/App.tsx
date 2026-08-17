@@ -28,11 +28,11 @@ Coded by www.creative-tim.com
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 // react-router components
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router";
 
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
@@ -83,16 +83,24 @@ import type { AccountContext, AccountStatus } from "api/manager/accounts";
 import { getCurrentPrincipal } from "api/manager/principals";
 import type { CurrentPrincipal } from "api/manager/principals";
 import { notifyApiError } from "api/core/errors";
+import { isDarkStyle, isMiniSidenav, writeUiPreferences } from "utils/uiPreferences";
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from "components/ErrorBoundary";
 import SuspensionScreen from "components/SuspensionScreen";
 import PrincipalTypes from "constants/principalTypes";
 import HelpProvider from "context/help";
 import { FeaturesContext, isFeatureActive } from "context/features";
+import { PermissionsContext, buildPermissionIndex } from "context/permissions";
+import { getAuthorizedActions } from "api/security/permissions";
+import type { AuthorizedAction } from "api/security/permissions";
 import AnnouncementBanner from "components/AnnouncementBanner";
 
-/** Public, chrome-less route (see routes.tsx `platformStatus`). */
-const STATUS_ROUTE = "/status";
+/**
+ * Public, chrome-less routes (see routes.tsx `platformStatus` / `tripTracking`).
+ * Both are reachable signed-out and render their own full-page shell, so the
+ * Sidenav, Configurator and announcement banner are all suppressed on them.
+ */
+const PUBLIC_ROUTES = ["/status", "/track"] as const;
 
 export default function App() {
   const [controller, dispatch] = useArgonController();
@@ -114,6 +122,8 @@ export default function App() {
   const [userIsManager, setUserIsManager] = useState(true);
   const [accountSettings, setAccountSettings] = useState<Partial<AccountSettings>>({});
   const [accountFeatures, setAccountFeatures] = useState<AccountContext['features']>([]);
+  const [authorizedActions, setAuthorizedActions] = useState<AuthorizedAction[]>([]);
+  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
   const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [branding, setBranding] = useState<AccountContext['branding'] | null>(null);
   const [currentPrincipal, setCurrentPrincipal] = useState<CurrentPrincipal | null>(null);
@@ -123,11 +133,12 @@ export default function App() {
     // Skip redirect if: on callback page, already logging in, on error page, or auth error occurred
     const isAuthRoute = pathname.startsWith("/authentication/");
     const isErrorPage = pathname === "/error";
-    // The platform status page is deliberately public: its whole purpose is to
-    // answer "can nobody sign in?", so it must never bounce to the login flow.
-    const isStatusPage = pathname === STATUS_ROUTE;
+    // The public pages must never bounce to the login flow: the status page's
+    // whole purpose is to answer "can nobody sign in?", and a customer following
+    // a trip tracking link has no account to sign in with at all.
+    const isPublicPage = (PUBLIC_ROUTES as readonly string[]).includes(pathname);
 
-    if (!isAuthenticated && !isLoggingIn && !isAuthRoute && !isErrorPage && !isStatusPage && !authError) {
+    if (!isAuthenticated && !isLoggingIn && !isAuthRoute && !isErrorPage && !isPublicPage && !authError) {
       login();
     }
 
@@ -135,35 +146,63 @@ export default function App() {
 
   useEffect(() => {
     const fetchPermissions = async () => {
-      if (isAuthenticated) {
-        // Graceful-null on failure (matches the old service's null fallback);
-        // routes fall back to the default principal type.
-        const principal = await getCurrentPrincipal().catch(() => null);
-        setCurrentPrincipal(principal);
-        // Silent ops: default to false on failure (matches the old service's
-        // handleSilentError — no toast, routes stay locked down).
-        const admin = await isAdmin().catch(() => false);
-        const manager = await isManager().catch(() => false);
-        const userSettings = await getUserSettings();
-        setUserIsAdmin(admin);
-        setUserIsManager(manager);
-        /* Initialize settings */
-        setDarkMode(dispatch, userSettings.style !== 'light');
-        setDarkSidenav(dispatch, userSettings.style !== 'light');
-        setMiniSidenav(dispatch, userSettings.navbar !== 'none');
+      if (!isAuthenticated) return;
+
+      // Appearance first, and on its own round trip: every other bootstrap read can
+      // land late without the user noticing, but the style has to be applied before
+      // the shell paints or a dark-profile user watches the screen flip from light.
+      // The result is mirrored to localStorage so the *next* sign-in paints correctly
+      // from the first frame (see utils/uiPreferences).
+      const userSettings = await getUserSettings().catch(() => null);
+      if (userSettings) {
+        setDarkMode(dispatch, isDarkStyle(userSettings.style));
+        setDarkSidenav(dispatch, isDarkStyle(userSettings.style));
+        setMiniSidenav(dispatch, isMiniSidenav(userSettings.navbar));
         if (userSettings.language) {
           i18n.changeLanguage(userSettings.language);
         }
-        const settings = await getAccountSettings();
-        setAccountSettings(settings);
+        writeUiPreferences(userSettings);
+      }
+
+      // The rest of the bootstrap is independent — fan out instead of chaining five
+      // sequential round trips behind each other.
+      // Graceful fallbacks on failure (matching the old services' silent handling):
+      // null principal ⇒ routes fall back to the default principal type, false roles
+      // ⇒ admin/manager routes stay locked down, no toast either way.
+      const [principal, admin, manager, settings, context] = await Promise.all([
+        getCurrentPrincipal().catch(() => null),
+        isAdmin().catch(() => false),
+        isManager().catch(() => false),
+        getAccountSettings().catch(() => null),
         // Single bootstrap read (status + branding + features); allowed on non-operational accounts
         // so the shell can render a suspension state instead of issuing operational queries.
-        const context = await getAccountContext().catch(() => null);
-        if (context) {
-          setAccountStatus(context.status);
-          setBranding(context.branding);
-          setAccountFeatures(context.features || []);
+        getAccountContext().catch(() => null),
+      ]);
+
+      setCurrentPrincipal(principal);
+      setUserIsAdmin(admin);
+      setUserIsManager(manager);
+
+      // The caller's effective permission set (roles UNION policies), used to gate
+      // actions the way `featureEnabled` gates screens. Needs the principal's user
+      // id, so it follows the fan-out rather than joining it. A failure leaves the
+      // set unloaded, and `can` then answers true — UI gating is UX only and the
+      // backend re-checks every call, so degrading OPEN shows a toast on a denied
+      // click instead of silently hiding controls the user actually has.
+      if (principal?.userId) {
+        const actions = await getAuthorizedActions(principal.userId).catch(() => null);
+        if (actions) {
+          setAuthorizedActions(actions);
+          setPermissionsLoaded(true);
         }
+      }
+      if (settings) {
+        setAccountSettings(settings);
+      }
+      if (context) {
+        setAccountStatus(context.status);
+        setBranding(context.branding);
+        setAccountFeatures(context.features || []);
       }
     };
     fetchPermissions();
@@ -192,6 +231,15 @@ export default function App() {
   // has no `direction` state, so the app is LTR-only. The old effect wrote the
   // invalid dir="undefined" to <body>; it is intentionally gone.
 
+  // The snippet in index.html paints <html> from the mirrored preference before the
+  // bundle loads; take it over here so a mid-session theme switch also moves the
+  // backdrop and the native scrollbars/form controls with it.
+  useEffect(() => {
+    const activeTheme = darkMode ? themeDark : theme;
+    document.documentElement.style.backgroundColor = activeTheme.palette.background.default;
+    document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
+  }, [darkMode]);
+
   // Setting page scroll to 0 when changing the route
   useEffect(() => {
     document.documentElement.scrollTop = 0;
@@ -203,14 +251,26 @@ export default function App() {
   // Operational statuses (Trial/Active) permit normal access; anything else renders a suspension shell.
   const accountOperational = !accountStatus || accountStatus === 'TRIAL' || accountStatus === 'ACTIVE';
 
-  // The status page renders chrome-less for everyone (signed in or not) and stays
-  // reachable on a suspended account — it is the screen you check when things break.
-  const onStatusPage = pathname === STATUS_ROUTE;
+  // The public pages render chrome-less for everyone (signed in or not) and stay
+  // reachable on a suspended account — the status page is the screen you check
+  // when things break, and a customer's tracking link is not an account surface.
+  const onPublicPage = (PUBLIC_ROUTES as readonly string[]).includes(pathname);
+
+  // The auth error page and the authorize/callback interstitials render their own
+  // full-page shell too — without this the Sidenav overlays the error card and
+  // hides the message.
+  const onChromelessPage = onPublicPage || pathname === "/error" || pathname.startsWith("/authentication/");
 
   // Shared with FeaturesContext consumers; matches the backend flag semantics
   // (missing row ⇒ disabled, effective window honoured).
   const featureEnabled = (featureKey?: string | null): boolean =>
     isFeatureActive(accountFeatures, featureKey);
+
+  // Permission gate for ACTIONS (the feature flags above gate SCREENS). Open until the
+  // set has loaded — see the note on PermissionsContext.
+  const permissionIndex = useMemo(() => buildPermissionIndex(authorizedActions), [authorizedActions]);
+  const can = (resource: string, action: string): boolean =>
+    !permissionsLoaded || permissionIndex.has(`${resource}.${action}`);
 
   const filterRoutesByFeatures = (allRoutes: RouteDefinition[]): RouteDefinition[] =>
     allRoutes
@@ -285,12 +345,13 @@ export default function App() {
             under browser zoom, etc. must clip); wide content scrolls inside its own container. */}
         <GlobalStyles styles={{ html: { overflowX: "clip" }, body: { overflowX: "clip" } }} />
         <ErrorBoundary>
-          {isAuthenticated && !accountOperational && !onStatusPage ? (
+          {isAuthenticated && !accountOperational && !onPublicPage ? (
             <SuspensionScreen status={accountStatus} branding={branding} />
           ) : (
           <FeaturesContext.Provider value={{ features: accountFeatures, isFeatureEnabled: featureEnabled }}>
+          <PermissionsContext.Provider value={{ actions: authorizedActions, can, loaded: permissionsLoaded }}>
           <HelpProvider allowedScreens={allowedScreens} isFeatureEnabled={featureEnabled}>
-          {layout === "dashboard" && !onStatusPage && (
+          {layout === "dashboard" && !onChromelessPage && (
           <>
             <Sidenav
               brand={darkMode ? brand : brandDark}
@@ -311,12 +372,13 @@ export default function App() {
         )}
         {/* Platform announcements reach every signed-in user on every screen; the
             status page renders its own copy, so it is skipped there. */}
-        {isAuthenticated && !onStatusPage && <AnnouncementBanner />}
+        {isAuthenticated && !onChromelessPage && <AnnouncementBanner />}
         <Routes>
           {getRoutes(enabledRoutes)}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
           </HelpProvider>
+          </PermissionsContext.Provider>
           </FeaturesContext.Provider>
           )}
         </ErrorBoundary>

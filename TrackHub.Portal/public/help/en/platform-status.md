@@ -75,6 +75,14 @@ Colour follows importance: blue for information, amber for a warning, red for cr
 
 If the announcement bar is missing while the *Fleet management* tile is red, that is expected — announcements are stored there, so an outage hides them. The tiles keep working regardless.
 
+## Which version am I using?
+
+At the bottom of the page, under the bookmark reminder, you will see **Portal build** followed by a version and a date — for example *v1.1.0 · 2026-07-28 14:32 UTC*. The same version also appears in the footer inside the portal.
+
+It identifies the exact build of the TrackHub screens your browser is running, which is worth quoting whenever you report a problem. It is also how you confirm an update landed: if your provider says a new version was installed but the build has not changed, reload the page with **Ctrl+Shift+R** (**Cmd+Shift+R** on a Mac) to discard the copy your browser had cached.
+
+The version shown is the one for the screens themselves. The services behind them are tracked by your provider and are not listed here.
+
 ## For managers and administrators
 
 **GPS synchronisation** — signed-in **managers and platform administrators** see an extra tile for the background synchroniser. It is the companion to the GPS Integration screen: that screen shows your account's operators, this tile shows whether the synchroniser itself is running at all. It has no health endpoint of its own, so its state comes from how recently it did work: green when it recorded activity in the last five minutes. If no account has GPS integration enabled it shows **Unknown** with *"there is nothing to synchronise"* — that is normal, not a fault.

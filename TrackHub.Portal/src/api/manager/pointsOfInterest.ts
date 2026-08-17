@@ -20,19 +20,25 @@
  */
 
 import { executeGraphQL } from 'api/core/graphqlClient';
+import type { ListParams, Page } from 'api/core/paging';
 import type {
   PointOfInterestItemFragment as PointOfInterestItemType,
+  GetPointOfInterestLookupQuery,
   PointOfInterestDtoInput,
   UpdatePointOfInterestDtoInput,
 } from './generated/graphql';
 import {
   GetPointsOfInterestByAccountDocument,
+  GetPointOfInterestLookupDocument,
   CreatePointOfInterestDocument,
   UpdatePointOfInterestDocument,
   DeletePointOfInterestDocument,
 } from './pointsOfInterestOperations';
 
 export type PointOfInterest = PointOfInterestItemType;
+export type PointOfInterestLookup =
+  GetPointOfInterestLookupQuery['pointOfInterestLookup'][number];
+export type PointsOfInterestPage = Page<PointOfInterest>;
 export type { PointOfInterestDtoInput, UpdatePointOfInterestDtoInput };
 
 type PoiFields = Omit<PointOfInterestDtoInput, 'accountId'>;
@@ -52,9 +58,26 @@ function toPoiFields(poi: PoiFields): PoiFields {
   };
 }
 
-export async function getPointsOfInterestByAccount(): Promise<PointOfInterest[]> {
-  const data = await executeGraphQL('manager', GetPointsOfInterestByAccountDocument);
+export async function getPointsOfInterestByAccount(
+  params: ListParams = {}
+): Promise<PointsOfInterestPage> {
+  const data = await executeGraphQL('manager', GetPointsOfInterestByAccountDocument, {
+    skip: params.skip ?? null,
+    take: params.take ?? null,
+    search: params.search ?? null,
+  });
   return data.pointsOfInterestByAccount;
+}
+
+/**
+ * Every POI as the map projection: id/name/coordinates plus the colour, type,
+ * description, address and active flag the overlays render. Unpaged by design —
+ * the server raises past its ceiling rather than truncating, so the map never
+ * silently drops pins.
+ */
+export async function getPointOfInterestLookup(): Promise<PointOfInterestLookup[]> {
+  const data = await executeGraphQL('manager', GetPointOfInterestLookupDocument);
+  return data.pointOfInterestLookup;
 }
 
 export async function createPointOfInterest(
