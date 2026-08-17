@@ -14,7 +14,11 @@ We believe in the strength of community collaboration to create effective and ac
 
 ## Overview
 
-The Trip Management API owns trips, stops, deliveries, route plans, toll estimation and public tracking links. It plans routes through OpenRouteService, detects stop arrivals, departures, delays and corridor deviations from telemetry positions, captures proof of delivery, and drives the trip lifecycle from `Created` through to a terminal status.
+The Trip Management API owns trips, stops, deliveries, route plans, toll estimation and public tracking links. It plans routes through OpenRouteService, captures proof of delivery, and drives the trip lifecycle from `Created` through to a terminal status.
+
+**The lifecycle is zero-touch.** A trip starts itself when its vehicle reaches the origin zone and closes itself when its route is done; loading, transit and unloading are measured from zone entry and exit rather than from a button. Users plan, the system measures, and the manual lifecycle commands survive as dispatcher overrides for dead GPS and corrections. `autoLifecycle: false` on the account turns the whole of it off.
+
+> **Deploying a schema change here:** the `trip` schema has no `__EFMigrationsHistory` — it is hand-managed. Run `tools/sql/add-zero-touch-lifecycle.sql`; it ends in `ROLLBACK` so the first run is a dry run. Its one-vehicle-one-trip guard will fire on any database predating spec 11a and will name the offending vehicles. Republish TripManagement, Reporting and the portal together.
 
 ---
 
