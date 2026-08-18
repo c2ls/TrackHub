@@ -172,7 +172,7 @@ jobs:
     steps:
       - name: Fail if anything failed or was cancelled
         run: |
-          if echo '${{ join(needs.*.result, ",") }}' | grep -qE 'failure|cancelled'; then
+          if echo '${{ join(needs.*.result, ',') }}' | grep -qE 'failure|cancelled'; then
             echo "results: ${{ join(needs.*.result, ',') }}"
             exit 1
           fi

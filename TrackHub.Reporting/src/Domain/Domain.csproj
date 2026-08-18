@@ -9,6 +9,11 @@
     <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- PDFsharp resolves no font on its own outside Windows, so the PDF builder carries its
+         own faces rather than depending on what the host image happens to have installed. -->
+    <EmbeddedResource Include="Fonts\*.ttf" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Resources\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
