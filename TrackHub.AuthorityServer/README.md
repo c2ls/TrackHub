@@ -8,7 +8,7 @@ Currently in development, our project aims to foster collaboration among diverse
 
 We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
 
-![Image](https://github.com/shernandezp/TrackHub.AuthorityServer/blob/master/src/Web/wwwroot/images/logo.png)
+![Image](src/Web/wwwroot/images/logo.png)
 
 ---
 

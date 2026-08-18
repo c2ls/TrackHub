@@ -39,7 +39,7 @@ Full detail: **[Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend)
 
    ```bash
    git clone https://github.com/shernandezp/TrackHub.git
-   cd TrackHub
+   cd TrackHub/TrackHub.Portal
    npm install
    ```
 
@@ -109,7 +109,7 @@ Across this application and the backend services, the repository contains passwo
 
 - **Technical** — the [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki): [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology), [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
 - **User** — in the app: the Help button or **F1** on any screen. The source topics live in `public/help/{en,es}/`.
-- **Deployment** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Deployment** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

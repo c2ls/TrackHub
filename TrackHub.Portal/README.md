@@ -8,7 +8,7 @@ Currently in development, our project aims to foster collaboration among diverse
 
 We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
 
-![Image](https://github.com/shernandezp/TrackHub.AuthorityServer/blob/master/src/Web/wwwroot/images/logo.png)
+![Image](../TrackHub.AuthorityServer/src/Web/wwwroot/images/logo.png)
 
 ---
 
@@ -26,7 +26,7 @@ It is also where **user documentation lives**: the contextual help topics under 
 |---|---|
 | **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology) and [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview) |
 | **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment) |
+| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
 
 ---
 

@@ -39,7 +39,7 @@ Detalle completo: **[Frontend](https://github.com/shernandezp/TrackHub/wiki/Fron
 
    ```bash
    git clone https://github.com/shernandezp/TrackHub.git
-   cd TrackHub
+   cd TrackHub/TrackHub.Portal
    npm install
    ```
 
@@ -109,7 +109,7 @@ A lo largo de esta aplicación y de los servicios backend, el repositorio contie
 
 - **Técnica** — la [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki): [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology), [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview), [Coding Standards](https://github.com/shernandezp/TrackHub/wiki/Coding-Standards)
 - **Usuario** — en la aplicación: el botón de Ayuda o **F1** en cualquier pantalla. Los temas fuente viven en `public/help/{en,es}/`.
-- **Despliegue** — [TrackHub.Deployment](https://github.com/shernandezp/TrackHub.Deployment)
+- **Despliegue** — [TrackHub.Deployment](../TrackHub.Deployment)
 
 ---
 

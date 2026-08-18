@@ -18,11 +18,12 @@ using HotChocolate;
 namespace TrackHub.ServiceContracts.Tests.Harness;
 
 /// <summary>
-/// Exports each producer's SDL to <c>TrackHub/schemas/&lt;service&gt;.graphql</c> for the React
-/// portal's graphql-codegen pipeline. Runs with the normal contract-test suite so the
+/// Exports each producer's SDL to <c>TrackHub.Portal/schemas/&lt;service&gt;.graphql</c> for the
+/// React portal's graphql-codegen pipeline. Runs with the normal contract-test suite so the
 /// checked-in SDLs stay in lockstep with the producer schemas: a schema change shows up as a
-/// diff in the TrackHub repo, where the frontend codegen validates portal operations against it.
-/// File names match the frontend's GRAPHQL_ENDPOINTS keys (TrackHub/src/api/core/endpoints.ts).
+/// diff next to the portal, where the frontend codegen validates portal operations against it.
+/// File names match the frontend's GRAPHQL_ENDPOINTS keys
+/// (TrackHub.Portal/src/api/core/endpoints.ts).
 /// </summary>
 [TestFixture]
 public class SchemaSdlExport
@@ -41,7 +42,7 @@ public class SchemaSdlExport
     [Test]
     public async Task Export_producer_schemas_for_frontend_codegen()
     {
-        var schemasDir = System.IO.Path.Combine(FindWorkspaceRoot(), "TrackHub", "schemas");
+        var schemasDir = System.IO.Path.Combine(FindRepositoryRoot(), "TrackHub.Portal", "schemas");
         Directory.CreateDirectory(schemasDir);
 
         foreach (var (fileName, build) in Producers)
@@ -56,14 +57,13 @@ public class SchemaSdlExport
             Is.True);
     }
 
-    /// <summary>Walks up from the test binary to the multi-repo workspace root.</summary>
-    private static string FindWorkspaceRoot()
+    /// <summary>Walks up from the test binary to the monorepo root (the one holding the root solution).</summary>
+    private static string FindRepositoryRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            if (Directory.Exists(System.IO.Path.Combine(dir.FullName, "system-context")) &&
-                Directory.Exists(System.IO.Path.Combine(dir.FullName, "TrackHub")))
+            if (File.Exists(System.IO.Path.Combine(dir.FullName, "TrackHub.slnx")))
             {
                 return dir.FullName;
             }
@@ -71,6 +71,6 @@ public class SchemaSdlExport
         }
 
         throw new InvalidOperationException(
-            "Workspace root not found (no ancestor containing system-context/ and TrackHub/).");
+            "Repository root not found (no ancestor containing TrackHub.slnx).");
     }
 }
