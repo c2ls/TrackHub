@@ -32,16 +32,13 @@ namespace TrackHub.Reporting.Domain.Helpers;
 /// </summary>
 public sealed class PdfReportBuilder : IPdfReportBuilder
 {
-    private const string FontName = "Arial";
+    private const string FontName = EmbeddedFontResolver.FamilyName;
     private const double PageContentWidthCm = 17.0; // A4 (21cm) minus default left/right margins.
 
     static PdfReportBuilder()
-    {
-        // The default PDFsharp Windows/WSL2 font resolvers cover common fonts (e.g. Arial) without
-        // shipping a font package. Idempotent — safe to set on every construction.
-        GlobalFontSettings.UseWindowsFontsUnderWindows = true;
-        GlobalFontSettings.UseWindowsFontsUnderWsl2 = true;
-    }
+        // Assigning the resolver is process-global and rejected once a font has been resolved,
+        // so it happens here, before any document exists.
+        => GlobalFontSettings.FontResolver = new EmbeddedFontResolver();
 
     public byte[] Build(ReportDataset dataset, CultureInfo culture)
     {

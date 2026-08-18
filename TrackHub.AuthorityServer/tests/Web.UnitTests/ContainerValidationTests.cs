@@ -13,7 +13,10 @@
 //  limitations under the License.
 //
 
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TrackHub.AuthorityServer.Web.Controllers;
@@ -29,12 +32,56 @@ namespace Web.UnitTests;
 [TestFixture]
 public sealed class ContainerValidationTests
 {
+    // A Release build takes the file-loading branch of AddOpenIdDictServices, and appsettings.json
+    // points OpenIddict:Path at an operator-provisioned path that exists on no build agent. The
+    // certificate is a deployment input, so the fixture supplies a throwaway one rather than the
+    // suite asserting a machine layout — which also means the file-loading branch itself is
+    // exercised instead of the DEBUG development-certificate shortcut.
+    private const string CertificatePassword = "container-validation";
+    private static string _certificatePath = string.Empty;
+
+    [OneTimeSetUp]
+    public void CreateSigningCertificate()
+    {
+        using var key = RSA.Create(2048);
+        var request = new CertificateRequest(
+            "CN=TrackHub AuthorityServer Container Validation",
+            key,
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        using var certificate = request.CreateSelfSigned(
+            DateTimeOffset.UtcNow.AddDays(-1),
+            DateTimeOffset.UtcNow.AddDays(1));
+
+        _certificatePath = Path.Combine(Path.GetTempPath(), $"trackhub-authority-{Guid.NewGuid():N}.pfx");
+        File.WriteAllBytes(_certificatePath, certificate.Export(X509ContentType.Pkcs12, CertificatePassword));
+    }
+
+    [OneTimeTearDown]
+    public void DeleteSigningCertificate()
+    {
+        if (_certificatePath.Length > 0)
+        {
+            File.Delete(_certificatePath);
+        }
+    }
+
     // Anchored on a public Web type rather than Program: Program is generated from top-level
     // statements and making it addressable would mean editing production code to satisfy a test.
     private sealed class AuthorityServerFactory : WebApplicationFactory<LoginController>
     {
         protected override IHost CreateHost(IHostBuilder builder)
         {
+            // Appended after the application's own sources, so it outranks appsettings.json.
+            builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["OpenIddict:LoadCertFromFile"] = "true",
+                    ["OpenIddict:Path"] = _certificatePath,
+                    ["OpenIddict:Password"] = CertificatePassword,
+                }));
+
             // ValidateOnBuild walks every registered descriptor and fails if any constructor
             // dependency is unregistered. ValidateScopes catches a singleton capturing a scoped
             // service — here that would mean an OpenIddict store holding one request's DbContext
