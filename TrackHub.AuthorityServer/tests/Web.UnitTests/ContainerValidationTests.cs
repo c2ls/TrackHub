@@ -16,7 +16,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TrackHub.AuthorityServer.Web.Controllers;
@@ -37,6 +36,12 @@ public sealed class ContainerValidationTests
     // certificate is a deployment input, so the fixture supplies a throwaway one rather than the
     // suite asserting a machine layout — which also means the file-loading branch itself is
     // exercised instead of the DEBUG development-certificate shortcut.
+    //
+    // It has to arrive as environment variables. Program.cs reads the certificate while REGISTERING
+    // services, so a WebApplicationFactory configuration callback lands too late: the deferred host
+    // builder applies those when the host is built, by which point AddOpenIdDictServices has already
+    // run and thrown. Environment variables are part of WebApplication.CreateBuilder's default
+    // sources and outrank appsettings.json, so they are in place before Program.cs starts.
     private const string CertificatePassword = "container-validation";
     private static string _certificatePath = string.Empty;
 
@@ -56,11 +61,19 @@ public sealed class ContainerValidationTests
 
         _certificatePath = Path.Combine(Path.GetTempPath(), $"trackhub-authority-{Guid.NewGuid():N}.pfx");
         File.WriteAllBytes(_certificatePath, certificate.Export(X509ContentType.Pkcs12, CertificatePassword));
+
+        Environment.SetEnvironmentVariable("OpenIddict__LoadCertFromFile", "true");
+        Environment.SetEnvironmentVariable("OpenIddict__Path", _certificatePath);
+        Environment.SetEnvironmentVariable("OpenIddict__Password", CertificatePassword);
     }
 
     [OneTimeTearDown]
     public void DeleteSigningCertificate()
     {
+        Environment.SetEnvironmentVariable("OpenIddict__LoadCertFromFile", null);
+        Environment.SetEnvironmentVariable("OpenIddict__Path", null);
+        Environment.SetEnvironmentVariable("OpenIddict__Password", null);
+
         if (_certificatePath.Length > 0)
         {
             File.Delete(_certificatePath);
@@ -73,14 +86,6 @@ public sealed class ContainerValidationTests
     {
         protected override IHost CreateHost(IHostBuilder builder)
         {
-            // Appended after the application's own sources, so it outranks appsettings.json.
-            builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(
-                new Dictionary<string, string?>
-                {
-                    ["OpenIddict:LoadCertFromFile"] = "true",
-                    ["OpenIddict:Path"] = _certificatePath,
-                    ["OpenIddict:Password"] = CertificatePassword,
-                }));
 
             // ValidateOnBuild walks every registered descriptor and fails if any constructor
             // dependency is unregistered. ValidateScopes catches a singleton capturing a scoped
