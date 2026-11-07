@@ -71,7 +71,7 @@ public sealed class TripStopConfiguration : IEntityTypeConfiguration<TripStop>
             .HasForeignKey(x => x.TripId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Detection, automation, the driver and the dispatcher all save stops; the row version (see
+        // Detection, automation, the staff and the dispatcher all save stops; the row version (see
         // TripConfiguration) keeps one of them from writing over a state it never read.
         builder.Property<uint>("xmin")
             .HasColumnName("xmin")

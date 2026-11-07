@@ -33,7 +33,7 @@ namespace TrackHub.TripManagement.Application.Integration.Commands.ImportTrips;
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Write, PrincipalTypes = "ServiceClient")]
 [RequireFeature(FeatureKeys.TripManagement)]
-// Enforcement: each item's transporter, driver and geofences are checked against AccountId.
+// Enforcement: each item's transporter, staff and geofences are checked against AccountId.
 [AccountScopeEnforcedInHandler]
 public readonly record struct ImportTripsCommand(Guid AccountId, IReadOnlyCollection<TripImportDto> Trips)
     : IRequest<IReadOnlyCollection<TripImportResultVm>>;
@@ -91,20 +91,20 @@ public sealed class ImportTripsCommandHandler(
         if (existing is { } running && item.Stops.Count > 0 && !string.Equals(running.Status, TripStatuses.Created, StringComparison.Ordinal))
             return new TripImportResultVm(item.ExternalReference, false, running.TripId, TripErrorCodes.TripNotActive, "Stops cannot be replaced once the trip has started.");
 
-        // The driver needs the SAME check the portal create/update paths apply. Without it a partner
-        // scoped to account A could import a trip carrying account B's driverId: nothing here has an
-        // FK to app.drivers, and the report readers resolve driver names by UNSCOPED id, so B's
-        // driver name would render inside A's trip and stop reports (acceptance 2). Manager's
+        // The staff needs the SAME check the portal create/update paths apply. Without it a partner
+        // scoped to account A could import a trip carrying account B's staffId: nothing here has an
+        // FK to app.staff_members, and the report readers resolve staff names by UNSCOPED id, so B's
+        // staff name would render inside A's trip and stop reports (acceptance 2). Manager's
         // assignment rule is the account boundary here — the transporter is already confirmed
-        // in-account above, and a driver only qualifies through an assignment to it. A driver carried
+        // in-account above, and a staff only qualifies through an assignment to it. A staff carried
         // over from the stored trip is checked again when the partner moves the trip to another unit.
-        var driverId = item.DriverId ?? existing?.DriverId;
-        if (driverId is { } effectiveDriverId && (item.DriverId is not null || existing?.TransporterId != item.TransporterId))
+        var staffId = item.StaffId ?? existing?.StaffId;
+        if (staffId is { } effectiveStaffId && (item.StaffId is not null || existing?.TransporterId != item.TransporterId))
         {
-            var assignable = await managerValidationClient.ValidateDriverAssignmentAsync(
-                effectiveDriverId, "Transporter", item.TransporterId, cancellationToken);
+            var assignable = await managerValidationClient.ValidateStaffAssignmentAsync(
+                effectiveStaffId, "Transporter", item.TransporterId, cancellationToken);
             if (!assignable)
-                throw new ForbiddenAccessException(Resources.Trips, Actions.Write, TripErrorCodes.DriverNotAssignable);
+                throw new ForbiddenAccessException(Resources.Trips, Actions.Write, TripErrorCodes.StaffNotAssignable);
         }
 
         // A re-send updates only what the partner contract carries: an optional field the partner
@@ -113,7 +113,7 @@ public sealed class ImportTripsCommandHandler(
         var dto = new TripDto(
             item.Code,
             item.TransporterId,
-            driverId,
+            staffId,
             existing?.ServiceOrderId,
             item.ExternalReference,
             item.CustomerName ?? existing?.CustomerName,

@@ -15,10 +15,10 @@
 
 namespace TrackHub.Manager.Domain.Records;
 
-/// <summary>Write model for <c>DriverQualification</c> (spec 09 §6).</summary>
-public readonly record struct DriverQualificationDto(
+/// <summary>Write model for <c>StaffQualification</c> (spec 09 §6).</summary>
+public readonly record struct StaffQualificationDto(
     Guid AccountId,
-    Guid DriverId,
+    Guid StaffId,
     string QualificationType,
     string? Category,
     string? Number,

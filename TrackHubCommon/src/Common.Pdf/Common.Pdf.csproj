@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>TrackHubCommon.Pdf</PackageId>
+    <Authors>Sergio Hernandez</Authors>
+    <Company>TBD</Company>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Common.Pdf</RootNamespace>
+    <AssemblyName>Common.Pdf</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <!-- Statically linked Linux build: the aspnet images ship no fontconfig, and the faces come from
+         the embedded resources below, so the host font collection is never consulted. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- TrackHub Sans (a Latin subset of Liberation Sans, SIL OFL 1.1, Fonts/LICENSE.txt), embedded so output
+         is byte-identical on every host. SkiaSharp embeds typefaces whole, so the subset is what keeps PDFs small. -->
+    <EmbeddedResource Include="Fonts\*.ttf" />
+  </ItemGroup>
+</Project>

@@ -2,7 +2,7 @@
 
 [← Back to the landing page](README.md) · [Español](README.es.md)
 
-The Authorization Service is TrackHub's **OpenIddict-based identity and OAuth 2.0 / OpenID Connect token server**. It authenticates users, drivers and service clients, and issues the access tokens (audience `trackhub_api`) that every other TrackHub service validates.
+The Authorization Service is TrackHub's **OpenIddict-based identity and OAuth 2.0 / OpenID Connect token server**. It authenticates users, staff and service clients, and issues the access tokens (audience `trackhub_api`) that every other TrackHub service validates.
 
 It also hosts the ASP.NET login UI, and owns the OpenIddict tables in the `TrackHubSecurity` database.
 
@@ -10,7 +10,7 @@ It also hosts the ASP.NET login UI, and owns the OpenIddict tables in the `Track
 
 ## What it provides
 
-- **Authorization Code Flow with PKCE** for public clients — web and driver mobile — plus the **password grant** for the first-party mobile app (`mobile_client`, in-app sign-in page)
+- **Authorization Code Flow with PKCE** for public clients — web and staff mobile — plus the **password grant** for the first-party mobile app (`mobile_client`, in-app sign-in page)
 - **Client Credentials Flow** for backend services and partner integrations, with automatic tenant derivation
 - **Token management** — issue, refresh and revoke, with audience-based scoping
 - **A customizable login UI** with branding support
@@ -80,7 +80,7 @@ Full detail: **[Security and Identity](https://github.com/shernandezp/TrackHub/w
 
 ## Project-specific notes
 
-- **This service owns only the `OpenIddict*` tables.** Its `AuthorityDbContext` migration targets the `TrackHubSecurity` database and is part of the documented install sequence. Its `SecurityDbContext` is a narrow **read-only projection** of TrackHubSecurity-owned tables (`users`, `clients`, `driver_credentials`, `roles`, `user_role`, `service_client_permissions`), and its migration is deliberately **empty** — every configuration is `ExcludeFromMigrations()`. Do not add DDL there.
+- **This service owns only the `OpenIddict*` tables.** Its `AuthorityDbContext` migration targets the `TrackHubSecurity` database and is part of the documented install sequence. Its `SecurityDbContext` is a narrow **read-only projection** of TrackHubSecurity-owned tables (`users`, `clients`, `staff_credentials`, `roles`, `user_role`, `service_client_permissions`), and its migration is deliberately **empty** — every configuration is `ExcludeFromMigrations()`. Do not add DDL there.
 - **A service client's tenant is derived, never supplied by the caller.** The `account_id` claim comes from the client's active rows in `security.service_client_permissions`, so a partner credential cannot widen its own reach:
 
   | Client's effective grants | `account_id` claim |

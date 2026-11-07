@@ -76,10 +76,12 @@
     <Project Path="TrackHubCommon/src/Common.Application/Common.Application.csproj" />
     <Project Path="TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
     <Project Path="TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj" />
+    <Project Path="TrackHubCommon/src/Common.Pdf/Common.Pdf.csproj" />
     <Project Path="TrackHubCommon/src/Common.Web/Common.Web.csproj" />
     <Project Path="TrackHubCommon/tests/Common.Application.Tests/Common.Application.Tests.csproj" />
     <Project Path="TrackHubCommon/tests/Common.Domain.Tests/Common.Domain.Tests.csproj" />
     <Project Path="TrackHubCommon/tests/Common.Infrastructure.Tests/Common.Infrastructure.Tests.csproj" />
+    <Project Path="TrackHubCommon/tests/Common.Pdf.Tests/Common.Pdf.Tests.csproj" />
     <Project Path="TrackHubCommon/tests/Common.Web.Tests/Common.Web.Tests.csproj" />
   </Folder>
   <Folder Name="/TrackHubRouter/">

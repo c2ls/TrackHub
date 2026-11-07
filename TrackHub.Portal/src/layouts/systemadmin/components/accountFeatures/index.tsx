@@ -77,7 +77,7 @@ const knownFeatures = [
   'gps.positionHistory',
   'geofencing',
   'trip-management',
-  'driver-mobile',
+  'staff-mobile',
   'public-links',
   'documents',
   'notifications',

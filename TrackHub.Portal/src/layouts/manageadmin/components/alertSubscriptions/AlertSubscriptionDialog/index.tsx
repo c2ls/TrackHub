@@ -86,7 +86,7 @@ function AlertSubscriptionDialog({
 
   const principalOptions = [
     { value: 'User', label: t('alertSubscriptions.user') },
-    { value: 'Driver', label: t('alertSubscriptions.driver') },
+    { value: 'Staff', label: t('alertSubscriptions.staff') },
   ];
 
   return (

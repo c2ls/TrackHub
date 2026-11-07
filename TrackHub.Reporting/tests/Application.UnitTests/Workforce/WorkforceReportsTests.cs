@@ -39,26 +39,26 @@ public class WorkforceReportsTests
     [Test]
     public void Codes_MatchSpecConstants()
     {
-        Assert.That(new DriverRegistryReport(_reader.Object).ReportCode, Is.EqualTo("workforce-driver-registry"));
+        Assert.That(new StaffRegistryReport(_reader.Object).ReportCode, Is.EqualTo("workforce-staff-registry"));
         Assert.That(new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).ReportCode, Is.EqualTo("workforce-qualification-expirations"));
         Assert.That(new AssignmentHistoryReport(_reader.Object).ReportCode, Is.EqualTo("workforce-assignment-history"));
     }
 
-    // ---- Driver registry ----
+    // ---- Staff registry ----
 
     [Test]
     public async Task Registry_OrdersByNameAndProjectsNullsToEmptyStrings()
     {
         var transporterId = Guid.NewGuid();
-        _reader.Setup(r => r.GetDriversAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List(
-            new ReportDriverVm(Guid.NewGuid(), "Zulema", null, null, null, true, null, null, null, null),
-            new ReportDriverVm(Guid.NewGuid(), "ana", "E-1", "CC", "123", true, "E-1", "LIC-9", new DateOnly(2027, 3, 4), transporterId)));
+        _reader.Setup(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List(
+            new ReportStaffMemberVm(Guid.NewGuid(), "Zulema", null, null, null, true, null, null, null, null, "Driver"),
+            new ReportStaffMemberVm(Guid.NewGuid(), "ana", "E-1", "CC", "123", true, "E-1", "LIC-9", new DateOnly(2027, 3, 4), transporterId, "Mechanic")));
 
-        var result = await new DriverRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
+        var result = await new StaffRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.RowCount, Is.EqualTo(2));
         // Case-insensitive alphabetical order.
-        Assert.That(result.Cell(0, "DriverName"), Is.EqualTo("ana"));
+        Assert.That(result.Cell(0, "StaffName"), Is.EqualTo("ana"));
         Assert.That(result.Cell(0, "DocumentNumber"), Is.EqualTo("123"));
         Assert.That(result.Cell(0, "LicenseExpiresAt"), Is.EqualTo(new DateOnly(2027, 3, 4)));
         Assert.That(result.Cell(0, "DefaultTransporterId"), Is.EqualTo(transporterId.ToString()));
@@ -72,13 +72,13 @@ public class WorkforceReportsTests
     [Test]
     public async Task Registry_ColumnOrderMatchesRowVmDeclaration()
     {
-        _reader.Setup(r => r.GetDriversAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportDriverVm>());
+        _reader.Setup(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportStaffMemberVm>());
 
-        var result = await new DriverRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
+        var result = await new StaffRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "DriverName", "EmployeeCode", "DocumentType", "DocumentNumber", "Phone",
+            "StaffName", "StaffType", "EmployeeCode", "DocumentType", "DocumentNumber", "Phone",
             "LicenseNumber", "LicenseExpiresAt", "DefaultTransporterId", "Active"
         }));
     }
@@ -86,9 +86,9 @@ public class WorkforceReportsTests
     [Test]
     public async Task Registry_TakesNoFilters()
     {
-        _reader.Setup(r => r.GetDriversAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportDriverVm>());
+        _reader.Setup(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportStaffMemberVm>());
 
-        await new DriverRegistryReport(_reader.Object).GetDatasetAsync(
+        await new StaffRegistryReport(_reader.Object).GetDatasetAsync(
             _filters with
             {
                 Values = FilterValues.Of(
@@ -96,7 +96,7 @@ public class WorkforceReportsTests
                     (FilterNames.Transporter, Guid.NewGuid().ToString()))
             }, CancellationToken.None);
 
-        _reader.Verify(r => r.GetDriversAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _reader.Verify(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>()), Times.Once);
         _reader.Verify(r => r.EnsureWorkforceFeatureAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -105,8 +105,8 @@ public class WorkforceReportsTests
     [Test]
     public async Task Expirations_DefaultsToThirtyDayWindow()
     {
-        _reader.Setup(r => r.GetDriverQualificationsAsync(null, 30, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverQualificationVm>())
+        _reader.Setup(r => r.GetStaffQualificationsAsync(null, 30, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(List<ReportStaffQualificationVm>())
             .Verifiable();
 
         await new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None);
@@ -117,8 +117,8 @@ public class WorkforceReportsTests
     [Test]
     public async Task Expirations_UsesWithinDaysAsWindow()
     {
-        _reader.Setup(r => r.GetDriverQualificationsAsync(null, 7, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverQualificationVm>())
+        _reader.Setup(r => r.GetStaffQualificationsAsync(null, 7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(List<ReportStaffQualificationVm>())
             .Verifiable();
 
         await new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(
@@ -130,23 +130,23 @@ public class WorkforceReportsTests
     [Test]
     public async Task Expirations_SortsByNearestExpiryFirst_NullsLast()
     {
-        _reader.Setup(r => r.GetDriverQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(List(
-            new ReportDriverQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Carlos", "License", "C2", "L-1", null, Today.AddDays(20), "RUNT", "Valid"),
-            new ReportDriverQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Nunca", "Other", null, null, null, null, null, "Valid"),
-            new ReportDriverQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Ana", "MedicalExam", null, "M-1", null, Today.AddDays(3), null, "Valid")));
+        _reader.Setup(r => r.GetStaffQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(List(
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Carlos", "License", "C2", "L-1", null, Today.AddDays(20), "RUNT", "Valid"),
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Nunca", "Other", null, null, null, null, null, "Valid"),
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Ana", "MedicalExam", null, "M-1", null, Today.AddDays(3), null, "Valid")));
 
         var result = await new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None);
 
-        Assert.That(result.Column("DriverName"), Is.EqualTo(new object?[] { "Ana", "Carlos", "Nunca" }));
+        Assert.That(result.Column("StaffName"), Is.EqualTo(new object?[] { "Ana", "Carlos", "Nunca" }));
         Assert.That(result.Cell(2, "DaysRemaining"), Is.Null);
     }
 
     [Test]
     public async Task Expirations_ComputesDaysRemaining_NegativeWhenExpired()
     {
-        _reader.Setup(r => r.GetDriverQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(List(
-            new ReportDriverQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Expired", "License", "C1", "L-0", null, Today.AddDays(-5), null, "Expired"),
-            new ReportDriverQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Soon", "License", "C1", "L-2", null, Today.AddDays(10), null, "Valid")));
+        _reader.Setup(r => r.GetStaffQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(List(
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Expired", "License", "C1", "L-0", null, Today.AddDays(-5), null, "Expired"),
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Soon", "License", "C1", "L-2", null, Today.AddDays(10), null, "Valid")));
 
         var result = await new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None);
 
@@ -160,14 +160,14 @@ public class WorkforceReportsTests
     [Test]
     public async Task Expirations_ColumnOrderMatchesRowVmDeclaration()
     {
-        _reader.Setup(r => r.GetDriverQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverQualificationVm>());
+        _reader.Setup(r => r.GetStaffQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(List<ReportStaffQualificationVm>());
 
         var result = await new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "DriverName", "QualificationType", "LicenseCategory", "Number",
+            "StaffName", "QualificationType", "LicenseCategory", "Number",
             "IssuingAuthority", "IssuedAt", "ExpiresAt", "DaysRemaining", "Status"
         }));
     }
@@ -182,8 +182,8 @@ public class WorkforceReportsTests
         var from = DateTimeOffset.UtcNow.AddDays(-30);
         var to = DateTimeOffset.UtcNow;
 
-        _reader.Setup(r => r.GetDriverAssignmentHistoryAsync(null, transporterId, from, to, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverAssignmentVm>())
+        _reader.Setup(r => r.GetStaffAssignmentHistoryAsync(null, transporterId, from, to, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(List<ReportStaffAssignmentVm>())
             .Verifiable();
 
         var filters = _filters with
@@ -201,8 +201,8 @@ public class WorkforceReportsTests
     [Test]
     public async Task AssignmentHistory_IgnoresUnparseableAndEmptyIdFilters()
     {
-        _reader.Setup(r => r.GetDriverAssignmentHistoryAsync(null, null, It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverAssignmentVm>())
+        _reader.Setup(r => r.GetStaffAssignmentHistoryAsync(null, null, It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(List<ReportStaffAssignmentVm>())
             .Verifiable();
 
         var filters = _filters with { Values = FilterValues.Of((FilterNames.Transporter, "not-a-guid")) };
@@ -222,8 +222,8 @@ public class WorkforceReportsTests
     [Test]
     public async Task AssignmentHistory_IgnoresUnrelatedFilterNames()
     {
-        _reader.Setup(r => r.GetDriverAssignmentHistoryAsync(null, null, It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverAssignmentVm>())
+        _reader.Setup(r => r.GetStaffAssignmentHistoryAsync(null, null, It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(List<ReportStaffAssignmentVm>())
             .Verifiable();
 
         await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(
@@ -238,16 +238,16 @@ public class WorkforceReportsTests
         var older = DateTimeOffset.UtcNow.AddDays(-40);
         var newer = DateTimeOffset.UtcNow.AddDays(-10);
 
-        _reader.Setup(r => r.GetDriverAssignmentHistoryAsync(
+        _reader.Setup(r => r.GetStaffAssignmentHistoryAsync(
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(List(
-                new ReportDriverAssignmentVm(Guid.NewGuid(), "Ana", Guid.NewGuid(), "Truck 1", older, older.AddDays(5), "Regular", "Ended", "user:1"),
-                new ReportDriverAssignmentVm(Guid.NewGuid(), "Beto", Guid.NewGuid(), "Truck 2", newer, null, "Temporary", "Active", "user:2")));
+                new ReportStaffAssignmentVm(Guid.NewGuid(), "Ana", Guid.NewGuid(), "Truck 1", older, older.AddDays(5), "Regular", "Ended", "user:1"),
+                new ReportStaffAssignmentVm(Guid.NewGuid(), "Beto", Guid.NewGuid(), "Truck 2", newer, null, "Temporary", "Active", "user:2")));
 
         var result = await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.RowCount, Is.EqualTo(2));
-        Assert.That(result.Cell(0, "DriverName"), Is.EqualTo("Beto"));
+        Assert.That(result.Cell(0, "StaffName"), Is.EqualTo("Beto"));
         Assert.That(result.Cell(0, "TransporterName"), Is.EqualTo("Truck 2"));
         Assert.That(result.Cell(0, "AssignmentType"), Is.EqualTo("Temporary"));
         Assert.That(result.Cell(0, "EndsAt"), Is.Null);
@@ -261,15 +261,15 @@ public class WorkforceReportsTests
     [Test]
     public async Task AssignmentHistory_ColumnOrderMatchesRowVmDeclaration()
     {
-        _reader.Setup(r => r.GetDriverAssignmentHistoryAsync(
+        _reader.Setup(r => r.GetStaffAssignmentHistoryAsync(
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List<ReportDriverAssignmentVm>());
+            .ReturnsAsync(List<ReportStaffAssignmentVm>());
 
         var result = await new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "DriverName", "TransporterName", "AssignmentType", "Status",
+            "StaffName", "TransporterName", "AssignmentType", "Status",
             "StartsAt", "EndsAt", "DurationDays", "CreatedByPrincipal"
         }));
     }
@@ -281,19 +281,19 @@ public class WorkforceReportsTests
             .ThrowsAsync(new UnauthorizedAccessException());
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
-            () => new DriverRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None));
+            () => new StaffRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => new AssignmentHistoryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None));
 
-        _reader.Verify(r => r.GetDriversAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _reader.Verify(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // The three workforce row VMs, one per report — the header checks below are per-report because
     // a duplicate header only matters between columns a user sees side by side.
     private static readonly Type[] WorkforceRowVms =
-        [typeof(DriverRegistryRowVm), typeof(QualificationExpirationRowVm), typeof(DriverAssignmentHistoryRowVm)];
+        [typeof(StaffRegistryRowVm), typeof(QualificationExpirationRowVm), typeof(StaffAssignmentHistoryRowVm)];
 
     // A resx key that is absent resolves to the raw key, so "resolved != key" is the presence probe.
     // Some English values legitimately equal the key ("Phone", "Number", "Status", "Active"), which

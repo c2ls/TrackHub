@@ -20,8 +20,8 @@ using TrackHub.TripManagement.Application.Common;
 namespace TrackHub.TripManagement.Application.Trips.Commands.Assign;
 
 /// <summary>
-/// Assigns a driver. Manager owns the assignment rules — a driver qualifies through an active
-/// <c>DriverTransporterAssignment</c> or their <c>DefaultTransporterId</c> — so this never
+/// Assigns a staff. Manager owns the assignment rules — a staff qualifies through an active
+/// <c>StaffTransporterAssignment</c> or their <c>DefaultTransporterId</c> — so this never
 /// re-implements them locally (spec 11 §7.3).
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]
@@ -29,7 +29,7 @@ namespace TrackHub.TripManagement.Application.Trips.Commands.Assign;
 // Enforcement: the handler derives the caller's own account and passes it to the reader/writer,
 // which filters every row on it (TripVisibility is the single visibility resolver - spec 11).
 [AccountScopeEnforcedInHandler]
-public readonly record struct AssignTripCommand(Guid TripId, Guid DriverId, Guid? TransporterId) : IRequest<TripAssignmentVm>;
+public readonly record struct AssignTripCommand(Guid TripId, Guid StaffId, Guid? TransporterId) : IRequest<TripAssignmentVm>;
 
 public sealed class AssignTripCommandHandler(
     ITripWriter writer,
@@ -55,12 +55,12 @@ public sealed class AssignTripCommandHandler(
         var transporterId = request.TransporterId ?? trip.TransporterId;
         await TripVisibility.EnsureTransporterVisibleAsync(reader, user, caller.AccountId, UserId, transporterId, cancellationToken);
 
-        var assignable = await managerValidationClient.ValidateDriverAssignmentAsync(
-            request.DriverId, "Transporter", transporterId, cancellationToken);
+        var assignable = await managerValidationClient.ValidateStaffAssignmentAsync(
+            request.StaffId, "Transporter", transporterId, cancellationToken);
         if (!assignable)
-            throw new ForbiddenAccessException(Resources.Trips, Actions.Edit, TripErrorCodes.DriverNotAssignable);
+            throw new ForbiddenAccessException(Resources.Trips, Actions.Edit, TripErrorCodes.StaffNotAssignable);
 
-        var assignment = await writer.AssignTripAsync(request.TripId, caller.AccountId, request.DriverId, request.TransporterId, cancellationToken);
+        var assignment = await writer.AssignTripAsync(request.TripId, caller.AccountId, request.StaffId, request.TransporterId, cancellationToken);
 
         await tripEventWriter.AppendAsync(
             caller.AccountId,
@@ -80,7 +80,7 @@ public sealed class AssignTripCommandHandler(
                 TripEventTypes.TripAssigned,
                 TripAlertSeverities.Info,
                 $"trip-assigned:{request.TripId:N}",
-                new TripAlertDto(caller.AccountId, request.TripId, null, trip.Code, transporterId, request.DriverId, null, assignment.AssignedAt, null, null, null, null, null),
+                new TripAlertDto(caller.AccountId, request.TripId, null, trip.Code, transporterId, request.StaffId, null, assignment.AssignedAt, null, null, null, null, null),
                 cancellationToken);
         }
         catch (Exception ex)
@@ -97,7 +97,7 @@ public sealed class AssignTripValidator : AbstractValidator<AssignTripCommand>
     public AssignTripValidator()
     {
         RuleFor(v => v.TripId).NotEmpty();
-        RuleFor(v => v.DriverId).NotEmpty();
+        RuleFor(v => v.StaffId).NotEmpty();
         RuleFor(v => v.TransporterId).NotEqual(Guid.Empty).When(v => v.TransporterId.HasValue);
     }
 }

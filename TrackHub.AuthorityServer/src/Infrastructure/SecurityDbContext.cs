@@ -24,7 +24,7 @@ public class SecurityDbContext(DbContextOptions<SecurityDbContext> options) : Db
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Client> Clients { get; set; }
-    public DbSet<DriverCredential> DriverCredentials { get; set; }
+    public DbSet<StaffCredential> StaffCredentials { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<ServiceClientPermission> ServiceClientPermissions { get; set; }
@@ -34,7 +34,7 @@ public class SecurityDbContext(DbContextOptions<SecurityDbContext> options) : Db
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new ClientConfiguration());
-        builder.ApplyConfiguration(new DriverCredentialConfiguration());
+        builder.ApplyConfiguration(new StaffCredentialConfiguration());
         builder.ApplyConfiguration(new RoleConfiguration());
         builder.ApplyConfiguration(new UserRoleConfiguration());
         builder.ApplyConfiguration(new ServiceClientPermissionConfiguration());

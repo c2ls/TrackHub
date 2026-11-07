@@ -182,35 +182,36 @@ export class ApiClient {
   }
 
   /**
-   * Registers a driver for a test that needs one.
+   * Registers a staff for a test that needs one.
    *
-   * Seeded rather than clicked because the driver record is the PRECONDITION
+   * Seeded rather than clicked because the staff record is the PRECONDITION
    * here — what the test measures is the credential, qualification and
-   * assignment work that hangs off it, and creating the driver through the UI
+   * assignment work that hangs off it, and creating the staff through the UI
    * is already covered by its own test.
    */
-  async createDriver(name: string, defaultTransporterId?: string): Promise<string> {
-    const data = await this.gql<{ createDriver: { driverId: string } }>(
+  async createStaffMember(name: string, defaultTransporterId?: string): Promise<string> {
+    const data = await this.gql<{ createStaffMember: { staffId: string } }>(
       'manager',
-      'mutation($driver: DriverDtoInput!) { createDriver(command: { driver: $driver }) { driverId name } }',
+      'mutation($staff: StaffMemberDtoInput!) { createStaffMember(command: { staff: $staff }) { staffId name } }',
       {
-        driver: {
+        staff: {
           name,
           active: true,
+          staffType: 'Driver',
           accountId: await this.accountId(),
           defaultTransporterId: defaultTransporterId ?? null,
         },
       }
     );
-    return data.createDriver.driverId;
+    return data.createStaffMember.staffId;
   }
 
-  /** Drivers are deactivated, never deleted — that is the record's whole point. */
-  async deactivateDriver(driverId: string): Promise<void> {
+  /** Staff are deactivated, never deleted — that is the record's whole point. */
+  async deactivateStaffMember(staffId: string): Promise<void> {
     await this.tryGql(
       'manager',
-      'mutation($driverId: UUID!) { deactivateDriver(command: { driverId: $driverId }) }',
-      { driverId }
+      'mutation($staffId: UUID!) { deactivateStaffMember(command: { staffId: $staffId }) }',
+      { staffId }
     );
   }
 

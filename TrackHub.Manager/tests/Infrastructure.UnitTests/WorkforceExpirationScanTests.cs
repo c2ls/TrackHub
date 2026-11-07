@@ -31,13 +31,13 @@ public class WorkforceExpirationScanTests
         context.SaveChanges();
     }
 
-    private static DriverQualification SeedQualification(ApplicationDbContext context, Guid accountId, int daysUntilExpiry, string status = DriverQualificationStatuses.Valid)
+    private static StaffQualification SeedQualification(ApplicationDbContext context, Guid accountId, int daysUntilExpiry, string status = StaffQualificationStatuses.Valid)
     {
-        var driver = new Driver(accountId, "Ana", null, null, null, true, null, null, null, null);
-        context.Drivers.Add(driver);
-        var qualification = new DriverQualification(accountId, driver.DriverId, DriverQualificationTypes.License, null, "L-1",
+        var staff = new StaffMember(accountId, "Ana", null, null, null, true, null, null, null, null);
+        context.StaffMembers.Add(staff);
+        var qualification = new StaffQualification(accountId, staff.StaffId, StaffQualificationTypes.License, null, "L-1",
             null, DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime).AddDays(daysUntilExpiry), null, status, null, null);
-        context.DriverQualifications.Add(qualification);
+        context.StaffQualifications.Add(qualification);
         context.SaveChanges();
         return qualification;
     }
@@ -90,8 +90,8 @@ public class WorkforceExpirationScanTests
         Assert.Multiple(() =>
         {
             Assert.That(0 == 0 ? AlertSeverities.High : AlertSeverities.Warning, Is.EqualTo(AlertSeverities.High));
-            Assert.That(AlertEventTypes.All, Does.Contain(AlertEventTypes.DriverQualificationExpiring));
-            Assert.That(AlertEventTypes.All, Does.Contain(AlertEventTypes.DriverQualificationExpired));
+            Assert.That(AlertEventTypes.All, Does.Contain(AlertEventTypes.StaffQualificationExpiring));
+            Assert.That(AlertEventTypes.All, Does.Contain(AlertEventTypes.StaffQualificationExpired));
         });
     }
 
@@ -103,8 +103,8 @@ public class WorkforceExpirationScanTests
         EnableWorkforce(context, accountId);
         var qualification = SeedQualification(context, accountId, daysUntilExpiry: 5);
 
-        var idempotencyKey = $"{qualification.DriverQualificationId:N}:7";
-        context.BackgroundJobRuns.Add(new BackgroundJobRun(JobKey, accountId, qualification.DriverQualificationId.ToString(),
+        var idempotencyKey = $"{qualification.StaffQualificationId:N}:7";
+        context.BackgroundJobRuns.Add(new BackgroundJobRun(JobKey, accountId, qualification.StaffQualificationId.ToString(),
             idempotencyKey, "Succeeded", 1, DateTimeOffset.UtcNow));
         context.SaveChanges();
 
@@ -112,7 +112,7 @@ public class WorkforceExpirationScanTests
         Assert.That(already, Is.True, "A completed band must never be raised twice, including across restarts.");
 
         // A DIFFERENT band for the same qualification is still open.
-        var nextBand = $"{qualification.DriverQualificationId:N}:0";
+        var nextBand = $"{qualification.StaffQualificationId:N}:0";
         Assert.That(context.BackgroundJobRuns.Any(r => r.IdempotencyKey == nextBand), Is.False);
     }
 
@@ -125,7 +125,7 @@ public class WorkforceExpirationScanTests
         EnableWorkforce(context, enabledAccount);
 
         var due = SeedQualification(context, enabledAccount, daysUntilExpiry: 5);
-        SeedQualification(context, enabledAccount, daysUntilExpiry: 5, status: DriverQualificationStatuses.Revoked);
+        SeedQualification(context, enabledAccount, daysUntilExpiry: 5, status: StaffQualificationStatuses.Revoked);
         SeedQualification(context, enabledAccount, daysUntilExpiry: 400);
         SeedQualification(context, disabledAccount, daysUntilExpiry: 5);
 
@@ -137,16 +137,16 @@ public class WorkforceExpirationScanTests
             .Where(f => f.FeatureKey == CommonConstants.FeatureKeys.Workforce && f.Enabled)
             .Select(f => f.AccountId).Distinct().ToList();
 
-        var candidates = context.DriverQualifications
+        var candidates = context.StaffQualifications
             .Where(q => enabledAccounts.Contains(q.AccountId)
-                && q.Status != DriverQualificationStatuses.Revoked
+                && q.Status != StaffQualificationStatuses.Revoked
                 && q.ExpiresAt != null
                 && q.ExpiresAt <= horizon)
-            .Select(q => q.DriverQualificationId)
+            .Select(q => q.StaffQualificationId)
             .ToList();
 
         // Only the due, non-revoked qualification on the workforce-enabled account survives (AC6).
-        Assert.That(candidates, Is.EqualTo(new[] { due.DriverQualificationId }));
+        Assert.That(candidates, Is.EqualTo(new[] { due.StaffQualificationId }));
     }
 
     [Test]
@@ -154,13 +154,13 @@ public class WorkforceExpirationScanTests
     {
         // The payload used to be string-interpolated; serializing it keeps it well-formed even if a
         // future import path writes a type outside the validated constant set.
-        foreach (var qualificationType in DriverQualificationTypes.All.Append("Weird \"quoted\"\n type"))
+        foreach (var qualificationType in StaffQualificationTypes.All.Append("Weird \"quoted\"\n type"))
         {
             var payload = JsonSerializer.Serialize(new
             {
                 threshold = 7,
                 qualificationType,
-                driverId = Guid.NewGuid(),
+                staffId = Guid.NewGuid(),
                 expiresAt = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime).ToString("O"),
             });
 
@@ -183,9 +183,9 @@ public class WorkforceExpirationScanTests
         evaluator.Setup(x => x.EvaluateAsync(It.IsAny<AlertEventVm>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("channel down"));
 
-        var alertEvent = new AlertEvent(accountId, AlertEventTypes.DriverQualificationExpiring, AlertSeverities.Warning,
-            "Workforce", "DriverQualification", qualification.DriverQualificationId.ToString(), "Open", "{}",
-            $"driver-qual:{qualification.DriverQualificationId:N}:7");
+        var alertEvent = new AlertEvent(accountId, AlertEventTypes.StaffQualificationExpiring, AlertSeverities.Warning,
+            "Workforce", "StaffQualification", qualification.StaffQualificationId.ToString(), "Open", "{}",
+            $"staff-qual:{qualification.StaffQualificationId:N}:7");
         context.AlertEvents.Add(alertEvent);
         await context.SaveChangesAsync(CancellationToken.None);
 

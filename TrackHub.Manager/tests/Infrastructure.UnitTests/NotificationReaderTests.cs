@@ -14,13 +14,13 @@ public class NotificationReaderTests
     private static ApplicationDbContext NewContext(string name)
         => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(name).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).Options);
 
-    private static ICurrentPrincipal Principal(Guid? accountId, PrincipalType principalType = PrincipalType.User, Guid? userId = null, Guid? driverId = null, string? role = null)
+    private static ICurrentPrincipal Principal(Guid? accountId, PrincipalType principalType = PrincipalType.User, Guid? userId = null, Guid? staffId = null, string? role = null)
     {
         var principal = new Mock<ICurrentPrincipal>();
         principal.SetupGet(p => p.AccountId).Returns(accountId);
         principal.SetupGet(p => p.PrincipalType).Returns(principalType);
         principal.SetupGet(p => p.UserId).Returns(userId);
-        principal.SetupGet(p => p.DriverId).Returns(driverId);
+        principal.SetupGet(p => p.StaffId).Returns(staffId);
         principal.SetupGet(p => p.Role).Returns(role);
         return principal.Object;
     }
@@ -88,16 +88,16 @@ public class NotificationReaderTests
     }
 
     [Test]
-    public async Task GetMyNotificationsAsync_Driver_SeesOnlyDeliveriesAddressedToDriverId()
+    public async Task GetMyNotificationsAsync_Staff_SeesOnlyDeliveriesAddressedToStaffId()
     {
         var accountId = Guid.NewGuid();
-        var driverId = Guid.NewGuid();
-        await using var context = NewContext(nameof(GetMyNotificationsAsync_Driver_SeesOnlyDeliveriesAddressedToDriverId));
-        await context.NotificationDeliveries.AddAsync(new NotificationDelivery(accountId, null, null, NotificationChannels.InApp, RecipientPrincipalTypes.Driver, driverId.ToString(), DeliveryStatuses.Sent));
-        await context.NotificationDeliveries.AddAsync(new NotificationDelivery(accountId, null, null, NotificationChannels.InApp, RecipientPrincipalTypes.Driver, Guid.NewGuid().ToString(), DeliveryStatuses.Sent));
+        var staffId = Guid.NewGuid();
+        await using var context = NewContext(nameof(GetMyNotificationsAsync_Staff_SeesOnlyDeliveriesAddressedToStaffId));
+        await context.NotificationDeliveries.AddAsync(new NotificationDelivery(accountId, null, null, NotificationChannels.InApp, RecipientPrincipalTypes.Staff, staffId.ToString(), DeliveryStatuses.Sent));
+        await context.NotificationDeliveries.AddAsync(new NotificationDelivery(accountId, null, null, NotificationChannels.InApp, RecipientPrincipalTypes.Staff, Guid.NewGuid().ToString(), DeliveryStatuses.Sent));
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var reader = NewReader(context, Principal(accountId, PrincipalType.Driver, driverId: driverId));
+        var reader = NewReader(context, Principal(accountId, PrincipalType.Staff, staffId: staffId));
         var result = await reader.GetMyNotificationsAsync(false, 0, 50, CancellationToken.None);
 
         Assert.That(result, Has.Count.EqualTo(1));

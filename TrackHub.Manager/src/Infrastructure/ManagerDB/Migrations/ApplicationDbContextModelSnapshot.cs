@@ -219,6 +219,48 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     b.ToTable("account_features", "app");
                 });
 
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.AccountHoliday", b =>
+                {
+                    b.Property<Guid>("AccountHolidayId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.HasKey("AccountHolidayId");
+
+                    b.HasIndex("AccountId", "Date")
+                        .IsUnique()
+                        .HasDatabaseName("ux_account_holidays_accountid_date");
+
+                    b.ToTable("account_holidays", "app");
+                });
+
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.AccountSettings", b =>
                 {
                     b.Property<Guid>("AccountId")
@@ -1240,235 +1282,6 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     b.ToTable("document_versions", "app");
                 });
 
-            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.Driver", b =>
-                {
-                    b.Property<Guid>("DriverId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accountid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean")
-                        .HasColumnName("active");
-
-                    b.Property<DateTimeOffset>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("DefaultTransporterId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("defaulttransporterid");
-
-                    b.Property<string>("DocumentNumber")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("documentnumber");
-
-                    b.Property<string>("DocumentType")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("documenttype");
-
-                    b.Property<string>("EmployeeCode")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("employeecode");
-
-                    b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateOnly?>("LicenseExpiresAt")
-                        .HasColumnType("date")
-                        .HasColumnName("licenseexpiresat");
-
-                    b.Property<string>("LicenseNumber")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("licensenumber");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("phone");
-
-                    b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasColumnName("editversion");
-
-                    b.HasKey("DriverId");
-
-                    b.HasIndex("AccountId", "DocumentNumber")
-                        .IsUnique()
-                        .HasDatabaseName("ux_drivers_accountid_documentnumber")
-                        .HasFilter("documentnumber IS NOT NULL");
-
-                    b.ToTable("drivers", "app");
-                });
-
-            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.DriverQualification", b =>
-                {
-                    b.Property<Guid>("DriverQualificationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accountid");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("category");
-
-                    b.Property<DateTimeOffset>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("documentid");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("driverid");
-
-                    b.Property<DateOnly?>("ExpiresAt")
-                        .HasColumnType("date")
-                        .HasColumnName("expiresat");
-
-                    b.Property<DateOnly?>("IssuedAt")
-                        .HasColumnType("date")
-                        .HasColumnName("issuedat");
-
-                    b.Property<string>("IssuingAuthority")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("issuingauthority");
-
-                    b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("notes");
-
-                    b.Property<string>("Number")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("number");
-
-                    b.Property<string>("QualificationType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("qualificationtype");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("status");
-
-                    b.HasKey("DriverQualificationId");
-
-                    b.HasIndex("AccountId", "DriverId");
-
-                    b.HasIndex("AccountId", "ExpiresAt");
-
-                    b.ToTable("driver_qualifications", "app");
-                });
-
-            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.DriverTransporterAssignment", b =>
-                {
-                    b.Property<Guid>("DriverTransporterAssignmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accountid");
-
-                    b.Property<string>("AssignmentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("assignmenttype");
-
-                    b.Property<DateTimeOffset>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedByPrincipal")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("createdbyprincipal");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("driverid");
-
-                    b.Property<DateTimeOffset?>("EndsAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("endsat");
-
-                    b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("StartsAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("startsat");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("status");
-
-                    b.Property<Guid>("TransporterId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("transporterid");
-
-                    b.HasKey("DriverTransporterAssignmentId");
-
-                    b.HasIndex("AccountId", "DriverId", "Status")
-                        .HasDatabaseName("ix_driver_assignments_account_driver_status");
-
-                    b.HasIndex("AccountId", "TransporterId", "Status")
-                        .HasDatabaseName("ix_driver_assignments_account_transporter_status");
-
-                    b.ToTable("driver_transporter_assignments", "app");
-                });
-
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.GeocodingProvider", b =>
                 {
                     b.Property<Guid>("GeocodingProviderId")
@@ -2413,6 +2226,243 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffMember", b =>
+                {
+                    b.Property<Guid>("StaffId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("DefaultTransporterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("defaulttransporterid");
+
+                    b.Property<string>("DocumentNumber")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("documentnumber");
+
+                    b.Property<string>("DocumentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("documenttype");
+
+                    b.Property<string>("EmployeeCode")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("employeecode");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("LicenseExpiresAt")
+                        .HasColumnType("date")
+                        .HasColumnName("licenseexpiresat");
+
+                    b.Property<string>("LicenseNumber")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("licensenumber");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("StaffType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("Driver")
+                        .HasColumnName("stafftype");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("editversion");
+
+                    b.HasKey("StaffId");
+
+                    b.HasIndex("AccountId", "DocumentNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ux_staff_members_accountid_documentnumber")
+                        .HasFilter("documentnumber IS NOT NULL");
+
+                    b.ToTable("staff_members", "app");
+                });
+
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffQualification", b =>
+                {
+                    b.Property<Guid>("StaffQualificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("category");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("documentid");
+
+                    b.Property<DateOnly?>("ExpiresAt")
+                        .HasColumnType("date")
+                        .HasColumnName("expiresat");
+
+                    b.Property<DateOnly?>("IssuedAt")
+                        .HasColumnType("date")
+                        .HasColumnName("issuedat");
+
+                    b.Property<string>("IssuingAuthority")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("issuingauthority");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Number")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("number");
+
+                    b.Property<string>("QualificationType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("qualificationtype");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("status");
+
+                    b.HasKey("StaffQualificationId");
+
+                    b.HasIndex("AccountId", "ExpiresAt");
+
+                    b.HasIndex("AccountId", "StaffId");
+
+                    b.ToTable("staff_qualifications", "app");
+                });
+
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffTransporterAssignment", b =>
+                {
+                    b.Property<Guid>("StaffTransporterAssignmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<string>("AssignmentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("assignmenttype");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByPrincipal")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("createdbyprincipal");
+
+                    b.Property<DateTimeOffset?>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("endsat");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("startsat");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TransporterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transporterid");
+
+                    b.HasKey("StaffTransporterAssignmentId");
+
+                    b.HasIndex("AccountId", "StaffId", "Status")
+                        .HasDatabaseName("ix_staff_assignments_account_staff_status");
+
+                    b.HasIndex("AccountId", "TransporterId", "Status")
+                        .HasDatabaseName("ix_staff_assignments_account_transporter_status");
+
+                    b.ToTable("staff_transporter_assignments", "app");
+                });
+
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.Transporter", b =>
                 {
                     b.Property<Guid>("TransporterId")
@@ -2925,15 +2975,6 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     b.Navigation("Operator");
                 });
 
-            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.Driver", b =>
-                {
-                    b.HasOne("TrackHub.Manager.Infrastructure.Entities.Account", null)
-                        .WithMany("Drivers")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.Group", b =>
                 {
                     b.HasOne("TrackHub.Manager.Infrastructure.Entities.Account", "Account")
@@ -2980,6 +3021,15 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffMember", b =>
+                {
+                    b.HasOne("TrackHub.Manager.Infrastructure.Entities.Account", null)
+                        .WithMany("StaffMembers")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.Transporter", b =>
@@ -3095,11 +3145,11 @@ namespace TrackHub.Manager.Infrastructure.Migrations
 
                     b.Navigation("Devices");
 
-                    b.Navigation("Drivers");
-
                     b.Navigation("Groups");
 
                     b.Navigation("Operators");
+
+                    b.Navigation("StaffMembers");
 
                     b.Navigation("Transporters");
 

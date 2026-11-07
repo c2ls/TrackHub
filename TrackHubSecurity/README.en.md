@@ -12,7 +12,7 @@ Built on .NET 10 with a HotChocolate GraphQL endpoint, following the platform's 
 
 | Area | Tables |
 |---|---|
-| **Identity** | `security.users`, `security.driver_credentials`, `security.driver_device_registrations` |
+| **Identity** | `security.users`, `security.staff_credentials`, `security.staff_device_registrations` |
 | **RBAC** | `security.roles`, `security.user_role`, `security.resource_action_role` |
 | **Policies** | `security.policies`, `security.user_policy`, `security.resource_action_policy` |
 | **Catalog** | `security.resources`, `security.actions`, `security.resource_action` |

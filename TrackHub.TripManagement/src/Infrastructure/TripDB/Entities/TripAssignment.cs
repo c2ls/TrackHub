@@ -18,7 +18,7 @@ using Common.Infrastructure;
 namespace TrackHub.TripManagement.Infrastructure.TripDB.Entities;
 
 /// <summary>
-/// Driver/transporter assignment history. At most ONE Active row per trip, enforced by a partial
+/// Staff/transporter assignment history. At most ONE Active row per trip, enforced by a partial
 /// unique index rather than by handler discipline (spec 11 section 6.1).
 /// </summary>
 public sealed class TripAssignment : BaseAuditableEntity
@@ -26,7 +26,7 @@ public sealed class TripAssignment : BaseAuditableEntity
     public Guid TripAssignmentId { get; set; } = Guid.NewGuid();
     public Guid AccountId { get; set; }
     public Guid TripId { get; set; }
-    public Guid DriverId { get; set; }
+    public Guid StaffId { get; set; }
     public Guid TransporterId { get; set; }
     public string Status { get; set; } = TripAssignmentStatuses.Active;
     public DateTimeOffset AssignedAt { get; set; }

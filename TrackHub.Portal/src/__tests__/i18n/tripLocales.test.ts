@@ -89,7 +89,7 @@ const BACKEND_TRIP_ERROR_CODES = [
   'TRIP_DUPLICATE_CODE',
   'TRIP_DUPLICATE_EXTERNAL_REFERENCE',
   'TRIP_HAS_HISTORY',
-  'TRIP_DRIVER_NOT_ASSIGNABLE',
+  'TRIP_STAFF_NOT_ASSIGNABLE',
   'TRIP_TRANSPORTER_BUSY',
   'TRIP_ARMED',
   'TRIP_START_EVIDENCE_REQUIRED',
@@ -133,7 +133,7 @@ const DYNAMIC_KEYS = [
   'platformStatus.services.tripManagement.name',
   'platformStatus.services.tripManagement.description',
   // Share field flags are rendered from the flag name.
-  'tripShare.includeDriverName',
+  'tripShare.includeStaffName',
   'tripShare.includeVehicle',
   'tripShare.includeLivePosition',
   'tripShare.includeStopDetail',

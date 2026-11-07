@@ -58,7 +58,7 @@ public static class DatabaseConnectionStrings
         var builder = new NpgsqlConnectionStringBuilder(connectionString);
 
         // NpgsqlConnectionStringBuilder answers ContainsKey for every keyword it knows, set or not,
-        // so the plain base builder is what distinguishes a stated value from a driver default.
+        // so the plain base builder is what distinguishes a stated value from a staff default.
         var stated = new DbConnectionStringBuilder { ConnectionString = connectionString };
 
         if (!IsStated(stated, "Maximum Pool Size", "MaxPoolSize"))

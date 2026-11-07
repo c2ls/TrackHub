@@ -26,11 +26,11 @@ public interface IWorkforceReportReader
     // rather than a raw GraphQL error.
     Task EnsureWorkforceFeatureAsync(CancellationToken cancellationToken);
 
-    Task<IReadOnlyCollection<ReportDriverVm>> GetDriversAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<ReportStaffMemberVm>> GetStaffMembersAsync(CancellationToken cancellationToken);
 
-    Task<IReadOnlyCollection<ReportDriverQualificationVm>> GetDriverQualificationsAsync(
-        Guid? driverId, int? expiringWithinDays, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<ReportStaffQualificationVm>> GetStaffQualificationsAsync(
+        Guid? staffId, int? expiringWithinDays, CancellationToken cancellationToken);
 
-    Task<IReadOnlyCollection<ReportDriverAssignmentVm>> GetDriverAssignmentHistoryAsync(
-        Guid? driverId, Guid? transporterId, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<ReportStaffAssignmentVm>> GetStaffAssignmentHistoryAsync(
+        Guid? staffId, Guid? transporterId, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken);
 }

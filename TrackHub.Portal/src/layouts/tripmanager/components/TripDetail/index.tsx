@@ -204,7 +204,7 @@ function TripDetail({
             <Icon>logout</Icon>&nbsp;{t('tripStops.actions.depart')}
           </ArgonButton>
         )}
-        {/* Spec 11 §9: until the driver app exists, POD and delivery capture
+        {/* Spec 11 §9: until the staff app exists, POD and delivery capture
             are the dispatcher's job — so both live on the stop row. */}
         {canWriteDeliveries && (
           <>

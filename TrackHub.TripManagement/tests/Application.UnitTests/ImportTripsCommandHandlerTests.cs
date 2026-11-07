@@ -29,7 +29,7 @@ public sealed class ImportTripsCommandHandlerTests
         var existing = TestFactory.Trip(TripStatuses.Created) with
         {
             ExternalReference = "EXT-1",
-            DriverId = TestFactory.DriverId,
+            StaffId = TestFactory.StaffId,
             ServiceOrderId = _serviceOrderId,
             Notes = "Dock 4",
             TollVehicleClass = "III",
@@ -54,7 +54,7 @@ public sealed class ImportTripsCommandHandlerTests
 
         Assert.That(results.Single().Succeeded, Is.True);
         writer.Verify(w => w.UpdateTripAsync(existing.TripId, It.Is<TripDto>(d =>
-            d.DriverId == TestFactory.DriverId
+            d.StaffId == TestFactory.StaffId
             && d.ServiceOrderId == _serviceOrderId
             && d.Notes == "Dock 4"
             && d.TollVehicleClass == "III"), TestFactory.AccountId, null, It.IsAny<CancellationToken>()), Times.Once);
@@ -63,15 +63,15 @@ public sealed class ImportTripsCommandHandlerTests
     }
 
     [Test]
-    public async Task ReImport_OntoAnotherUnit_ChecksTheCarriedOverDriver()
+    public async Task ReImport_OntoAnotherUnit_ChecksTheCarriedOverStaff()
     {
-        var existing = TestFactory.Trip(TripStatuses.Created) with { ExternalReference = "EXT-2", DriverId = TestFactory.DriverId };
+        var existing = TestFactory.Trip(TripStatuses.Created) with { ExternalReference = "EXT-2", StaffId = TestFactory.StaffId };
         var otherUnit = Guid.NewGuid();
         var reader = new Mock<ITripReader>();
         reader.Setup(r => r.FindByExternalReferenceAsync(TestFactory.AccountId, "EXT-2", It.IsAny<CancellationToken>())).ReturnsAsync(existing);
         reader.Setup(r => r.TransporterExistsInAccountAsync(otherUnit, TestFactory.AccountId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         var validation = new Mock<IManagerValidationClient>();
-        validation.Setup(v => v.ValidateDriverAssignmentAsync(TestFactory.DriverId, "Transporter", otherUnit, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        validation.Setup(v => v.ValidateStaffAssignmentAsync(TestFactory.StaffId, "Transporter", otherUnit, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         var writer = new Mock<ITripWriter>();
         var handler = new ImportTripsCommandHandler(
             writer.Object, reader.Object, Mock.Of<ITripStopWriter>(), validation.Object,

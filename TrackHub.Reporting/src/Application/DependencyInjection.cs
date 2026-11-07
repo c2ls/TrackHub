@@ -44,7 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IReport, DocumentShareActivityReport>();
         services.AddScoped<IReport, DocumentUploadVolumeReport>();
         // Workforce reports (spec 09 §13).
-        services.AddScoped<IReport, DriverRegistryReport>();
+        services.AddScoped<IReport, StaffRegistryReport>();
         services.AddScoped<IReport, QualificationExpirationsReport>();
         services.AddScoped<IReport, AssignmentHistoryReport>();
 

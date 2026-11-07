@@ -26,14 +26,14 @@ using TrackHub.AuthorityServer.Application.Users.Queries.GetUsers;
 using System.Security.Authentication;
 using Microsoft.Extensions.Localization;
 using Common.Application.Exceptions;
-using TrackHub.AuthorityServer.Application.Drivers.Queries.AuthenticateDriver;
+using TrackHub.AuthorityServer.Application.Staff.Queries.AuthenticateStaff;
 using TrackHub.AuthorityServer.Web.Models;
 
 namespace TrackHub.AuthorityServer.Web.Controllers;
 
 public class LoginController(ISender sender, IStringLocalizer<LoginController> localizer, ILogger<LoginController> logger, IConfiguration configuration) : Controller
 {
-    private const string DriverMobileClientId = "driver_mobile_client";
+    private const string StaffMobileClientId = "staff_mobile_client";
 
     // GET: /Login
     // Returns the login view.
@@ -84,21 +84,21 @@ public class LoginController(ISender sender, IStringLocalizer<LoginController> l
 
         try
         {
-            if (IsDriverMobileLogin(model.ReturnUrl))
+            if (IsStaffMobileLogin(model.ReturnUrl))
             {
-                var driver = await sender.Send(new AuthenticateDriverQuery(model.Email, model.Password));
-                var driverClaims = new List<Claim>
+                var staff = await sender.Send(new AuthenticateStaffQuery(model.Email, model.Password));
+                var staffClaims = new List<Claim>
                 {
-                    new(ClaimTypes.Sid, driver.DriverId.ToString()),
-                    new("principal_type", "Driver"),
-                    new("driver_id", driver.DriverId.ToString()),
-                    new("driver_credential_id", driver.DriverCredentialId.ToString()),
-                    new("account_id", driver.AccountId.ToString()),
-                    new("client_id", DriverMobileClientId),
-                    new(SubjectValidity.SecurityStampClaim, driver.SecurityStamp.ToString())
+                    new(ClaimTypes.Sid, staff.StaffId.ToString()),
+                    new("principal_type", "Staff"),
+                    new("staff_id", staff.StaffId.ToString()),
+                    new("staff_credential_id", staff.StaffCredentialId.ToString()),
+                    new("account_id", staff.AccountId.ToString()),
+                    new("client_id", StaffMobileClientId),
+                    new(SubjectValidity.SecurityStampClaim, staff.SecurityStamp.ToString())
                 };
 
-                await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(driverClaims, CookieAuthenticationDefaults.AuthenticationScheme)));
+                await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(staffClaims, CookieAuthenticationDefaults.AuthenticationScheme)));
                 return Redirect(model.ReturnUrl);
             }
 
@@ -151,9 +151,9 @@ public class LoginController(ISender sender, IStringLocalizer<LoginController> l
         return View(model);
     }
 
-    // A substring match selected the driver branch for any url merely containing that text,
+    // A substring match selected the staff branch for any url merely containing that text,
     // including inside a state or redirect_uri parameter.
-    private static bool IsDriverMobileLogin(string? returnUrl)
+    private static bool IsStaffMobileLogin(string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(returnUrl))
         {
@@ -168,7 +168,7 @@ public class LoginController(ISender sender, IStringLocalizer<LoginController> l
 
         var query = QueryHelpers.ParseQuery(returnUrl[queryStart..]);
         return query.TryGetValue("client_id", out var clientId)
-            && string.Equals(clientId.ToString(), DriverMobileClientId, StringComparison.Ordinal);
+            && string.Equals(clientId.ToString(), StaffMobileClientId, StringComparison.Ordinal);
     }
 
     // Same rule as IUrlHelper.IsLocalUrl, without depending on MVC's url helper being wired up.

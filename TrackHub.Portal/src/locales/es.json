@@ -134,7 +134,7 @@
     "inGeofence": "En Geocerca",
     "transportersTitle": "Unidades",
     "positionsTitle": "Posiciones",
-    "driversTitle": "Conductores",
+    "staffTitle": "Personal",
     "filterType": "Tipo de Unidad",
     "filterGroup": "Grupo",
     "filterOperator": "Operador",
@@ -242,7 +242,7 @@
     "config": {
       "storingIntervalSeconds": "Intervalo de Almacenamiento (Segundos)",
       "retentionDays": "Días de Retención",
-      "blockAssignmentOnExpiredLicense": "Bloquear la asignación cuando la licencia del conductor esté vencida",
+      "blockAssignmentOnExpiredLicense": "Bloquear la asignación cuando la licencia del personal esté vencida",
       "autoLifecycle": "Iniciar y completar los viajes automáticamente con las zonas",
       "activationLeadMinutes": "Empezar a vigilar un viaje estos minutos antes de su inicio planeado",
       "overdueGraceMinutes": "Minutos después del inicio planeado antes de marcar el viaje como sin iniciar a tiempo",
@@ -292,7 +292,7 @@
     },
     "actorTypes": {
       "User": "Usuario",
-      "Driver": "Conductor",
+      "Staff": "Personal",
       "ServiceClient": "Servicio"
     }
   },
@@ -348,8 +348,8 @@
     "documentExpiring": "Documento por Vencer",
     "documentExpired": "Documento Vencido",
     "notificationDeliveryFailed": "Fallo de Entrega de Notificación",
-    "driverQualificationExpiring": "Habilitación del Conductor por Vencer",
-    "driverQualificationExpired": "Habilitación del Conductor Vencida",
+    "staffQualificationExpiring": "Habilitación del Personal por Vencer",
+    "staffQualificationExpired": "Habilitación del Personal Vencida",
     "tripAssigned": "Viaje Asignado",
     "tripStarted": "Viaje Iniciado",
     "tripStopArrived": "Llegada a Parada",
@@ -374,7 +374,7 @@
     "principalType": "Tipo de Destinatario",
     "principalId": "Id del Destinatario",
     "user": "Usuario",
-    "driver": "Conductor",
+    "staff": "Personal",
     "eventType": "Tipo de Evento",
     "allEvents": "Todos los eventos",
     "channel": "Canal",
@@ -558,7 +558,7 @@
     "tripDuplicateCode": "Ya existe otro viaje en esta cuenta con ese código.",
     "tripDuplicateExternalReference": "Ya existe otro viaje en esta cuenta con esa referencia externa.",
     "tripHasHistory": "El viaje tiene actividad registrada y no se puede eliminar. Cancélelo en su lugar.",
-    "tripDriverNotAssignable": "Ese conductor no se puede asignar a este viaje.",
+    "tripStaffNotAssignable": "Ese miembro del personal no se puede asignar a este viaje.",
     "tripTransporterBusy": "Esa unidad ya está corriendo otro viaje. Complételo o cancélelo primero.",
     "tripArmed": "Este viaje está en curso, así que su unidad y su origen ya no se pueden cambiar. Cancélelo y planifique uno nuevo.",
     "tripStartEvidenceRequired": "No se encontró una salida registrada del origen, así que se requiere una hora de inicio.",
@@ -596,16 +596,16 @@
     "tripImportInvalidRow": "Fila no válida",
     "tollImportInvalidRow": "Fila no válida"
   },
-  "driver": {
+  "staff": {
     "name": "Nombre",
     "phone": "Teléfono",
     "document": "Documento",
-    "title": "Conductores",
-    "create": "Crear Conductor",
-    "update": "Actualizar Conductor",
-    "deactivate": "Desactivar Conductor",
-    "deactivateConfirmation": "¿Desactivar este conductor?",
-    "activation": "Activación de Conductor",
+    "title": "Personal",
+    "create": "Crear Personal",
+    "update": "Actualizar Personal",
+    "deactivate": "Desactivar Personal",
+    "deactivateConfirmation": "¿Desactivar este miembro del personal?",
+    "activation": "Activación de Personal",
     "employeeCode": "Código de Empleado",
     "licenseNumber": "Número de Licencia",
     "licenseExpiresAt": "Vencimiento de Licencia",
@@ -614,24 +614,35 @@
     "defaultTransporter": "Transportador Predeterminado",
     "revokeDeviceRegistration": "Revocar Registro de Dispositivo",
     "search": "Buscar por nombre, documento o teléfono",
-    "empty": "Aún no hay conductores. Use + para agregar el primero.",
+    "empty": "Aún no hay personal. Use + para agregar el primero.",
     "manage": "Credenciales y dispositivos",
     "access": "Credencial",
-    "accessNone": "Sin credencial"
+    "accessNone": "Sin credencial",
+    "staffType": "Tipo de personal",
+    "allTypes": "Todos los tipos",
+    "types": {
+      "Driver": "Conductor",
+      "Operator": "Operador",
+      "DriverAssistant": "Ayudante de conductor",
+      "Mechanic": "Mecánico",
+      "Supervisor": "Supervisor",
+      "Administrative": "Administrativo",
+      "Other": "Otro"
+    }
   },
   "workforce": {
-    "selectDriver": "Conductor",
-    "selectDriverPlaceholder": "Seleccione un conductor",
-    "selectDriverHint": "Seleccione un conductor para administrar sus credenciales, dispositivos, habilitaciones y asignaciones.",
+    "selectStaff": "Personal",
+    "selectStaffPlaceholder": "Seleccione un miembro del personal",
+    "selectStaffHint": "Seleccione un miembro del personal para administrar sus credenciales, dispositivos, habilitaciones y asignaciones.",
     "credentials": {
-      "title": "Credenciales y Dispositivos del Conductor",
+      "title": "Credenciales y Dispositivos del Personal",
       "login": "Usuario",
       "password": "Contraseña",
       "newPassword": "Nueva Contraseña",
       "resetRequired": "Requiere Cambio de Contraseña",
       "failedAttempts": "Intentos Fallidos",
       "lockedUntil": "Bloqueada Hasta",
-      "lockedUntilHelp": "El conductor no podrá iniciar sesión hasta ese momento.",
+      "lockedUntilHelp": "El personal no podrá iniciar sesión hasta ese momento.",
       "lastLoginAt": "Último Ingreso",
       "status": "Estado",
       "create": "Crear Credencial",
@@ -642,12 +653,12 @@
       "resetTitle": "Restablecer Credencial",
       "revoke": "Revocar",
       "revokeTitle": "Revocar Credencial",
-      "revokeConfirm": "¿Revocar esta credencial de conductor? El conductor no podrá iniciar sesión y las sesiones existentes dejarán de renovarse.",
+      "revokeConfirm": "¿Revocar esta credencial de personal? El personal no podrá iniciar sesión y las sesiones existentes dejarán de renovarse.",
       "statusActive": "Activa",
       "statusRevoked": "Revocada",
       "statusLocked": "Bloqueada",
       "statusPending": "Pendiente de Activación",
-      "empty": "Este conductor aún no tiene credencial."
+      "empty": "Este miembro del personal aún no tiene credencial."
     },
     "devices": {
       "title": "Dispositivos Registrados",
@@ -656,11 +667,11 @@
       "appVersion": "Versión de la App",
       "pushToken": "Token Push (enmascarado)",
       "lastSeenAt": "Última Actividad",
-      "revokeConfirm": "¿Revocar este registro de dispositivo? El dispositivo deberá registrarse nuevamente desde la aplicación del conductor.",
-      "empty": "Este conductor no tiene dispositivos registrados."
+      "revokeConfirm": "¿Revocar este registro de dispositivo? El dispositivo deberá registrarse nuevamente desde la aplicación del personal.",
+      "empty": "Este miembro del personal no tiene dispositivos registrados."
     },
     "qualifications": {
-      "title": "Habilitaciones del Conductor",
+      "title": "Habilitaciones del Personal",
       "type": "Tipo",
       "category": "Categoría",
       "number": "Número",
@@ -669,15 +680,15 @@
       "issuingAuthority": "Autoridad Emisora",
       "status": "Estado",
       "documentId": "Documento Vinculado",
-      "documentIdHelp": "Documento de respaldo opcional, seleccionado entre los documentos de este conductor que aparecen abajo.",
+      "documentIdHelp": "Documento de respaldo opcional, seleccionado entre los documentos de este miembro del personal que aparecen abajo.",
       "documentNone": "Sin documento vinculado",
       "documentUnavailable": "Documento vinculado no disponible",
-      "documents": "Documentos del Conductor",
+      "documents": "Documentos del Personal",
       "notes": "Notas",
       "create": "Crear Habilitación",
       "update": "Actualizar Habilitación",
       "deleteConfirm": "¿Eliminar esta habilitación? El registro se borra de forma permanente; su historial permanece en la auditoría.",
-      "empty": "Este conductor no tiene habilitaciones registradas.",
+      "empty": "Este miembro del personal no tiene habilitaciones registradas.",
       "types": {
         "license": "Licencia",
         "medicalexam": "Examen Médico",
@@ -693,7 +704,7 @@
       }
     },
     "assignments": {
-      "title": "Asignaciones del Conductor",
+      "title": "Asignaciones del Personal",
       "active": "Asignaciones Activas",
       "history": "Historial de Asignaciones",
       "transporter": "Unidad",
@@ -703,16 +714,16 @@
       "type": "Tipo de Asignación",
       "status": "Estado",
       "createdBy": "Creada Por",
-      "assign": "Asignar Conductor",
+      "assign": "Asignar Personal",
       "end": "Finalizar Asignación",
       "endConfirm": "¿Finalizar esta asignación ahora? Las asignaciones finalizadas no se pueden modificar.",
       "from": "Desde",
       "to": "Hasta",
       "search": "Buscar",
       "empty": "Ninguna asignación coincide con los filtros actuales.",
-      "emptyActive": "Este conductor no tiene asignaciones activas.",
+      "emptyActive": "Este miembro del personal no tiene asignaciones activas.",
       "defaultTransporter": "Unidad predeterminada",
-      "defaultTransporterHint": "Definida en la ficha del conductor",
+      "defaultTransporterHint": "Definida en la ficha del personal",
       "windowInvalid": "Elija un período que termine el mismo día o después de su inicio y abarque menos de {{days}} días.",
       "tooManyResults": "Mostrando las primeras {{count}} filas. Ajuste los filtros para ver el resto.",
       "types": {
@@ -727,7 +738,7 @@
     },
     "expirations": {
       "title": "Vencimientos de Habilitaciones (30 días)",
-      "driver": "Conductor",
+      "staff": "Personal",
       "daysLeft": "Días Restantes",
       "expired": "Vencida",
       "empty": "No hay habilitaciones por vencer en los próximos 30 días."
@@ -966,9 +977,9 @@
     "accountsByStatus": "Cuentas por Estado",
     "featureEnablementMatrix": "Matriz de Habilitación de Funcionalidades",
     "groupMembershipExport": "Exportación de Membresía de Grupos",
-    "workforceDriverRegistry": "Registro de Conductores",
+    "workforceStaffRegistry": "Registro de Personal",
     "workforceQualificationExpirations": "Vencimientos de Habilitaciones",
-    "workforceAssignmentHistory": "Historial de Asignaciones de Conductores",
+    "workforceAssignmentHistory": "Historial de Asignaciones de Personal",
     "tripSummary": "Resumen de Viajes",
     "tripDetail": "Detalle de Paradas del Viaje",
     "tripOnTimePerformance": "Cumplimiento de Horarios de Viajes",
@@ -998,12 +1009,12 @@
     "accountsByStatus": "Cuentas agrupadas por estado de ciclo de vida.",
     "featureEnablementMatrix": "Funcionalidades habilitadas y niveles en todas las cuentas.",
     "groupMembershipExport": "Membresía de grupos de usuarios y unidades de su cuenta.",
-    "workforceDriverRegistry": "Registro completo de conductores con licencia, código de empleado y unidad predeterminada.",
-    "workforceQualificationExpirations": "Habilitaciones de conductores que vencen dentro del número de días seleccionado.",
-    "workforceAssignmentHistory": "Historial de asignaciones de conductor a unidad, acotado en el tiempo, sobre un rango de fechas.",
+    "workforceStaffRegistry": "Registro completo de personal con licencia, código de empleado y unidad predeterminada.",
+    "workforceQualificationExpirations": "Habilitaciones de personal que vencen dentro del número de días seleccionado.",
+    "workforceAssignmentHistory": "Historial de asignaciones de personal a unidad, acotado en el tiempo, sobre un rango de fechas.",
     "tripSummary": "Viajes en un rango de fechas con inicio, fin, distancia y peaje estimado, planificados frente a reales.",
     "tripDetail": "Detalle por parada de cada viaje: ventana planificada, llegada, salida, permanencia y resultado de las entregas.",
-    "tripOnTimePerformance": "Porcentaje de cumplimiento, retraso promedio y paradas con retraso por unidad, conductor y cliente.",
+    "tripOnTimePerformance": "Porcentaje de cumplimiento, retraso promedio y paradas con retraso por unidad, personal y cliente.",
     "tripStopDwell": "Distribución del tiempo de permanencia por parada y cliente en un rango de fechas.",
     "tripTollCost": "Peaje estimado por viaje, ruta, estación y clase de vehículo, señalando las estaciones sin tarifa.",
     "tripPodExport": "Registro de pruebas de entrega con receptor, fecha de captura, ubicación y cantidad de documentos."
@@ -1035,7 +1046,7 @@
     "backgroundJobs": "Trabajos en Segundo Plano",
     "devicesMaster": "Dispositivos (Master)",
     "documents": "Documentos",
-    "drivers": "Conductores",
+    "staff": "Personal",
     "gpsIntegrationDashboard": "Panel de Integración GPS",
     "manageDevices": "Administrar Dispositivos",
     "notifications": "Notificaciones",
@@ -1048,7 +1059,7 @@
     "supportGrants": "Concesiones de Soporte",
     "synchronizedDevices": "Dispositivos Sincronizados",
     "tripManagement": "Gestión de Viajes",
-    "driverMobile": "Móvil del Conductor",
+    "staffMobile": "Móvil del Personal",
     "notificationsEmail": "Notificaciones por Correo",
     "notificationsWhatsapp": "Notificaciones por WhatsApp",
     "gpsIntegration": "Integración GPS",
@@ -1056,7 +1067,8 @@
     "workforce": "Personal",
     "tollCatalog": "Catálogo de Peajes",
     "trips": "Viajes",
-    "tripTracking": "Seguimiento de Viaje"
+    "tripTracking": "Seguimiento de Viaje",
+    "staffOperations": "Operaciones del Personal"
   },
   "role": {
     "title": "Roles",
@@ -1466,7 +1478,7 @@
       },
       "manager": {
         "name": "Gestión de flota",
-        "description": "Vehículos, conductores, grupos, documentos y configuración de la cuenta."
+        "description": "Vehículos, personal, grupos, documentos y configuración de la cuenta."
       },
       "router": {
         "name": "Conexiones GPS",
@@ -1577,7 +1589,7 @@
     "code": "Código del viaje",
     "customerName": "Cliente",
     "transporter": "Unidad",
-    "driver": "Conductor",
+    "staff": "Personal",
     "originName": "Origen",
     "originLatitude": "Latitud del origen",
     "originLongitude": "Longitud del origen",
@@ -1637,8 +1649,8 @@
     "filterTo": "Hasta",
     "filterTransporter": "Unidad",
     "allTransporters": "Todas las unidades",
-    "filterDriver": "Conductor",
-    "allDrivers": "Todos los conductores",
+    "filterStaff": "Personal",
+    "allStaff": "Todo el personal",
     "filterCustomer": "Cliente",
     "clearFilters": "Limpiar filtros",
     "showing": "Mostrando {{from}}–{{to}} de {{total}}",
@@ -1729,15 +1741,15 @@
     "forceComplete": "Completar aunque queden paradas pendientes",
     "assignment": {
       "title": "Asignación",
-      "driver": "Conductor",
+      "staff": "Personal",
       "transporter": "Unidad",
-      "assign": "Asignar conductor",
+      "assign": "Asignar personal",
       "assignedAt": "Asignado",
       "acknowledgedAt": "Confirmado",
       "notAcknowledged": "Aún sin confirmar",
       "status": "Estado",
-      "none": "Aún no hay conductor asignado.",
-      "selectDriver": "Seleccione un conductor"
+      "none": "Aún no hay personal asignado.",
+      "selectStaff": "Seleccione un miembro del personal"
     },
     "routePlan": {
       "title": "Plan de ruta",
@@ -1761,7 +1773,7 @@
       "events": {
         "TripCreated": "Viaje creado",
         "TripUpdated": "Viaje actualizado",
-        "TripAssigned": "Conductor asignado",
+        "TripAssigned": "Personal asignado",
         "TripAssignmentAcknowledged": "Asignación confirmada",
         "TripStarted": "Viaje iniciado",
         "TripOriginDeparted": "Salió del origen",
@@ -1786,7 +1798,7 @@
       "sources": {
         "Detection": "Medido",
         "Portal": "Portal",
-        "Driver": "App del conductor",
+        "Staff": "App del personal",
         "Job": "Revisión programada",
         "ServiceClient": "Integración"
       }
@@ -1902,7 +1914,7 @@
     "purpose": "Propósito",
     "expiresAt": "El enlace vence",
     "fields": "Qué puede ver el cliente",
-    "includeDriverName": "Nombre de pila del conductor",
+    "includeStaffName": "Nombre de pila del personal",
     "includeVehicle": "Vehículo",
     "includeLivePosition": "Posición en vivo (mientras el viaje esté en curso)",
     "includeStopDetail": "Detalle de paradas (localidad, ventana planeada, estado)",
@@ -2075,7 +2087,7 @@
     "trip": "Viaje",
     "scheduled": "Programado",
     "vehicle": "Vehículo",
-    "driver": "Conductor",
+    "staff": "Personal",
     "plannedStart": "Salida planeada",
     "plannedEnd": "Llegada planeada",
     "actualStart": "Inició",
@@ -2100,5 +2112,16 @@
   },
   "table": {
     "moreRows": "{{count}} filas más no mostradas"
+  },
+  "accountHolidays": {
+    "title": "Calendario de Festivos",
+    "year": "Año",
+    "date": "Fecha",
+    "name": "Nombre",
+    "save": "Guardar año",
+    "hint": "Al guardar se reemplaza el año completo. Agregue también los domingos si su empresa los trata como festivos.",
+    "none": "No hay festivos para este año.",
+    "add": "Agregar",
+    "invalidDate": "La fecha debe estar dentro del año seleccionado."
   }
 }

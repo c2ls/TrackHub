@@ -33,7 +33,7 @@ Each tile is one part of the platform, named for what it does rather than by its
 |---|---|
 | **Sign-in** | Logging in to TrackHub. |
 | **Permissions** | What each person is allowed to see and do. |
-| **Fleet management** | Vehicles, drivers, groups, documents, account settings. |
+| **Fleet management** | Vehicles, staff, groups, documents, account settings. |
 | **GPS connections** | Communication with your GPS providers. |
 | **Position data** | Vehicle positions and their history. |
 | **Geofences** | Entries, exits and stops inside your zones. |

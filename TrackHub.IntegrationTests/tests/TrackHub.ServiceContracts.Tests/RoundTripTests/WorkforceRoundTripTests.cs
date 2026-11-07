@@ -19,7 +19,7 @@ using Common.Domain.Constants;
 using Common.Mediator;
 using HotChocolate.Execution;
 using Moq;
-using TrackHub.Manager.Application.Drivers.Queries;
+using TrackHub.Manager.Application.Staff.Queries;
 using TrackHub.Manager.Domain.Models;
 using TrackHub.Reporting.Domain.Interfaces;
 using TrackHub.Reporting.Infrastructure.GraphQLApi;
@@ -30,14 +30,14 @@ namespace TrackHub.ServiceContracts.Tests.RoundTripTests;
 
 // Spec 09 §16 Layer B. Layer A only proves the workforce documents PARSE against Manager's schema;
 // everything travelling in GraphQL variables — the "Transporter" resource-type literal, the optional
-// driver/transporter filters, the DateTimeOffset window, the paging bounds — is invisible to document
+// staff/transporter filters, the DateTimeOffset window, the paging bounds — is invisible to document
 // validation. These tests push Reporting's REAL query documents through Manager's REAL resolvers and
 // assert the values land intact in the REAL query record structs.
 [TestFixture]
 public class WorkforceRoundTripTests
 {
     private static readonly Guid AccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    private static readonly Guid DriverId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid StaffId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid TransporterId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly DateTimeOffset From = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset To = new(2026, 6, 30, 23, 59, 59, TimeSpan.Zero);
@@ -75,23 +75,23 @@ public class WorkforceRoundTripTests
 
     private WorkforceReportReader NewReader() => new(_factory, FakeUser(), FakeFeatureReader());
 
-    private StrongBox<GetDriverQualificationsQuery?> SetupQualifications()
+    private StrongBox<GetStaffQualificationsQuery?> SetupQualifications()
     {
-        var received = new StrongBox<GetDriverQualificationsQuery?>(null);
+        var received = new StrongBox<GetStaffQualificationsQuery?>(null);
         _sender
-            .Setup(s => s.Send(It.IsAny<GetDriverQualificationsQuery>(), It.IsAny<CancellationToken>()))
-            .Callback<IRequest<DriverQualificationsPageVm>, CancellationToken>((q, _) => received.Value = (GetDriverQualificationsQuery)q)
-            .ReturnsAsync(new DriverQualificationsPageVm([], 0));
+            .Setup(s => s.Send(It.IsAny<GetStaffQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<StaffQualificationsPageVm>, CancellationToken>((q, _) => received.Value = (GetStaffQualificationsQuery)q)
+            .ReturnsAsync(new StaffQualificationsPageVm([], 0));
         return received;
     }
 
-    private StrongBox<GetDriverAssignmentHistoryQuery?> SetupAssignmentHistory()
+    private StrongBox<GetStaffAssignmentHistoryQuery?> SetupAssignmentHistory()
     {
-        var received = new StrongBox<GetDriverAssignmentHistoryQuery?>(null);
+        var received = new StrongBox<GetStaffAssignmentHistoryQuery?>(null);
         _sender
-            .Setup(s => s.Send(It.IsAny<GetDriverAssignmentHistoryQuery>(), It.IsAny<CancellationToken>()))
-            .Callback<IRequest<DriverAssignmentHistoryPageVm>, CancellationToken>((q, _) => received.Value = (GetDriverAssignmentHistoryQuery)q)
-            .ReturnsAsync(new DriverAssignmentHistoryPageVm([], 0));
+            .Setup(s => s.Send(It.IsAny<GetStaffAssignmentHistoryQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<StaffAssignmentHistoryPageVm>, CancellationToken>((q, _) => received.Value = (GetStaffAssignmentHistoryQuery)q)
+            .ReturnsAsync(new StaffAssignmentHistoryPageVm([], 0));
         return received;
     }
 
@@ -101,7 +101,7 @@ public class WorkforceRoundTripTests
         var received = SetupQualifications();
 
         var reader = NewReader();
-        await reader.GetDriverQualificationsAsync(null, 15, CancellationToken.None);
+        await reader.GetStaffQualificationsAsync(null, 15, CancellationToken.None);
 
         Assert.That(received.Value, Is.Not.Null, "Reporting's document must reach Manager's real query handler");
         var query = received.Value!.Value;
@@ -122,14 +122,14 @@ public class WorkforceRoundTripTests
         var received = SetupAssignmentHistory();
 
         var reader = NewReader();
-        await reader.GetDriverAssignmentHistoryAsync(DriverId, TransporterId, From, To, CancellationToken.None);
+        await reader.GetStaffAssignmentHistoryAsync(StaffId, TransporterId, From, To, CancellationToken.None);
 
         Assert.That(received.Value, Is.Not.Null);
         var query = received.Value!.Value;
         using (Assert.EnterMultipleScope())
         {
             Assert.That(query.AccountId, Is.EqualTo(AccountId));
-            Assert.That(query.DriverId, Is.EqualTo(DriverId));
+            Assert.That(query.StaffId, Is.EqualTo(StaffId));
             Assert.That(query.TransporterId, Is.EqualTo(TransporterId));
             // DateTimeOffset coercion across the GraphQL boundary is the risky part: an offset lost
             // here shifts every row in the report by the viewer's timezone.
@@ -144,7 +144,7 @@ public class WorkforceRoundTripTests
         var received = SetupAssignmentHistory();
 
         var reader = NewReader();
-        await reader.GetDriverAssignmentHistoryAsync(null, null, null, null, CancellationToken.None);
+        await reader.GetStaffAssignmentHistoryAsync(null, null, null, null, CancellationToken.None);
 
         Assert.That(received.Value, Is.Not.Null);
         var query = received.Value!.Value;
@@ -152,50 +152,50 @@ public class WorkforceRoundTripTests
         {
             // Guid.Empty instead of null would filter the report down to nothing rather than to
             // "unfiltered" — the two are indistinguishable in the document, only in the variables.
-            Assert.That(query.DriverId, Is.Null);
+            Assert.That(query.StaffId, Is.Null);
             Assert.That(query.TransporterId, Is.Null);
             Assert.That(query.From, Is.Null);
             Assert.That(query.To, Is.Null);
         }
     }
 
-    // AC4: ValidateDriverAssignment is satisfied by an active assignment row OR the default
+    // AC4: ValidateStaffAssignment is satisfied by an active assignment row OR the default
     // transporter. The "Transporter" resource-type literal travels as a variable, so Layer A cannot
     // see it; spec 10 and DocumentAccessPolicy both depend on it matching exactly.
-    [TestCase("Transporter", true, TestName = "ValidateDriverAssignment_AssignmentRowPathSatisfies")]
-    [TestCase("Transporter", false, TestName = "ValidateDriverAssignment_DefaultTransporterPathSatisfies")]
-    public async Task ValidateDriverAssignment_RoundTripsResourceTypeLiteral(string resourceType, bool satisfied)
+    [TestCase("Transporter", true, TestName = "ValidateStaffAssignment_AssignmentRowPathSatisfies")]
+    [TestCase("Transporter", false, TestName = "ValidateStaffAssignment_DefaultTransporterPathSatisfies")]
+    public async Task ValidateStaffAssignment_RoundTripsResourceTypeLiteral(string resourceType, bool satisfied)
     {
-        ValidateDriverAssignmentQuery? received = null;
+        ValidateStaffAssignmentQuery? received = null;
         _sender
-            .Setup(s => s.Send(It.IsAny<ValidateDriverAssignmentQuery>(), It.IsAny<CancellationToken>()))
-            .Callback<IRequest<bool>, CancellationToken>((q, _) => received = (ValidateDriverAssignmentQuery)q)
+            .Setup(s => s.Send(It.IsAny<ValidateStaffAssignmentQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<bool>, CancellationToken>((q, _) => received = (ValidateStaffAssignmentQuery)q)
             .ReturnsAsync(satisfied);
 
         const string document = @"
-            query($driverId: UUID!, $resourceType: String!, $resourceId: String!) {
-                validateDriverAssignment(query: { driverId: $driverId, resourceType: $resourceType, resourceId: $resourceId })
+            query($staffId: UUID!, $resourceType: String!, $resourceId: String!) {
+                validateStaffAssignment(query: { staffId: $staffId, resourceType: $resourceType, resourceId: $resourceId })
             }";
 
         var client = _factory.CreateClient(Clients.Manager);
         var response = await client.SendQueryAsync<ValidateResponse>(new GraphQL.GraphQLRequest
         {
             Query = document,
-            Variables = new { driverId = DriverId, resourceType, resourceId = TransporterId.ToString() },
+            Variables = new { staffId = StaffId, resourceType, resourceId = TransporterId.ToString() },
         }, CancellationToken.None);
 
         Assert.That(received, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(received!.Value.DriverId, Is.EqualTo(DriverId));
+            Assert.That(received!.Value.StaffId, Is.EqualTo(StaffId));
             Assert.That(received.Value.ResourceType, Is.EqualTo("Transporter"));
             Assert.That(received.Value.ResourceId, Is.EqualTo(TransporterId.ToString()));
-            Assert.That(response.Data.ValidateDriverAssignment, Is.EqualTo(satisfied));
+            Assert.That(response.Data.ValidateStaffAssignment, Is.EqualTo(satisfied));
         }
     }
 
     private sealed class ValidateResponse
     {
-        public bool ValidateDriverAssignment { get; set; }
+        public bool ValidateStaffAssignment { get; set; }
     }
 }

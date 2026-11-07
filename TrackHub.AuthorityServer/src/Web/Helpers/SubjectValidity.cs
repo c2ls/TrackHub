@@ -24,13 +24,13 @@ namespace TrackHub.AuthorityServer.Web.Helpers;
 /// <para>
 /// Both token issuance paths need this: the refresh grant, and the authorization endpoint, which
 /// mints tokens from the SSO cookie. Without the cookie check, deactivating a user, locking them
-/// out or revoking a driver credential does not end the session — the browser simply runs a fresh
+/// out or revoking a staff credential does not end the session — the browser simply runs a fresh
 /// authorization-code flow and receives new tokens.
 /// </para>
 /// </summary>
 public sealed class SubjectValidity(
     IUserReader userReader,
-    IDriverCredentialReader driverCredentialReader)
+    IStaffCredentialReader staffCredentialReader)
 {
     // Re-stamped by Security on deactivation, password change, lock, reset and revocation; a
     // session minted before that (or one predating the claim) no longer matches and ends here.
@@ -54,14 +54,14 @@ public sealed class SubjectValidity(
 
         var now = DateTimeOffset.UtcNow;
 
-        if (string.Equals(principalType, "Driver", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(principalType, "Staff", StringComparison.OrdinalIgnoreCase))
         {
-            if (!Guid.TryParse(principal.FindFirst("driver_credential_id")?.Value, out var credentialId))
+            if (!Guid.TryParse(principal.FindFirst("staff_credential_id")?.Value, out var credentialId))
             {
                 return false;
             }
 
-            var credential = await driverCredentialReader.GetCredentialSessionAsync(credentialId, cancellationToken);
+            var credential = await staffCredentialReader.GetCredentialSessionAsync(credentialId, cancellationToken);
             return credential is not null
                 && credential.Active
                 && !credential.ResetRequired

@@ -14,7 +14,7 @@ We believe in the strength of community collaboration to create effective and ac
 
 ## Overview
 
-The Management API is TrackHub's master-data service. It owns accounts, users and groups; operators, devices, transporters and device–transporter assignments; points of interest and geocoding providers; account features and branding; documents and the driver workforce; alert events, notification rules and deliveries; platform announcements; audit events; and the device-synchronization command surface.
+The Management API is TrackHub's master-data service. It owns accounts, users and groups; operators, devices, transporters and device–transporter assignments; points of interest and geocoding providers; account features and branding; documents and the staff workforce; alert events, notification rules and deliveries; platform announcements; audit events; and the device-synchronization command surface.
 
 High-volume position and operator-telemetry data is **not** here — it belongs to the [Telemetry API](../TrackHub.Telemetry).
 

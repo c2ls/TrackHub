@@ -89,8 +89,8 @@ const LinkState = ({ code }: { code: PublicTripErrorCode }) => {
  * field the customer was not granted is simply ABSENT from the payload — every
  * optional value is therefore tested for presence and omitted when missing.
  * There is no client-side filtering standing in for the server's projection,
- * and no placeholder is shown for a withheld field: a blank "Driver: —" row
- * would itself leak that a driver exists. Toll and cost figures never appear at
+ * and no placeholder is shown for a withheld field: a blank "Staff: —" row
+ * would itself leak that a staff exists. Toll and cost figures never appear at
  * all; the backend does not send them.
  */
 function TripTracking() {
@@ -204,8 +204,8 @@ function TripTracking() {
         )}
         {/* Shared only when the sender ticked the box — absent otherwise. */}
         {trip.vehicleLabel && <Fact label={t('tripTracking.vehicle')} value={trip.vehicleLabel} />}
-        {trip.driverGivenName && (
-          <Fact label={t('tripTracking.driver')} value={trip.driverGivenName} />
+        {trip.staffGivenName && (
+          <Fact label={t('tripTracking.staff')} value={trip.staffGivenName} />
         )}
       </ArgonBox>
 

@@ -54,7 +54,7 @@ public sealed class TripDetectionReader(IApplicationDbContext context) : ITripDe
     {
         var trip = await context.Trips
             .Where(t => t.TripId == tripId && t.AccountId == accountId)
-            .Select(t => new { t.TripId, t.Code, t.Status, t.TransporterId, t.DriverId })
+            .Select(t => new { t.TripId, t.Code, t.Status, t.TransporterId, t.StaffId })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (trip is null)
@@ -74,7 +74,7 @@ public sealed class TripDetectionReader(IApplicationDbContext context) : ITripDe
             trip.Code,
             trip.Status,
             trip.TransporterId,
-            trip.DriverId,
+            trip.StaffId,
             [.. stops.Select(s => new CompletionStopVm(
                 s.TripStopId, s.Sequence, s.Status, s.ActualArrivalAt, s.ActualDepartureAt, s.OutsideSinceAt))]);
     }
@@ -114,7 +114,7 @@ public sealed class TripDetectionReader(IApplicationDbContext context) : ITripDe
                 t.AccountId,
                 t.Code,
                 t.TransporterId,
-                t.DriverId,
+                t.StaffId,
                 t.LastPoint,
                 t.LastPositionAt,
                 NextStop = context.TripStops
@@ -141,7 +141,7 @@ public sealed class TripDetectionReader(IApplicationDbContext context) : ITripDe
                 r.AccountId,
                 r.Code,
                 r.TransporterId,
-                r.DriverId,
+                r.StaffId,
                 r.LastPoint?.Y,
                 r.LastPoint?.X,
                 r.LastPositionAt,

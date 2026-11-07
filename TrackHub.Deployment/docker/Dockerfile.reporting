@@ -16,10 +16,12 @@ COPY TrackHubCommon/Directory.Build.props TrackHubCommon/
 COPY TrackHubCommon/src/Common.Application/Common.Application.csproj TrackHubCommon/src/Common.Application/
 COPY TrackHubCommon/src/Common.Domain/Common.Domain.csproj TrackHubCommon/src/Common.Domain/
 COPY TrackHubCommon/src/Common.Infrastructure/Common.Infrastructure.csproj TrackHubCommon/src/Common.Infrastructure/
+COPY TrackHubCommon/src/Common.Pdf/Common.Pdf.csproj TrackHubCommon/src/Common.Pdf/
 COPY TrackHubCommon/src/Common.Web/Common.Web.csproj TrackHubCommon/src/Common.Web/
 COPY TrackHubCommon/tests/Common.Application.Tests/Common.Application.Tests.csproj TrackHubCommon/tests/Common.Application.Tests/
 COPY TrackHubCommon/tests/Common.Domain.Tests/Common.Domain.Tests.csproj TrackHubCommon/tests/Common.Domain.Tests/
 COPY TrackHubCommon/tests/Common.Infrastructure.Tests/Common.Infrastructure.Tests.csproj TrackHubCommon/tests/Common.Infrastructure.Tests/
+COPY TrackHubCommon/tests/Common.Pdf.Tests/Common.Pdf.Tests.csproj TrackHubCommon/tests/Common.Pdf.Tests/
 COPY TrackHubCommon/tests/Common.Web.Tests/Common.Web.Tests.csproj TrackHubCommon/tests/Common.Web.Tests/
 COPY TrackHub.Reporting/src/Application/Application.csproj TrackHub.Reporting/src/Application/
 COPY TrackHub.Reporting/src/Domain/Domain.csproj TrackHub.Reporting/src/Domain/

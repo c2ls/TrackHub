@@ -400,7 +400,7 @@ public sealed class TripDetectionService(
             if (stop.DelayAlertedAt is not null)
             {
                 await ResolveAlertAsync(TripEventTypes.TripDelayed, TripAlertSeverities.Warning, $"trip-delayed:{stop.TripStopId:N}",
-                    new TripAlertDto(accountId, state.TripId, stop.TripStopId, state.Code, state.TransporterId, state.DriverId,
+                    new TripAlertDto(accountId, state.TripId, stop.TripStopId, state.Code, state.TransporterId, state.StaffId,
                         stop.Name, position.DeviceDateTime, null, stop.PlannedArrivalTo, null, position.Latitude, position.Longitude), cancellationToken);
             }
         }
@@ -510,7 +510,7 @@ public sealed class TripDetectionService(
                 if (closedEpisode is { } openedAt)
                 {
                     await ResolveAlertAsync(TripEventTypes.TripRouteDeviation, TripAlertSeverities.Warning, DeviationKey(state.TripId, openedAt),
-                        new TripAlertDto(accountId, state.TripId, null, state.Code, state.TransporterId, state.DriverId, null,
+                        new TripAlertDto(accountId, state.TripId, null, state.Code, state.TransporterId, state.StaffId, null,
                             position.DeviceDateTime, null, null, null, position.Latitude, position.Longitude), cancellationToken);
                 }
             }
@@ -537,7 +537,7 @@ public sealed class TripDetectionService(
                 TripEventTypes.TripRouteDeviation,
                 TripAlertSeverities.Warning,
                 DeviationKey(state.TripId, episodeStart),
-                new TripAlertDto(accountId, state.TripId, null, state.Code, state.TransporterId, state.DriverId, null,
+                new TripAlertDto(accountId, state.TripId, null, state.Code, state.TransporterId, state.StaffId, null,
                     position.DeviceDateTime, null, null, null, position.Latitude, position.Longitude),
                 cancellationToken);
         }
@@ -628,7 +628,7 @@ public sealed class TripDetectionService(
                 eventType,
                 TripAlertSeverities.Info,
                 $"trip-{eventType.ToLowerInvariant()}:{state.TripId:N}",
-                new TripAlertDto(accountId, state.TripId, null, state.Code, state.TransporterId, state.DriverId,
+                new TripAlertDto(accountId, state.TripId, null, state.Code, state.TransporterId, state.StaffId,
                     null, occurredAt, null, null, null, null, null),
                 cancellationToken);
         }
@@ -648,7 +648,7 @@ public sealed class TripDetectionService(
                 eventType,
                 TripAlertSeverities.Info,
                 $"trip-{eventType.ToLowerInvariant()}:{stop.TripStopId:N}",
-                new TripAlertDto(accountId, state.TripId, stop.TripStopId, state.Code, state.TransporterId, state.DriverId,
+                new TripAlertDto(accountId, state.TripId, stop.TripStopId, state.Code, state.TransporterId, state.StaffId,
                     stop.Name, position.DeviceDateTime, null, stop.PlannedArrivalTo, null, position.Latitude, position.Longitude),
                 cancellationToken);
         }

@@ -19,7 +19,7 @@ public static partial class FeatureKeys
 {
     public const string Geofencing = "geofencing";
     public const string TripManagement = "trip-management";
-    public const string DriverMobile = "driver-mobile";
+    public const string StaffMobile = "staff-mobile";
     public const string PublicLinks = "public-links";
     public const string Documents = "documents";
     public const string Notifications = "notifications";
@@ -29,8 +29,8 @@ public static partial class FeatureKeys
     public const string GpsPositionHistory = "gps.positionHistory";
 
     /// <summary>
-    /// Extended workforce capabilities (driver qualifications, time-bounded assignment history,
-    /// expiration alerts, workforce reports). Driver identity itself — registry, credentials and
+    /// Extended workforce capabilities (staff qualifications, time-bounded assignment history,
+    /// expiration alerts, workforce reports). Staff identity itself — registry, credentials and
     /// device administration — is core platform and is deliberately NOT gated by this key.
     /// </summary>
     public const string Workforce = "workforce";

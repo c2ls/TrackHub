@@ -33,7 +33,7 @@ public interface ITripReader
         DateTimeOffset? from,
         DateTimeOffset? to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         string? customer,
         string? search,
         string? exception,
@@ -127,8 +127,8 @@ public interface ITripReader
     /// </summary>
     Task<IReadOnlyCollection<NamedEntityVm>> GetTransporterNamesAsync(Guid accountId, Guid? userId, CancellationToken cancellationToken);
 
-    /// <summary>The account's active drivers by name, for the same resolution pass.</summary>
-    Task<IReadOnlyCollection<NamedEntityVm>> GetDriverNamesAsync(Guid accountId, CancellationToken cancellationToken);
+    /// <summary>The account's active staff by name, for the same resolution pass.</summary>
+    Task<IReadOnlyCollection<NamedEntityVm>> GetStaffNamesAsync(Guid accountId, CancellationToken cancellationToken);
 
     /// <summary>Paged export feed drained by Reporting at 500 rows a page.</summary>
     Task<TripsPageVm> GetReportDataAsync(
@@ -137,7 +137,7 @@ public interface ITripReader
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken);
@@ -159,7 +159,7 @@ public interface ITripReader
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken);
@@ -171,7 +171,7 @@ public interface ITripReader
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken);
@@ -186,7 +186,7 @@ public interface ITripReader
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken);
@@ -198,7 +198,7 @@ public interface ITripReader
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken);

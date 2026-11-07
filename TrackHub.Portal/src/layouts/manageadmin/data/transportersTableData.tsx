@@ -87,7 +87,7 @@ function useTransporterTableData(
   const restoreTransporter = useRestoreTransporter();
 
   // Current account id, required to create a transporter (TransporterDtoInput.accountId).
-  // Loaded the same way sibling manageadmin screens (drivers, accountFeatures) obtain it.
+  // Loaded the same way sibling manageadmin screens (staff, accountFeatures) obtain it.
   const accountQuery = useAccountByUser({ enabled: !!fetchData && isAuthenticated });
   const accountId = accountQuery.data?.accountId ?? null;
 

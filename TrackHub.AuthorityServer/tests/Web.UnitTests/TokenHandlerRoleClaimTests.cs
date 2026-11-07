@@ -39,7 +39,7 @@ public class TokenHandlerRoleClaimTests
             Mock.Of<IClientReader>(),
             _userReader.Object,
             Mock.Of<IServiceClientPermissionReader>(),
-            new SubjectValidity(_userReader.Object, Mock.Of<IDriverCredentialReader>()));
+            new SubjectValidity(_userReader.Object, Mock.Of<IStaffCredentialReader>()));
     }
 
     private static ClaimsPrincipal UserPrincipal(Guid userId, string? currentRoleClaim)
@@ -98,12 +98,12 @@ public class TokenHandlerRoleClaimTests
     }
 
     [Test]
-    public async Task RefreshUserRoleClaimAsync_DriverPrincipal_IsLeftUntouched()
+    public async Task RefreshUserRoleClaimAsync_StaffPrincipal_IsLeftUntouched()
     {
         var claims = new List<Claim>
         {
-            new("principal_type", "Driver"),
-            new("driver_id", Guid.NewGuid().ToString())
+            new("principal_type", "Staff"),
+            new("staff_id", Guid.NewGuid().ToString())
         };
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
 

@@ -31,7 +31,7 @@ public static class DependencyInjection
 
         services.AddScoped<IManagerWriter, ManagerWriter>();
         services.AddScoped<IManagerAuditWriter, ManagerAuditWriter>();
-        services.AddScoped<IManagerDriverReader, ManagerDriverReader>();
+        services.AddScoped<IManagerStaffMemberReader, ManagerStaffMemberReader>();
 
         services.AddMemoryCache();
         services.AddScoped<Common.Application.Interfaces.IAccountOperationalStatusReader, Common.Infrastructure.ManagerAccountOperationalStatusReader>();

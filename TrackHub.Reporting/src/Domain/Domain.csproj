@@ -5,13 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
-    <PackageReference Include="PDFsharp-MigraDoc" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- PDFsharp resolves no font on its own outside Windows, so the PDF builder carries its
-         own faces rather than depending on what the host image happens to have installed. -->
-    <EmbeddedResource Include="Fonts\*.ttf" />
+    <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Pdf/Common.Pdf.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\Resources.Designer.cs">

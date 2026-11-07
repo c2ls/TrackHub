@@ -245,30 +245,6 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                     b.ToTable("trip_deliveries", "trip");
                 });
 
-            modelBuilder.Entity("TrackHub.TripManagement.Infrastructure.TripDB.Entities.Driver", b =>
-                {
-                    b.Property<Guid>("DriverId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accountid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.HasKey("DriverId");
-
-                    b.ToTable("drivers", "app", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
             modelBuilder.Entity("TrackHub.TripManagement.Infrastructure.TripDB.Entities.Geofence", b =>
                 {
                     b.Property<Guid>("GeofenceId")
@@ -575,6 +551,30 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                         .HasDatabaseName("ix_route_plans_accountid_tripid");
 
                     b.ToTable("route_plans", "trip");
+                });
+
+            modelBuilder.Entity("TrackHub.TripManagement.Infrastructure.TripDB.Entities.StaffMember", b =>
+                {
+                    b.Property<Guid>("StaffId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("StaffId");
+
+                    b.ToTable("staff_members", "app", t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("TrackHub.TripManagement.Infrastructure.TripDB.Entities.TollStation", b =>
@@ -933,10 +933,6 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deviationopenedat");
 
-                    b.Property<Guid?>("DriverId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("driverid");
-
                     b.Property<string>("ExternalReference")
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)")
@@ -1014,6 +1010,10 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("serviceorderid");
 
+                    b.Property<Guid?>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -1056,8 +1056,8 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                         .HasDatabaseName("ux_trips_accountid_externalreference")
                         .HasFilter("externalreference IS NOT NULL");
 
-                    b.HasIndex("AccountId", "DriverId", "Status")
-                        .HasDatabaseName("ix_trips_accountid_driverid_status");
+                    b.HasIndex("AccountId", "StaffId", "Status")
+                        .HasDatabaseName("ix_trips_accountid_staffid_status");
 
                     b.HasIndex("AccountId", "Status", "PlannedStartAt")
                         .HasDatabaseName("ix_trips_accountid_status_plannedstartat");
@@ -1093,10 +1093,6 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("driverid");
-
                     b.Property<DateTimeOffset?>("EndedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("endedat");
@@ -1106,6 +1102,10 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1262,12 +1262,6 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiresat");
 
-                    b.Property<bool>("IncludeDriverName")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("includedrivername");
-
                     b.Property<bool>("IncludeLivePosition")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1285,6 +1279,12 @@ namespace TrackHub.TripManagement.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("includeroute");
+
+                    b.Property<bool>("IncludeStaffName")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("includestaffname");
 
                     b.Property<bool>("IncludeStopDetail")
                         .ValueGeneratedOnAdd()

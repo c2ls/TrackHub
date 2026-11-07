@@ -18,10 +18,10 @@ What you can see and do in TrackHub is decided by **two things together**: your 
 TrackHub recognises different kinds of "who is asking". Only the first one uses this web portal:
 
 - **User** — a person who signs in to the TrackHub web portal (an administrator, a manager, or an everyday operator). **This guide is about Users.**
-- **Driver** — a field driver who signs in through the **mobile app**, not this portal. Drivers do not see the portal screens described here.
+- **Staff** — a field staff who signs in through the **mobile app**, not this portal. Staff do not see the portal screens described here.
 - **Service Client** — a machine-to-machine integration (another system connecting automatically). No person signs in as a Service Client, and it never uses the portal.
 
-Because every portal screen is reserved for **Users**, Drivers and Service Clients are never shown the portal even if they reach its address.
+Because every portal screen is reserved for **Users**, Staff and Service Clients are never shown the portal even if they reach its address.
 
 ## The three portal roles
 
@@ -39,7 +39,7 @@ You can check which roles you have on your **Profile** screen, in the **Roles** 
 
 - Being an **Administrator** unlocks the **System Admin** area.
 - Being a **Manager** unlocks the **Account Management** and **GPS Integration** areas, and the **Account Settings** gear button in the bottom-right corner.
-- Everyone with portal access (including plain **Users**) can reach the **Dashboard**, **Reports**, **Geofences** (when enabled), **Trips** (when enabled), and their own **Profile**. Dispatch is deliberately an everyday-operator job: a plain **User** can create trips, plan routes, assign a driver, run a trip and share a tracking link for the units in their groups.
+- Everyone with portal access (including plain **Users**) can reach the **Dashboard**, **Reports**, **Geofences** (when enabled), **Trips** (when enabled), and their own **Profile**. Dispatch is deliberately an everyday-operator job: a plain **User** can create trips, plan routes, assign a staff member, run a trip and share a tracking link for the units in their groups.
 
 > In a typical setup an Administrator is also a Manager, so an Administrator sees everything a Manager sees **plus** the System Admin area.
 
@@ -66,7 +66,7 @@ If you try to open a screen your role does not allow, TrackHub simply returns yo
 **Account Management** (Managers and Administrators) groups the tools for running your own account into sections:
 
 - **Account & Subscription** — Account details, Branding, and Account Features (view only).
-- **Fleet & Tracking** — Devices, Units, Drivers, Groups, and Points of Interest.
+- **Fleet & Tracking** — Devices, Units, Staff, Groups, and Points of Interest.
 - **Users & Access** — Users, Roles, and Policies.
 - **Alerts & Notifications** — Notification Rules, Alert Subscriptions, Notification Templates, Alert Events, and Notification Deliveries.
 - **Documents & Sharing** — Documents and Public Links.
@@ -90,7 +90,7 @@ The account features are:
 | **GPS Position History** | `gps.positionHistory` | Storing and replaying a unit's past track (history playback). |
 | **Geofencing** | `geofencing` | The whole **Geofences** menu item and map zones. |
 | **Trip Management** | `trip-management` | The whole **Trips** menu item, customer tracking links, and the six trip reports. |
-| **Driver Mobile** | `driver-mobile` | Reserved — nothing changes in the web portal. |
+| **Staff Mobile** | `staff-mobile` | Reserved — nothing changes in the web portal. |
 | **Public Links** | `public-links` | Creating shareable public links. |
 | **Documents** | `documents` | The document management surfaces (uploading, sharing, and tracking files). |
 | **Notifications** | `notifications` | Notification rules and alert delivery. |

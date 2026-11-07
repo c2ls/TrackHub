@@ -156,13 +156,13 @@ export function useAssignTrip() {
   return useMutation({
     mutationFn: ({
       tripId,
-      driverId,
+      staffId,
       transporterId,
     }: {
       tripId: string;
-      driverId: string;
+      staffId: string;
       transporterId?: string | null;
-    }) => api.assignTrip(tripId, driverId, transporterId),
+    }) => api.assignTrip(tripId, staffId, transporterId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: tripKeys.all }),
   });
 }

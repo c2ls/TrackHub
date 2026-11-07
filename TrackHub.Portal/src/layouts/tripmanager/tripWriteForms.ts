@@ -373,7 +373,7 @@ export function buildPodPayload(
  * Upload metadata for a POD attachment. Trip documents are owned by the trip's
  * TRANSPORTER, not by the trip: `DocumentAccessPolicy` resolves transporter
  * ownership through group visibility for portal users and through
- * `validateDriverAssignment` for drivers, which is exactly the audience a POD
+ * `validateStaffAssignment` for staff, which is exactly the audience a POD
  * should have. A `"Trip"` owner type was rejected because Manager cannot
  * resolve trip ownership without calling TripManagement (spec 11 §11).
  */

@@ -35,7 +35,7 @@ public sealed class TripSummaryReport(ITripReportReader reader) : IReport
         var window = ReportCalendar.Window(filters);
 
         var trips = await reader.GetTripsAsync(
-            window.From, window.To, transporterId, driverId: null, cancellationToken);
+            window.From, window.To, transporterId, staffId: null, cancellationToken);
 
         var rows = trips
             .OrderByDescending(t => t.PlannedStartAt)
@@ -44,7 +44,7 @@ public sealed class TripSummaryReport(ITripReportReader reader) : IReport
                 t.Code,
                 t.Status,
                 t.TransporterName,
-                t.DriverName.OrEmpty(),
+                t.StaffName.OrEmpty(),
                 t.PlannedStartAt,
                 t.ActualStartAt,
                 t.PlannedEndAt,

@@ -36,7 +36,7 @@ public interface IApplicationDbContext
     DbSet<GeofenceVisit> GeofenceVisits { get; set; }
     DbSet<PointOfInterest> PointsOfInterest { get; set; }
     DbSet<Transporter> Transporters { get; set; }
-    DbSet<Driver> Drivers { get; set; }
+    DbSet<StaffMember> StaffMembers { get; set; }
     DbSet<VwVisibleTransporter> VisibleTransporters { get; set; }
     DbSet<VwUser> Users { get; set; }
     DbSet<AccountFeature> AccountFeatures { get; set; }

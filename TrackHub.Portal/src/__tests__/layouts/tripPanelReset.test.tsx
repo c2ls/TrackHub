@@ -20,7 +20,7 @@
  * inside a `{!detail ? … }` ternary — but TanStack serves an already-visited
  * trip's detail from cache synchronously, so `detail` never goes undefined on
  * the way back and the panels survive the switch holding the previous trip's
- * values. Assign then posted trip A's driver against trip B.
+ * values. Assign then posted trip A's staff against trip B.
  *
  * The fix is `key={detail.trip.tripId}`, which is exactly what this test pins:
  * remounting on a trip change is load-bearing behaviour, not a React detail.
@@ -31,11 +31,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TestWrapper } from '../components/testHelpers';
 import AssignmentPanel from 'layouts/tripmanager/components/AssignmentPanel';
 import type { TripDetail } from 'api/tripManagement/trips';
-import type { Driver } from 'api/manager/drivers';
+import type { Staff } from 'api/manager/staff';
 import type { TransporterLookup } from 'api/manager/transporters';
 
-vi.mock('api/manager/drivers', () => ({
-  getDriverLookup: vi.fn().mockResolvedValue([]),
+vi.mock('api/manager/staff', () => ({
+  getStaffLookup: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('api/manager/transporters', () => ({
@@ -48,13 +48,13 @@ vi.mock('react-i18next', () => ({
 
 const TRIP_A = '11111111-1111-1111-1111-111111111111';
 const TRIP_B = '22222222-2222-2222-2222-222222222222';
-const DRIVER_A = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
-const DRIVER_B = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+const STAFF_A = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const STAFF_B = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const TRANSPORTER = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const ACCOUNT = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 
-const driver = (driverId: string, name: string): Driver => ({
-  driverId,
+const makeStaff = (staffId: string, name: string): Staff => ({
+  staffId,
   accountId: ACCOUNT,
   name,
   phone: null,
@@ -65,25 +65,26 @@ const driver = (driverId: string, name: string): Driver => ({
   licenseNumber: null,
   licenseExpiresAt: null,
   defaultTransporterId: null,
+  staffType: 'Driver',
   lastModified: '2026-07-21T08:00:00Z',
   version: 1,
 });
 
-const drivers: Driver[] = [driver(DRIVER_A, 'Driver A'), driver(DRIVER_B, 'Driver B')];
+const staff: Staff[] = [makeStaff(STAFF_A, 'Staff A'), makeStaff(STAFF_B, 'Staff B')];
 
 const transporters: TransporterLookup[] = [
   { transporterId: TRANSPORTER, name: 'Fleet', transporterType: 'TRUCK', transporterTypeId: 1 },
 ];
 
 /** A detail payload carrying only what AssignmentPanel actually reads. */
-const detailFor = (tripId: string, driverId: string): TripDetail => ({
+const detailFor = (tripId: string, staffId: string): TripDetail => ({
   trip: {
     tripId,
     accountId: ACCOUNT,
     code: tripId === TRIP_A ? 'TRIP-A' : 'TRIP-B',
     status: 'Created',
     transporterId: TRANSPORTER,
-    driverId,
+    staffId,
     routePlanId: null,
     serviceOrderId: null,
     externalReference: null,
@@ -122,7 +123,7 @@ const detailFor = (tripId: string, driverId: string): TripDetail => ({
     tripAssignmentId: tripId,
     accountId: ACCOUNT,
     tripId,
-    driverId,
+    staffId,
     transporterId: TRANSPORTER,
     status: 'Assigned',
     assignedAt: '2026-07-21T08:00:00Z',
@@ -134,7 +135,7 @@ const detailFor = (tripId: string, driverId: string): TripDetail => ({
   shares: [],
 });
 
-test('switching trips does not carry the previous trip’s driver into Assign', () => {
+test('switching trips does not carry the previous trip’s staff into Assign', () => {
   const onAssign = vi.fn();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   // Rendered exactly as the board renders it, key included.
@@ -144,7 +145,7 @@ test('switching trips does not carry the previous trip’s driver into Assign', 
         <AssignmentPanel
           key={detail.trip.tripId}
           detail={detail}
-          drivers={drivers}
+          staff={staff}
           transporters={transporters}
           onAssign={onAssign}
           assigning={false}
@@ -154,13 +155,13 @@ test('switching trips does not carry the previous trip’s driver into Assign', 
     </QueryClientProvider>
   );
 
-  const view = render(panel(detailFor(TRIP_A, DRIVER_A)));
-  // Trip B is a DIFFERENT trip with a different driver; without the key the
+  const view = render(panel(detailFor(TRIP_A, STAFF_A)));
+  // Trip B is a DIFFERENT trip with a different staff; without the key the
   // panel would keep A's selection and Assign would write it onto B.
-  view.rerender(panel(detailFor(TRIP_B, DRIVER_B)));
+  view.rerender(panel(detailFor(TRIP_B, STAFF_B)));
 
   fireEvent.click(screen.getByText('trips.assignment.assign'));
 
   expect(onAssign).toHaveBeenCalledTimes(1);
-  expect(onAssign).toHaveBeenCalledWith(DRIVER_B, TRANSPORTER);
+  expect(onAssign).toHaveBeenCalledWith(STAFF_B, TRANSPORTER);
 });

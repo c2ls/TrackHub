@@ -45,7 +45,7 @@ describe('Argon system props', () => {
       paddingLeft: '24px',
       paddingRight: '24px',
       display: 'flex',
-      width: '12rem',
+      width: '192px',
     });
   });
 

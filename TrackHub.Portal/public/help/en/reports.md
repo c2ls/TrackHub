@@ -4,14 +4,14 @@ title: Reports
 description: Pick a report from the catalog, set its filters, then preview it on screen or export to Excel or PDF.
 category: operation
 screens: [reports]
-related: [dashboard-trips-replay, units-devices, drivers-workforce, trip-management]
+related: [dashboard-trips-replay, units-devices, staff-workforce, trip-management]
 tags: [reports, export, excel, pdf, preview, filters]
 order: 40
 ---
 
 # Reports
 
-Reports turn your fleet data — positions, geofence activity, GPS integration health, documents, drivers, trips, and account administration — into a table you can preview on screen or download. Which reports you see, and the data inside them, depend on your account features, role, and groups, so you may see fewer than the full catalog. See [Roles and permissions](topic:roles-and-permissions).
+Reports turn your fleet data — positions, geofence activity, GPS integration health, documents, staff, trips, and account administration — into a table you can preview on screen or download. Which reports you see, and the data inside them, depend on your account features, role, and groups, so you may see fewer than the full catalog. See [Roles and permissions](topic:roles-and-permissions).
 
 ## Opening Reports
 
@@ -56,17 +56,17 @@ The reports TrackHub can offer include the following. The exact list is driven b
 
 ### Workforce
 
-- **Driver Registry** – complete driver registry with license, employee code and default unit.
-- **Qualification Expirations** – driver qualifications expiring within the selected number of days.
-- **Driver Assignment History** – time-bounded driver-to-unit assignment history over a date range.
+- **Staff Registry** – complete staff registry with license, employee code and default unit.
+- **Qualification Expirations** – staff qualifications expiring within the selected number of days.
+- **Staff Assignment History** – time-bounded staff-to-unit assignment history over a date range.
 
-The whole **Workforce** category needs the workforce feature; without it the category is not in the catalog at all. **Qualification Expirations** is the only one of the three that offers PDF as well as Excel. These reports contain personal data, so running them is recorded in your account's audit trail. See [Drivers and workforce](topic:drivers-workforce).
+The whole **Workforce** category needs the workforce feature; without it the category is not in the catalog at all. **Qualification Expirations** is the only one of the three that offers PDF as well as Excel. These reports contain personal data, so running them is recorded in your account's audit trail. See [Staff and workforce](topic:staff-workforce).
 
 ### Trips
 
 - **Trip Summary** – trips over a date range with planned versus actual start, end, distance and estimated toll.
 - **Trip Stop Detail** – stop-level detail for each trip: planned window, arrival, departure, dwell and delivery outcomes.
-- **Trip On-Time Performance** – on-time percentage, average delay and delayed-stop counts by unit, driver and customer.
+- **Trip On-Time Performance** – on-time percentage, average delay and delayed-stop counts by unit, staff and customer.
 - **Trip Stop Dwell** – dwell time distribution per stop and customer over a date range.
 - **Trip Toll Cost** – estimated toll by trip, route, station and vehicle class, flagging stations with no tariff.
 - **Proof of Delivery Register** – proof-of-delivery register with receiver, capture time, location and document count.

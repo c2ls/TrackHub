@@ -99,7 +99,7 @@ public static class TripLifecycleTransition
                     eventType,
                     alertSeverity,
                     $"trip-{eventType.ToLowerInvariant()}:{tripId:N}",
-                    new TripAlertDto(accountId, tripId, null, trip.Code, trip.TransporterId, trip.DriverId, null, occurredAt, null, null, null, null, null),
+                    new TripAlertDto(accountId, tripId, null, trip.Code, trip.TransporterId, trip.StaffId, null, occurredAt, null, null, null, null, null),
                     cancellationToken);
             }
             catch (Exception ex)

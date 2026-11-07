@@ -18,7 +18,7 @@ Construida sobre .NET 10 con un endpoint GraphQL de HotChocolate, siguiendo las 
 | **Integración GPS** | Operadores, credenciales de proveedor cifradas, la superficie de comandos de sincronización de dispositivos |
 | **Referencia geoespacial** | Proveedores de geocodificación, puntos de interés |
 | **Documentos** | Documentos, versiones, tipos, firmas, uso compartido, retención |
-| **Fuerza laboral** | Conductores, calificaciones, historial de asignación conductor–transportador |
+| **Fuerza laboral** | Personal, calificaciones, historial de asignación personal–transportador |
 | **Alertas y notificaciones** | Eventos de alerta, reglas de notificación, entregas, plantillas, suscripciones |
 | **Plataforma** | Anuncios, eventos de auditoría, ejecuciones de trabajos en segundo plano, concesiones de enlaces públicos, el catálogo de reportes |
 

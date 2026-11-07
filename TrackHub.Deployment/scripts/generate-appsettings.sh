@@ -100,7 +100,7 @@ fi
 # Set defaults for variables that might not be set
 CERTIFICATE_PATH=${CERTIFICATE_PATH:-"/app/certificates/certificate.pfx"}
 CERTIFICATE_THUMBPRINT=${CERTIFICATE_THUMBPRINT:-""}
-OPENIDDICT_SCOPES=${OPENIDDICT_SCOPES:-"mobile_scope,driver_mobile_scope,web_scope,service_scope"}
+OPENIDDICT_SCOPES=${OPENIDDICT_SCOPES:-"mobile_scope,staff_mobile_scope,web_scope,service_scope"}
 # Audience the APIs validate access tokens against (matches every service appsettings.json)
 VALID_AUDIENCE=${VALID_AUDIENCE:-"trackhub_api"}
 

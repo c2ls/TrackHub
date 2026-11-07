@@ -37,7 +37,7 @@ public sealed class TripShareWriter(IApplicationDbContext context) : ITripShareW
             AccountId = accountId,
             TripId = tripId,
             PublicLinkGrantId = publicLinkGrantId,
-            IncludeDriverName = fieldFlags.IncludeDriverName,
+            IncludeStaffName = fieldFlags.IncludeStaffName,
             IncludeVehicle = fieldFlags.IncludeVehicle,
             IncludeLivePosition = fieldFlags.IncludeLivePosition,
             IncludeStopDetail = fieldFlags.IncludeStopDetail,

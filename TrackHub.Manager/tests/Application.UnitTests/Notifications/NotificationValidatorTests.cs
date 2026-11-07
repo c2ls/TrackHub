@@ -102,11 +102,11 @@ public class NotificationValidatorTests
     }
 
     [Test]
-    public void CreateAlertSubscription_DriverWhatsAppWithoutContact_PassesForPhoneDefault()
+    public void CreateAlertSubscription_StaffWhatsAppWithoutContact_PassesForPhoneDefault()
     {
         var validator = new CreateAlertSubscriptionCommandValidator();
         var result = validator.Validate(new CreateAlertSubscriptionCommand(
-            new AlertSubscriptionDto(Guid.NewGuid(), "Driver", Guid.NewGuid(), null, "WhatsApp", null, true)));
+            new AlertSubscriptionDto(Guid.NewGuid(), "Staff", Guid.NewGuid(), null, "WhatsApp", null, true)));
         Assert.That(result.IsValid, Is.True);
     }
 

@@ -86,7 +86,7 @@ public readonly record struct OpenTripVm(
     string Code,
     string Status,
     Guid TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     Guid? RoutePlanId,
     bool HasReadyRoutePlan,
     DateTimeOffset PlannedStartAt,
@@ -126,7 +126,7 @@ public readonly record struct TripCompletionCandidateVm(
     string Code,
     string Status,
     Guid TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     IReadOnlyCollection<CompletionStopVm> Stops);
 
 public readonly record struct CompletionStopVm(
@@ -157,7 +157,7 @@ public readonly record struct EtaCandidateVm(
     Guid AccountId,
     string Code,
     Guid TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     double? LastLatitude,
     double? LastLongitude,
     DateTimeOffset? LastPositionAt,

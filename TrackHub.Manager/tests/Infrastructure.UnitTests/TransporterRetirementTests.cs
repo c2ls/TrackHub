@@ -105,18 +105,18 @@ public class TransporterRetirementTests
     }
 
     [Test]
-    public async Task Retire_ReleasesTheDrivers_SoNoDriverKeepsARetiredUnit()
+    public async Task Retire_ReleasesTheStaff_SoNoStaffKeepsARetiredUnit()
     {
-        using var context = NewContext(nameof(Retire_ReleasesTheDrivers_SoNoDriverKeepsARetiredUnit));
+        using var context = NewContext(nameof(Retire_ReleasesTheStaff_SoNoStaffKeepsARetiredUnit));
         var accountId = Guid.NewGuid();
         var transporter = new Transporter("Truck 1", 1, accountId);
-        var driver = new Driver(accountId, "Ana", null, null, null, true, null, null, null, transporter.TransporterId);
+        var staff = new StaffMember(accountId, "Ana", null, null, null, true, null, null, null, transporter.TransporterId);
         context.Transporters.Add(transporter);
-        context.Drivers.Add(driver);
-        context.DriverTransporterAssignments.Add(new DriverTransporterAssignment(accountId, driver.DriverId, transporter.TransporterId,
-            DateTimeOffset.UtcNow.AddDays(-2), null, "Regular", DriverAssignmentStatuses.Active, "user:1"));
-        context.DriverTransporterAssignments.Add(new DriverTransporterAssignment(accountId, driver.DriverId, transporter.TransporterId,
-            DateTimeOffset.UtcNow.AddDays(3), null, "Temporary", DriverAssignmentStatuses.Active, "user:1"));
+        context.StaffMembers.Add(staff);
+        context.StaffTransporterAssignments.Add(new StaffTransporterAssignment(accountId, staff.StaffId, transporter.TransporterId,
+            DateTimeOffset.UtcNow.AddDays(-2), null, "Regular", StaffAssignmentStatuses.Active, "user:1"));
+        context.StaffTransporterAssignments.Add(new StaffTransporterAssignment(accountId, staff.StaffId, transporter.TransporterId,
+            DateTimeOffset.UtcNow.AddDays(3), null, "Temporary", StaffAssignmentStatuses.Active, "user:1"));
         context.SaveChanges();
         context.ChangeTracker.Clear();
 
@@ -124,9 +124,9 @@ public class TransporterRetirementTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(context.DriverTransporterAssignments.Select(a => a.Status), Is.All.EqualTo(DriverAssignmentStatuses.Ended));
-            Assert.That(context.DriverTransporterAssignments.All(a => a.EndsAt != null), Is.True);
-            Assert.That(context.Drivers.Single().DefaultTransporterId, Is.Null);
+            Assert.That(context.StaffTransporterAssignments.Select(a => a.Status), Is.All.EqualTo(StaffAssignmentStatuses.Ended));
+            Assert.That(context.StaffTransporterAssignments.All(a => a.EndsAt != null), Is.True);
+            Assert.That(context.StaffMembers.Single().DefaultTransporterId, Is.Null);
         });
     }
 }

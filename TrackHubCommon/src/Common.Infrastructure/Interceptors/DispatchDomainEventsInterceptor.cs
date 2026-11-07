@@ -27,7 +27,7 @@ namespace Common.Infrastructure.Interceptors;
 /// behaviour) silently dropped every event raised on a DELETED entity: EF detaches removed entries
 /// during <c>SaveChanges</c>, so by the time <c>SavedChanges</c> ran, the change tracker no longer
 /// held them. Nothing in the platform raised domain events at the time, so the defect was latent
-/// until spec 09 added the first producers — including a <c>DriverQualificationDeleted</c> event that
+/// until spec 09 added the first producers — including a <c>StaffQualificationDeleted</c> event that
 /// never fired. Do not move collection back into the post-save hook.
 /// </para>
 /// </summary>

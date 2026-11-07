@@ -143,9 +143,9 @@ Pick an **Account** from the dropdown at the top of the section; the list then s
 
 - **Enabled** — the on/off switch for that feature on that account.
 - **Tier** — the subscription tier (defaults to `default`).
-- A storage value for certain features: **Storing Interval (Seconds)** for GPS integration (default 360), **Retention Days** for GPS position history (default 30), or **Block assignment when the driver’s license is expired** for workforce (default off).
+- A storage value for certain features: **Storing Interval (Seconds)** for GPS integration (default 360), **Retention Days** for GPS position history (default 30), or **Block assignment when the staff’s license is expired** for workforce (default off).
 
-There are exactly eleven manageable features: GPS integration, GPS position history, geofencing, trip management, driver mobile, public links, documents, notifications, email notifications, WhatsApp notifications, and workforce. When a feature is disabled for an account, the related menu items, sections, buttons, delivery channels, and reports are hidden from its users, and anything that still reaches the server is refused with a "feature not enabled" message (see [Troubleshooting](topic:troubleshooting)). Disabling a feature never deletes data.
+There are exactly eleven manageable features: GPS integration, GPS position history, geofencing, trip management, staff mobile, public links, documents, notifications, email notifications, WhatsApp notifications, and workforce. When a feature is disabled for an account, the related menu items, sections, buttons, delivery channels, and reports are hidden from its users, and anything that still reaches the server is refused with a "feature not enabled" message (see [Troubleshooting](topic:troubleshooting)). Disabling a feature never deletes data.
 
 What each feature actually turns on and off — key by key, including which reports and sections disappear — is set out in the [Feature catalogue](topic:feature-catalog).
 

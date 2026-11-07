@@ -98,37 +98,37 @@ public sealed class TransporterWriter(IApplicationDbContext context, ICurrentPri
             Context.TransporterPositions.Remove(position);
         }
 
-        await ReleaseDriversAsync(transporterId, now, cancellationToken);
+        await ReleaseStaffAsync(transporterId, now, cancellationToken);
 
         transporter.RetiredAt = now;
         AddAuditEvent(transporter.AccountId, "RetireTransporter", "Transporter", $"{transporter.TransporterId}", Describe(transporter), null);
         await Context.SaveChangesAsync(cancellationToken);
     }
 
-    // No driver keeps a retired unit: running assignments end now, scheduled ones are cancelled, and it
+    // No staff keeps a retired unit: running assignments end now, scheduled ones are cancelled, and it
     // leaves every default.
-    private async Task ReleaseDriversAsync(Guid transporterId, DateTimeOffset now, CancellationToken cancellationToken)
+    private async Task ReleaseStaffAsync(Guid transporterId, DateTimeOffset now, CancellationToken cancellationToken)
     {
-        var assignments = await Context.DriverTransporterAssignments.AsTracking()
+        var assignments = await Context.StaffTransporterAssignments.AsTracking()
             .Where(a => a.TransporterId == transporterId
-                && a.Status == DriverAssignmentStatuses.Active
+                && a.Status == StaffAssignmentStatuses.Active
                 && (a.EndsAt == null || a.EndsAt > now))
             .ToListAsync(cancellationToken);
         foreach (var assignment in assignments)
         {
             assignment.EndsAt = assignment.StartsAt > now ? assignment.StartsAt : now;
-            assignment.Status = DriverAssignmentStatuses.Ended;
-            assignment.AddDomainEvent(new DriverAssignmentEndedEvent(assignment.AccountId, assignment.DriverTransporterAssignmentId, assignment.DriverId, transporterId, assignment.EndsAt.Value));
-            AddAuditEvent(assignment.AccountId, "EndDriverAssignment", "DriverTransporterAssignment", $"{assignment.DriverTransporterAssignmentId}", null,
+            assignment.Status = StaffAssignmentStatuses.Ended;
+            assignment.AddDomainEvent(new StaffAssignmentEndedEvent(assignment.AccountId, assignment.StaffTransporterAssignmentId, assignment.StaffId, transporterId, assignment.EndsAt.Value));
+            AddAuditEvent(assignment.AccountId, "EndStaffAssignment", "StaffTransporterAssignment", $"{assignment.StaffTransporterAssignmentId}", null,
                 $$"""{"reason":"Transporter retired","endsAt":{{Quote(assignment.EndsAt.Value.ToString("O"))}}}""");
         }
 
-        var defaults = await Context.Drivers.AsTracking()
+        var defaults = await Context.StaffMembers.AsTracking()
             .Where(d => d.DefaultTransporterId == transporterId)
             .ToListAsync(cancellationToken);
-        foreach (var driver in defaults)
+        foreach (var staff in defaults)
         {
-            driver.DefaultTransporterId = null;
+            staff.DefaultTransporterId = null;
         }
     }
 

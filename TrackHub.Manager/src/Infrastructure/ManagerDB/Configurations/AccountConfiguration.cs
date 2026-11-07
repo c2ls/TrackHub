@@ -83,7 +83,7 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .IsRequired();
 
         builder
-            .HasMany(e => e.Drivers)
+            .HasMany(e => e.StaffMembers)
             .WithOne()
             .HasForeignKey(e => e.AccountId)
             .IsRequired();

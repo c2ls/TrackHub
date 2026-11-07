@@ -319,7 +319,7 @@ export default function App() {
     !route.public && !PRE_SESSION_ROUTES.includes(route.route ?? '');
 
   const routeAllowed = (route: RouteDefinition): boolean => {
-    // Public routes bypass every gate. Without this a non-User principal (Driver, public link)
+    // Public routes bypass every gate. Without this a non-User principal (Staff, public link)
     // would fail the default [User] check and be redirected to /dashboard — which is itself
     // User-only, so it would redirect again: an infinite navigation loop.
     if (route.public) return true;

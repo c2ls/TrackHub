@@ -45,7 +45,7 @@ plataforma de microservicios GraphQL en .NET 10 con un portal en React 19.
 | **Integración GPS multiproveedor** | Un servicio Router conectable por protocolo, con gestión de dispositivos, sincronización manual, ping de conectividad y salud derivada del operador |
 | **Geocercas** | Zonas de polígono y círculo en ambos proveedores de mapas, detección de contención con PostGIS, alertas de entrada / salida / permanencia e historial de visitas |
 | **Gestión de viajes** | Ciclo de vida sin intervención — los viajes se arman, inician y completan desde las zonas de origen y de parada — más planes de ruta, peajes, prueba de entrega, ETA y enlaces públicos de seguimiento |
-| **Documentos y fuerza laboral** | Documentos versionados con firmas, uso compartido, vencimiento y retención; registro de conductores con calificaciones e historial de asignaciones |
+| **Documentos y fuerza laboral** | Documentos versionados con firmas, uso compartido, vencimiento y retención; registro de personal con calificaciones e historial de asignaciones |
 | **Alertas y notificaciones** | Alertas gobernadas por reglas, entregadas en la app, por correo, WhatsApp o webhook, con limitación, resúmenes y escalamiento |
 | **Reportes** | Un catálogo gobernado de reportes con vista previa en la app y exportación a Excel / PDF |
 | **Multiempresa** | Ciclo de vida de cuentas, funcionalidades por cuenta, marca propia y un modelo de permisos por rol + política aplicado del lado del servidor |

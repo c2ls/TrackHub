@@ -27,19 +27,19 @@ namespace Web.UnitTests;
 [TestFixture]
 public class SubjectValidityTests
 {
-    private static readonly Guid DriverId = Guid.NewGuid();
+    private static readonly Guid StaffId = Guid.NewGuid();
     private static readonly Guid CredentialId = Guid.NewGuid();
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid Stamp = Guid.NewGuid();
 
-    private Mock<IDriverCredentialReader> _credentials = null!;
+    private Mock<IStaffCredentialReader> _credentials = null!;
     private Mock<IUserReader> _users = null!;
     private SubjectValidity _validity = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _credentials = new Mock<IDriverCredentialReader>();
+        _credentials = new Mock<IStaffCredentialReader>();
         _users = new Mock<IUserReader>();
         _validity = new SubjectValidity(_users.Object, _credentials.Object);
     }
@@ -47,11 +47,11 @@ public class SubjectValidityTests
     private static ClaimsPrincipal Principal(params Claim[] claims)
         => new(new ClaimsIdentity(claims, "test"));
 
-    private static ClaimsPrincipal DriverPrincipal(Guid? stamp = null)
+    private static ClaimsPrincipal StaffPrincipal(Guid? stamp = null)
         => Principal(
-            new Claim("principal_type", "Driver"),
-            new Claim("driver_id", DriverId.ToString()),
-            new Claim("driver_credential_id", CredentialId.ToString()),
+            new Claim("principal_type", "Staff"),
+            new Claim("staff_id", StaffId.ToString()),
+            new Claim("staff_credential_id", CredentialId.ToString()),
             new Claim(SubjectValidity.SecurityStampClaim, (stamp ?? Stamp).ToString()));
 
     private static ClaimsPrincipal UserPrincipal(Guid? stamp = null)
@@ -62,53 +62,53 @@ public class SubjectValidityTests
 
     private void Credential(bool active = true, DateTimeOffset? lockedUntil = null, bool resetRequired = false, Guid? stamp = null)
         => _credentials.Setup(r => r.GetCredentialSessionAsync(CredentialId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DriverCredentialSessionVm(active, lockedUntil, resetRequired, stamp ?? Stamp));
+            .ReturnsAsync(new StaffCredentialSessionVm(active, lockedUntil, resetRequired, stamp ?? Stamp));
 
     private void User(bool active = true, DateTimeOffset? lockedUntil = null, Guid? stamp = null)
         => _users.Setup(r => r.GetUserAsync(UserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserVm(UserId, "user", string.Empty, "user@mail.com", DateTimeOffset.UtcNow, active, 0, lockedUntil, Guid.NewGuid(), stamp ?? Stamp));
 
     [Test]
-    public async Task ALiveDriverCredentialWithTheSameStamp_KeepsItsSession()
+    public async Task ALiveStaffCredentialWithTheSameStamp_KeepsItsSession()
     {
         Credential();
-        Assert.That(await _validity.IsStillValidAsync(DriverPrincipal(), CancellationToken.None), Is.True);
+        Assert.That(await _validity.IsStillValidAsync(StaffPrincipal(), CancellationToken.None), Is.True);
     }
 
     [Test]
     public async Task ARevokedCredentialEndsItsOwnSession()
     {
         Credential(active: false);
-        Assert.That(await _validity.IsStillValidAsync(DriverPrincipal(), CancellationToken.None), Is.False);
+        Assert.That(await _validity.IsStillValidAsync(StaffPrincipal(), CancellationToken.None), Is.False);
     }
 
     [Test]
     public async Task ALockedCredentialEndsItsSession()
     {
         Credential(lockedUntil: DateTimeOffset.UtcNow.AddMinutes(10));
-        Assert.That(await _validity.IsStillValidAsync(DriverPrincipal(), CancellationToken.None), Is.False);
+        Assert.That(await _validity.IsStillValidAsync(StaffPrincipal(), CancellationToken.None), Is.False);
     }
 
     [Test]
     public async Task ACredentialAwaitingResetEndsItsSession()
     {
         Credential(resetRequired: true);
-        Assert.That(await _validity.IsStillValidAsync(DriverPrincipal(), CancellationToken.None), Is.False);
+        Assert.That(await _validity.IsStillValidAsync(StaffPrincipal(), CancellationToken.None), Is.False);
     }
 
     [Test]
     public async Task AReStampedCredentialEndsTheSessionsMintedBefore()
     {
         Credential(stamp: Guid.NewGuid());
-        Assert.That(await _validity.IsStillValidAsync(DriverPrincipal(), CancellationToken.None), Is.False);
+        Assert.That(await _validity.IsStillValidAsync(StaffPrincipal(), CancellationToken.None), Is.False);
     }
 
     [Test]
-    public async Task ADriverSessionWithoutACredentialOrStampClaim_IsEnded()
+    public async Task AStaffSessionWithoutACredentialOrStampClaim_IsEnded()
     {
         Credential();
-        var noStamp = Principal(new Claim("principal_type", "Driver"), new Claim("driver_credential_id", CredentialId.ToString()));
-        var noCredential = Principal(new Claim("principal_type", "Driver"), new Claim(SubjectValidity.SecurityStampClaim, Stamp.ToString()));
+        var noStamp = Principal(new Claim("principal_type", "Staff"), new Claim("staff_credential_id", CredentialId.ToString()));
+        var noCredential = Principal(new Claim("principal_type", "Staff"), new Claim(SubjectValidity.SecurityStampClaim, Stamp.ToString()));
 
         Assert.Multiple(async () =>
         {

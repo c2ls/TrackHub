@@ -5,7 +5,7 @@ namespace TrackHub.Manager.Application.Documents.Commands;
 // Runs the upload endpoint's authorization and tenant scope BEFORE any byte reaches storage.
 // Registering afterwards meant an unauthorized caller had already filled the document store, and
 // the compensating delete is best-effort inside a catch.
-[Authorize(Resource = Resources.Documents, Action = Actions.Write, PrincipalTypes = "User,Driver")]
+[Authorize(Resource = Resources.Documents, Action = Actions.Write, PrincipalTypes = "User,Staff")]
 public readonly record struct AuthorizeDocumentUploadCommand(Guid AccountId) : IRequest<bool>;
 public class AuthorizeDocumentUploadCommandHandler : IRequestHandler<AuthorizeDocumentUploadCommand, bool>
 {
@@ -13,8 +13,8 @@ public class AuthorizeDocumentUploadCommandHandler : IRequestHandler<AuthorizeDo
 }
 
 // Completes the upload endpoint: bytes already streamed to storage under a
-// server-generated key. Allowed for User and Driver principals; ungated (embedded module panels).
-[Authorize(Resource = Resources.Documents, Action = Actions.Write, PrincipalTypes = "User,Driver")]
+// server-generated key. Allowed for User and Staff principals; ungated (embedded module panels).
+[Authorize(Resource = Resources.Documents, Action = Actions.Write, PrincipalTypes = "User,Staff")]
 // Enforcement: the writer or reader checks every referenced id against the request's account.
 [AccountScopeEnforcedInHandler]
 public readonly record struct RegisterUploadedDocumentCommand(Guid DocumentId, DocumentDto Document) : IRequest<DocumentVm>;

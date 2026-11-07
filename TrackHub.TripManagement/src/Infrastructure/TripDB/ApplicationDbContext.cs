@@ -37,7 +37,7 @@ public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext>
     public DbSet<GeofenceVisit> GeofenceVisits { get; set; }
     public DbSet<PointOfInterest> PointsOfInterest { get; set; }
     public DbSet<Transporter> Transporters { get; set; }
-    public DbSet<Driver> Drivers { get; set; }
+    public DbSet<StaffMember> StaffMembers { get; set; }
     public DbSet<VwVisibleTransporter> VisibleTransporters { get; set; }
     public DbSet<VwUser> Users { get; set; }
     public DbSet<AccountFeature> AccountFeatures { get; set; }

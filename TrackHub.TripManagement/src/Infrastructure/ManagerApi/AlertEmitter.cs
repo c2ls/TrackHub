@@ -64,7 +64,7 @@ public class AlertEmitter(IGraphQLClientFactory graphQLClient)
                             alert.TripStopId,
                             alert.TripCode,
                             alert.TransporterId,
-                            alert.DriverId,
+                            alert.StaffId,
                             alert.StopName,
                             alert.OccurredAt,
                             alert.EtaAt,

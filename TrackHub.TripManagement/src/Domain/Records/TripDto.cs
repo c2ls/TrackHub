@@ -33,7 +33,7 @@ namespace TrackHub.TripManagement.Domain.Records;
 public readonly record struct TripDto(
     string Code,
     Guid TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     Guid? ServiceOrderId,
     string? ExternalReference,
     string? CustomerName,
@@ -113,7 +113,7 @@ public readonly record struct ProofOfDeliveryDto(
 /// </para>
 /// </summary>
 public readonly record struct TripShareFieldFlagsDto(
-    bool IncludeDriverName,
+    bool IncludeStaffName,
     bool IncludeVehicle,
     bool IncludeLivePosition,
     bool IncludeStopDetail,
@@ -143,7 +143,7 @@ public readonly record struct TripImportDto(
     string ExternalReference,
     string Code,
     Guid TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     string? CustomerName,
     string OriginName,
     double OriginLatitude,
@@ -170,7 +170,7 @@ public readonly record struct TripAlertDto(
     Guid? TripStopId,
     string TripCode,
     Guid TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     string? StopName,
     DateTimeOffset OccurredAt,
     DateTimeOffset? EtaAt,

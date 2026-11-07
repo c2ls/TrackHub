@@ -39,8 +39,8 @@ public static class DependencyInjection
         services.AddScoped<IServiceClientPermissionReader, ServiceClientPermissionReader>();
         services.AddScoped<IUserReader, UserReader>();
         services.AddScoped<IUserWriter, UserWriter>();
-        services.AddScoped<IDriverCredentialReader, DriverCredentialReader>();
-        services.AddScoped<IDriverCredentialWriter, DriverCredentialWriter>();
+        services.AddScoped<IStaffCredentialReader, StaffCredentialReader>();
+        services.AddScoped<IStaffCredentialWriter, StaffCredentialWriter>();
 
         // Module discovery seam: registers any IServiceModule implementations shipped in
         // this assembly (none in this repository).

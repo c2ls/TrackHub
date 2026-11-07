@@ -17,7 +17,7 @@
 import {
   credentialState,
   credentialActions,
-} from 'layouts/manageadmin/components/drivers/credentialLifecycle';
+} from 'layouts/manageadmin/components/staff/credentialLifecycle';
 
 const NOW = Date.parse('2026-07-20T12:00:00Z');
 

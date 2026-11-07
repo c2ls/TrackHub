@@ -65,7 +65,7 @@ public sealed class TripDetectionState(OpenTripVm trip)
 
     public Guid TransporterId { get; } = trip.TransporterId;
 
-    public Guid? DriverId { get; } = trip.DriverId;
+    public Guid? StaffId { get; } = trip.StaffId;
 
     public Guid? RoutePlanId { get; } = trip.RoutePlanId;
 

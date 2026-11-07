@@ -55,7 +55,7 @@ services:
       - OpenIddict__LoadCertFromFile=true
       - OpenIddict__Path=/app/certificates/certificate.pfx
       - OpenIddict__Password=${CERTIFICATE_PASSWORD}
-      - OpenIddict__Scopes=${OPENIDDICT_SCOPES:-mobile_scope,driver_mobile_scope,web_scope,service_scope}
+      - OpenIddict__Scopes=${OPENIDDICT_SCOPES:-mobile_scope,staff_mobile_scope,web_scope,service_scope}
     volumes:
       - ./certificates:/app/certificates:ro
       - ./generated/appsettings.authority.json:/app/appsettings.json:ro
@@ -147,7 +147,7 @@ services:
       - AuthorityServer__ValidateAudience=true
       - AuthorityServer__ValidateIssuer=true
       - AuthorityServer__ValidateIssuerSigningKey=true
-      # Manager's own service identity: it revokes driver credentials in Security and relays
+      # Manager's own service identity: it revokes staff credentials in Security and relays
       # manual device syncs to the Router under manager_client, never under the caller's token.
       - AuthorityServer__ClientId=${MANAGER_CLIENT_ID:-manager_client}
       - AuthorityServer__ClientSecret=${MANAGER_CLIENT_SECRET}

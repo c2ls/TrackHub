@@ -19,7 +19,7 @@ public enum PrincipalType
 {
     Unknown = 0,
     User = 1,
-    Driver = 2,
+    Staff = 2,
     ServiceClient = 3,
     PublicLink = 4
 }
@@ -29,7 +29,7 @@ public interface ICurrentPrincipal
     string? SubjectId { get; }
     PrincipalType PrincipalType { get; }
     Guid? UserId { get; }
-    Guid? DriverId { get; }
+    Guid? StaffId { get; }
     string? ClientId { get; }
     Guid? PublicLinkGrantId { get; }
     string? Role { get; }

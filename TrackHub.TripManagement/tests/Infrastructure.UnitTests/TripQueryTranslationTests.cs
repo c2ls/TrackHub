@@ -364,12 +364,12 @@ public class TripQueryTranslationTests
     }
 
     [Test]
-    public async Task GetDriverNames_TranslatesToSql()
+    public async Task GetStaffNames_TranslatesToSql()
     {
         using var context = NewNpgsqlContext();
         var reader = new TripReader(context, new AccountFeatureReader(context));
 
-        await AssertTranslatesAsync(() => reader.GetDriverNamesAsync(AccountId, CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.GetStaffNamesAsync(AccountId, CancellationToken.None));
     }
 
     [Test]

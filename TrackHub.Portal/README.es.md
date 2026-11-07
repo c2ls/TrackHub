@@ -14,7 +14,7 @@ Es también donde vive la **documentación de usuario**: los temas de ayuda cont
 - **Integración multioperador** — una sola interfaz para cada proveedor GPS conectado, con gestión de dispositivos, sincronización manual, ping de conectividad y estado de salud
 - **Geofencing** — un editor de polígonos y círculos en ambos proveedores de mapas, con listas paginadas del lado del servidor y superposiciones (overlays) en el panel
 - **Gestión de viajes** — un tablero de despacho para viajes, paradas, entregas, planes de ruta, peajes, prueba de entrega y enlaces públicos de seguimiento
-- **Documentos y fuerza laboral (workforce)** — cargas versionadas con firmas y compartición; el registro de conductores, calificaciones y asignaciones
+- **Documentos y fuerza laboral (workforce)** — cargas versionadas con firmas y compartición; el registro de personal, calificaciones y asignaciones
 - **Alertas y notificaciones** — el feed dentro de la aplicación, reglas de notificación, suscripciones y plantillas
 - **Reportes** — el catálogo de reportes gobernado, con vista previa dentro de la aplicación y exportación a Excel/PDF
 - **Administración** — cuentas, usuarios, grupos, permisos, features y clientes de servicio (service clients)
@@ -94,7 +94,7 @@ Detalle completo: **[Frontend](https://github.com/shernandezp/TrackHub/wiki/Fron
 - **Los valores por defecto de fechas y los filtros por día salen de `useAccountCalendar()`** (`src/context/account`, sobre `src/utils/accountCalendar.ts`): `today()`, `daysAgo`, `monthStart`/`monthEnd`, `dayStartIso`/`dayEndIso` se calculan en la zona IANA de la CUENTA (`accountContext.timeZoneId`), nunca a partir de `new Date()` ni de una medianoche local en `datetime-local`: ese es el calendario del navegador, no el de la flota. Formatear una `Date` elegida para un input `date` y mostrar un instante siguen siendo locales al navegador.
 - **El contenido de ayuda se valida en tiempo de build.** `scripts/build-help.mjs` se ejecuta en `predev` y `prebuild` y verifica la paridad entre idiomas, que el id sea igual al nombre de archivo, `screens:` ↔ `routes.tsx` **en ambas direcciones**, los destinos de enlace `topic:`, la ausencia de HTML crudo y la existencia de assets. Agregar o renombrar una pantalla sin actualizar el frontmatter del tema **hace fallar el build**.
 - **`/status` debe seguir funcionando sin token.** Sus dos fetches anónimos (`api/core/healthProbe.ts` y `getVisibleAnnouncements`) son las únicas excepciones sancionadas a la regla de capas de la API; ambas están documentadas en los encabezados de sus archivos y se alcanzan únicamente a través de `src/queries/platformStatus.ts`.
-- **`RouteDefinition.principalTypes` tiene por defecto `[User]`.** Una ruta alcanzable por principals de tipo driver o de enlace público debe establecer `public: true` explícitamente, o esos principals rebotarán entre esa ruta y `/dashboard` indefinidamente.
+- **`RouteDefinition.principalTypes` tiene por defecto `[User]`.** Una ruta alcanzable por principals de tipo staff o de enlace público debe establecer `public: true` explícitamente, o esos principals rebotarán entre esa ruta y `/dashboard` indefinidamente.
 - **`typescript-eslint` está deshabilitado** hasta que soporte TypeScript 7. `tsc` es el gate de lint de TypeScript.
 - Reporting es solo REST (`api/BasicReports`), y la base REST de documentos de Manager es `~/documents` — **sin prefijo `api/`**.
 

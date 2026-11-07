@@ -23,26 +23,26 @@ namespace TrackHub.Reporting.Infrastructure.GraphQLApi;
 public class WorkforceReportReader(IGraphQLClientFactory graphQLClient, IUser user, IAccountFeatureReader featureReader)
     : GraphQLService(graphQLClient.CreateClient(Clients.Manager)), IWorkforceReportReader
 {
-    internal const string DriversByAccountQuery = @"
+    internal const string StaffMembersByAccountQuery = @"
                 query($accountId: UUID!, $skip: Int!, $take: Int!) {
-                    driversByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) {
-                        items { driverId name phone documentType documentNumber active employeeCode licenseNumber licenseExpiresAt defaultTransporterId }
+                    staffMembersByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) {
+                        items { staffId name phone documentType documentNumber active employeeCode licenseNumber licenseExpiresAt defaultTransporterId staffType }
                         totalCount
                     }
                 }";
 
-    internal const string DriverQualificationsQuery = @"
-                query($accountId: UUID!, $driverId: UUID, $expiringWithinDays: Int, $skip: Int!, $take: Int!) {
-                    driverQualifications(query: { accountId: $accountId, driverId: $driverId, expiringWithinDays: $expiringWithinDays, skip: $skip, take: $take }) {
-                        items { driverQualificationId driverId driverName qualificationType category number issuedAt expiresAt issuingAuthority status }
+    internal const string StaffQualificationsQuery = @"
+                query($accountId: UUID!, $staffId: UUID, $expiringWithinDays: Int, $skip: Int!, $take: Int!) {
+                    staffQualifications(query: { accountId: $accountId, staffId: $staffId, expiringWithinDays: $expiringWithinDays, skip: $skip, take: $take }) {
+                        items { staffQualificationId staffId staffName qualificationType category number issuedAt expiresAt issuingAuthority status }
                         totalCount
                     }
                 }";
 
-    internal const string DriverAssignmentHistoryQuery = @"
-                query($accountId: UUID!, $driverId: UUID, $transporterId: UUID, $from: DateTime, $to: DateTime, $skip: Int!, $take: Int!) {
-                    driverAssignmentHistory(query: { accountId: $accountId, driverId: $driverId, transporterId: $transporterId, from: $from, to: $to, skip: $skip, take: $take }) {
-                        items { driverId driverName transporterId transporterName startsAt endsAt assignmentType status createdByPrincipal }
+    internal const string StaffAssignmentHistoryQuery = @"
+                query($accountId: UUID!, $staffId: UUID, $transporterId: UUID, $from: DateTime, $to: DateTime, $skip: Int!, $take: Int!) {
+                    staffAssignmentHistory(query: { accountId: $accountId, staffId: $staffId, transporterId: $transporterId, from: $from, to: $to, skip: $skip, take: $take }) {
+                        items { staffId staffName transporterId transporterName startsAt endsAt assignmentType status createdByPrincipal }
                         totalCount
                     }
                 }";
@@ -52,18 +52,18 @@ public class WorkforceReportReader(IGraphQLClientFactory graphQLClient, IUser us
     public Task EnsureWorkforceFeatureAsync(CancellationToken cancellationToken)
         => featureReader.EnsureFeatureEnabledAsync(AccountId, FeatureKeys.Workforce, cancellationToken);
 
-    public Task<IReadOnlyCollection<ReportDriverVm>> GetDriversAsync(CancellationToken cancellationToken)
-        => DrainAsync<ReportDriverVm>(DriversByAccountQuery, (skip, take) => new { accountId = AccountId, skip, take }, cancellationToken);
+    public Task<IReadOnlyCollection<ReportStaffMemberVm>> GetStaffMembersAsync(CancellationToken cancellationToken)
+        => DrainAsync<ReportStaffMemberVm>(StaffMembersByAccountQuery, (skip, take) => new { accountId = AccountId, skip, take }, cancellationToken);
 
-    public Task<IReadOnlyCollection<ReportDriverQualificationVm>> GetDriverQualificationsAsync(
-        Guid? driverId, int? expiringWithinDays, CancellationToken cancellationToken)
-        => DrainAsync<ReportDriverQualificationVm>(DriverQualificationsQuery,
-            (skip, take) => new { accountId = AccountId, driverId, expiringWithinDays, skip, take }, cancellationToken);
+    public Task<IReadOnlyCollection<ReportStaffQualificationVm>> GetStaffQualificationsAsync(
+        Guid? staffId, int? expiringWithinDays, CancellationToken cancellationToken)
+        => DrainAsync<ReportStaffQualificationVm>(StaffQualificationsQuery,
+            (skip, take) => new { accountId = AccountId, staffId, expiringWithinDays, skip, take }, cancellationToken);
 
-    public Task<IReadOnlyCollection<ReportDriverAssignmentVm>> GetDriverAssignmentHistoryAsync(
-        Guid? driverId, Guid? transporterId, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
-        => DrainAsync<ReportDriverAssignmentVm>(DriverAssignmentHistoryQuery,
-            (skip, take) => new { accountId = AccountId, driverId, transporterId, from, to, skip, take }, cancellationToken);
+    public Task<IReadOnlyCollection<ReportStaffAssignmentVm>> GetStaffAssignmentHistoryAsync(
+        Guid? staffId, Guid? transporterId, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
+        => DrainAsync<ReportStaffAssignmentVm>(StaffAssignmentHistoryQuery,
+            (skip, take) => new { accountId = AccountId, staffId, transporterId, from, to, skip, take }, cancellationToken);
 
     private Task<IReadOnlyCollection<T>> DrainAsync<T>(string query, Func<int, int, object> variables, CancellationToken cancellationToken)
         => FeedDrain.DrainAsync<T>(async (skip, take) =>

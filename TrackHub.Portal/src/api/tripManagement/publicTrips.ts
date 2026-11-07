@@ -71,7 +71,7 @@ export interface PublicTrip {
   /** Present only when the share includes the vehicle. */
   vehicleLabel?: string | null;
   /** Given name only — never a full name, never contact data. */
-  driverGivenName?: string | null;
+  staffGivenName?: string | null;
   /** Live position: present only when shared AND the trip is in progress. */
   lastLatitude?: number | null;
   lastLongitude?: number | null;

@@ -16,16 +16,16 @@
 namespace TrackHub.Manager.Domain.Models;
 
 /// <summary>
-/// A driver qualification (license, medical exam, training, background check, HAZMAT permit, ...).
-/// <paramref name="DriverName"/> is denormalized so the account-wide expirations view does not need a
+/// A staff qualification (license, medical exam, training, background check, HAZMAT permit, ...).
+/// <paramref name="StaffName"/> is denormalized so the account-wide expirations view does not need a
 /// second round-trip per row. <paramref name="Status"/> carries only the stored lifecycle state —
 /// expiry is derived by the consumer from <paramref name="ExpiresAt"/>.
 /// </summary>
-public readonly record struct DriverQualificationVm(
-    Guid DriverQualificationId,
+public readonly record struct StaffQualificationVm(
+    Guid StaffQualificationId,
     Guid AccountId,
-    Guid DriverId,
-    string DriverName,
+    Guid StaffId,
+    string StaffName,
     string QualificationType,
     string? Category,
     string? Number,
@@ -38,14 +38,14 @@ public readonly record struct DriverQualificationVm(
     DateTimeOffset LastModified);
 
 /// <summary>
-/// A time-bounded driver↔transporter assignment. <paramref name="TransporterName"/> is denormalized
+/// A time-bounded staff↔transporter assignment. <paramref name="TransporterName"/> is denormalized
 /// for the history table.
 /// </summary>
-public readonly record struct DriverTransporterAssignmentVm(
-    Guid DriverTransporterAssignmentId,
+public readonly record struct StaffTransporterAssignmentVm(
+    Guid StaffTransporterAssignmentId,
     Guid AccountId,
-    Guid DriverId,
-    string DriverName,
+    Guid StaffId,
+    string StaffName,
     Guid TransporterId,
     string TransporterName,
     DateTimeOffset StartsAt,
@@ -56,10 +56,10 @@ public readonly record struct DriverTransporterAssignmentVm(
     DateTimeOffset LastModified);
 
 /// <summary>
-/// Driver self-service view (spec 09 §7.3, consumed by spec 10). The handler pins the driver id from
-/// the principal, so this never carries another driver's data.
+/// Staff self-service view (spec 09 §7.3, consumed by spec 10). The handler pins the staff id from
+/// the principal, so this never carries another staff's data.
 /// </summary>
-public readonly record struct MyDriverProfileVm(
-    DriverVm Driver,
-    IReadOnlyCollection<DriverQualificationVm> Qualifications,
-    IReadOnlyCollection<DriverTransporterAssignmentVm> ActiveAssignments);
+public readonly record struct MyStaffProfileVm(
+    StaffMemberVm Staff,
+    IReadOnlyCollection<StaffQualificationVm> Qualifications,
+    IReadOnlyCollection<StaffTransporterAssignmentVm> ActiveAssignments);

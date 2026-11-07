@@ -54,7 +54,7 @@ public class TripProgressGuardTests
         return context;
     }
 
-    private static Task<bool> DepartAsync(WriterTestContext context, DateTimeOffset occurredAt, string source = TripEventSources.Driver)
+    private static Task<bool> DepartAsync(WriterTestContext context, DateTimeOffset occurredAt, string source = TripEventSources.Staff)
         => new TripStopWriter(context).RecordStopProgressAsync(
             TripId, StopId, WriterTestData.AccountId, TripStopStatuses.Departed, occurredAt,
             null, null, source, $"trip-depart:{Guid.NewGuid():N}", null, CancellationToken.None);

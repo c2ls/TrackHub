@@ -71,7 +71,7 @@ public sealed class WorkforceExpirationJob(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to raise the expiration alert for qualification {QualificationId}; continuing the batch.",
-                    qualification.DriverQualificationId);
+                    qualification.StaffQualificationId);
             }
         }
 
@@ -95,7 +95,7 @@ public sealed class WorkforceExpirationJob(
     private async Task<bool> TryRaiseAsync(
         ExpiringQualificationVm qualification, int threshold, DateTimeOffset now, CancellationToken cancellationToken)
     {
-        var idempotencyKey = $"{qualification.DriverQualificationId:N}:{qualification.ExpiresAt:yyyyMMdd}:{threshold}";
+        var idempotencyKey = $"{qualification.StaffQualificationId:N}:{qualification.ExpiresAt:yyyyMMdd}:{threshold}";
         if (await store.JobRunSucceededAsync(idempotencyKey, cancellationToken))
         {
             return false;
@@ -110,23 +110,23 @@ public sealed class WorkforceExpirationJob(
         {
             threshold,
             qualificationType = qualification.QualificationType,
-            driverId = qualification.DriverId,
+            staffId = qualification.StaffId,
             expiresAt = qualification.ExpiresAt.ToString("O"),
         });
 
         await recorder.RecordAsync(new AlertEventDto(
             qualification.AccountId,
-            isExpired ? AlertEventTypes.DriverQualificationExpired : AlertEventTypes.DriverQualificationExpiring,
+            isExpired ? AlertEventTypes.StaffQualificationExpired : AlertEventTypes.StaffQualificationExpiring,
             isExpired ? AlertSeverities.High : AlertSeverities.Warning,
             "Workforce",
-            "DriverQualification",
-            qualification.DriverQualificationId.ToString(),
+            "StaffQualification",
+            qualification.StaffQualificationId.ToString(),
             "Open",
             payloadJson,
-            AlertKeys.DriverQualification(qualification.DriverQualificationId, qualification.ExpiresAt, threshold)), cancellationToken);
+            AlertKeys.StaffQualification(qualification.StaffQualificationId, qualification.ExpiresAt, threshold)), cancellationToken);
 
         // The marker follows the emission: a crash in between repeats an alert the recorder folds, never loses one.
-        await store.RecordJobRunAsync(qualification.AccountId, qualification.DriverQualificationId.ToString(), idempotencyKey, now, cancellationToken);
+        await store.RecordJobRunAsync(qualification.AccountId, qualification.StaffQualificationId.ToString(), idempotencyKey, now, cancellationToken);
         return true;
     }
 }

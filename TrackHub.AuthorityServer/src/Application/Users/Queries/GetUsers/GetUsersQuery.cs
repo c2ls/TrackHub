@@ -23,7 +23,7 @@ namespace TrackHub.AuthorityServer.Application.Users.Queries.GetUsers;
 public readonly record struct GetUsersQuery(string EmailAddress, string Password) : IRequest<UserVm>;
 
 // Handles the GetUsersQuery and returns a UserVm.
-// Login lockout mirrors the driver credential model (see AuthenticateDriverQuery): a rolling
+// Login lockout mirrors the staff credential model (see AuthenticateStaffQuery): a rolling
 // failed-attempt counter that trips a timed lock and resets on a successful login.
 public class GetUsersQueryHandler(IUserReader reader, IUserWriter writer, ILogger<GetUsersQueryHandler> logger) : IRequestHandler<GetUsersQuery, UserVm>
 {

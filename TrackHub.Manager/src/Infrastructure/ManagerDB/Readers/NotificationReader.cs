@@ -89,14 +89,14 @@ public sealed class NotificationReader(IApplicationDbContext context, ICurrentPr
                 visibleTransporterKeys = visibleIds.Select(id => id.ToString()).ToList();
             }
         }
-        else if (Principal.PrincipalType == PrincipalType.Driver && Principal.DriverId.HasValue)
+        else if (Principal.PrincipalType == PrincipalType.Staff && Principal.StaffId.HasValue)
         {
-            var driverKey = Principal.DriverId.Value.ToString();
-            query = query.Where(x => x.RecipientPrincipalType == RecipientPrincipalTypes.Driver && x.Recipient == driverKey);
+            var staffKey = Principal.StaffId.Value.ToString();
+            query = query.Where(x => x.RecipientPrincipalType == RecipientPrincipalTypes.Staff && x.Recipient == staffKey);
         }
         else
         {
-            throw new ForbiddenAccessException("Only user or driver principals have an in-app notification feed.");
+            throw new ForbiddenAccessException("Only user or staff principals have an in-app notification feed.");
         }
 
         if (unreadOnly)

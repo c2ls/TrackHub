@@ -25,7 +25,7 @@ namespace TrackHub.TripManagement.Application.TripStops.Commands.Progress;
 /// <c>trip-depart:{tripStopId:N}:{clientEventId:N}</c>: a duplicate submission returns success and
 /// creates no second row (acceptance 15) — the guarantee spec 10's offline outbox is built on.
 /// <para>
-/// No <c>PrincipalTypes = "Driver"</c> here (acceptance 6); spec 10 widens the attribute additively.
+/// No <c>PrincipalTypes = "Staff"</c> here (acceptance 6); spec 10 widens the attribute additively.
 /// </para>
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]

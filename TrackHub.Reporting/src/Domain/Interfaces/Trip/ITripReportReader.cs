@@ -27,14 +27,14 @@ public interface ITripReportReader
     Task EnsureTripManagementFeatureAsync(CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<ReportTripVm>> GetTripsAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken);
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<ReportTripStopVm>> GetTripStopsAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken);
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<ReportTripTollVm>> GetTripTollsAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken);
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken);
 
     Task<IReadOnlyCollection<ReportTripPodVm>> GetTripProofsOfDeliveryAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken);
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken);
 }

@@ -35,7 +35,7 @@ internal static class AuditTrail
         => new(
             accountId,
             principal.PrincipalType.ToString(),
-            principal.UserId?.ToString() ?? principal.DriverId?.ToString() ?? principal.ClientId ?? principal.SubjectId ?? "unknown",
+            principal.UserId?.ToString() ?? principal.StaffId?.ToString() ?? principal.ClientId ?? principal.SubjectId ?? "unknown",
             action,
             resourceType,
             resourceId,

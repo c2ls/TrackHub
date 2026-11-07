@@ -18,7 +18,7 @@ Built on .NET 10 with a HotChocolate GraphQL endpoint, following the platform's 
 | **GPS integration** | Operators, encrypted provider credentials, the device-synchronization command surface |
 | **Geospatial reference** | Geocoding providers, points of interest |
 | **Documents** | Documents, versions, types, signatures, sharing, retention |
-| **Workforce** | Drivers, qualifications, driver–transporter assignment history |
+| **Workforce** | Staff, qualifications, staff–transporter assignment history |
 | **Alerts & notifications** | Alert events, notification rules, deliveries, templates, subscriptions |
 | **Platform** | Announcements, audit events, background job runs, public link grants, the report catalog |
 

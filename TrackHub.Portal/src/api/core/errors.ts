@@ -80,7 +80,7 @@ export const ERROR_CODE_I18N: Record<string, string> = {
   TRIP_DUPLICATE_CODE: 'errors.tripDuplicateCode',
   TRIP_DUPLICATE_EXTERNAL_REFERENCE: 'errors.tripDuplicateExternalReference',
   TRIP_HAS_HISTORY: 'errors.tripHasHistory',
-  TRIP_DRIVER_NOT_ASSIGNABLE: 'errors.tripDriverNotAssignable',
+  TRIP_STAFF_NOT_ASSIGNABLE: 'errors.tripStaffNotAssignable',
   TRIP_TRANSPORTER_BUSY: 'errors.tripTransporterBusy',
   TRIP_ARMED: 'errors.tripArmed',
   TRIP_START_EVIDENCE_REQUIRED: 'errors.tripStartEvidenceRequired',

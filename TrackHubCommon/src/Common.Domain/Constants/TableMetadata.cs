@@ -30,11 +30,12 @@ public static partial class TableMetadata
     public const string Credential = "credentials";
     public const string Device = "devices";
     public const string Document = "documents";
-    public const string Driver = "drivers";
-    public const string DriverCredential = "driver_credentials";
-    public const string DriverDeviceRegistration = "driver_device_registrations";
-    public const string DriverQualification = "driver_qualifications";
-    public const string DriverTransporterAssignment = "driver_transporter_assignments";
+    public const string StaffMember = "staff_members";
+    public const string AccountHoliday = "account_holidays";
+    public const string StaffCredential = "staff_credentials";
+    public const string StaffDeviceRegistration = "staff_device_registrations";
+    public const string StaffQualification = "staff_qualifications";
+    public const string StaffTransporterAssignment = "staff_transporter_assignments";
     public const string TransporterGroup = "transporter_group";
     public const string TransporterDetectionCursor = "transporter_detection_cursors";
     public const string GeocodingProvider = "geocoding_providers";

@@ -447,8 +447,11 @@
   <data name="PageOf" xml:space="preserve">
     <value>de</value>
   </data>
-  <data name="DriverName" xml:space="preserve">
-    <value>Conductor</value>
+  <data name="StaffName" xml:space="preserve">
+    <value>Nombre del personal</value>
+  </data>
+  <data name="StaffType" xml:space="preserve">
+    <value>Tipo de personal</value>
   </data>
   <data name="EmployeeCode" xml:space="preserve">
     <value>Código de Empleado</value>

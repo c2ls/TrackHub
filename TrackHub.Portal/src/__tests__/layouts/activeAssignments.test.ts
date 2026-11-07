@@ -14,13 +14,13 @@
  *  limitations under the License.
  */
 
-import { buildActiveAssignmentRows } from 'layouts/manageadmin/components/drivers/activeAssignments';
+import { buildActiveAssignmentRows } from 'layouts/manageadmin/components/staff/activeAssignments';
 import type {
-  DriverActiveAssignment,
-  DriverTransporterAssignment,
-} from 'api/manager/drivers';
+  StaffActiveAssignment,
+  StaffTransporterAssignment,
+} from 'api/manager/staff';
 
-const DRIVER_ID = '11111111-1111-1111-1111-111111111111';
+const STAFF_ID = '11111111-1111-1111-1111-111111111111';
 const UNIT_A = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const UNIT_B = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const ROW_A = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
@@ -29,9 +29,9 @@ const activeVm = (
   transporterId: string,
   startsAt: string | null,
   assignmentType: string | null = 'Regular'
-): DriverActiveAssignment =>
+): StaffActiveAssignment =>
   ({
-    driverId: DRIVER_ID,
+    staffId: STAFF_ID,
     accountId: 'account',
     resourceType: 'Transporter',
     resourceId: transporterId,
@@ -39,19 +39,19 @@ const activeVm = (
     startsAt,
     endsAt: null,
     assignmentType,
-  }) as DriverActiveAssignment;
+  }) as StaffActiveAssignment;
 
 const historyRow = (
   id: string,
   transporterId: string,
   startsAt: string,
   status = 'Active'
-): DriverTransporterAssignment =>
+): StaffTransporterAssignment =>
   ({
-    driverTransporterAssignmentId: id,
+    staffTransporterAssignmentId: id,
     accountId: 'account',
-    driverId: DRIVER_ID,
-    driverName: 'Ana Driver',
+    staffId: STAFF_ID,
+    staffName: 'Ana Staff',
     transporterId,
     transporterName: 'Unit A',
     startsAt,
@@ -60,10 +60,10 @@ const historyRow = (
     status,
     createdByPrincipal: 'admin',
     lastModified: startsAt,
-  }) as DriverTransporterAssignment;
+  }) as StaffTransporterAssignment;
 
-const context = (rows: DriverTransporterAssignment[]) => ({
-  driverName: 'Ana Driver',
+const context = (rows: StaffTransporterAssignment[]) => ({
+  staffName: 'Ana Staff',
   historyRows: rows,
   transporterNames: new Map([
     [UNIT_A, 'Unit A'],
@@ -122,7 +122,7 @@ describe('buildActiveAssignmentRows', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].assignmentId).toBeNull();
     expect(rows[0].isDefault).toBe(false);
-    expect(rows[0].driverName).toBe('Ana Driver');
+    expect(rows[0].staffName).toBe('Ana Staff');
   });
 
   test('supports several concurrent assignments to different units', () => {
@@ -138,7 +138,7 @@ describe('buildActiveAssignmentRows', () => {
     expect(new Set(rows.map((row) => row.key)).size).toBe(2);
   });
 
-  test('returns nothing when the driver has no active assignment', () => {
+  test('returns nothing when the staff has no active assignment', () => {
     expect(buildActiveAssignmentRows([], context([]))).toEqual([]);
   });
 });

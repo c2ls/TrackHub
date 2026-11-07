@@ -17,7 +17,7 @@
 const PrincipalTypes = Object.freeze({
   Unknown: "UNKNOWN",
   User: "USER",
-  Driver: "DRIVER",
+  Staff: "STAFF",
   ServiceClient: "SERVICE_CLIENT",
   PublicLink: "PUBLIC_LINK",
 } as const);
