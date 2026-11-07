@@ -703,7 +703,7 @@ Edit `config/clients.json`:
   "scopes": [
     {"name": "web_scope", "resource": "trackhub_api"},
     {"name": "mobile_scope", "resource": "trackhub_api"},
-    {"name": "driver_mobile_scope", "resource": "trackhub_api"},
+    {"name": "staff_mobile_scope", "resource": "trackhub_api"},
     {"name": "service_scope", "resource": "trackhub_api"}
   ],
   "PKCEClients": [
@@ -721,10 +721,10 @@ Edit `config/clients.json`:
       "passwordGrant": true
     },
     {
-      "clientId": "driver_mobile_client",
-      "uri": "trackhubmobiledriver://callback",
-      "postLogoutUri": "trackhubmobiledriver://callback",
-      "scope": "driver_mobile_scope"
+      "clientId": "staff_mobile_client",
+      "uri": "trackhubstaff://callback",
+      "postLogoutUri": "trackhubstaff://callback",
+      "scope": "staff_mobile_scope"
     }
   ],
   "serviceClients": [
@@ -751,7 +751,7 @@ Edit `config/clients.json`:
 > token audience the APIs validate). Each service client's `clientSecret` must match the
 > `${SYNCWORKER_CLIENT_SECRET}` / `${ROUTER_CLIENT_SECRET}` / `${SECURITY_CLIENT_SECRET}` /
 > `${GEOFENCE_CLIENT_SECRET}` / `${TRIP_CLIENT_SECRET}` values in your `.env`, and `OPENIDDICT_SCOPES` in `.env` must
-> list the same scopes (`mobile_scope,driver_mobile_scope,web_scope,service_scope`).
+> list the same scopes (`mobile_scope,staff_mobile_scope,web_scope,service_scope`).
 
 ### Step 8: Deploy
 
@@ -854,7 +854,7 @@ The master template at `config/appsettings.template.json` shows all configurable
 | `${ROUTER_CLIENT_ID}` / `${ROUTER_CLIENT_SECRET}` | Router | `router_client` service credentials |
 | `${SYNCWORKER_CLIENT_ID}` / `${SYNCWORKER_CLIENT_SECRET}` | SyncWorker | `syncworker_client` service credentials |
 | `${GEOFENCE_CLIENT_ID}` / `${GEOFENCE_CLIENT_SECRET}` | Geofencing | `geofence_client` service credentials (alert emission + dwell-evaluator job runs toward Manager) |
-| `${TRIP_CLIENT_ID}` / `${TRIP_CLIENT_SECRET}` | TripManagement | `trip_client` service credentials (alerts, job runs, public links, driver/transporter validation toward Manager; position history toward Telemetry) |
+| `${TRIP_CLIENT_ID}` / `${TRIP_CLIENT_SECRET}` | TripManagement | `trip_client` service credentials (alerts, job runs, public links, staff/transporter validation toward Manager; position history toward Telemetry) |
 | `${REPORTING_CLIENT_ID}` / `${REPORTING_CLIENT_SECRET}` | Reporting | `reporting_client` service credentials — reads the account's time zone from Manager so report day boundaries are the account's. Without them every preview and export fails at start-up with `Setting 'ClientId' not found` |
 | `${ROUTING_PROVIDER}` / `${ORS_BASE_URL}` / `${ORS_API_KEY}` / `${ORS_PROFILE}` / `${ORS_REQUESTS_PER_SECOND}` / `${ORS_TIMEOUT_SECONDS}` / `${ORS_MAX_WAYPOINTS}` | TripManagement | `AppSettings:Routing` — OpenRouteService directions/matrix. **Required per deployment**, see [OpenRouteService provisioning](#openrouteservice-provisioning-required) |
 | `${ORS_INTERACTIVE_TIMEOUT_SECONDS}` / `${ORS_BACKGROUND_REQUESTS_PER_WINDOW}` / `${ORS_BACKGROUND_WINDOW_SECONDS}` | TripManagement | `AppSettings:Routing` admission control — how long an interactive caller waits for a slot (default 15s) and the background ETA-refresh budget per rolling window (defaults 250 per 300s) |
@@ -891,7 +891,7 @@ Regenerate appsettings when you change:
 | `CERTIFICATE_PASSWORD` | OpenIddict cert password | `your-password` |
 | `ENCRYPTION_KEY` | Database encryption key | `GUID format` |
 | `AUTHORITY_URL` | Identity provider URL | `https://domain.com/Identity` |
-| `OPENIDDICT_SCOPES` | Scopes the Authority registers | `mobile_scope,driver_mobile_scope,web_scope,service_scope` |
+| `OPENIDDICT_SCOPES` | Scopes the Authority registers | `mobile_scope,staff_mobile_scope,web_scope,service_scope` |
 | `SYNCWORKER_CLIENT_ID` | SyncWorker OAuth client ID | `syncworker_client` |
 | `SYNCWORKER_CLIENT_SECRET` | SyncWorker OAuth client secret | `your-secret` |
 | `ROUTER_CLIENT_ID` | Router OAuth client ID | `router_client` |
@@ -1497,10 +1497,10 @@ Keys that are **new or changed** and required by this release:
 | `GRAPHQL_TELEMETRY_SERVICE` | **Add** (`http://telemetry:8080/graphql/`). |
 | `REACT_APP_TELEMETRY_ENDPOINT` | **Add** (`https://<domain>/Telemetry/graphql`). |
 | `DOCUMENT_STORAGE_PROVIDER` / `DOCUMENT_STORAGE_LOCAL_ROOT` / `DOCUMENT_RETENTION_DAYS` | **Add** (defaults work; documents persist to the `manager-documents` volume). |
-| `OPENIDDICT_SCOPES` | **Change** to `mobile_scope,driver_mobile_scope,web_scope,service_scope`. |
+| `OPENIDDICT_SCOPES` | **Change** to `mobile_scope,staff_mobile_scope,web_scope,service_scope`. |
 | `SYNCWORKER_CLIENT_ID` | **Change** to `syncworker_client`. |
 | `GEOFENCE_CLIENT_ID` / `GEOFENCE_CLIENT_SECRET` | **Add**. Geofencing now emits alert events and job runs to Manager; must match the `geofence_client` in `clients.json`. |
-| `TRIP_CLIENT_ID` / `TRIP_CLIENT_SECRET` | **Add**. TripManagement calls Manager (alerts, job runs, public links, driver/transporter validation) and Telemetry; must match the `trip_client` in `clients.json`. |
+| `TRIP_CLIENT_ID` / `TRIP_CLIENT_SECRET` | **Add**. TripManagement calls Manager (alerts, job runs, public links, staff/transporter validation) and Telemetry; must match the `trip_client` in `clients.json`. |
 | `REPORTING_CLIENT_ID` / `REPORTING_CLIENT_SECRET` | **Add**. Reporting reads the account's time zone from Manager; must match the `reporting_client` in `clients.json`. Reports fail with HTTP 500 without them. |
 | `GRAPHQL_TRIP_SERVICE` | **Add** (`http://tripmanagement:8080/graphql/`). Consumed by Router (`processTripPositions`) and Reporting (trip report data). |
 | `REACT_APP_TRIPMANAGEMENT_ENDPOINT` | **Add** (`https://<domain>/Trip/graphql`). Baked in at frontend build time. |
@@ -1510,8 +1510,8 @@ Keys that are **new or changed** and required by this release:
 
 Bring your `clients.json` in line with `config/clients.json.example`:
 
-- **scopes:** add `driver_mobile_scope` and `service_scope` (`resource: trackhub_api`); remove any `sec_scope`.
-- **PKCEClients:** add `mobile_client` and `driver_mobile_client` if you run the mobile/driver apps.
+- **scopes:** add `staff_mobile_scope` and `service_scope` (`resource: trackhub_api`); remove any `sec_scope`.
+- **PKCEClients:** add `mobile_client` and `staff_mobile_client` if you run the mobile/staff apps.
 - **`mobile_client.passwordGrant` (2026-09):** set to `true`. The mobile app signs in through an in-app page with the OAuth 2.0 password grant and gets `unauthorized_client` without it. Only `mobile_client` carries the flag; every other public client stays on code + PKCE.
 - **serviceClients:** add `router_client`, `security_client`, `geofence_client`, and `trip_client`, and give **every** service client `"scope": "service_scope"`. Each `clientSecret` must equal the matching `*_CLIENT_SECRET` in `.env`.
 - **`web_client.postLogoutUri`:** change to `https://<domain>/` (was `.../authentication/callback`). Logout from the portal lands on a 404 otherwise.
@@ -1533,7 +1533,7 @@ migration bundle). This step is required on every upgrade that adds migrations.
 
 | Migration | Service | Adds | If not applied |
 |-----------|---------|------|----------------|
-| `AddWorkforceQualificationsAndAssignments` | Manager | `app.driver_qualifications` and `app.driver_transporter_assignments` (workforce qualifications and driver/transporter assignment history). | Every workforce call fails; qualification expiration scanning and the workforce reports return errors. |
+| `AddWorkforceQualificationsAndAssignments` | Manager | `app.staff_qualifications` and `app.staff_transporter_assignments` (workforce qualifications and staff/transporter assignment history). | Every workforce call fails; qualification expiration scanning and the workforce reports return errors. |
 | `InitialCreate` (TripDB) | TripManagement | The `trip` schema: trips, stops, route plans, tracking events, PODs, public-link grants, the toll catalog, plus two views. **Requires the `postgis` extension** in `TrackHub` — already present if Geofencing is deployed, since they share the database. | TripManagement crash-loops at startup; every `/Trip/*` call fails. |
 | `AddTripDetectionState` (TripDB) | TripManagement | `trip.trips.consecutiveoutsidefixes` and `trip.trip_stops.outsidesinceat` — the persisted arrival/departure detection state. | Trip tracking ingestion fails; automatic stop arrival/departure detection never advances. |
 | `AddPublicShareDisclosureAndTollIntegrity` (TripDB) | TripManagement | `trip.trip_stops.city` and `trip.trip_shares.includeroute` (public-share disclosure control), plus the toll-catalog integrity constraints: unique `toll_vehicle_classes.code`, the reworked `transporter_toll_classes` uniqueness/XOR check, and the `toll_tariffs` / `transporter_toll_classes` foreign keys to the vehicle-class code. | Public share links ignore the route/city disclosure settings; the toll catalog accepts duplicate and orphaned class rows. |

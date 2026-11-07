@@ -25,7 +25,7 @@ vi.mock('queries/transporters', () => ({ useTransportersByAccount: vi.fn(), useT
 vi.mock('queries/devices', () => ({ useUnassignedSynchronizedDevices: vi.fn() }));
 vi.mock('queries/groups', () => ({ useGroups: vi.fn() }));
 vi.mock('queries/accounts', () => ({ useAccounts: vi.fn() }));
-vi.mock('queries/drivers', () => ({ useDriverOptions: vi.fn(), useDriversPage: vi.fn() }));
+vi.mock('queries/staff', () => ({ useStaffOptions: vi.fn(), useStaffMembersPage: vi.fn() }));
 vi.mock('queries/pointsOfInterest', () => ({
   usePointsOfInterestByAccount: (params: unknown) => mockPois(params),
 }));

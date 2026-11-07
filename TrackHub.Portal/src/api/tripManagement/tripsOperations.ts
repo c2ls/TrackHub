@@ -32,7 +32,7 @@ export const TripSummaryFieldsFragment = graphql(`
     code
     status
     transporterId
-    driverId
+    staffId
     routePlanId
     serviceOrderId
     externalReference
@@ -217,7 +217,7 @@ export const TripShareFieldsFragment = graphql(`
     accountId
     tripId
     publicLinkGrantId
-    includeDriverName
+    includeStaffName
     includeVehicle
     includeLivePosition
     includeStopDetail
@@ -284,7 +284,7 @@ export const GetTripsDocument = graphql(`
     $from: DateTime
     $to: DateTime
     $transporterId: UUID
-    $driverId: UUID
+    $staffId: UUID
     $customer: String
     $search: String
     $skip: Int
@@ -297,7 +297,7 @@ export const GetTripsDocument = graphql(`
         from: $from
         to: $to
         transporterId: $transporterId
-        driverId: $driverId
+        staffId: $staffId
         customer: $customer
         search: $search
         skip: $skip
@@ -326,7 +326,7 @@ export const GetTripDetailDocument = graphql(`
         tripAssignmentId
         accountId
         tripId
-        driverId
+        staffId
         transporterId
         status
         assignedAt
@@ -455,11 +455,11 @@ export const DeleteTripDocument = graphql(`
 `);
 
 export const AssignTripDocument = graphql(`
-  mutation AssignTrip($tripId: UUID!, $driverId: UUID!, $transporterId: UUID) {
-    assignTrip(command: { tripId: $tripId, driverId: $driverId, transporterId: $transporterId }) {
+  mutation AssignTrip($tripId: UUID!, $staffId: UUID!, $transporterId: UUID) {
+    assignTrip(command: { tripId: $tripId, staffId: $staffId, transporterId: $transporterId }) {
       tripAssignmentId
       tripId
-      driverId
+      staffId
       transporterId
       status
       assignedAt

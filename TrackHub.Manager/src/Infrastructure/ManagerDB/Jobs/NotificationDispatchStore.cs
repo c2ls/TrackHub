@@ -63,7 +63,7 @@ public sealed class NotificationDispatchStore(IApplicationDbContext context) : I
                         : d.Channel == NotificationChannels.WhatsApp
                             ? enabled.Any(f => f.AccountId == d.AccountId && f.FeatureKey == FeatureKeys.NotificationsWhatsApp)
                         : d.Channel == NotificationChannels.Push
-                            ? enabled.Any(f => f.AccountId == d.AccountId && f.FeatureKey == FeatureKeys.DriverMobile)
+                            ? enabled.Any(f => f.AccountId == d.AccountId && f.FeatureKey == FeatureKeys.StaffMobile)
                         : true))
                 .OrderBy(d => d.Created)
                 .Take(batchSize))

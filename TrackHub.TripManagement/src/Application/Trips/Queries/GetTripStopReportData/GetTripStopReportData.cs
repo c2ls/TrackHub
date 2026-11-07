@@ -32,7 +32,7 @@ public readonly record struct GetTripStopReportDataQuery(
     DateTimeOffset From,
     DateTimeOffset To,
     Guid? TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     int? Skip,
     int? Take) : IRequest<TripStopReportPageVm>;
 
@@ -48,7 +48,7 @@ public sealed class GetTripStopReportDataQueryHandler(
 
         return await reader.GetTripStopReportRowsAsync(
             request.AccountId, scopeUserId, request.From, request.To,
-            request.TransporterId, request.DriverId, skip, take, cancellationToken);
+            request.TransporterId, request.StaffId, skip, take, cancellationToken);
     }
 }
 

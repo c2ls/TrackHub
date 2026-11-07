@@ -33,7 +33,7 @@ const flatten = (obj: Record<string, unknown>, prefix = ''): string[] =>
 
 /** Keys the workforce surfaces render and that must resolve in both locales. */
 const WORKFORCE_KEYS = [
-  'workforce.selectDriverHint',
+  'workforce.selectStaffHint',
   'workforce.credentials.statusActive',
   'workforce.credentials.statusRevoked',
   'workforce.credentials.statusLocked',

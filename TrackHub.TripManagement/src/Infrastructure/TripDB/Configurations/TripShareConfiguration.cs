@@ -29,7 +29,7 @@ public sealed class TripShareConfiguration : IEntityTypeConfiguration<TripShare>
         builder.Property(x => x.AccountId).HasColumnName("accountid");
         builder.Property(x => x.TripId).HasColumnName("tripid");
         builder.Property(x => x.PublicLinkGrantId).HasColumnName("publiclinkgrantid");
-        builder.Property(x => x.IncludeDriverName).HasColumnName("includedrivername").HasDefaultValue(false);
+        builder.Property(x => x.IncludeStaffName).HasColumnName("includestaffname").HasDefaultValue(false);
         builder.Property(x => x.IncludeVehicle).HasColumnName("includevehicle").HasDefaultValue(false);
         builder.Property(x => x.IncludeLivePosition).HasColumnName("includeliveposition").HasDefaultValue(false);
         builder.Property(x => x.IncludeStopDetail).HasColumnName("includestopdetail").HasDefaultValue(false);

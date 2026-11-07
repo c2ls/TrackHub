@@ -19,13 +19,13 @@ public readonly record struct AlertEventsPageVm(IReadOnlyCollection<AlertEventVm
 
 public readonly record struct AlertSeverityCountVm(string Severity, int Count);
 
-public readonly record struct DriversPageVm(IReadOnlyCollection<DriverVm> Items, int TotalCount);
+public readonly record struct StaffMembersPageVm(IReadOnlyCollection<StaffMemberVm> Items, int TotalCount);
 
-public readonly record struct DriverOptionsPageVm(IReadOnlyCollection<DriverLookupVm> Items, int TotalCount);
+public readonly record struct StaffOptionsPageVm(IReadOnlyCollection<StaffLookupVm> Items, int TotalCount);
 
-public readonly record struct DriverQualificationsPageVm(IReadOnlyCollection<DriverQualificationVm> Items, int TotalCount);
+public readonly record struct StaffQualificationsPageVm(IReadOnlyCollection<StaffQualificationVm> Items, int TotalCount);
 
-public readonly record struct DriverAssignmentHistoryPageVm(IReadOnlyCollection<DriverTransporterAssignmentVm> Items, int TotalCount);
+public readonly record struct StaffAssignmentHistoryPageVm(IReadOnlyCollection<StaffTransporterAssignmentVm> Items, int TotalCount);
 
 public readonly record struct DocumentsPageVm(IReadOnlyCollection<DocumentVm> Items, int TotalCount);
 

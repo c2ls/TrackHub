@@ -46,41 +46,41 @@ public class WorkforceDomainEventTests
         return principal.Object;
     }
 
-    private static Driver SeedDriver(ApplicationDbContext context, Guid accountId)
+    private static StaffMember SeedStaff(ApplicationDbContext context, Guid accountId)
     {
-        var driver = new Driver(accountId, "Ana", null, null, null, true, null, null, null, null);
-        context.Drivers.Add(driver);
+        var staff = new StaffMember(accountId, "Ana", null, null, null, true, null, null, null, null);
+        context.StaffMembers.Add(staff);
         context.SaveChanges();
-        return driver;
+        return staff;
     }
 
-    private static DriverQualificationDto Dto(Guid accountId, Guid driverId)
-        => new(accountId, driverId, DriverQualificationTypes.License, "C2", "LIC-1", null, null, "RUNT",
-            DriverQualificationStatuses.Valid, null, null);
+    private static StaffQualificationDto Dto(Guid accountId, Guid staffId)
+        => new(accountId, staffId, StaffQualificationTypes.License, "C2", "LIC-1", null, null, "RUNT",
+            StaffQualificationStatuses.Valid, null, null);
 
     [Test]
     public async Task QualificationLifecycle_DispatchesCreatedUpdatedAndDeleted()
     {
         using var context = NewContext(nameof(QualificationLifecycle_DispatchesCreatedUpdatedAndDeleted));
         var accountId = Guid.NewGuid();
-        var driver = SeedDriver(context, accountId);
-        var writer = new DriverQualificationWriter(context, Principal(accountId), Mock.Of<IAlertRecorder>());
+        var staff = SeedStaff(context, accountId);
+        var writer = new StaffQualificationWriter(context, Principal(accountId), Mock.Of<IAlertRecorder>());
 
-        var created = await writer.CreateDriverQualificationAsync(Dto(accountId, driver.DriverId), CancellationToken.None);
-        Assert.That(_published.OfType<DriverQualificationCreatedEvent>().Single().DriverQualificationId,
-            Is.EqualTo(created.DriverQualificationId));
+        var created = await writer.CreateStaffQualificationAsync(Dto(accountId, staff.StaffId), CancellationToken.None);
+        Assert.That(_published.OfType<StaffQualificationCreatedEvent>().Single().StaffQualificationId,
+            Is.EqualTo(created.StaffQualificationId));
 
         _published.Clear();
-        await writer.UpdateDriverQualificationAsync(created.DriverQualificationId, Dto(accountId, driver.DriverId), CancellationToken.None);
-        Assert.That(_published.OfType<DriverQualificationUpdatedEvent>().Count(), Is.EqualTo(1));
+        await writer.UpdateStaffQualificationAsync(created.StaffQualificationId, Dto(accountId, staff.StaffId), CancellationToken.None);
+        Assert.That(_published.OfType<StaffQualificationUpdatedEvent>().Count(), Is.EqualTo(1));
 
         // The delete case is the one at genuine risk: EF detaches removed entries during save, so an
         // event attached to a Removed entity could be dropped before the interceptor scans the tracker.
         _published.Clear();
-        await writer.DeleteDriverQualificationAsync(created.DriverQualificationId, CancellationToken.None);
-        var deleted = _published.OfType<DriverQualificationDeletedEvent>().SingleOrDefault();
-        Assert.That(deleted, Is.Not.Null, "DriverQualificationDeleted was not dispatched — the removed entity was detached before the interceptor ran.");
-        Assert.That(deleted!.DriverQualificationId, Is.EqualTo(created.DriverQualificationId));
+        await writer.DeleteStaffQualificationAsync(created.StaffQualificationId, CancellationToken.None);
+        var deleted = _published.OfType<StaffQualificationDeletedEvent>().SingleOrDefault();
+        Assert.That(deleted, Is.Not.Null, "StaffQualificationDeleted was not dispatched — the removed entity was detached before the interceptor ran.");
+        Assert.That(deleted!.StaffQualificationId, Is.EqualTo(created.StaffQualificationId));
     }
 
     [Test]
@@ -88,25 +88,25 @@ public class WorkforceDomainEventTests
     {
         using var context = NewContext(nameof(AssignmentLifecycle_DispatchesAssignedAndEnded));
         var accountId = Guid.NewGuid();
-        var driver = SeedDriver(context, accountId);
+        var staff = SeedStaff(context, accountId);
         var transporter = new Transporter("Truck 1", 1, accountId);
         context.Transporters.Add(transporter);
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var writer = new DriverAssignmentWriter(context, Principal(accountId));
+        var writer = new StaffAssignmentWriter(context, Principal(accountId));
 
-        var assignment = await writer.AssignDriverToTransporterAsync(driver.DriverId, transporter.TransporterId,
-            DateTimeOffset.UtcNow.AddHours(-1), DriverAssignmentTypes.Regular, CancellationToken.None);
-        var assigned = _published.OfType<DriverAssignedToTransporterEvent>().Single();
+        var assignment = await writer.AssignStaffToTransporterAsync(staff.StaffId, transporter.TransporterId,
+            DateTimeOffset.UtcNow.AddHours(-1), StaffAssignmentTypes.Regular, CancellationToken.None);
+        var assigned = _published.OfType<StaffAssignedToTransporterEvent>().Single();
         Assert.Multiple(() =>
         {
-            Assert.That(assigned.DriverTransporterAssignmentId, Is.EqualTo(assignment.DriverTransporterAssignmentId));
+            Assert.That(assigned.StaffTransporterAssignmentId, Is.EqualTo(assignment.StaffTransporterAssignmentId));
             Assert.That(assigned.TransporterId, Is.EqualTo(transporter.TransporterId));
         });
 
         _published.Clear();
-        await writer.EndDriverAssignmentAsync(assignment.DriverTransporterAssignmentId, null, CancellationToken.None);
-        Assert.That(_published.OfType<DriverAssignmentEndedEvent>().Single().DriverTransporterAssignmentId,
-            Is.EqualTo(assignment.DriverTransporterAssignmentId));
+        await writer.EndStaffAssignmentAsync(assignment.StaffTransporterAssignmentId, null, CancellationToken.None);
+        Assert.That(_published.OfType<StaffAssignmentEndedEvent>().Single().StaffTransporterAssignmentId,
+            Is.EqualTo(assignment.StaffTransporterAssignmentId));
     }
 }

@@ -4,7 +4,7 @@ title: Feature catalogue
 description: The eleven account features — what each one turns on or off, its settings, who can change it, and what happens when a feature is switched off.
 category: reference
 screens: []
-related: [roles-and-permissions, admin-platform-setup, admin-account-setup, system-administration, drivers-workforce]
+related: [roles-and-permissions, admin-platform-setup, admin-account-setup, system-administration, staff-workforce]
 tags: [features, subscription, billing, entitlements, reference, catalogue]
 order: 15
 ---
@@ -24,7 +24,7 @@ Two rules apply to every feature:
 |---|---|---|---|
 | Geofencing | `geofencing` | — | The whole **Geofences** menu item, geofence alerts, and two reports |
 | Trip Management | `trip-management` | — | The whole **Trips** menu item, customer tracking links, six reports, and two background jobs |
-| Driver Mobile | `driver-mobile` | — | Nothing in the portal — reserved entitlement |
+| Staff Mobile | `staff-mobile` | — | Nothing in the portal — reserved entitlement |
 | Public Links | `public-links` | — | The **Public Links** section and creating new links |
 | Documents | `documents` | — | The **Documents** section and four document reports |
 | Notifications | `notifications` | — | Notification rules, subscriptions, templates, deliveries, and all alert delivery |
@@ -32,13 +32,13 @@ Two rules apply to every feature:
 | WhatsApp Notifications | `notifications.whatsapp` | — | WhatsApp as a delivery channel |
 | GPS Integration | `gps.integration` | Storing Interval (Seconds) | How positions are collected, and nine GPS reports |
 | GPS Position History | `gps.positionHistory` | Retention Days | Stored history, replay, and one report |
-| Workforce | `workforce` | Block assignment when the driver's license is expired | Driver qualifications, assignment history, expiration alerts, and three reports |
+| Workforce | `workforce` | Block assignment when the staff member's license is expired | Staff qualifications, assignment history, expiration alerts, and three reports |
 
 Dependencies to keep in mind:
 
 - **Email Notifications** and **WhatsApp Notifications** only matter while the base **Notifications** feature is on. With Notifications off, the screens where you would choose a channel are not there at all.
 - **GPS Position History** is normally paired with **GPS Integration**: history is built from the positions the integration collects.
-- **Workforce** extends a driver area that is otherwise core: the driver registry and driver credentials work without it.
+- **Workforce** extends a staff member area that is otherwise core: the staff registry and staff credentials work without it.
 
 ## Geofencing
 
@@ -73,11 +73,11 @@ The platform's **toll catalog** — the stations, tariffs and vehicle classes be
 
 Trip management also depends on **OpenRouteService**, an external routing service that supplies the driving route, the deviation corridor and the live ETAs. It is configured once for the deployment, not per account. When it is unreachable, route planning comes back as failed and ETAs fall back to the planned schedule — trips stay fully usable, just without live routing. Full detail is in [Trips and route planning](topic:trip-management).
 
-## Driver Mobile
+## Staff Mobile
 
-**Key:** `driver-mobile`. **Settings:** none.
+**Key:** `staff-mobile`. **Settings:** none.
 
-A reserved entitlement for the field-driver mobile app. It appears in both feature lists, but **nothing in the web portal changes** when you switch it.
+A reserved entitlement for the field-staff mobile app. It appears in both feature lists, but **nothing in the web portal changes** when you switch it.
 
 ## Public Links
 
@@ -155,21 +155,21 @@ Managers can see both of these values, read-only, under **GPS Integration → Po
 
 ## Workforce
 
-**Key:** `workforce`. **Setting:** **Block assignment when the driver's license is expired**, default **off**.
+**Key:** `workforce`. **Setting:** **Block assignment when the staff member's license is expired**, default **off**.
 
-This feature does **not** control drivers as such. The **Drivers** registry and the **Driver Credentials & Devices** section are core platform: an authorised administrator can register drivers, and issue, activate, lock, reset, and revoke their mobile credentials, on every account, whether or not this feature is on. What Workforce adds is everything built *around* the driver.
+This feature does **not** control staff as such. The **Staff** registry and the **Staff Credentials & Devices** section are core platform: an authorised administrator can register staff, and issue, activate, lock, reset, and revoke their mobile credentials, on every account, whether or not this feature is on. What Workforce adds is everything built *around* the staff.
 
 When it is off:
 
-- Three sections disappear from the **Fleet & Tracking** group: **Driver Qualifications**, **Driver Assignments**, and **Qualification Expirations (30 days)**.
+- Three sections disappear from the **Fleet & Tracking** group: **Staff Qualifications**, **Staff Assignments**, and **Qualification Expirations (30 days)**.
 - Qualifications cannot be created, edited, or read, and assignment history cannot be recorded or queried.
-- The daily scan stops, so no **Driver Qualification Expiring** or **Driver Qualification Expired** alerts are raised for the account.
-- Three reports disappear from the report list: driver registry, qualification expirations, and driver assignment history — along with the whole **Workforce** report category, which has nothing else in it.
-- The driver's **Default Transporter** still works. It is a field on the driver record, not an assignment.
+- The daily scan stops, so no **Staff Qualification Expiring** or **Staff Qualification Expired** alerts are raised for the account.
+- Three reports disappear from the report list: staff registry, qualification expirations, and staff assignment history — along with the whole **Workforce** report category, which has nothing else in it.
+- The staff member's **Default Transporter** still works. It is a field on the staff record, not an assignment.
 
 Existing qualifications and assignments are not deleted; they simply cannot be reached until the feature is switched back on.
 
-The **Block assignment when the driver's license is expired** setting is the only per-account choice this feature carries, and it is off unless you turn it on. With it on, assigning a driver whose **License** qualification is expired or revoked is rejected with a validation error. Accounts differ on how strict they need to be, which is why this is a setting rather than a rule. Full detail is in [Drivers and workforce](topic:drivers-workforce).
+The **Block assignment when the staff member's license is expired** setting is the only per-account choice this feature carries, and it is off unless you turn it on. With it on, assigning a staff member whose **License** qualification is expired or revoked is rejected with a validation error. Accounts differ on how strict they need to be, which is why this is a setting rather than a rule. Full detail is in [Staff and workforce](topic:staff-workforce).
 
 ## What a switched-off feature looks like
 

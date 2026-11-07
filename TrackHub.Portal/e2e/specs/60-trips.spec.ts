@@ -29,7 +29,7 @@ test.describe('trips', () => {
       t('trips.filterStatus'),
       t('trips.exceptions.label'),
       t('trips.filterTransporter'),
-      t('trips.filterDriver'),
+      t('trips.filterStaff'),
     ]) {
       await expect(page.getByRole('combobox', { name })).toBeVisible({ timeout: 60_000 });
     }
@@ -217,7 +217,7 @@ test.describe('trips', () => {
     api,
     cleanup,
   }) => {
-    // Deliveries are captured from THIS screen on purpose: there is no driver
+    // Deliveries are captured from THIS screen on purpose: there is no staff
     // app yet, so a dispatcher taking details over the radio has to be able to
     // keep the trip's record complete on their own.
     const code = `e2e-trip-${unique()}`;
@@ -327,10 +327,10 @@ test.describe('trips', () => {
     api,
     cleanup,
   }) => {
-    // A driver is assignable only to a trip whose UNIT it is actually linked to
-    // — `ValidateDriverAssignment` matches the driver's default transporter (or
+    // A staff is assignable only to a trip whose UNIT it is actually linked to
+    // — `ValidateStaffAssignment` matches the staff's default transporter (or
     // a live assignment) against the trip's, and anything else is refused with
-    // TRIP_DRIVER_NOT_ASSIGNABLE. So the pair is built first, and the trip is
+    // TRIP_STAFF_NOT_ASSIGNABLE. So the pair is built first, and the trip is
     // planned on that unit by name rather than on whichever came first.
     // An EXISTING unit, not a seeded one: the trip screen's unit picker is fed
     // by `transporterLookupByUser`, which is group-scoped, so a unit created
@@ -339,9 +339,9 @@ test.describe('trips', () => {
     test.skip(units.length === 0, 'This account has no unit visible to the signed-in user.');
     const unit = units[0];
 
-    const driverName = uniqueName('trip-driver');
-    const driverId = await api.createDriver(driverName, unit.transporterId);
-    cleanup.add(`driver ${driverName}`, () => api.deactivateDriver(driverId));
+    const staffName = uniqueName('trip-staff');
+    const staffId = await api.createStaffMember(staffName, unit.transporterId);
+    cleanup.add(`staff ${staffName}`, () => api.deactivateStaffMember(staffId));
 
     const code = `e2e-trip-${unique()}`;
     await shell.open('tripManager');
@@ -352,7 +352,7 @@ test.describe('trips', () => {
     const panel = page.getByTestId('panel-assignment');
     await expect(panel.getByText(t('trips.assignment.none'))).toBeVisible({ timeout: 45_000 });
 
-    await pickOption(page, panel.locator('#assignDriverId'), driverName, true);
+    await pickOption(page, panel.locator('#assignStaffId'), staffName, true);
     await panel.getByRole('button', { name: t('trips.assignment.assign') }).click();
 
     // Asserted INSIDE the panel: the picker keeps showing the chosen name
@@ -361,9 +361,9 @@ test.describe('trips', () => {
     await expect(panel.getByText(t('trips.assignment.notAcknowledged'))).toBeVisible({
       timeout: 45_000,
     });
-    await expect(panel.getByText(driverName).first()).toBeVisible();
+    await expect(panel.getByText(staffName).first()).toBeVisible();
 
-    // Assigning a driver appends a real timeline row (`AssignTrip` calls
+    // Assigning a staff appends a real timeline row (`AssignTrip` calls
     // `tripEventWriter.AppendAsync`), so the history records who is driving and
     // that it came from the portal.
     await page.getByRole('tab', { name: t('trips.workspace.timeline') }).click();

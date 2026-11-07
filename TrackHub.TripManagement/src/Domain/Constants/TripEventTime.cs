@@ -16,15 +16,15 @@
 namespace TrackHub.TripManagement.Domain.Constants;
 
 // A client-supplied event instant is accepted only if it is not in the future beyond clock skew,
-// not before the moment it has to follow, and, for a driver, not further back than the offline
+// not before the moment it has to follow, and, for a staff, not further back than the offline
 // window the app can hold events for.
 public static class TripEventTime
 {
     public static readonly TimeSpan ClockSkew = TimeSpan.FromMinutes(5);
-    public static readonly TimeSpan DriverBackdateWindow = TimeSpan.FromDays(7);
+    public static readonly TimeSpan StaffBackdateWindow = TimeSpan.FromDays(7);
 
     public static bool IsAcceptable(DateTimeOffset occurredAt, string source, DateTimeOffset? notBefore, DateTimeOffset now)
         => occurredAt <= now + ClockSkew
             && (notBefore is not { } floor || occurredAt >= floor)
-            && (!string.Equals(source, TripEventSources.Driver, StringComparison.Ordinal) || occurredAt >= now - DriverBackdateWindow);
+            && (!string.Equals(source, TripEventSources.Staff, StringComparison.Ordinal) || occurredAt >= now - StaffBackdateWindow);
 }

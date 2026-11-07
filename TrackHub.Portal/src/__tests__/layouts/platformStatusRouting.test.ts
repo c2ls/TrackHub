@@ -17,7 +17,7 @@
 // Route-table guarantees for the public /status route.
 //
 // These pin the two defects found in the spec-28 audit:
-//   * omitting `principalTypes` DEFAULTS to [User] rather than meaning "public", so a Driver or
+//   * omitting `principalTypes` DEFAULTS to [User] rather than meaning "public", so a Staff or
 //     public-link principal was redirected to /dashboard — itself User-only — looping forever;
 //   * the Sidenav applied the same default, hiding the link from the roles it was meant to serve.
 // The `public` flag is what makes /status genuinely reachable by everyone.
@@ -57,7 +57,7 @@ describe('platformStatus route definition', () => {
     const principals: (PrincipalType | null)[] = [
       null,
       PrincipalTypes.User,
-      PrincipalTypes.Driver,
+      PrincipalTypes.Staff,
       PrincipalTypes.ServiceClient,
       PrincipalTypes.PublicLink,
       PrincipalTypes.Unknown,
@@ -73,7 +73,7 @@ describe('platformStatus route definition', () => {
     // denied → Navigate to /dashboard → …
     const dashboard = allRoutes.find((route) => route.key === 'dashboard');
     expect(dashboard?.principalTypes).toEqual([PrincipalTypes.User]);
-    expect(principalAllowed(statusRoute as RouteDefinition, PrincipalTypes.Driver)).toBe(true);
+    expect(principalAllowed(statusRoute as RouteDefinition, PrincipalTypes.Staff)).toBe(true);
   });
 
   it('carries no featureKey, so no account feature flag can hide it', () => {

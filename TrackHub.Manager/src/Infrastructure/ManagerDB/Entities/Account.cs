@@ -44,7 +44,7 @@ public class Account(string name, string? description, short type, bool active) 
 
     public IEnumerable<User> Users { get; } = [];
     public IEnumerable<Group> Groups { get; } = [];
-    public IEnumerable<Driver> Drivers { get; } = [];
+    public IEnumerable<StaffMember> StaffMembers { get; } = [];
     public IEnumerable<AccountFeature> AccountFeatures { get; } = [];
     public IEnumerable<Operator> Operators { get; } = [];
     public IEnumerable<Transporter> Transporters { get; } = [];

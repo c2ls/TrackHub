@@ -21,7 +21,7 @@ public static class PlatformDocumentCategories
 {
     public const string Pod = nameof(Pod);
 
-    public static readonly IReadOnlySet<string> DriverUploadable = new HashSet<string>(StringComparer.Ordinal) { Pod };
+    public static readonly IReadOnlySet<string> StaffUploadable = new HashSet<string>(StringComparer.Ordinal) { Pod };
 
-    public static readonly IReadOnlySet<string> All = DriverUploadable;
+    public static readonly IReadOnlySet<string> All = StaffUploadable;
 }

@@ -30,7 +30,7 @@ public sealed class TripConfiguration : IEntityTypeConfiguration<Trip>
         builder.Property(x => x.Code).HasColumnName("code").HasMaxLength(40).IsRequired();
         builder.Property(x => x.Status).HasColumnName("status").HasMaxLength(40).IsRequired();
         builder.Property(x => x.TransporterId).HasColumnName("transporterid");
-        builder.Property(x => x.DriverId).HasColumnName("driverid");
+        builder.Property(x => x.StaffId).HasColumnName("staffid");
         builder.Property(x => x.RoutePlanId).HasColumnName("routeplanid");
         builder.Property(x => x.ServiceOrderId).HasColumnName("serviceorderid");
         builder.Property(x => x.ExternalReference).HasColumnName("externalreference").HasMaxLength(80);
@@ -58,13 +58,13 @@ public sealed class TripConfiguration : IEntityTypeConfiguration<Trip>
         builder.Property(x => x.ConsecutiveOutsideFixes).HasColumnName("consecutiveoutsidefixes").HasDefaultValue(0);
         builder.Property(x => x.CancellationReason).HasColumnName("cancellationreason").HasMaxLength(ColumnMetadata.DefaultDescriptionLength);
 
-        // Dispatch board, transporter board and driver board (spec 11 section 6 "Indexes (trips)").
+        // Dispatch board, transporter board and staff board (spec 11 section 6 "Indexes (trips)").
         builder.HasIndex(x => new { x.AccountId, x.Status, x.PlannedStartAt })
             .HasDatabaseName("ix_trips_accountid_status_plannedstartat");
         builder.HasIndex(x => new { x.AccountId, x.TransporterId, x.PlannedStartAt })
             .HasDatabaseName("ix_trips_accountid_transporterid_plannedstartat");
-        builder.HasIndex(x => new { x.AccountId, x.DriverId, x.Status })
-            .HasDatabaseName("ix_trips_accountid_driverid_status");
+        builder.HasIndex(x => new { x.AccountId, x.StaffId, x.Status })
+            .HasDatabaseName("ix_trips_accountid_staffid_status");
 
         builder.HasIndex(x => new { x.AccountId, x.Code })
             .HasDatabaseName("ux_trips_accountid_code")

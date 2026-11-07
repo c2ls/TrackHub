@@ -28,7 +28,7 @@ internal static class TestFactory
     public static readonly Guid StopId = Guid.Parse("44444444-4444-4444-4444-444444444444");
     public static readonly Guid TransporterId = Guid.Parse("55555555-5555-5555-5555-555555555555");
     public static readonly Guid RoutePlanId = Guid.Parse("66666666-6666-6666-6666-666666666666");
-    public static readonly Guid DriverId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+    public static readonly Guid StaffId = Guid.Parse("77777777-7777-7777-7777-777777777777");
 
     public static Mock<IUser> User(string role = Roles.Administrator)
     {

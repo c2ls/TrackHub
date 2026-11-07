@@ -73,7 +73,7 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset? from,
         DateTimeOffset? to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         string? customer,
         string? search,
         string? exception,
@@ -104,9 +104,9 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
             query = query.Where(t => t.TransporterId == transporterId.Value);
         }
 
-        if (driverId.HasValue)
+        if (staffId.HasValue)
         {
-            query = query.Where(t => t.DriverId == driverId.Value);
+            query = query.Where(t => t.StaffId == staffId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(customer))
@@ -369,15 +369,15 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         return [.. rows.Select(r => new NamedEntityVm(r.TransporterId, r.Name))];
     }
 
-    public async Task<IReadOnlyCollection<NamedEntityVm>> GetDriverNamesAsync(Guid accountId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<NamedEntityVm>> GetStaffNamesAsync(Guid accountId, CancellationToken cancellationToken)
     {
-        var rows = await context.Drivers
+        var rows = await context.StaffMembers
             .Where(d => d.AccountId == accountId)
             .OrderBy(d => d.Name)
-            .Select(d => new { d.DriverId, d.Name })
+            .Select(d => new { d.StaffId, d.Name })
             .ToListAsync(cancellationToken);
 
-        return [.. rows.Select(r => new NamedEntityVm(r.DriverId, r.Name))];
+        return [.. rows.Select(r => new NamedEntityVm(r.StaffId, r.Name))];
     }
 
     public async Task<TripsPageVm> GetReportDataAsync(
@@ -386,7 +386,7 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken)
@@ -399,9 +399,9 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
             query = query.Where(t => t.TransporterId == transporterId.Value);
         }
 
-        if (driverId.HasValue)
+        if (staffId.HasValue)
         {
-            query = query.Where(t => t.DriverId == driverId.Value);
+            query = query.Where(t => t.StaffId == staffId.Value);
         }
 
         return await PageAsync(query, skip, take, cancellationToken);
@@ -418,12 +418,12 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken)
     {
-        var query = ReportScope(accountId, userId, from, to, transporterId, driverId);
+        var query = ReportScope(accountId, userId, from, to, transporterId, staffId);
         var totalCount = await query.CountAsync(cancellationToken);
 
         // Ordering on entity columns, inside the query expression and BEFORE the projection -
@@ -439,8 +439,8 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
                 Trip = t,
                 TransporterName = context.Transporters
                     .Where(x => x.TransporterId == t.TransporterId).Select(x => x.Name).FirstOrDefault(),
-                DriverName = context.Drivers
-                    .Where(x => x.DriverId == t.DriverId).Select(x => x.Name).FirstOrDefault(),
+                StaffName = context.StaffMembers
+                    .Where(x => x.StaffId == t.StaffId).Select(x => x.Name).FirstOrDefault(),
                 StopCount = context.TripStops.Count(s => s.TripId == t.TripId),
                 Plan = context.RoutePlans
                     .Where(p => p.TripId == t.TripId && p.Status == RoutePlanStatuses.Ready)
@@ -460,7 +460,7 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
                 r.Trip.Code,
                 r.Trip.Status,
                 r.Trip.TransporterId,
-                r.Trip.DriverId,
+                r.Trip.StaffId,
                 r.Trip.RoutePlanId,
                 r.Trip.ServiceOrderId,
                 r.Trip.ExternalReference,
@@ -488,7 +488,7 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
                 r.StopCount,
                 r.Trip.LastModified,
                 r.TransporterName,
-                r.DriverName,
+                r.StaffName,
                 r.Plan == null ? null : r.Plan.PlannedDistanceMeters,
                 r.Plan == null ? null : r.Plan.EstimatedTollAmount,
                 r.Plan == null ? null : r.Plan.TollCurrency,
@@ -504,12 +504,12 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken)
     {
-        var trips = ReportScope(accountId, userId, from, to, transporterId, driverId);
+        var trips = ReportScope(accountId, userId, from, to, transporterId, staffId);
 
         var query = from stop in context.TripStops
                     join trip in trips on stop.TripId equals trip.TripId
@@ -531,8 +531,8 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
                 TripCustomerName = x.Trip.CustomerName,
                 TransporterName = context.Transporters
                     .Where(t => t.TransporterId == x.Trip.TransporterId).Select(t => t.Name).FirstOrDefault(),
-                DriverName = context.Drivers
-                    .Where(d => d.DriverId == x.Trip.DriverId).Select(d => d.Name).FirstOrDefault(),
+                StaffName = context.StaffMembers
+                    .Where(d => d.StaffId == x.Trip.StaffId).Select(d => d.Name).FirstOrDefault(),
                 StopCustomerName = context.Deliveries
                     .Where(d => d.TripStopId == x.Stop.TripStopId)
                     .OrderBy(d => d.SequenceIndex)
@@ -551,7 +551,7 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
                 r.TripId,
                 r.Code,
                 r.TransporterName,
-                r.DriverName,
+                r.StaffName,
                 // The stop's delivery client, falling back to the trip's customer.
                 r.StopCustomerName ?? r.TripCustomerName,
                 r.Stop.Sequence,
@@ -577,12 +577,12 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken)
     {
-        var trips = ReportScope(accountId, userId, from, to, transporterId, driverId);
+        var trips = ReportScope(accountId, userId, from, to, transporterId, staffId);
 
         // The per-station breakdown is stored as the plan's TollStationsJson, so paging happens on
         // PLANS and each plan expands to its station rows after materialization. Paging on the
@@ -646,12 +646,12 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         int skip,
         int take,
         CancellationToken cancellationToken)
     {
-        var trips = ReportScope(accountId, userId, from, to, transporterId, driverId);
+        var trips = ReportScope(accountId, userId, from, to, transporterId, staffId);
 
         var query = from pod in context.ProofsOfDelivery
                     join stop in context.TripStops on pod.TripStopId equals stop.TripStopId
@@ -771,7 +771,7 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId)
+        Guid? staffId)
     {
         var query = Visible(accountId, userId)
             .Where(t => t.PlannedStartAt >= from && t.PlannedStartAt <= to);
@@ -781,9 +781,9 @@ public sealed class TripReader(IApplicationDbContext context, IAccountFeatureRea
             query = query.Where(t => t.TransporterId == transporterId.Value);
         }
 
-        if (driverId.HasValue)
+        if (staffId.HasValue)
         {
-            query = query.Where(t => t.DriverId == driverId.Value);
+            query = query.Where(t => t.StaffId == staffId.Value);
         }
 
         return query;

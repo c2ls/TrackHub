@@ -16,7 +16,7 @@
 namespace TrackHub.Manager.Domain.Interfaces;
 
 public readonly record struct ExpiringQualificationVm(
-    Guid DriverQualificationId, Guid AccountId, Guid DriverId, string QualificationType, DateOnly ExpiresAt);
+    Guid StaffQualificationId, Guid AccountId, Guid StaffId, string QualificationType, DateOnly ExpiresAt);
 
 public interface IWorkforceExpirationStore
 {

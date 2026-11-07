@@ -49,7 +49,7 @@ public class WriterPersistenceTests
     private static readonly Guid SecondStopId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003");
     private static readonly Guid DeliveryId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000004");
     private static readonly Guid ShareId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000005");
-    private static readonly Guid DriverId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000006");
+    private static readonly Guid StaffId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000006");
     private static readonly Guid TransporterId = Guid.Parse("55555555-5555-5555-5555-555555555555");
 
     private static IUser User()
@@ -82,14 +82,14 @@ public class WriterPersistenceTests
     }
 
     [Test]
-    public async Task AssignTrip_PersistsTheDriverAndEndsThePriorAssignment()
+    public async Task AssignTrip_PersistsTheStaffAndEndsThePriorAssignment()
     {
         using var context = await SeededAsync();
         context.TripAssignments.Add(new TripAssignment
         {
             AccountId = WriterTestData.AccountId,
             TripId = TripId,
-            DriverId = Guid.NewGuid(),
+            StaffId = Guid.NewGuid(),
             TransporterId = TransporterId,
             Status = TripAssignmentStatuses.Active,
             AssignedAt = DateTimeOffset.UtcNow.AddDays(-1),
@@ -98,13 +98,13 @@ public class WriterPersistenceTests
         context.ChangeTracker.Clear();
 
         await new TripWriter(context, User())
-            .AssignTripAsync(TripId, WriterTestData.AccountId, DriverId, null, CancellationToken.None);
+            .AssignTripAsync(TripId, WriterTestData.AccountId, StaffId, null, CancellationToken.None);
 
         var assignments = await context.TripAssignments.AsNoTracking().ToListAsync(CancellationToken.None);
         var trip = await context.Trips.AsNoTracking().FirstAsync(t => t.TripId == TripId, CancellationToken.None);
         Assert.Multiple(() =>
         {
-            Assert.That(trip.DriverId, Is.EqualTo(DriverId));
+            Assert.That(trip.StaffId, Is.EqualTo(StaffId));
             Assert.That(assignments.Count(a => a.Status == TripAssignmentStatuses.Active), Is.EqualTo(1));
             Assert.That(assignments.Count(a => a.Status == TripAssignmentStatuses.Ended), Is.EqualTo(1), "the prior assignment was not ended in the database");
         });
@@ -116,7 +116,7 @@ public class WriterPersistenceTests
         using var context = await SeededAsync();
 
         var ex = await Assert.ThrowsAsync<ConflictException>(async () => await new TripWriter(context, User())
-            .AssignTripAsync(TripId, WriterTestData.AccountId, DriverId, Guid.NewGuid(), CancellationToken.None));
+            .AssignTripAsync(TripId, WriterTestData.AccountId, StaffId, Guid.NewGuid(), CancellationToken.None));
 
         var trip = await context.Trips.AsNoTracking().FirstAsync(t => t.TripId == TripId, CancellationToken.None);
         Assert.Multiple(() =>
@@ -181,7 +181,7 @@ public class WriterPersistenceTests
 
         var recorded = await new DeliveryWriter(context).UpdateDeliveryOutcomeAsync(
             DeliveryId, WriterTestData.AccountId, DeliveryStatuses.Delivered, "Left at gate",
-            $"trip-outcome:{DeliveryId:N}", TripEventSources.Driver, CancellationToken.None);
+            $"trip-outcome:{DeliveryId:N}", TripEventSources.Staff, CancellationToken.None);
 
         var delivery = await context.Deliveries.AsNoTracking().FirstAsync(d => d.DeliveryId == DeliveryId, CancellationToken.None);
         Assert.Multiple(() =>
@@ -190,7 +190,7 @@ public class WriterPersistenceTests
             Assert.That(delivery.Status, Is.EqualTo(DeliveryStatuses.Delivered));
             Assert.That(delivery.Observations, Is.EqualTo("Left at gate"));
             Assert.That(context.TripEvents.AsNoTracking().Single(e => e.IdempotencyKey == $"trip-outcome:{DeliveryId:N}").Source,
-                Is.EqualTo(TripEventSources.Driver), "the timeline names who recorded the outcome");
+                Is.EqualTo(TripEventSources.Staff), "the timeline names who recorded the outcome");
         });
     }
 

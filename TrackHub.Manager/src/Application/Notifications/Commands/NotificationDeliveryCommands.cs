@@ -15,7 +15,7 @@ public class RetryNotificationDeliveryCommandHandler(INotificationWriter writer)
 }
 
 // Receiving in-app notifications is not feature-gated: mark-read stays ungated.
-[Authorize(Resource = Resources.Notifications, Action = Actions.Edit, PrincipalTypes = "User,Driver")]
+[Authorize(Resource = Resources.Notifications, Action = Actions.Edit, PrincipalTypes = "User,Staff")]
 // Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
 // checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.
 [AccountScopeEnforcedInHandler]

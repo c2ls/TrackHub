@@ -19,7 +19,7 @@ namespace TrackHub.TripManagement.Infrastructure.TripDB.Readers;
 /// Projects the anonymous tracking snapshot.
 /// <para>
 /// This reader IS the disclosure boundary (acceptance 23): the projection is driven by the share
-/// field flags server-side and never filtered by the client. Toll and cost figures, driver contact
+/// field flags server-side and never filtered by the client. Toll and cost figures, staff contact
 /// data, internal notes, raw position history and document bytes have no path into
 /// <see cref="PublicTripVm"/> at all - they are not read here, not merely omitted downstream.
 /// </para>
@@ -75,7 +75,7 @@ public sealed class TripShareReader(IApplicationDbContext context) : ITripShareR
 
         // Both resolved from the Manager-owned tables mapped read-only into this context
         // (SVD-05 / the vw_visible_transporter rationale) — no per-request cross-service call, and
-        // neither projection can reach contact data: Driver maps Name only, Transporter maps Name
+        // neither projection can reach contact data: Staff maps Name only, Transporter maps Name
         // and type id only. Phone and document number are not in this DbContext at all.
         var vehicleLabel = share.IncludeVehicle
             ? await context.Transporters
@@ -84,9 +84,9 @@ public sealed class TripShareReader(IApplicationDbContext context) : ITripShareR
                 .FirstOrDefaultAsync(cancellationToken)
             : null;
 
-        var driverGivenName = share.IncludeDriverName && trip.DriverId is { } driverId
-            ? GivenName(await context.Drivers
-                .Where(d => d.DriverId == driverId && d.AccountId == accountId)
+        var staffGivenName = share.IncludeStaffName && trip.StaffId is { } staffId
+            ? GivenName(await context.StaffMembers
+                .Where(d => d.StaffId == staffId && d.AccountId == accountId)
                 .Select(d => d.Name)
                 .FirstOrDefaultAsync(cancellationToken))
             : null;
@@ -117,7 +117,7 @@ public sealed class TripShareReader(IApplicationDbContext context) : ITripShareR
                 s.EtaAt,
                 podStopIds.Contains(s.TripStopId)))],
             vehicleLabel,
-            driverGivenName,
+            staffGivenName,
             showLive ? trip.LastPoint?.Y : null,
             showLive ? trip.LastPoint?.X : null,
             showLive ? trip.LastPositionAt : null,
@@ -125,10 +125,10 @@ public sealed class TripShareReader(IApplicationDbContext context) : ITripShareR
     }
 
     /// <summary>
-    /// The driver's GIVEN NAME only — the first whitespace-delimited token of the stored display
-    /// name (§7.8 says "driver <b>given name only</b>"). Returning the full name would hand a link
+    /// The staff's GIVEN NAME only — the first whitespace-delimited token of the stored display
+    /// name (§7.8 says "staff <b>given name only</b>"). Returning the full name would hand a link
     /// holder a first-and-last-name identification of a specific employee, which is one public
-    /// records search away from an address; the given name is enough for "your driver is Carlos".
+    /// records search away from an address; the given name is enough for "your staff is Carlos".
     /// Truncation happens HERE, at the disclosure boundary, so no caller can forget it.
     /// </summary>
     private static string? GivenName(string? fullName)

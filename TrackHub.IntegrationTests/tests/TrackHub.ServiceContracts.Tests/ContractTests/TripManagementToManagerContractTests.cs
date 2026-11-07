@@ -39,7 +39,7 @@ public class TripManagementToManagerContractTests
     {
         yield return new TestCaseData("AlertEmitter.Record", AlertEmitter.RecordAlertEventMutation);
         yield return new TestCaseData("BackgroundJobRunRecorder.Record", BackgroundJobRunRecorder.CreateBackgroundJobRunMutation);
-        yield return new TestCaseData("ManagerValidationClient.ValidateDriverAssignment", ManagerValidationClient.ValidateDriverAssignmentQuery);
+        yield return new TestCaseData("ManagerValidationClient.ValidateStaffAssignment", ManagerValidationClient.ValidateStaffAssignmentQuery);
         yield return new TestCaseData("ManagerValidationClient.ValidateGroupVisibility", ManagerValidationClient.ValidateGroupVisibilityQuery);
         yield return new TestCaseData("ManagerValidationClient.ValidateFeatureEnabled", ManagerValidationClient.ValidateFeatureEnabledQuery);
         yield return new TestCaseData("PublicLinkGrantClient.Create", PublicLinkGrantClient.CreatePublicLinkGrantMutation);

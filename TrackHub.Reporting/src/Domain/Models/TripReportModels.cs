@@ -17,7 +17,7 @@ namespace TrackHub.Reporting.Domain.Models;
 
 // Intermediate projections deserialized from TripManagement GraphQL for the spec 11 §13 reports,
 // plus the page envelopes the paged feeds return. Names are denormalized producer-side (transporter,
-// driver, customer) because a report row is read by a human, not joined by a client.
+// staff, customer) because a report row is read by a human, not joined by a client.
 //
 // The trip-level feed is TripVm-shaped with the four route-plan/toll figures and the two display
 // names folded in; the stop, toll and POD feeds are purpose-built because TripVm carries no stop,
@@ -26,7 +26,7 @@ namespace TrackHub.Reporting.Domain.Models;
 public readonly record struct ReportTripVm(
     Guid TripId, string Code, string Status,
     Guid TransporterId, string TransporterName,
-    Guid? DriverId, string? DriverName,
+    Guid? StaffId, string? StaffName,
     string? CustomerName,
     DateTimeOffset PlannedStartAt, DateTimeOffset? PlannedEndAt,
     DateTimeOffset? ActualStartAt, DateTimeOffset? ActualEndAt,
@@ -42,7 +42,7 @@ public readonly record struct ReportTripVm(
 
 public readonly record struct ReportTripStopVm(
     Guid TripStopId, Guid TripId, string TripCode,
-    string TransporterName, string? DriverName, string? CustomerName,
+    string TransporterName, string? StaffName, string? CustomerName,
     int Sequence, string Name, string Activity, string Status,
     DateTimeOffset? PlannedArrivalFrom, DateTimeOffset? PlannedArrivalTo,
     DateTimeOffset? ActualArrivalAt, DateTimeOffset? ActualDepartureAt,

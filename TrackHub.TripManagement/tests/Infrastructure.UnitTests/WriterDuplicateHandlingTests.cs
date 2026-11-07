@@ -73,7 +73,7 @@ public class WriterDuplicateHandlingTests
     /// <para>
     /// Found by a smoke test, not by this suite: every duplicate test here replayed against a stop
     /// that had not moved on, so the guard was never reached. The real sequence is spec 10's
-    /// offline outbox — a driver captures arrival and departure with no signal, both eventually
+    /// offline outbox — a staff captures arrival and departure with no signal, both eventually
     /// sync, and the queued arrival is retried once the stop is already <c>Departed</c>. With the
     /// guard running first that retry threw <c>STOP_ALREADY_DEPARTED</c> permanently, so the device
     /// could only ever surface it as a hard failure. Acceptance 15 says a duplicate is a success.
@@ -93,14 +93,14 @@ public class WriterDuplicateHandlingTests
             TripStopId = StopId,
             EventType = TripEventTypes.TripStopArrived,
             OccurredAt = OccurredAt,
-            Source = TripEventSources.Driver,
+            Source = TripEventSources.Staff,
             IdempotencyKey = "trip-arrive:replayed",
         });
         await context.SaveChangesAsync(CancellationToken.None);
 
         var replayed = await writer.RecordStopProgressAsync(
             TripId, StopId, WriterTestData.AccountId, TripStopStatuses.Arrived, OccurredAt,
-            4.7, -74.0, TripEventSources.Driver, "trip-arrive:replayed", null, CancellationToken.None);
+            4.7, -74.0, TripEventSources.Staff, "trip-arrive:replayed", null, CancellationToken.None);
 
         Assert.Multiple(() =>
         {

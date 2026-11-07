@@ -37,7 +37,7 @@ internal sealed class CoreRbacSeedContribution : IRbacSeedContribution
         Common.Domain.Constants.Resources.Devices,
         Common.Domain.Constants.Resources.DevicesMaster,
         Common.Domain.Constants.Resources.Documents,
-        Common.Domain.Constants.Resources.Drivers,
+        Common.Domain.Constants.Resources.Staff,
         Common.Domain.Constants.Resources.GeocodingProviders,
         Common.Domain.Constants.Resources.Geofences,
         Common.Domain.Constants.Resources.Geofencing,
@@ -94,7 +94,7 @@ internal sealed class CoreRbacSeedContribution : IRbacSeedContribution
     // write from the Router feed, with no portal or mobile caller); Operators/Custom is ping and
     // manual sync, held by Manager and User; Users/Custom is SELF-SERVICE password change only
     // (UpdatePasswordCommand re-checks that the subject is the caller);
-    // Credentials (viewing decrypted credential material) and Drivers are Manager-only;
+    // Credentials (viewing decrypted credential material) and Staff are Manager-only;
     // Notifications/Custom (SendTest) is Manager-only;
     // Reports/Edit, SupportGrants, ServiceClients, Administrative, *Master and GeocodingProviders
     // stay Administrator-only.
@@ -131,7 +131,7 @@ internal sealed class CoreRbacSeedContribution : IRbacSeedContribution
                 (Common.Domain.Constants.Resources.Credentials, [Actions.Read, Actions.Write, Actions.Edit, Actions.Delete]),
                 (Common.Domain.Constants.Resources.Devices, [Actions.Read, Actions.Delete]),
                 (Common.Domain.Constants.Resources.Documents, [Actions.Read, Actions.Write, Actions.Edit, Actions.Delete]),
-                (Common.Domain.Constants.Resources.Drivers, [Actions.Read, Actions.Write, Actions.Edit, Actions.Delete]),
+                (Common.Domain.Constants.Resources.Staff, [Actions.Read, Actions.Write, Actions.Edit, Actions.Delete]),
                 (Common.Domain.Constants.Resources.Geofences, [Actions.Read, Actions.Write, Actions.Edit, Actions.Delete]),
                 (Common.Domain.Constants.Resources.Geofencing, [Actions.Read]),
                 (Common.Domain.Constants.Resources.GpsIntegrationDashboard, [Actions.Read]),
@@ -238,14 +238,14 @@ internal sealed class CoreRbacSeedContribution : IRbacSeedContribution
             (Common.Domain.Constants.Resources.GeocodingProviders, Actions.Read),
         ]),
         // The security_client posts security audit events to Manager's central AuditEvent store and
-        // probes feature flags and account status for its own gating, and checks a driver's account
-        // before writing its credentials (validateDriverAccount).
+        // probes feature flags and account status for its own gating, and checks a staff's account
+        // before writing its credentials (validateStaffAccount).
         (["security_client"],
         [
             (Common.Domain.Constants.Resources.Audit, Actions.Write),
             (Common.Domain.Constants.Resources.AccountFeatures, Actions.Read),
             (Common.Domain.Constants.Resources.Accounts, Actions.Read),
-            (Common.Domain.Constants.Resources.Drivers, Actions.Read),
+            (Common.Domain.Constants.Resources.Staff, Actions.Read),
         ]),
         // The geofence_client records geofence alert events (recordAlertEvent) and its dwell
         // evaluator's job runs (createBackgroundJobRun) in Manager — exactly two grants.
@@ -261,7 +261,7 @@ internal sealed class CoreRbacSeedContribution : IRbacSeedContribution
         [
             (Common.Domain.Constants.Resources.Geofencing, Actions.Custom),
         ]),
-        // The trip_client calls Manager (alert events, job runs, driver/transporter/group master
+        // The trip_client calls Manager (alert events, job runs, staff/transporter/group master
         // data, trip document metadata, public tracking links) and Telemetry (route replay position
         // history) with its SERVICE identity. Sourced from the [Authorize] attributes on the
         // corresponding producer handlers — this is the complete allowlist; removing a row blocks
@@ -270,7 +270,7 @@ internal sealed class CoreRbacSeedContribution : IRbacSeedContribution
         [
             (Common.Domain.Constants.Resources.Alerts, Actions.Write),
             (Common.Domain.Constants.Resources.BackgroundJobs, Actions.Write),
-            (Common.Domain.Constants.Resources.Drivers, Actions.Read),
+            (Common.Domain.Constants.Resources.Staff, Actions.Read),
             (Common.Domain.Constants.Resources.Transporters, Actions.Read),
             (Common.Domain.Constants.Resources.Groups, Actions.Read),
             (Common.Domain.Constants.Resources.Documents, Actions.Read),

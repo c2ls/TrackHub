@@ -27,7 +27,7 @@ namespace Infrastructure.UnitTests;
 
 // AccountSupportGrant.AccessLevel is enforced on mutation paths — a read-only
 // cross-account grant permits reads but every cross-account mutation is rejected. AC15: the mutating
-// driver writer emits an audit event. AC1: without any grant, cross-account access is forbidden.
+// staff writer emits an audit event. AC1: without any grant, cross-account access is forbidden.
 [TestFixture]
 public class SupportGrantAccessTests
 {
@@ -44,7 +44,7 @@ public class SupportGrantAccessTests
         principal.SetupGet(p => p.AccountId).Returns(Guid.NewGuid()); // a different account than the target
         principal.SetupGet(p => p.Role).Returns(Roles.Administrator);
         principal.SetupGet(p => p.SubjectId).Returns(supportUserId.ToString());
-        principal.SetupGet(p => p.DriverId).Returns((Guid?)null);
+        principal.SetupGet(p => p.StaffId).Returns((Guid?)null);
         principal.SetupGet(p => p.ClientId).Returns((string?)null);
         principal.SetupGet(p => p.CorrelationId).Returns("corr-1");
         return principal.Object;
@@ -60,74 +60,74 @@ public class SupportGrantAccessTests
         };
     }
 
-    private static DriverDto DriverForAccount(Guid accountId)
-        => new(accountId, "Driver A", null, null, null, true, null, null, null, null);
+    private static StaffMemberDto StaffForAccount(Guid accountId)
+        => new(accountId, "Staff A", null, null, null, true, null, null, null, null, StaffTypes.Driver);
 
     [Test]
-    public async Task CreateDriver_ReadOnlySupportGrant_ThrowsForbidden()
+    public async Task CreateStaffMember_ReadOnlySupportGrant_ThrowsForbidden()
     {
         var supportUserId = Guid.NewGuid();
         var targetAccountId = Guid.NewGuid();
-        await using var context = NewContext(nameof(CreateDriver_ReadOnlySupportGrant_ThrowsForbidden));
+        await using var context = NewContext(nameof(CreateStaffMember_ReadOnlySupportGrant_ThrowsForbidden));
         await context.AccountSupportGrants.AddAsync(ApprovedGrant(targetAccountId, supportUserId, SupportAccessLevels.ReadOnly));
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var writer = new DriverWriter(context as IApplicationDbContext, SupportPrincipal(supportUserId));
+        var writer = new StaffMemberWriter(context as IApplicationDbContext, SupportPrincipal(supportUserId));
 
         await Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
-            await writer.CreateDriverAsync(DriverForAccount(targetAccountId), CancellationToken.None));
-        Assert.That(context.Drivers.Count(), Is.EqualTo(0), "read-only grant must not create a driver");
+            await writer.CreateStaffMemberAsync(StaffForAccount(targetAccountId), CancellationToken.None));
+        Assert.That(context.StaffMembers.Count(), Is.EqualTo(0), "read-only grant must not create a staff");
     }
 
     [Test]
-    public async Task CreateDriver_FullSupportGrant_Succeeds_AndWritesAuditEvent()
+    public async Task CreateStaffMember_FullSupportGrant_Succeeds_AndWritesAuditEvent()
     {
         var supportUserId = Guid.NewGuid();
         var targetAccountId = Guid.NewGuid();
-        await using var context = NewContext(nameof(CreateDriver_FullSupportGrant_Succeeds_AndWritesAuditEvent));
+        await using var context = NewContext(nameof(CreateStaffMember_FullSupportGrant_Succeeds_AndWritesAuditEvent));
         await context.AccountSupportGrants.AddAsync(ApprovedGrant(targetAccountId, supportUserId, SupportAccessLevels.Full));
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var writer = new DriverWriter(context as IApplicationDbContext, SupportPrincipal(supportUserId));
+        var writer = new StaffMemberWriter(context as IApplicationDbContext, SupportPrincipal(supportUserId));
 
-        var result = await writer.CreateDriverAsync(DriverForAccount(targetAccountId), CancellationToken.None);
+        var result = await writer.CreateStaffMemberAsync(StaffForAccount(targetAccountId), CancellationToken.None);
 
         Assert.That(result.AccountId, Is.EqualTo(targetAccountId));
-        Assert.That(context.Drivers.Count(), Is.EqualTo(1));
+        Assert.That(context.StaffMembers.Count(), Is.EqualTo(1));
         // AC15: the mutation emitted exactly one audit event carrying the target account + action.
         var audit = context.AuditEvents.Single();
         Assert.That(audit.AccountId, Is.EqualTo(targetAccountId));
-        Assert.That(audit.Action, Is.EqualTo("CreateDriver"));
-        Assert.That(audit.ResourceType, Is.EqualTo("Driver"));
+        Assert.That(audit.Action, Is.EqualTo("CreateStaffMember"));
+        Assert.That(audit.ResourceType, Is.EqualTo("Staff"));
     }
 
     [Test]
-    public async Task GetDriversByAccount_ReadOnlySupportGrant_AllowsRead()
+    public async Task GetStaffMembersByAccount_ReadOnlySupportGrant_AllowsRead()
     {
         var supportUserId = Guid.NewGuid();
         var targetAccountId = Guid.NewGuid();
-        await using var context = NewContext(nameof(GetDriversByAccount_ReadOnlySupportGrant_AllowsRead));
+        await using var context = NewContext(nameof(GetStaffMembersByAccount_ReadOnlySupportGrant_AllowsRead));
         await context.AccountSupportGrants.AddAsync(ApprovedGrant(targetAccountId, supportUserId, SupportAccessLevels.ReadOnly));
-        await context.Drivers.AddAsync(new Driver(targetAccountId, "Driver A", null, null, null, true, null, null, null, null));
+        await context.StaffMembers.AddAsync(new StaffMember(targetAccountId, "Staff A", null, null, null, true, null, null, null, null));
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var reader = new DriverReader(context as IApplicationDbContext, SupportPrincipal(supportUserId));
+        var reader = new StaffMemberReader(context as IApplicationDbContext, SupportPrincipal(supportUserId));
 
-        var drivers = (await reader.GetDriversByAccountAsync(targetAccountId, null, 0, 50, CancellationToken.None)).Items;
+        var staff = (await reader.GetStaffMembersByAccountAsync(targetAccountId, null, null, 0, 50, CancellationToken.None)).Items;
 
-        Assert.That(drivers, Has.Count.EqualTo(1), "a read-only grant must still permit cross-account reads");
+        Assert.That(staff, Has.Count.EqualTo(1), "a read-only grant must still permit cross-account reads");
     }
 
     [Test]
-    public async Task CreateDriver_NoSupportGrant_CrossAccount_ThrowsForbidden()
+    public async Task CreateStaffMember_NoSupportGrant_CrossAccount_ThrowsForbidden()
     {
         var supportUserId = Guid.NewGuid();
         var targetAccountId = Guid.NewGuid();
-        await using var context = NewContext(nameof(CreateDriver_NoSupportGrant_CrossAccount_ThrowsForbidden));
+        await using var context = NewContext(nameof(CreateStaffMember_NoSupportGrant_CrossAccount_ThrowsForbidden));
 
-        var writer = new DriverWriter(context as IApplicationDbContext, SupportPrincipal(supportUserId));
+        var writer = new StaffMemberWriter(context as IApplicationDbContext, SupportPrincipal(supportUserId));
 
         await Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
-            await writer.CreateDriverAsync(DriverForAccount(targetAccountId), CancellationToken.None));
+            await writer.CreateStaffMemberAsync(StaffForAccount(targetAccountId), CancellationToken.None));
     }
 }

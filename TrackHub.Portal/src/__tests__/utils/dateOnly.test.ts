@@ -29,7 +29,7 @@ process.env.TZ = 'America/Bogota';
 
 const { formatDateOnly, daysUntilDateOnly, formatDateTime } = await import('utils/dateUtils');
 const { daysUntil, expiryColor } = await import(
-  'layouts/manageadmin/components/drivers/workforceShared'
+  'layouts/manageadmin/components/staff/workforceShared'
 );
 const { accountCalendar, addDays } = await import('utils/accountCalendar');
 

@@ -134,7 +134,7 @@
     "inGeofence": "In Geofence",
     "transportersTitle": "Units",
     "positionsTitle": "Positions",
-    "driversTitle": "Drivers",
+    "staffTitle": "Staff",
     "filterType": "Unit Type",
     "filterGroup": "Group",
     "filterOperator": "Operator",
@@ -242,7 +242,7 @@
     "config": {
       "storingIntervalSeconds": "Storing Interval (Seconds)",
       "retentionDays": "Retention Days",
-      "blockAssignmentOnExpiredLicense": "Block assignment when the driver's license is expired",
+      "blockAssignmentOnExpiredLicense": "Block assignment when the staff member's license is expired",
       "autoLifecycle": "Start and complete trips automatically from the zones",
       "activationLeadMinutes": "Start watching a trip this many minutes before its planned start",
       "overdueGraceMinutes": "Minutes past the planned start before a trip reads as overdue",
@@ -292,7 +292,7 @@
     },
     "actorTypes": {
       "User": "User",
-      "Driver": "Driver",
+      "Staff": "Staff",
       "ServiceClient": "Service"
     }
   },
@@ -348,8 +348,8 @@
     "documentExpiring": "Document Expiring",
     "documentExpired": "Document Expired",
     "notificationDeliveryFailed": "Notification Delivery Failed",
-    "driverQualificationExpiring": "Driver Qualification Expiring",
-    "driverQualificationExpired": "Driver Qualification Expired",
+    "staffQualificationExpiring": "Staff Qualification Expiring",
+    "staffQualificationExpired": "Staff Qualification Expired",
     "tripAssigned": "Trip Assigned",
     "tripStarted": "Trip Started",
     "tripStopArrived": "Trip Stop Arrived",
@@ -374,7 +374,7 @@
     "principalType": "Recipient Type",
     "principalId": "Recipient Id",
     "user": "User",
-    "driver": "Driver",
+    "staff": "Staff",
     "eventType": "Event Type",
     "allEvents": "All events",
     "channel": "Channel",
@@ -558,7 +558,7 @@
     "tripDuplicateCode": "Another trip in this account already uses that code.",
     "tripDuplicateExternalReference": "Another trip in this account already uses that external reference.",
     "tripHasHistory": "This trip has recorded activity and cannot be deleted. Cancel it instead.",
-    "tripDriverNotAssignable": "That driver cannot be assigned to this trip.",
+    "tripStaffNotAssignable": "That staff member cannot be assigned to this trip.",
     "tripTransporterBusy": "That unit is already running another trip. Complete or cancel it first.",
     "tripArmed": "This trip is running, so its unit and origin can no longer be changed. Cancel it and plan a new one.",
     "tripStartEvidenceRequired": "No recorded departure from the origin was found, so a start time is required.",
@@ -596,16 +596,16 @@
     "tripImportInvalidRow": "Invalid row",
     "tollImportInvalidRow": "Invalid row"
   },
-  "driver": {
+  "staff": {
     "name": "Name",
     "phone": "Phone",
     "document": "Document",
-    "title": "Drivers",
-    "create": "Create Driver",
-    "update": "Update Driver",
-    "deactivate": "Deactivate Driver",
-    "deactivateConfirmation": "Deactivate this driver?",
-    "activation": "Driver Activation",
+    "title": "Staff",
+    "create": "Create Staff Member",
+    "update": "Update Staff Member",
+    "deactivate": "Deactivate Staff Member",
+    "deactivateConfirmation": "Deactivate this staff member?",
+    "activation": "Staff Activation",
     "employeeCode": "Employee Code",
     "licenseNumber": "License Number",
     "licenseExpiresAt": "License Expires At",
@@ -614,24 +614,35 @@
     "defaultTransporter": "Default Transporter",
     "revokeDeviceRegistration": "Revoke Device Registration",
     "search": "Search by name, document or phone",
-    "empty": "No drivers yet. Use + to add the first one.",
+    "empty": "No staff yet. Use + to add the first one.",
     "manage": "Credentials and devices",
     "access": "Credential",
-    "accessNone": "No credential"
+    "accessNone": "No credential",
+    "staffType": "Staff type",
+    "allTypes": "All types",
+    "types": {
+      "Driver": "Driver",
+      "Operator": "Operator",
+      "DriverAssistant": "Driver assistant",
+      "Mechanic": "Mechanic",
+      "Supervisor": "Supervisor",
+      "Administrative": "Administrative",
+      "Other": "Other"
+    }
   },
   "workforce": {
-    "selectDriver": "Driver",
-    "selectDriverPlaceholder": "Select a driver",
-    "selectDriverHint": "Select a driver to manage their credentials, devices, qualifications and assignments.",
+    "selectStaff": "Staff",
+    "selectStaffPlaceholder": "Select a staff",
+    "selectStaffHint": "Select a staff member to manage their credentials, devices, qualifications and assignments.",
     "credentials": {
-      "title": "Driver Credentials & Devices",
+      "title": "Staff Credentials & Devices",
       "login": "Login",
       "password": "Password",
       "newPassword": "New Password",
       "resetRequired": "Password Reset Required",
       "failedAttempts": "Failed Attempts",
       "lockedUntil": "Locked Until",
-      "lockedUntilHelp": "The driver cannot sign in until this moment.",
+      "lockedUntilHelp": "The staff cannot sign in until this moment.",
       "lastLoginAt": "Last Login",
       "status": "Status",
       "create": "Create Credential",
@@ -642,12 +653,12 @@
       "resetTitle": "Reset Credential",
       "revoke": "Revoke",
       "revokeTitle": "Revoke Credential",
-      "revokeConfirm": "Revoke this driver credential? The driver will no longer be able to sign in and existing sessions stop refreshing.",
+      "revokeConfirm": "Revoke this staff credential? The staff member will no longer be able to sign in and existing sessions stop refreshing.",
       "statusActive": "Active",
       "statusRevoked": "Revoked",
       "statusLocked": "Locked",
       "statusPending": "Pending Activation",
-      "empty": "This driver has no credential yet."
+      "empty": "This staff member has no credential yet."
     },
     "devices": {
       "title": "Registered Devices",
@@ -656,11 +667,11 @@
       "appVersion": "App Version",
       "pushToken": "Push Token (masked)",
       "lastSeenAt": "Last Seen",
-      "revokeConfirm": "Revoke this device registration? The device must be enrolled again from the driver app.",
-      "empty": "This driver has no registered devices."
+      "revokeConfirm": "Revoke this device registration? The device must be enrolled again from the staff app.",
+      "empty": "This staff member has no registered devices."
     },
     "qualifications": {
-      "title": "Driver Qualifications",
+      "title": "Staff Qualifications",
       "type": "Type",
       "category": "Category",
       "number": "Number",
@@ -669,15 +680,15 @@
       "issuingAuthority": "Issuing Authority",
       "status": "Status",
       "documentId": "Linked Document",
-      "documentIdHelp": "Optional supporting document, chosen from the documents held for this driver below.",
+      "documentIdHelp": "Optional supporting document, chosen from the documents held for this staff member below.",
       "documentNone": "No linked document",
       "documentUnavailable": "Linked document unavailable",
-      "documents": "Driver Documents",
+      "documents": "Staff Documents",
       "notes": "Notes",
       "create": "Create Qualification",
       "update": "Update Qualification",
       "deleteConfirm": "Delete this qualification? The record is removed permanently; its history stays in the audit trail.",
-      "empty": "No qualifications recorded for this driver.",
+      "empty": "No qualifications recorded for this staff member.",
       "types": {
         "license": "License",
         "medicalexam": "Medical Exam",
@@ -693,7 +704,7 @@
       }
     },
     "assignments": {
-      "title": "Driver Assignments",
+      "title": "Staff Assignments",
       "active": "Active Assignments",
       "history": "Assignment History",
       "transporter": "Unit",
@@ -703,16 +714,16 @@
       "type": "Assignment Type",
       "status": "Status",
       "createdBy": "Created By",
-      "assign": "Assign Driver",
+      "assign": "Assign Staff Member",
       "end": "End Assignment",
       "endConfirm": "End this assignment now? Ended assignments cannot be modified.",
       "from": "From",
       "to": "To",
       "search": "Search",
       "empty": "No assignments match the current filters.",
-      "emptyActive": "This driver has no active assignments.",
+      "emptyActive": "This staff member has no active assignments.",
       "defaultTransporter": "Default unit",
-      "defaultTransporterHint": "Set on the driver record",
+      "defaultTransporterHint": "Set on the staff record",
       "windowInvalid": "Choose a period that ends on or after its start and spans fewer than {{days}} days.",
       "tooManyResults": "Showing the first {{count}} rows. Narrow the filters to see the rest.",
       "types": {
@@ -727,7 +738,7 @@
     },
     "expirations": {
       "title": "Qualification Expirations (30 days)",
-      "driver": "Driver",
+      "staff": "Staff",
       "daysLeft": "Days Left",
       "expired": "Expired",
       "empty": "No qualifications expire within the next 30 days."
@@ -966,9 +977,9 @@
     "accountsByStatus": "Accounts by Status",
     "featureEnablementMatrix": "Feature Enablement Matrix",
     "groupMembershipExport": "Group Membership Export",
-    "workforceDriverRegistry": "Driver Registry",
+    "workforceStaffRegistry": "Staff Registry",
     "workforceQualificationExpirations": "Qualification Expirations",
-    "workforceAssignmentHistory": "Driver Assignment History",
+    "workforceAssignmentHistory": "Staff Assignment History",
     "tripSummary": "Trip Summary",
     "tripDetail": "Trip Stop Detail",
     "tripOnTimePerformance": "Trip On-Time Performance",
@@ -998,12 +1009,12 @@
     "accountsByStatus": "Accounts grouped by lifecycle status.",
     "featureEnablementMatrix": "Enabled features and tiers across all accounts.",
     "groupMembershipExport": "Group membership of users and units for your account.",
-    "workforceDriverRegistry": "Complete driver registry with license, employee code and default unit.",
-    "workforceQualificationExpirations": "Driver qualifications expiring within the selected number of days.",
-    "workforceAssignmentHistory": "Time-bounded driver-to-unit assignment history over a date range.",
+    "workforceStaffRegistry": "Complete staff registry with license, employee code and default unit.",
+    "workforceQualificationExpirations": "Staff qualifications expiring within the selected number of days.",
+    "workforceAssignmentHistory": "Time-bounded staff-to-unit assignment history over a date range.",
     "tripSummary": "Trips over a date range with planned versus actual start, end, distance and estimated toll.",
     "tripDetail": "Stop-level detail for each trip: planned window, arrival, departure, dwell and delivery outcomes.",
-    "tripOnTimePerformance": "On-time percentage, average delay and delayed-stop counts by unit, driver and customer.",
+    "tripOnTimePerformance": "On-time percentage, average delay and delayed-stop counts by unit, staff and customer.",
     "tripStopDwell": "Dwell time distribution per stop and customer over a date range.",
     "tripTollCost": "Estimated toll by trip, route, station and vehicle class, flagging stations with no tariff.",
     "tripPodExport": "Proof-of-delivery register with receiver, capture time, location and document count."
@@ -1035,7 +1046,7 @@
     "backgroundJobs": "Background Jobs",
     "devicesMaster": "Devices (Master)",
     "documents": "Documents",
-    "drivers": "Drivers",
+    "staff": "Staff",
     "gpsIntegrationDashboard": "GPS Integration Dashboard",
     "manageDevices": "Manage Devices",
     "notifications": "Notifications",
@@ -1048,7 +1059,7 @@
     "supportGrants": "Support Grants",
     "synchronizedDevices": "Synchronized Devices",
     "tripManagement": "Trip Management",
-    "driverMobile": "Driver Mobile",
+    "staffMobile": "Staff Mobile",
     "notificationsEmail": "Email Notifications",
     "notificationsWhatsapp": "WhatsApp Notifications",
     "gpsIntegration": "GPS Integration",
@@ -1056,7 +1067,8 @@
     "workforce": "Workforce",
     "tollCatalog": "Toll Catalog",
     "trips": "Trips",
-    "tripTracking": "Trip Tracking"
+    "tripTracking": "Trip Tracking",
+    "staffOperations": "Staff Operations"
   },
   "role": {
     "title": "Roles",
@@ -1466,7 +1478,7 @@
       },
       "manager": {
         "name": "Fleet management",
-        "description": "Vehicles, drivers, groups, documents and account settings."
+        "description": "Vehicles, staff, groups, documents and account settings."
       },
       "router": {
         "name": "GPS connections",
@@ -1577,7 +1589,7 @@
     "code": "Trip code",
     "customerName": "Customer",
     "transporter": "Unit",
-    "driver": "Driver",
+    "staff": "Staff",
     "originName": "Origin",
     "originLatitude": "Origin latitude",
     "originLongitude": "Origin longitude",
@@ -1637,8 +1649,8 @@
     "filterTo": "To",
     "filterTransporter": "Unit",
     "allTransporters": "All units",
-    "filterDriver": "Driver",
-    "allDrivers": "All drivers",
+    "filterStaff": "Staff",
+    "allStaff": "All staff",
     "filterCustomer": "Customer",
     "clearFilters": "Clear filters",
     "showing": "Showing {{from}}–{{to}} of {{total}}",
@@ -1729,15 +1741,15 @@
     "forceComplete": "Complete even though stops are still pending",
     "assignment": {
       "title": "Assignment",
-      "driver": "Driver",
+      "staff": "Staff",
       "transporter": "Unit",
-      "assign": "Assign driver",
+      "assign": "Assign staff",
       "assignedAt": "Assigned",
       "acknowledgedAt": "Acknowledged",
       "notAcknowledged": "Not acknowledged yet",
       "status": "Status",
-      "none": "No driver assigned yet.",
-      "selectDriver": "Select a driver"
+      "none": "No staff member assigned yet.",
+      "selectStaff": "Select a staff"
     },
     "routePlan": {
       "title": "Route plan",
@@ -1761,7 +1773,7 @@
       "events": {
         "TripCreated": "Trip created",
         "TripUpdated": "Trip updated",
-        "TripAssigned": "Driver assigned",
+        "TripAssigned": "Staff assigned",
         "TripAssignmentAcknowledged": "Assignment acknowledged",
         "TripStarted": "Trip started",
         "TripOriginDeparted": "Left the origin",
@@ -1786,7 +1798,7 @@
       "sources": {
         "Detection": "Measured",
         "Portal": "Portal",
-        "Driver": "Driver app",
+        "Staff": "Staff app",
         "Job": "Scheduled check",
         "ServiceClient": "Integration"
       }
@@ -1902,7 +1914,7 @@
     "purpose": "Purpose",
     "expiresAt": "Link expires",
     "fields": "What the customer can see",
-    "includeDriverName": "Driver first name",
+    "includeStaffName": "Staff first name",
     "includeVehicle": "Vehicle",
     "includeLivePosition": "Live position (while the trip is running)",
     "includeStopDetail": "Stop detail (locality, planned window, status)",
@@ -2075,7 +2087,7 @@
     "trip": "Trip",
     "scheduled": "Scheduled",
     "vehicle": "Vehicle",
-    "driver": "Driver",
+    "staff": "Staff",
     "plannedStart": "Planned start",
     "plannedEnd": "Planned arrival",
     "actualStart": "Started",
@@ -2100,5 +2112,16 @@
   },
   "table": {
     "moreRows": "{{count}} more rows not shown"
+  },
+  "accountHolidays": {
+    "title": "Holiday Calendar",
+    "year": "Year",
+    "date": "Date",
+    "name": "Name",
+    "save": "Save year",
+    "hint": "Saving replaces the whole year. Add Sundays as well if your company treats them as holidays.",
+    "none": "No holidays for this year.",
+    "add": "Add",
+    "invalidDate": "The date must fall inside the selected year."
   }
 }

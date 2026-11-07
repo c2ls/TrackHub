@@ -141,10 +141,10 @@
   <data name="Email or password is incorrect" xml:space="preserve">
     <value>Email or password is incorrect</value>
   </data>
-  <data name="Driver credential is incorrect" xml:space="preserve">
+  <data name="Staff credential is incorrect" xml:space="preserve">
     <value>Login or password is incorrect</value>
   </data>
-  <data name="Driver credential activation is required" xml:space="preserve">
+  <data name="Staff credential activation is required" xml:space="preserve">
     <value>Activate your credential before signing in.</value>
   </data>
 </root>

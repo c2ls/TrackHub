@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="PDFsharp-MigraDoc" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <ProjectReference Include="$(RepoRoot)TrackHubCommon/src/Common.Domain/Common.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

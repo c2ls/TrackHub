@@ -28,7 +28,7 @@ namespace TrackHub.TripManagement.Domain.Interfaces;
 /// <para>
 /// Rather than either leaving it unchecked or stripping the field, the call sites are made correct
 /// and complete NOW: <c>CreateTripCommand</c> and <c>UpdateTripCommand</c> validate the reference
-/// exactly like they validate the transporter, driver and geofence. The default implementation is
+/// exactly like they validate the transporter, staff and geofence. The default implementation is
 /// permissive because there is nothing to ask; the moment spec 12 lands, it registers a real
 /// implementation over this same port and every trip write starts enforcing the reference with no
 /// change to any handler.

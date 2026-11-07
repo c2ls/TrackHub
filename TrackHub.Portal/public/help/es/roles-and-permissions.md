@@ -18,10 +18,10 @@ Lo que usted puede ver y hacer en TrackHub lo deciden **dos cosas en conjunto**:
 TrackHub reconoce distintos tipos de "quién está solicitando el acceso". Solo el primero usa este portal web:
 
 - **Usuario** — una persona que inicia sesión en el portal web de TrackHub (un administrador, un gestor o un operador cotidiano). **Esta guía trata sobre los Usuarios.**
-- **Conductor** — un conductor de campo que inicia sesión a través de la **aplicación móvil**, no de este portal. Los conductores no ven las pantallas del portal descritas aquí.
+- **Personal** — un miembro del personal de campo que inicia sesión a través de la **aplicación móvil**, no de este portal. El personal no ven las pantallas del portal descritas aquí.
 - **Cliente de Servicio** — una integración de máquina a máquina (otro sistema que se conecta de forma automática). Ninguna persona inicia sesión como Cliente de Servicio, y nunca usa el portal.
 
-Como cada pantalla del portal está reservada para los **Usuarios**, a los Conductores y a los Clientes de Servicio nunca se les muestra el portal, incluso si llegan a su dirección.
+Como cada pantalla del portal está reservada para los **Usuarios**, al Personal y a los Clientes de Servicio nunca se les muestra el portal, incluso si llegan a su dirección.
 
 ## Los tres roles del portal
 
@@ -39,7 +39,7 @@ Puede consultar qué roles tiene en su pantalla **Perfil**, en la tarjeta **Role
 
 - Ser **Administrador** desbloquea el área **Administrador del Sistema**.
 - Ser **Gestor** desbloquea las áreas **Administración de Cuentas** e **Integración GPS**, así como el botón de engranaje de **Configuración** en la esquina inferior derecha.
-- Todas las personas con acceso al portal (incluidos los **Usuarios** sencillos) pueden llegar al **Tablero**, a **Reportes**, a **Geocercas** (cuando está habilitado), a **Viajes** (cuando está habilitado) y a su propio **Perfil**. El despacho es deliberadamente una tarea de operador cotidiano: un **Usuario** sencillo puede crear viajes, planificar rutas, asignar un conductor, ejecutar un viaje y compartir un enlace de seguimiento para las unidades de sus grupos.
+- Todas las personas con acceso al portal (incluidos los **Usuarios** sencillos) pueden llegar al **Tablero**, a **Reportes**, a **Geocercas** (cuando está habilitado), a **Viajes** (cuando está habilitado) y a su propio **Perfil**. El despacho es deliberadamente una tarea de operador cotidiano: un **Usuario** sencillo puede crear viajes, planificar rutas, asignar un miembro del personal, ejecutar un viaje y compartir un enlace de seguimiento para las unidades de sus grupos.
 
 > En una configuración típica, un Administrador también es un Gestor, por lo que un Administrador ve todo lo que ve un Gestor **más** el área Administrador del Sistema.
 
@@ -66,7 +66,7 @@ Si intenta abrir una pantalla que su rol no permite, TrackHub simplemente lo reg
 **Administración de Cuentas** (Gestores y Administradores) agrupa las herramientas para administrar su propia cuenta en secciones:
 
 - **Cuenta y Suscripción** — Detalle de la Cuenta, Personalización y Funcionalidades de Cuenta (solo lectura).
-- **Flota y Rastreo** — Dispositivos, Unidades, Conductores, Grupos y Puntos de Interés.
+- **Flota y Rastreo** — Dispositivos, Unidades, Personal, Grupos y Puntos de Interés.
 - **Usuarios y Accesos** — Usuarios, Roles y Políticas.
 - **Alertas y Notificaciones** — Reglas de Notificación, Suscripciones de Alerta, Plantillas de Notificación, Eventos de Alerta y Entregas de Notificaciones.
 - **Documentos y Compartidos** — Documentos y Enlaces Públicos.
@@ -90,7 +90,7 @@ Las funcionalidades de cuenta son:
 | **Historial de Posiciones GPS** | `gps.positionHistory` | El almacenamiento y la reproducción del recorrido pasado de una unidad (reproducción del historial). |
 | **Geocercado** | `geofencing` | Todo el elemento de menú **Geocercas** y las zonas del mapa. |
 | **Gestión de Viajes** | `trip-management` | Todo el elemento de menú **Viajes**, los enlaces de seguimiento para clientes y los seis reportes de viajes. |
-| **Móvil del Conductor** | `driver-mobile` | Reservada — nada cambia en el portal web. |
+| **Móvil del Personal** | `staff-mobile` | Reservada — nada cambia en el portal web. |
 | **Enlaces Públicos** | `public-links` | La creación de enlaces públicos para compartir. |
 | **Documentos** | `documents` | Las superficies de gestión de documentos (subir, compartir y hacer seguimiento de archivos). |
 | **Notificaciones** | `notifications` | Las reglas de notificación y la entrega de alertas. |

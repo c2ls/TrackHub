@@ -38,7 +38,7 @@ public sealed class TripTollCostReport(ITripReportReader reader) : IReport
         var window = ReportCalendar.Window(filters);
 
         var tolls = await reader.GetTripTollsAsync(
-            window.From, window.To, transporterId, driverId: null, cancellationToken);
+            window.From, window.To, transporterId, staffId: null, cancellationToken);
 
         var rows = tolls
             .OrderByDescending(t => t.PlannedStartAt)

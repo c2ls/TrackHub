@@ -25,8 +25,9 @@
  */
 
 export const PermissionResources = {
+  Accounts: 'Accounts',
   Trips: 'Trips',
-  DriverOperations: 'DriverOperations',
+  StaffOperations: 'StaffOperations',
 } as const;
 
 export const PermissionActions = {

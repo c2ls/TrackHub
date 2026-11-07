@@ -86,8 +86,8 @@ public sealed class AlertSubscriptionWriter(IApplicationDbContext context, ICurr
             return;
         }
 
-        var selfType = Principal.PrincipalType == PrincipalType.Driver ? RecipientPrincipalTypes.Driver : RecipientPrincipalTypes.User;
-        var selfId = Principal.PrincipalType == PrincipalType.Driver ? Principal.DriverId : Principal.UserId;
+        var selfType = Principal.PrincipalType == PrincipalType.Staff ? RecipientPrincipalTypes.Staff : RecipientPrincipalTypes.User;
+        var selfId = Principal.PrincipalType == PrincipalType.Staff ? Principal.StaffId : Principal.UserId;
         if (selfId == null || principalId != selfId.Value || !string.Equals(principalType, selfType, StringComparison.Ordinal))
         {
             throw new ForbiddenAccessException("Non-administrators may only manage their own subscriptions.");
@@ -100,7 +100,7 @@ public sealed class AlertSubscriptionWriter(IApplicationDbContext context, ICurr
         var belongs = principalType switch
         {
             RecipientPrincipalTypes.User => await Context.Users.AnyAsync(x => x.UserId == principalId && x.AccountId == accountId, cancellationToken),
-            RecipientPrincipalTypes.Driver => await Context.Drivers.AnyAsync(x => x.DriverId == principalId && x.AccountId == accountId, cancellationToken),
+            RecipientPrincipalTypes.Staff => await Context.StaffMembers.AnyAsync(x => x.StaffId == principalId && x.AccountId == accountId, cancellationToken),
             _ => false
         };
         if (!belongs)
@@ -109,7 +109,7 @@ public sealed class AlertSubscriptionWriter(IApplicationDbContext context, ICurr
         }
     }
 
-    // Driver subscriptions may default Contact from Driver.Phone.
+    // Staff subscriptions may default Contact from Staff.Phone.
     private async Task<string?> ResolveContactAsync(Guid accountId, AlertSubscriptionDto subscription, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrWhiteSpace(subscription.Contact))
@@ -117,10 +117,10 @@ public sealed class AlertSubscriptionWriter(IApplicationDbContext context, ICurr
             return subscription.Contact;
         }
 
-        if (subscription.Channel == NotificationChannels.WhatsApp && subscription.PrincipalType == RecipientPrincipalTypes.Driver)
+        if (subscription.Channel == NotificationChannels.WhatsApp && subscription.PrincipalType == RecipientPrincipalTypes.Staff)
         {
-            return await Context.Drivers
-                .Where(x => x.DriverId == subscription.PrincipalId && x.AccountId == accountId)
+            return await Context.StaffMembers
+                .Where(x => x.StaffId == subscription.PrincipalId && x.AccountId == accountId)
                 .Select(x => x.Phone)
                 .FirstOrDefaultAsync(cancellationToken);
         }

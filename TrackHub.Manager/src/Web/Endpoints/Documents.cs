@@ -15,7 +15,7 @@ namespace TrackHub.Manager.Web.Endpoints;
 
 // File-byte surfaces for documents. Metadata still flows through GraphQL; these REST
 // endpoints stream/redirect bytes. Authorization is enforced by the dispatched commands/queries
-// (User/Driver/ServiceClient) except the anonymous token-validated public download.
+// (User/Staff/ServiceClient) except the anonymous token-validated public download.
 public sealed class Documents : Common.Web.Infrastructure.EndpointGroupBase
 {
     public override void Map(WebApplication app)
@@ -28,7 +28,7 @@ public sealed class Documents : Common.Web.Infrastructure.EndpointGroupBase
         app.MapGet("~/documents/public/{publicLinkGrantId:guid}", PublicDownload);
     }
 
-    // POST ~/documents/upload — multipart. User or Driver. Streams to storage under a server-generated
+    // POST ~/documents/upload — multipart. User or Staff. Streams to storage under a server-generated
     // key while computing SHA-256, creates the document Quarantined, and returns the redacted VM.
     public static async Task<IResult> Upload(HttpRequest request, ISender sender, IDocumentStorage storage, IUser user, ApplicationDbContext context, CancellationToken cancellationToken)
     {
@@ -149,7 +149,7 @@ public sealed class Documents : Common.Web.Infrastructure.EndpointGroupBase
         }
     }
 
-    // GET ~/documents/{id}/download — User/Driver/ServiceClient. Authorization + scan gate enforced by
+    // GET ~/documents/{id}/download — User/Staff/ServiceClient. Authorization + scan gate enforced by
     // the query + reader. S3 → 302 presigned; local FS → stream with Content-Disposition.
     public static async Task<IResult> Download(Guid documentId, ISender sender, IDocumentStorage storage, ApplicationDbContext context, IUser user, CancellationToken cancellationToken)
     {
@@ -283,7 +283,7 @@ public sealed class Documents : Common.Web.Infrastructure.EndpointGroupBase
             .Any(scope => string.Equals(scope, requestedScope, StringComparison.OrdinalIgnoreCase));
 
     private static string ActorId(IUser user)
-        => user.UserId?.ToString() ?? user.DriverId?.ToString() ?? user.ClientId ?? user.SubjectId ?? "unknown";
+        => user.UserId?.ToString() ?? user.StaffId?.ToString() ?? user.ClientId ?? user.SubjectId ?? "unknown";
 
     private static Guid? ParseGuid(string? value) => Guid.TryParse(value, out var g) ? g : null;
     private static double? ParseDouble(string? value) => double.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null;

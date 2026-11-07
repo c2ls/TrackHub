@@ -42,7 +42,7 @@ interface DocumentPanelProps {
   ownerEntityId?: string | null;
   canManage?: boolean;
   /** Fired after every (re)load so an embedding screen can refresh its own
-   *  document-derived state — e.g. the driver qualification document picker. */
+   *  document-derived state — e.g. the staff qualification document picker. */
   onDocumentsChanged?: (documents: DocumentVm[]) => void;
 }
 
@@ -77,7 +77,7 @@ function DocumentPanel({ accountId = null, ownerEntityType, ownerEntityId = null
   };
 
   // Reload whenever the owner changes: the panel is embeddable on surfaces that
-  // switch owner in place (e.g. the driver picker on the qualifications screen),
+  // switch owner in place (e.g. the staff picker on the qualifications screen),
   // where a one-shot load would keep showing the previous owner's documents.
   useEffect(() => {
     load();

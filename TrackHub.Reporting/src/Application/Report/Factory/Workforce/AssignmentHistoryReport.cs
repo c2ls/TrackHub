@@ -20,12 +20,12 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 
-// Driver↔transporter assignment history (spec 09 §13). Time-bounded assignment rows, most recent
+// Staff↔transporter assignment history (spec 09 §13). Time-bounded assignment rows, most recent
 // first. Filters: from/to = window, transporterId = optional unit (unparseable values are
 // ignored). Excel only.
 //
-// A driver-scoped variant would need a driver picker source in the portal, which does not exist;
-// the reader still accepts a driverId so that filter can be wired — a `driverId` filter definition
+// A staff-scoped variant would need a staff picker source in the portal, which does not exist;
+// the reader still accepts a staffId so that filter can be wired — a `staffId` filter definition
 // in the catalog row plus a portal picker source — without touching this contract.
 public sealed class AssignmentHistoryReport(IWorkforceReportReader reader) : IReport
 {
@@ -38,15 +38,15 @@ public sealed class AssignmentHistoryReport(IWorkforceReportReader reader) : IRe
         var transporterId = filters.GetGuid(FilterNames.Transporter);
 
         var window = ReportCalendar.Window(filters);
-        var assignments = await reader.GetDriverAssignmentHistoryAsync(
-            driverId: null, transporterId, window.From, window.To, cancellationToken);
+        var assignments = await reader.GetStaffAssignmentHistoryAsync(
+            staffId: null, transporterId, window.From, window.To, cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
         var rows = assignments
             .OrderByDescending(a => a.StartsAt)
-            .ThenBy(a => a.DriverName, StringComparer.OrdinalIgnoreCase)
-            .Select(a => new DriverAssignmentHistoryRowVm(
-                a.DriverName,
+            .ThenBy(a => a.StaffName, StringComparer.OrdinalIgnoreCase)
+            .Select(a => new StaffAssignmentHistoryRowVm(
+                a.StaffName,
                 a.TransporterName,
                 a.AssignmentType,
                 a.Status,

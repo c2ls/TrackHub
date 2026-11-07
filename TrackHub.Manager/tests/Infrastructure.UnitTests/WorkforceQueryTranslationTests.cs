@@ -94,57 +94,57 @@ public class WorkforceQueryTranslationTests
     }
 
     [Test]
-    public async Task GetDriverQualifications_TranslatesToSql()
+    public async Task GetStaffQualifications_TranslatesToSql()
     {
         using var context = NewNpgsqlContext();
         var accountId = Guid.NewGuid();
-        var reader = new DriverQualificationReader(context, Principal(accountId));
+        var reader = new StaffQualificationReader(context, Principal(accountId));
 
-        await AssertTranslatesAsync(() => reader.GetDriverQualificationsAsync(accountId, null, null, 0, 50, CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.GetStaffQualificationsAsync(accountId, null, null, 0, 50, CancellationToken.None));
     }
 
     [Test]
-    public async Task GetDriverQualifications_WithEveryFilter_TranslatesToSql()
+    public async Task GetStaffQualifications_WithEveryFilter_TranslatesToSql()
     {
         using var context = NewNpgsqlContext();
         var accountId = Guid.NewGuid();
-        var reader = new DriverQualificationReader(context, Principal(accountId));
+        var reader = new StaffQualificationReader(context, Principal(accountId));
 
-        await AssertTranslatesAsync(() => reader.GetDriverQualificationsAsync(accountId, Guid.NewGuid(), 30, 10, 100, CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.GetStaffQualificationsAsync(accountId, Guid.NewGuid(), 30, 10, 100, CancellationToken.None));
     }
 
     [Test]
-    public async Task GetDriverAssignmentHistory_TranslatesToSql()
+    public async Task GetStaffAssignmentHistory_TranslatesToSql()
     {
         using var context = NewNpgsqlContext();
         var accountId = Guid.NewGuid();
-        var reader = new DriverAssignmentReader(context, Principal(accountId));
+        var reader = new StaffAssignmentReader(context, Principal(accountId));
 
-        await AssertTranslatesAsync(() => reader.GetDriverAssignmentHistoryAsync(accountId, null, null, null, null, 0, 50, CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.GetStaffAssignmentHistoryAsync(accountId, null, null, null, null, 0, 50, CancellationToken.None));
     }
 
     [Test]
-    public async Task GetDriverAssignmentHistory_WithEveryFilter_TranslatesToSql()
+    public async Task GetStaffAssignmentHistory_WithEveryFilter_TranslatesToSql()
     {
         using var context = NewNpgsqlContext();
         var accountId = Guid.NewGuid();
-        var reader = new DriverAssignmentReader(context, Principal(accountId));
+        var reader = new StaffAssignmentReader(context, Principal(accountId));
 
-        await AssertTranslatesAsync(() => reader.GetDriverAssignmentHistoryAsync(
+        await AssertTranslatesAsync(() => reader.GetStaffAssignmentHistoryAsync(
             accountId, Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(-30), DateTimeOffset.UtcNow, 0, 50, CancellationToken.None));
     }
 
     [Test]
-    public async Task DriverReader_WorkforceQueries_TranslateToSql()
+    public async Task StaffReader_WorkforceQueries_TranslateToSql()
     {
         using var context = NewNpgsqlContext();
         var accountId = Guid.NewGuid();
-        var reader = new DriverReader(context, Principal(accountId));
-        var driverId = Guid.NewGuid();
+        var reader = new StaffMemberReader(context, Principal(accountId));
+        var staffId = Guid.NewGuid();
 
-        await AssertTranslatesAsync(() => reader.GetDriverAssignmentsAsync(driverId, CancellationToken.None));
-        await AssertTranslatesAsync(() => reader.ValidateDriverAssignmentAsync(driverId, "Transporter", Guid.NewGuid().ToString(), CancellationToken.None));
-        await AssertTranslatesAsync(() => reader.GetMyDriverProfileAsync(driverId, CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.GetStaffAssignmentsAsync(staffId, CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.ValidateStaffAssignmentAsync(staffId, "Transporter", Guid.NewGuid().ToString(), CancellationToken.None));
+        await AssertTranslatesAsync(() => reader.GetMyStaffProfileAsync(staffId, CancellationToken.None));
     }
 
     [Test]

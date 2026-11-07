@@ -56,9 +56,9 @@ public class WorkforceReportReaderPagingTests
         _reader = new WorkforceReportReader(factory.Object, user.Object, features.Object);
     }
 
-    // Serves the driver list as Manager pages it: each request gets the rows of its window of `total`.
-    private void RespondWithDrivers(int total, int maxRequests = 250)
-        => Respond(maxRequests, (skip, take) => Page("driversByAccount", DriverRows(Math.Clamp(total - skip, 0, take)), total));
+    // Serves the staff list as Manager pages it: each request gets the rows of its window of `total`.
+    private void RespondWithStaffMembers(int total, int maxRequests = 250)
+        => Respond(maxRequests, (skip, take) => Page("staffMembersByAccount", StaffRows(Math.Clamp(total - skip, 0, take)), total));
 
     private void Respond(int maxRequests, Func<int, int, string> page)
         => _client
@@ -82,23 +82,23 @@ public class WorkforceReportReaderPagingTests
     private static string Page(string field, string rows, int totalCount)
         => $"{{\"{field}\":{{\"items\":[{rows}],\"totalCount\":{totalCount}}}}}";
 
-    private static string DriverRows(int count)
+    private static string StaffRows(int count)
         => string.Join(',', Enumerable.Range(0, count).Select(i => $$"""
-            {"driverId":"{{Guid.NewGuid()}}","name":"Driver {{i}}","phone":null,"documentType":null,
+            {"staffId":"{{Guid.NewGuid()}}","name":"Staff {{i}}","phone":null,"documentType":null,
              "documentNumber":null,"active":true,"employeeCode":null,"licenseNumber":null,
              "licenseExpiresAt":null,"defaultTransporterId":null}
             """));
 
     private static string QualificationRows(int count)
         => string.Join(',', Enumerable.Range(0, count).Select(i => $$"""
-            {"driverQualificationId":"{{Guid.NewGuid()}}","driverId":"{{Guid.NewGuid()}}","driverName":"D{{i}}",
+            {"staffQualificationId":"{{Guid.NewGuid()}}","staffId":"{{Guid.NewGuid()}}","staffName":"D{{i}}",
              "qualificationType":"License","category":"C2","number":"L-{{i}}","issuedAt":null,"expiresAt":null,
              "issuingAuthority":null,"status":"Valid"}
             """));
 
     private static string AssignmentRows(int count)
         => string.Join(',', Enumerable.Range(0, count).Select(i => $$"""
-            {"driverId":"{{Guid.NewGuid()}}","driverName":"D{{i}}","transporterId":"{{Guid.NewGuid()}}",
+            {"staffId":"{{Guid.NewGuid()}}","staffName":"D{{i}}","transporterId":"{{Guid.NewGuid()}}",
              "transporterName":"T{{i}}","startsAt":"2026-07-01T00:00:00+00:00","endsAt":null,
              "assignmentType":"Regular","status":"Active","createdByPrincipal":"user:1"}
             """));
@@ -106,22 +106,22 @@ public class WorkforceReportReaderPagingTests
     [Test]
     public async Task SinglePartialPage_StopsAfterOneRequest()
     {
-        RespondWithDrivers(37);
+        RespondWithStaffMembers(37);
 
-        var drivers = await _reader.GetDriversAsync(CancellationToken.None);
+        var staff = await _reader.GetStaffMembersAsync(CancellationToken.None);
 
-        Assert.That(drivers, Has.Count.EqualTo(37));
+        Assert.That(staff, Has.Count.EqualTo(37));
         Assert.That(_requests, Is.EqualTo(new[] { (0, PageSize) }));
     }
 
     [Test]
     public async Task ShortFinalPage_AccumulatesEveryPageAndStops()
     {
-        RespondWithDrivers((PageSize * 2) + 12);
+        RespondWithStaffMembers((PageSize * 2) + 12);
 
-        var drivers = await _reader.GetDriversAsync(CancellationToken.None);
+        var staff = await _reader.GetStaffMembersAsync(CancellationToken.None);
 
-        Assert.That(drivers, Has.Count.EqualTo((PageSize * 2) + 12));
+        Assert.That(staff, Has.Count.EqualTo((PageSize * 2) + 12));
         Assert.That(_requests, Is.EqualTo(new[] { (0, PageSize), (PageSize, PageSize), (PageSize * 2, PageSize) }));
     }
 
@@ -129,22 +129,22 @@ public class WorkforceReportReaderPagingTests
     [Test]
     public async Task ExactMultipleOfPageSize_StopsWithoutAProbePage()
     {
-        RespondWithDrivers(PageSize * 2);
+        RespondWithStaffMembers(PageSize * 2);
 
-        var drivers = await _reader.GetDriversAsync(CancellationToken.None);
+        var staff = await _reader.GetStaffMembersAsync(CancellationToken.None);
 
-        Assert.That(drivers, Has.Count.EqualTo(PageSize * 2));
+        Assert.That(staff, Has.Count.EqualTo(PageSize * 2));
         Assert.That(_requests, Has.Count.EqualTo(2));
     }
 
     [Test]
     public async Task EmptyFirstPage_ReturnsNothingAndDoesNotPageAgain()
     {
-        RespondWithDrivers(0);
+        RespondWithStaffMembers(0);
 
-        var drivers = await _reader.GetDriversAsync(CancellationToken.None);
+        var staff = await _reader.GetStaffMembersAsync(CancellationToken.None);
 
-        Assert.That(drivers, Is.Empty);
+        Assert.That(staff, Is.Empty);
         Assert.That(_requests, Has.Count.EqualTo(1));
     }
 
@@ -152,23 +152,23 @@ public class WorkforceReportReaderPagingTests
     [Test]
     public async Task OverTheRowLimit_RaisesAfterOneOverLimitPage()
     {
-        RespondWithDrivers(500_000);
+        RespondWithStaffMembers(500_000);
 
-        await Assert.ThrowsAsync<ReportLimitExceededException>(() => _reader.GetDriversAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<ReportLimitExceededException>(() => _reader.GetStaffMembersAsync(CancellationToken.None));
         Assert.That(_requests, Has.Count.EqualTo(201));
     }
 
     [Test]
     public async Task QualificationsAndAssignments_PageThroughTheSameLoop()
     {
-        Respond(2, (skip, _) => Page("driverQualifications", QualificationRows(skip == 0 ? PageSize : 1), PageSize + 1));
-        var qualifications = await _reader.GetDriverQualificationsAsync(null, 30, CancellationToken.None);
+        Respond(2, (skip, _) => Page("staffQualifications", QualificationRows(skip == 0 ? PageSize : 1), PageSize + 1));
+        var qualifications = await _reader.GetStaffQualificationsAsync(null, 30, CancellationToken.None);
         Assert.That(qualifications, Has.Count.EqualTo(PageSize + 1));
         Assert.That(_requests, Is.EqualTo(new[] { (0, PageSize), (PageSize, PageSize) }));
 
         _requests.Clear();
-        Respond(1, (_, _) => Page("driverAssignmentHistory", AssignmentRows(3), 3));
-        var assignments = await _reader.GetDriverAssignmentHistoryAsync(null, null, null, null, CancellationToken.None);
+        Respond(1, (_, _) => Page("staffAssignmentHistory", AssignmentRows(3), 3));
+        var assignments = await _reader.GetStaffAssignmentHistoryAsync(null, null, null, null, CancellationToken.None);
         Assert.That(assignments, Has.Count.EqualTo(3));
         Assert.That(_requests, Is.EqualTo(new[] { (0, PageSize) }));
     }

@@ -93,7 +93,7 @@ public static class DocumentClassifications
 /// would force <c>DocumentAccessPolicy</c> to call TripManagement to resolve visibility, inverting
 /// the dependency direction (Manager must not depend on the services that depend on it). The
 /// transporter resolver already yields exactly the right audience — group visibility for portal
-/// users and <c>validateDriverAssignment</c> for drivers. Accepted consequence: trip documents also
+/// users and <c>validateStaffAssignment</c> for staff. Accepted consequence: trip documents also
 /// appear in the transporter's document list, filterable by <c>Category</c>. Do not "complete" this
 /// list with a Trip entry.
 /// </para>
@@ -101,12 +101,12 @@ public static class DocumentClassifications
 public static class DocumentOwnerTypes
 {
     public const string Transporter = nameof(Transporter);
-    public const string Driver = nameof(Driver);
+    public const string Staff = nameof(Staff);
 
-    /// <summary>Owner types with a registered visibility resolver (MVP: Transporter, Driver).</summary>
+    /// <summary>Owner types with a registered visibility resolver (MVP: Transporter, Staff).</summary>
     public static bool IsRegistered(string? ownerEntityType)
         => string.Equals(ownerEntityType, Transporter, StringComparison.OrdinalIgnoreCase)
-           || string.Equals(ownerEntityType, Driver, StringComparison.OrdinalIgnoreCase);
+           || string.Equals(ownerEntityType, Staff, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>Document sharing constants — reuses PublicLinkGrant.</summary>

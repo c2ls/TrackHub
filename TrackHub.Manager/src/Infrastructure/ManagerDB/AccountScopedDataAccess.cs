@@ -178,7 +178,7 @@ public abstract class AccountScopedDataAccess(IApplicationDbContext context, ICu
     /// <para>
     /// Uses <see cref="JsonSerializer"/> rather than manual escaping: the previous implementation
     /// escaped only <c>\</c> and <c>"</c>, so any control character — a newline in a free-text field
-    /// such as a driver qualification's Notes — produced a raw U+000A inside a JSON string and made
+    /// such as a staff qualification's Notes — produced a raw U+000A inside a JSON string and made
     /// <c>audit_events.newvaluesjson</c> unparseable. Every audit payload in this service flows
     /// through here, so fixing it once fixes them all.
     /// </para>

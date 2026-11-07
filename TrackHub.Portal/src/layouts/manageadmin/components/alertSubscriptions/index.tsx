@@ -222,8 +222,8 @@ function ManageAlertSubscriptions() {
           rows={subscriptions.map(subscription => ({
             principalType: (
               <TextCell>
-                {subscription.principalType === 'Driver'
-                  ? t('alertSubscriptions.driver')
+                {subscription.principalType === 'Staff'
+                  ? t('alertSubscriptions.staff')
                   : t('alertSubscriptions.user')}
               </TextCell>
             ),

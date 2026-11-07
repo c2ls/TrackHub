@@ -57,19 +57,19 @@ public class AuthorizationBehavior<TRequest, TResponse>(
                             throw new ForbiddenAccessException(attribute.Resource, attribute.Action);
                     break;
 
-                case PrincipalType.Driver:
-                    // Driver branch: a driver principal is authorized by principal type + claims only.
-                    // Require a driver identity and an account scope; assignment-level checks (e.g. Manager
-                    // ValidateDriverAssignment) are the handler's responsibility per the platform rules.
-                    // Drivers never carry roles/policies, so the user branch is skipped entirely.
-                    if (user.DriverId is not { } driverId || driverId == Guid.Empty
-                        || user.AccountId is not { } driverAccountId || driverAccountId == Guid.Empty)
+                case PrincipalType.Staff:
+                    // Staff branch: a staff principal is authorized by principal type + claims only.
+                    // Require a staff identity and an account scope; assignment-level checks (e.g. Manager
+                    // ValidateStaffAssignment) are the handler's responsibility per the platform rules.
+                    // Staff never carry roles/policies, so the user branch is skipped entirely.
+                    if (user.StaffId is not { } staffId || staffId == Guid.Empty
+                        || user.AccountId is not { } staffAccountId || staffAccountId == Guid.Empty)
                     {
                         var attribute = authorizeAttributes.First();
                         throw new ForbiddenAccessException(
                             attribute.Resource,
                             attribute.Action,
-                            "Driver principal requires driver_id and account_id claims.");
+                            "Staff principal requires staff_id and account_id claims.");
                     }
                     break;
 

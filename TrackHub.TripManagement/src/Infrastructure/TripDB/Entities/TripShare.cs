@@ -29,7 +29,7 @@ public sealed class TripShare : BaseAuditableEntity
     public Guid AccountId { get; set; }
     public Guid TripId { get; set; }
     public Guid PublicLinkGrantId { get; set; }
-    public bool IncludeDriverName { get; set; }
+    public bool IncludeStaffName { get; set; }
     public bool IncludeVehicle { get; set; }
     public bool IncludeLivePosition { get; set; }
     public bool IncludeStopDetail { get; set; }

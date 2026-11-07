@@ -79,7 +79,7 @@ describe('trip share field flags', () => {
   });
 
   test('every personal-data flag fails closed', () => {
-    expect(DEFAULT_FLAGS.includeDriverName).toBe(false);
+    expect(DEFAULT_FLAGS.includeStaffName).toBe(false);
     expect(DEFAULT_FLAGS.includeVehicle).toBe(false);
     expect(DEFAULT_FLAGS.includePodSummary).toBe(false);
   });

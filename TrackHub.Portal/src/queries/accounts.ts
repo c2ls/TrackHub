@@ -20,7 +20,7 @@
  * the global toast via the query client's error handlers.
  *
  * `useAccountByUser` is the shared "current account id" source for create flows
- * (transporters, POIs, drivers, ...). Account identity rarely changes, so it is
+ * (transporters, POIs, staff, ...). Account identity rarely changes, so it is
  * cached indefinitely (staleTime: Infinity) and refetched only on invalidation.
  */
 

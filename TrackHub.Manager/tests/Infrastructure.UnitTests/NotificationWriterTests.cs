@@ -13,13 +13,13 @@ public class NotificationWriterTests
     private static ApplicationDbContext NewContext(string name)
         => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(name).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).Options);
 
-    private static ICurrentPrincipal Principal(Guid? accountId, PrincipalType principalType = PrincipalType.User, Guid? userId = null, Guid? driverId = null, string? role = null)
+    private static ICurrentPrincipal Principal(Guid? accountId, PrincipalType principalType = PrincipalType.User, Guid? userId = null, Guid? staffId = null, string? role = null)
     {
         var principal = new Mock<ICurrentPrincipal>();
         principal.SetupGet(p => p.AccountId).Returns(accountId);
         principal.SetupGet(p => p.PrincipalType).Returns(principalType);
         principal.SetupGet(p => p.UserId).Returns(userId);
-        principal.SetupGet(p => p.DriverId).Returns(driverId);
+        principal.SetupGet(p => p.StaffId).Returns(staffId);
         principal.SetupGet(p => p.Role).Returns(role);
         return principal.Object;
     }

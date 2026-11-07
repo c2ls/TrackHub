@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<Account> Accounts { get; set; }
     DbSet<AccountBranding> AccountBrandings { get; set; }
     DbSet<AccountFeature> AccountFeatures { get; set; }
+    DbSet<AccountHoliday> AccountHolidays { get; set; }
     DbSet<AccountSettings> AccountSettings { get; set; }
     DbSet<AccountSupportGrant> AccountSupportGrants { get; set; }
     DbSet<AlertEvent> AlertEvents { get; set; }
@@ -36,9 +37,9 @@ public interface IApplicationDbContext
     DbSet<DocumentVersion> DocumentVersions { get; set; }
     DbSet<DocumentSignature> DocumentSignatures { get; set; }
     DbSet<DocumentType> DocumentTypes { get; set; }
-    DbSet<Driver> Drivers { get; set; }
-    DbSet<DriverQualification> DriverQualifications { get; set; }
-    DbSet<DriverTransporterAssignment> DriverTransporterAssignments { get; set; }
+    DbSet<StaffMember> StaffMembers { get; set; }
+    DbSet<StaffQualification> StaffQualifications { get; set; }
+    DbSet<StaffTransporterAssignment> StaffTransporterAssignments { get; set; }
     DbSet<GeocodingProvider> GeocodingProviders { get; set; }
     DbSet<PointOfInterest> PointsOfInterest { get; set; }
     DbSet<Transporter> Transporters { get; set; }

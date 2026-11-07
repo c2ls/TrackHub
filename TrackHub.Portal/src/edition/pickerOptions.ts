@@ -20,7 +20,7 @@ import { useUnassignedSynchronizedDevices } from 'queries/devices';
 import { useGroups } from 'queries/groups';
 import { usePointsOfInterestByAccount } from 'queries/pointsOfInterest';
 import { useAccounts } from 'queries/accounts';
-import { useDriverOptions, useDriversPage } from 'queries/drivers';
+import { useStaffOptions, useStaffMembersPage } from 'queries/staff';
 import { MAX_PAGE_SIZE } from 'api/core/paging';
 import type { SearchOptionsHook } from 'edition/SearchSelect';
 
@@ -91,20 +91,20 @@ export const usePointOfInterestOptions: SearchOptionsHook = (search, take) => {
   };
 };
 
-export const accountDriverOptions =
+export const accountStaffOptions =
   (accountId: string | undefined): SearchOptionsHook =>
   (search, take) => {
-    const { data, isFetching } = useDriversPage(accountId, pageParams(search, take));
+    const { data, isFetching } = useStaffMembersPage(accountId, pageParams(search, take));
     return {
-      options: (data?.items ?? []).map((driver) => ({ value: driver.driverId, label: driver.name })),
+      options: (data?.items ?? []).map((staff) => ({ value: staff.staffId, label: staff.name })),
       loading: isFetching,
     };
   };
 
-export const useDriverOperationsOptions: SearchOptionsHook = (search, take) => {
-  const { data, isFetching } = useDriverOptions(pageParams(search, take));
+export const useStaffOperationsOptions: SearchOptionsHook = (search, take) => {
+  const { data, isFetching } = useStaffOptions(pageParams(search, take));
   return {
-    options: (data?.items ?? []).map((driver) => ({ value: driver.driverId, label: driver.name })),
+    options: (data?.items ?? []).map((staff) => ({ value: staff.staffId, label: staff.name })),
     loading: isFetching,
   };
 };

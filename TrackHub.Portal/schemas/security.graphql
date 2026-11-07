@@ -6,10 +6,6 @@ schema {
 type Query {
   actions: [ActionVm!]! @cost(weight: "10")
   clients(query: GetClientsQueryInput!): [ClientVm!]! @cost(weight: "10")
-  driverCredentials(query: GetDriverCredentialsQueryInput!): [DriverCredentialVm!]!
-    @cost(weight: "10")
-  driverDevices(query: GetDriverDevicesQueryInput!): [DriverDeviceRegistrationVm!]!
-    @cost(weight: "10")
   userName(query: GetUserNameQueryInput!): String! @cost(weight: "10")
   isInRole(query: IsInRoleQueryInput!): Boolean! @cost(weight: "10")
   authorize(query: AuthorizeQueryInput!): Boolean! @cost(weight: "10")
@@ -26,6 +22,10 @@ type Query {
   resourcesByRole(query: GetResourcesByRoleQueryInput!): RoleResourceVm!
     @cost(weight: "10")
   serviceClientPermissions(query: GetServiceClientPermissionsQueryInput!): [ServiceClientPermissionVm!]!
+    @cost(weight: "10")
+  staffCredentials(query: GetStaffCredentialsQueryInput!): [StaffCredentialVm!]!
+    @cost(weight: "10")
+  staffDevices(query: GetStaffDevicesQueryInput!): [StaffDeviceRegistrationVm!]!
     @cost(weight: "10")
   user(query: GetUserQueryInput!): UserVm! @cost(weight: "10")
   users(query: GetUsersQueryInput!): [UserVm!]! @cost(weight: "10")
@@ -52,24 +52,6 @@ type Mutation {
   updateClient(id: UUID!, command: UpdateClientCommandInput!): Boolean!
     @cost(weight: "10")
   deleteClient(id: UUID!): UUID! @cost(weight: "10")
-  createDriverCredential(command: CreateDriverCredentialCommandInput!): DriverCredentialVm!
-    @cost(weight: "10")
-  activateDriverCredential(command: ActivateDriverCredentialCommandInput!): Boolean!
-    @cost(weight: "10")
-  lockDriverCredential(command: LockDriverCredentialCommandInput!): Boolean!
-    @cost(weight: "10")
-  resetDriverCredential(command: ResetDriverCredentialCommandInput!): Boolean!
-    @cost(weight: "10")
-  revokeDriverCredential(command: RevokeDriverCredentialCommandInput!): Boolean!
-    @cost(weight: "10")
-  revokeDriverCredentials(command: RevokeDriverCredentialsCommandInput!): Boolean!
-    @cost(weight: "10")
-  registerDriverDevice(command: RegisterDriverDeviceCommandInput!): DriverDeviceRegistrationVm!
-    @cost(weight: "10")
-  updateDriverDevicePushToken(command: UpdateDriverDevicePushTokenCommandInput!): Boolean!
-    @cost(weight: "10")
-  revokeDriverDevice(command: RevokeDriverDeviceCommandInput!): Boolean!
-    @cost(weight: "10")
   replayFailedOutboxMessages(command: ReplayFailedOutboxMessagesCommandInput!): Int!
     @cost(weight: "10")
   discardFailedOutboxMessages(command: DiscardFailedOutboxMessagesCommandInput!): Int!
@@ -91,6 +73,24 @@ type Mutation {
   deleteServiceClientPermission(
     command: DeleteServiceClientPermissionCommandInput!
   ): UUID! @cost(weight: "10")
+  createStaffCredential(command: CreateStaffCredentialCommandInput!): StaffCredentialVm!
+    @cost(weight: "10")
+  activateStaffCredential(command: ActivateStaffCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  lockStaffCredential(command: LockStaffCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  resetStaffCredential(command: ResetStaffCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  revokeStaffCredential(command: RevokeStaffCredentialCommandInput!): Boolean!
+    @cost(weight: "10")
+  revokeStaffCredentials(command: RevokeStaffCredentialsCommandInput!): Boolean!
+    @cost(weight: "10")
+  registerStaffDevice(command: RegisterStaffDeviceCommandInput!): StaffDeviceRegistrationVm!
+    @cost(weight: "10")
+  updateStaffDevicePushToken(command: UpdateStaffDevicePushTokenCommandInput!): Boolean!
+    @cost(weight: "10")
+  revokeStaffDevice(command: RevokeStaffDeviceCommandInput!): Boolean!
+    @cost(weight: "10")
   createUserPolicy(command: CreateUserPolicyCommandInput!): UserPolicyVm!
     @cost(weight: "10")
   deleteUserPolicy(userId: UUID!, policyId: Int!): UUID! @cost(weight: "10")
@@ -123,37 +123,6 @@ type ClientVm {
   description: String!
   secret: String!
   processed: Boolean!
-  lastModified: DateTime!
-}
-
-type DriverCredentialVm {
-  driverCredentialId: UUID!
-  driverId: UUID!
-  accountId: UUID!
-  normalizedLogin: String!
-  failedAttempts: Int!
-  lockedUntil: DateTime
-  verifiedAt: DateTime
-  lastLoginAt: DateTime
-  active: Boolean!
-  resetRequired: Boolean!
-  lastModified: DateTime!
-}
-
-type DriverDeviceRegistrationVm {
-  driverDeviceRegistrationId: UUID!
-  driverId: UUID!
-  accountId: UUID!
-  deviceId: String!
-  deviceName: String
-  platform: String!
-  appVersion: String
-  pushToken: String
-  active: Boolean!
-  registeredAt: DateTime!
-  lastSeenAt: DateTime
-  revokedAt: DateTime
-  revokedBy: String
   lastModified: DateTime!
 }
 
@@ -231,6 +200,37 @@ type ServiceClientPermissionVm {
   allowCrossAccount: Boolean!
 }
 
+type StaffCredentialVm {
+  staffCredentialId: UUID!
+  staffId: UUID!
+  accountId: UUID!
+  normalizedLogin: String!
+  failedAttempts: Int!
+  lockedUntil: DateTime
+  verifiedAt: DateTime
+  lastLoginAt: DateTime
+  active: Boolean!
+  resetRequired: Boolean!
+  lastModified: DateTime!
+}
+
+type StaffDeviceRegistrationVm {
+  staffDeviceRegistrationId: UUID!
+  staffId: UUID!
+  accountId: UUID!
+  deviceId: String!
+  deviceName: String
+  platform: String!
+  appVersion: String
+  pushToken: String
+  active: Boolean!
+  registeredAt: DateTime!
+  lastSeenAt: DateTime
+  revokedAt: DateTime
+  revokedBy: String
+  lastModified: DateTime!
+}
+
 type UserLookupVm {
   userId: UUID!
   username: String!
@@ -269,8 +269,8 @@ type UserVm {
   profiles: [PolicyVm!]
 }
 
-input ActivateDriverCredentialCommandInput {
-  driverCredentialId: UUID!
+input ActivateStaffCredentialCommandInput {
+  staffCredentialId: UUID!
   password: String!
 }
 
@@ -302,10 +302,6 @@ input CreateClientCommandInput {
   client: ClientDtoInput!
 }
 
-input CreateDriverCredentialCommandInput {
-  credential: DriverCredentialDtoInput!
-}
-
 input CreateManagerCommandInput {
   user: CreateUserDtoInput!
   accountId: UUID!
@@ -321,6 +317,10 @@ input CreateResourceActionRoleCommandInput {
 
 input CreateServiceClientPermissionCommandInput {
   permission: ServiceClientPermissionDtoInput!
+}
+
+input CreateStaffCredentialCommandInput {
+  credential: StaffCredentialDtoInput!
 }
 
 input CreateUserCommandInput {
@@ -356,26 +356,6 @@ input DiscardFailedOutboxMessagesCommandInput {
   outboxMessageId: UUID
 }
 
-input DriverCredentialDtoInput {
-  driverId: UUID!
-  accountId: UUID!
-  login: String!
-  password: String!
-  active: Boolean!
-  resetRequired: Boolean!
-}
-
-input DriverDeviceRegistrationDtoInput {
-  driverId: UUID!
-  accountId: UUID!
-  deviceId: String!
-  deviceName: String
-  platform: String!
-  appVersion: String
-  pushToken: String
-  refreshTokenFamilyId: String!
-}
-
 input FilterItemInput {
   key: String!
   value: Any
@@ -394,20 +374,6 @@ input GetClientsQueryInput {
   take: Int! = 50
 }
 
-input GetDriverCredentialsQueryInput {
-  accountId: UUID!
-  driverId: UUID
-  skip: Int! = 0
-  take: Int! = 50
-}
-
-input GetDriverDevicesQueryInput {
-  accountId: UUID!
-  driverId: UUID
-  skip: Int! = 0
-  take: Int! = 50
-}
-
 input GetResourcesByPolicyQueryInput {
   policyId: Int!
 }
@@ -419,6 +385,20 @@ input GetResourcesByRoleQueryInput {
 input GetServiceClientPermissionsQueryInput {
   clientId: String
   accountId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetStaffCredentialsQueryInput {
+  accountId: UUID!
+  staffId: UUID
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetStaffDevicesQueryInput {
+  accountId: UUID!
+  staffId: UUID
   skip: Int! = 0
   take: Int! = 50
 }
@@ -478,21 +458,21 @@ input IsValidServiceQueryInput {
   client: String
 }
 
-input LockDriverCredentialCommandInput {
-  driverCredentialId: UUID!
+input LockStaffCredentialCommandInput {
+  staffCredentialId: UUID!
   lockedUntil: DateTime!
 }
 
-input RegisterDriverDeviceCommandInput {
-  device: DriverDeviceRegistrationDtoInput!
+input RegisterStaffDeviceCommandInput {
+  device: StaffDeviceRegistrationDtoInput!
 }
 
 input ReplayFailedOutboxMessagesCommandInput {
   outboxMessageId: UUID
 }
 
-input ResetDriverCredentialCommandInput {
-  driverCredentialId: UUID!
+input ResetStaffCredentialCommandInput {
+  staffCredentialId: UUID!
   password: String!
   resetRequired: Boolean!
 }
@@ -509,17 +489,17 @@ input ResourceActionRoleDtoInput {
   roleId: Int!
 }
 
-input RevokeDriverCredentialCommandInput {
-  driverCredentialId: UUID!
+input RevokeStaffCredentialCommandInput {
+  staffCredentialId: UUID!
 }
 
-input RevokeDriverCredentialsCommandInput {
-  driverId: UUID!
+input RevokeStaffCredentialsCommandInput {
+  staffId: UUID!
   accountId: UUID!
 }
 
-input RevokeDriverDeviceCommandInput {
-  driverDeviceRegistrationId: UUID!
+input RevokeStaffDeviceCommandInput {
+  staffDeviceRegistrationId: UUID!
   revokedBy: String!
 }
 
@@ -534,6 +514,26 @@ input ServiceClientPermissionDtoInput {
   effectiveFrom: DateTime
   effectiveTo: DateTime
   allowCrossAccount: Boolean! = false
+}
+
+input StaffCredentialDtoInput {
+  staffId: UUID!
+  accountId: UUID!
+  login: String!
+  password: String!
+  active: Boolean!
+  resetRequired: Boolean!
+}
+
+input StaffDeviceRegistrationDtoInput {
+  staffId: UUID!
+  accountId: UUID!
+  deviceId: String!
+  deviceName: String
+  platform: String!
+  appVersion: String
+  pushToken: String
+  refreshTokenFamilyId: String!
 }
 
 input UpdateClientCommandInput {
@@ -552,12 +552,6 @@ input UpdateCurrentUserDtoInput {
   dob: LocalDate
 }
 
-input UpdateDriverDevicePushTokenCommandInput {
-  driverDeviceRegistrationId: UUID!
-  pushToken: String
-  appVersion: String
-}
-
 input UpdatePasswordCommandInput {
   user: UserPasswordDtoInput!
 }
@@ -565,6 +559,12 @@ input UpdatePasswordCommandInput {
 input UpdateServiceClientPermissionCommandInput {
   serviceClientPermissionId: UUID!
   permission: ServiceClientPermissionDtoInput!
+}
+
+input UpdateStaffDevicePushTokenCommandInput {
+  staffDeviceRegistrationId: UUID!
+  pushToken: String
+  appVersion: String
 }
 
 input UpdateUserCommandInput {

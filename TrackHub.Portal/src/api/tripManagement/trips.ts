@@ -145,7 +145,7 @@ export interface TripListFilters {
   from?: string | null;
   to?: string | null;
   transporterId?: string | null;
-  driverId?: string | null;
+  staffId?: string | null;
   customer?: string | null;
   search?: string | null;
   skip?: number | null;
@@ -170,7 +170,7 @@ export async function getTrips(filters: TripListFilters = {}, options?: RequestO
     from: filters.from ?? null,
     to: filters.to ?? null,
     transporterId: filters.transporterId ?? null,
-    driverId: filters.driverId ?? null,
+    staffId: filters.staffId ?? null,
     customer: filters.customer ?? null,
     search: filters.search ?? null,
     skip: filters.skip ?? null,
@@ -286,12 +286,12 @@ export async function deleteTrip(tripId: string): Promise<string> {
 
 export async function assignTrip(
   tripId: string,
-  driverId: string,
+  staffId: string,
   transporterId?: string | null
 ): Promise<TripAssignment> {
   const data = await executeGraphQL('tripManagement', AssignTripDocument, {
     tripId,
-    driverId,
+    staffId,
     transporterId: transporterId ?? null,
   });
   return data.assignTrip;

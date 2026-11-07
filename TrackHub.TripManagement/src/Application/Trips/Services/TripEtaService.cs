@@ -176,7 +176,7 @@ public sealed class TripEtaService(
                 TripAlertSeverities.Warning,
                 $"trip-delayed:{candidate.NextStopId:N}",
                 new TripAlertDto(accountId, candidate.TripId, candidate.NextStopId, candidate.Code, candidate.TransporterId,
-                    candidate.DriverId, candidate.NextStopName, alertedAt, eta, plannedTo, delayMinutes, null, null),
+                    candidate.StaffId, candidate.NextStopName, alertedAt, eta, plannedTo, delayMinutes, null, null),
                 cancellationToken);
         }
         catch (Exception ex)
@@ -226,7 +226,7 @@ public sealed class TripEtaService(
                         TripEventTypes.TripStartDue,
                         TripAlertSeverities.Info,
                         $"trip-startdue:{trip.TripId:N}:{trip.PlannedStartAt.UtcTicks}",
-                        new TripAlertDto(accountId, trip.TripId, null, trip.Code, trip.TransporterId, trip.DriverId, null,
+                        new TripAlertDto(accountId, trip.TripId, null, trip.Code, trip.TransporterId, trip.StaffId, null,
                             trip.PlannedStartAt, null, null, null, null, null),
                         cancellationToken);
 

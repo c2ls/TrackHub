@@ -5,7 +5,7 @@
       "resource": "trackhub_api"
     },
     {
-      "name": "driver_mobile_scope",
+      "name": "staff_mobile_scope",
       "resource": "trackhub_api"
     },
     {
@@ -26,10 +26,10 @@
       "passwordGrant": true
     },
     {
-      "clientId": "driver_mobile_client",
-      "uri": "trackhubmobiledriver://callback",
-      "postLogoutUri": "trackhubmobiledriver://callback",
-      "scope": "driver_mobile_scope"
+      "clientId": "staff_mobile_client",
+      "uri": "trackhubstaff://callback",
+      "postLogoutUri": "trackhubstaff://callback",
+      "scope": "staff_mobile_scope"
     },
     {
       "clientId": "web_client",

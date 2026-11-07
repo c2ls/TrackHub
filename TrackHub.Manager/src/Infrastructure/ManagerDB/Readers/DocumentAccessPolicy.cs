@@ -7,14 +7,14 @@ namespace TrackHub.Manager.Infrastructure.ManagerDB.Readers;
 
 /// <summary>
 /// Maps <c>OwnerEntityType</c> to the correct visibility primitive. Transporter
-/// owners use group visibility; Driver owners use assignment/default-transporter visibility; owner types
+/// owners use group visibility; Staff owners use assignment/default-transporter visibility; owner types
 /// without a registered resolver are deny-by-default. Also enforces the classification gate.
 /// </summary>
 public sealed class DocumentAccessPolicy(
     IApplicationDbContext context,
     ICurrentPrincipal principal,
     IVisibleTransporterReader visibleTransporterReader,
-    IDriverReader driverReader) : AccountScopedDataAccess(context, principal), IDocumentAccessPolicy
+    IStaffMemberReader staffMemberReader) : AccountScopedDataAccess(context, principal), IDocumentAccessPolicy
 {
     // Scoped service clients have already cleared account + resource/action checks in AuthorizationBehavior;
     // treat them as account-wide for document owner visibility.
@@ -29,9 +29,9 @@ public sealed class DocumentAccessPolicy(
             return await CanAccessTransporterAsync(scopedAccountId, ownerEntityId, cancellationToken);
         }
 
-        if (string.Equals(ownerEntityType, DocumentOwnerTypes.Driver, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(ownerEntityType, DocumentOwnerTypes.Staff, StringComparison.OrdinalIgnoreCase))
         {
-            return await CanAccessDriverOwnerAsync(scopedAccountId, ownerEntityId, cancellationToken);
+            return await CanAccessStaffOwnerAsync(scopedAccountId, ownerEntityId, cancellationToken);
         }
 
         // Deny-by-default: owner type without a registered resolver.
@@ -69,11 +69,11 @@ public sealed class DocumentAccessPolicy(
             return false;
         }
 
-        // Driver principals are assignment-scoped and never receive group visibility.
-        if (Principal.PrincipalType == PrincipalType.Driver)
+        // Staff principals are assignment-scoped and never receive group visibility.
+        if (Principal.PrincipalType == PrincipalType.Staff)
         {
-            return Principal.DriverId.HasValue
-                && await driverReader.ValidateDriverAssignmentAsync(Principal.DriverId.Value, DocumentOwnerTypes.Transporter, ownerEntityId, cancellationToken);
+            return Principal.StaffId.HasValue
+                && await staffMemberReader.ValidateStaffAssignmentAsync(Principal.StaffId.Value, DocumentOwnerTypes.Transporter, ownerEntityId, cancellationToken);
         }
 
         if (IsPrivilegedPrincipal)
@@ -85,26 +85,26 @@ public sealed class DocumentAccessPolicy(
         return visible.Contains(transporterId);
     }
 
-    private async Task<bool> CanAccessDriverOwnerAsync(Guid accountId, string ownerEntityId, CancellationToken cancellationToken)
+    private async Task<bool> CanAccessStaffOwnerAsync(Guid accountId, string ownerEntityId, CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(ownerEntityId, out var driverId))
+        if (!Guid.TryParse(ownerEntityId, out var staffId))
         {
             return false;
         }
 
-        // A driver may access their own documents.
-        if (Principal.PrincipalType == PrincipalType.Driver)
+        // A staff may access their own documents.
+        if (Principal.PrincipalType == PrincipalType.Staff)
         {
-            return Principal.DriverId == driverId;
+            return Principal.StaffId == staffId;
         }
 
-        // Users/service clients: account + group visibility of the driver's default transporter.
-        var driver = await Context.Drivers
-            .Where(d => d.DriverId == driverId && d.AccountId == accountId)
+        // Users/service clients: account + group visibility of the staff's default transporter.
+        var staff = await Context.StaffMembers
+            .Where(d => d.StaffId == staffId && d.AccountId == accountId)
             .Select(d => new { d.DefaultTransporterId })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (driver is null)
+        if (staff is null)
         {
             return false;
         }
@@ -114,12 +114,12 @@ public sealed class DocumentAccessPolicy(
             return true;
         }
 
-        if (!driver.DefaultTransporterId.HasValue)
+        if (!staff.DefaultTransporterId.HasValue)
         {
             return false;
         }
 
         var visible = await GetVisibleTransporterIdsAsync(accountId, cancellationToken);
-        return visible.Contains(driver.DefaultTransporterId.Value);
+        return visible.Contains(staff.DefaultTransporterId.Value);
     }
 }

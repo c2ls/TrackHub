@@ -52,7 +52,7 @@ interface PodDialogProps {
 
 /**
  * Proof-of-delivery capture from the dispatch desk. Spec 11 §9 makes this the
- * module's whole pre-driver-app operating mode: dispatchers record arrivals,
+ * module's whole pre-staff-app operating mode: dispatchers record arrivals,
  * departures and POD from the portal.
  *
  * Two contract details drive the shape of this dialog:

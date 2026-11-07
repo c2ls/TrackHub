@@ -41,7 +41,7 @@ import { usePermissions } from 'context/permissions';
 import { PermissionResources, PermissionActions } from 'constants/permissions';
 import { useAccountByUser } from 'queries/accounts';
 import { useTransporterLookupByUser } from 'queries/transporters';
-import { useDriverNames, useDriverSearchOptions } from 'queries/drivers';
+import { useStaffNames, useStaffSearchOptions } from 'queries/staff';
 import SearchSelect from 'edition/SearchSelect';
 import type { SearchOption } from 'edition/SearchSelect';
 import { useUserTransporterOptions } from 'edition/pickerOptions';
@@ -195,7 +195,7 @@ function TripManager() {
   const [status, setStatus] = useState<string>(ALL);
   const [exception, setException] = useState<string>(ALL);
   const [transporterFilter, setTransporterFilter] = useState<SearchOption | null>(null);
-  const [driverFilter, setDriverFilter] = useState<SearchOption | null>(null);
+  const [staffFilter, setStaffFilter] = useState<SearchOption | null>(null);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   // The box updates as the user types; the query waits for them to stop. Wired straight through, a
@@ -213,13 +213,13 @@ function TripManager() {
       from: calendar.dayStartIso(from),
       to: calendar.dayEndIso(to),
       transporterId: transporterFilter?.value ?? null,
-      driverId: driverFilter?.value ?? null,
+      staffId: staffFilter?.value ?? null,
       search: search.trim() || null,
       exception: exception === ALL ? null : exception,
       skip: page * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
-    [calendar, status, from, to, transporterFilter, driverFilter, search, page, exception]
+    [calendar, status, from, to, transporterFilter, staffFilter, search, page, exception]
   );
 
   /* --------------------------------------------------------------- data */
@@ -243,14 +243,14 @@ function TripManager() {
   const trips = useMemo(() => tripsQuery.data?.items ?? [], [tripsQuery.data]);
   const totalCount = tripsQuery.data?.totalCount ?? 0;
 
-  // Names and ids only, under Trips/Read: the ids on the board resolve their names even for drivers
+  // Names and ids only, under Trips/Read: the ids on the board resolve their names even for staff
   // since deactivated. The pickers search the server.
-  const tripDriverIds = useMemo(
-    () => Array.from(new Set(trips.map((trip) => trip.driverId).filter((id): id is string => !!id))),
+  const tripStaffIds = useMemo(
+    () => Array.from(new Set(trips.map((trip) => trip.staffId).filter((id): id is string => !!id))),
     [trips]
   );
-  const driverNamesQuery = useDriverNames(tripDriverIds);
-  const drivers = useMemo(() => driverNamesQuery.data ?? [], [driverNamesQuery.data]);
+  const staffNamesQuery = useStaffNames(tripStaffIds);
+  const staff = useMemo(() => staffNamesQuery.data ?? [], [staffNamesQuery.data]);
 
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
@@ -342,7 +342,7 @@ function TripManager() {
         lastModified: detail.trip.lastModified,
         code: detail.trip.code,
         transporterId: detail.trip.transporterId,
-        driverId: detail.trip.driverId ?? '',
+        staffId: detail.trip.staffId ?? '',
         externalReference: detail.trip.externalReference,
         customerName: detail.trip.customerName,
         originName: detail.trip.originName,
@@ -400,7 +400,7 @@ function TripManager() {
     const payload: TripDtoInput = {
       code: tripValues.code as string,
       transporterId: tripValues.transporterId as string,
-      driverId: tripValues.driverId || null,
+      staffId: tripValues.staffId || null,
       serviceOrderId: tripValues.serviceOrderId || null,
       externalReference: tripValues.externalReference || null,
       customerName: tripValues.customerName || null,
@@ -842,7 +842,7 @@ function TripManager() {
     { name: 'code', title: t('trips.code'), align: 'left' as const },
     { name: 'customer', title: t('trips.customerName'), align: 'left' as const },
     { name: 'transporter', title: t('trips.transporter'), align: 'left' as const },
-    { name: 'driver', title: t('trips.driver'), align: 'left' as const },
+    { name: 'staff', title: t('trips.staff'), align: 'left' as const },
     { name: 'plannedStart', title: t('trips.plannedStart'), align: 'left' as const },
     { name: 'stops', title: t('trips.stops'), align: 'center' as const },
     { name: 'phase', title: t('trips.phase'), align: 'left' as const },
@@ -861,9 +861,9 @@ function TripManager() {
         }
       />
     ),
-    driver: (
+    staff: (
       <Description
-        description={drivers.find((driver) => driver.driverId === trip.driverId)?.name ?? '-'}
+        description={staff.find((staff) => staff.staffId === trip.staffId)?.name ?? '-'}
       />
     ),
     plannedStart: <Description description={formatDateTime(trip.plannedStartAt)} />,
@@ -971,16 +971,16 @@ function TripManager() {
               </ArgonBox>
               <ArgonBox width="220px">
                 <SearchSelect
-                  id="driverFilter"
-                  label={t('trips.filterDriver')}
-                  value={driverFilter?.value ?? null}
-                  valueLabel={driverFilter?.label}
+                  id="staffFilter"
+                  label={t('trips.filterStaff')}
+                  value={staffFilter?.value ?? null}
+                  valueLabel={staffFilter?.label}
                   onChange={(option) => {
                     setPage(0);
-                    setDriverFilter(option);
+                    setStaffFilter(option);
                   }}
-                  useOptions={useDriverSearchOptions}
-                  placeholder={t('trips.allDrivers')}
+                  useOptions={useStaffSearchOptions}
+                  placeholder={t('trips.allStaff')}
                 />
               </ArgonBox>
               <ArgonBox width="190px">
@@ -1281,7 +1281,7 @@ function TripManager() {
                     synchronously, so `detail` never goes undefined on the way
                     back and the panel keeps the PREVIOUS trip's values while
                     displaying the new one. That is not cosmetic — Assign then
-                    writes trip A's driver onto trip B, and Replan applies A's
+                    writes trip A's staff onto trip B, and Replan applies A's
                     corridor width. */}
                 {workspaceTab === 'route' && (
                   <RoutePlanner
@@ -1316,10 +1316,10 @@ function TripManager() {
                   <AssignmentPanel
                     key={detail.trip.tripId}
                     detail={detail}
-                    drivers={drivers}
+                    staff={staff}
                     transporters={transporters}
-                    onAssign={(driverId, transporterId) =>
-                      assignTrip.mutate({ tripId: detail.trip.tripId, driverId, transporterId })
+                    onAssign={(staffId, transporterId) =>
+                      assignTrip.mutate({ tripId: detail.trip.tripId, staffId, transporterId })
                     }
                     assigning={assignTrip.isPending}
                     editable={detail.trip.status !== 'Completed'}
@@ -1372,7 +1372,7 @@ function TripManager() {
         handleChange={tripChange}
         errors={tripErrors}
         transporters={transporters}
-        drivers={drivers}
+        staff={staff}
         vehicleClasses={vehicleClasses}
         pois={pois}
         geofences={geofences}

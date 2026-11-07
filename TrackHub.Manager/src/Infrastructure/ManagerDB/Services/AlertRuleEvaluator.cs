@@ -200,7 +200,7 @@ public sealed class AlertRuleEvaluator(IApplicationDbContext context, ILogger<Al
 
     // E-mail and WhatsApp are rendered here, so a subscriber's group scope has to be applied here too
     // (the in-app feed re-applies it at read time): users through the one visibility predicate,
-    // drivers through their default or currently assigned vehicle.
+    // staff through their default or currently assigned vehicle.
     private async Task<List<AlertSubscription>> SubscriptionsAllowedToSeeAsync(AlertEventVm alertEvent, CancellationToken cancellationToken)
     {
         var subscriptions = await context.AlertSubscriptions
@@ -221,7 +221,7 @@ public sealed class AlertRuleEvaluator(IApplicationDbContext context, ILogger<Al
                 RecipientPrincipalTypes.User => await TransporterVisibility.IsPrivilegedAsync(context, subscription.PrincipalId, cancellationToken)
                     || await TransporterVisibility.Query(context, subscription.PrincipalId, alertEvent.AccountId, privileged: false)
                         .AnyAsync(t => t.TransporterId == transporterId, cancellationToken),
-                RecipientPrincipalTypes.Driver => await DriverSeesAsync(subscription.PrincipalId, transporterId, cancellationToken),
+                RecipientPrincipalTypes.Staff => await StaffSeesAsync(subscription.PrincipalId, transporterId, cancellationToken),
                 _ => false,
             };
 
@@ -234,9 +234,9 @@ public sealed class AlertRuleEvaluator(IApplicationDbContext context, ILogger<Al
         return allowed;
     }
 
-    private async Task<bool> DriverSeesAsync(Guid driverId, Guid transporterId, CancellationToken cancellationToken)
-        => await context.Drivers.AnyAsync(d => d.DriverId == driverId && d.DefaultTransporterId == transporterId, cancellationToken)
-            || await context.DriverTransporterAssignments.AnyAsync(a => a.DriverId == driverId && a.TransporterId == transporterId && a.Status == DriverAssignmentStatuses.Active, cancellationToken);
+    private async Task<bool> StaffSeesAsync(Guid staffId, Guid transporterId, CancellationToken cancellationToken)
+        => await context.StaffMembers.AnyAsync(d => d.StaffId == staffId && d.DefaultTransporterId == transporterId, cancellationToken)
+            || await context.StaffTransporterAssignments.AnyAsync(a => a.StaffId == staffId && a.TransporterId == transporterId && a.Status == StaffAssignmentStatuses.Active, cancellationToken);
 
     private async Task ResolveInAppRecipientsAsync(Guid accountId, RecipientSelectorModel selector, HashSet<(string, string, string)> recipients, CancellationToken cancellationToken)
     {
@@ -253,15 +253,15 @@ public sealed class AlertRuleEvaluator(IApplicationDbContext context, ILogger<Al
             }
         }
 
-        if (selector.DriverIds is { Count: > 0 })
+        if (selector.StaffIds is { Count: > 0 })
         {
-            var driverIds = await context.Drivers
-                .Where(d => d.AccountId == accountId && selector.DriverIds.Contains(d.DriverId))
-                .Select(d => d.DriverId)
+            var staffIds = await context.StaffMembers
+                .Where(d => d.AccountId == accountId && selector.StaffIds.Contains(d.StaffId))
+                .Select(d => d.StaffId)
                 .ToListAsync(cancellationToken);
-            foreach (var driverId in driverIds)
+            foreach (var staffId in staffIds)
             {
-                recipients.Add((NotificationChannels.InApp, RecipientPrincipalTypes.Driver, driverId.ToString()));
+                recipients.Add((NotificationChannels.InApp, RecipientPrincipalTypes.Staff, staffId.ToString()));
             }
         }
 

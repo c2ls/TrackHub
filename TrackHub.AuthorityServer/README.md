@@ -14,7 +14,7 @@ We believe in the strength of community collaboration to create effective and ac
 
 ## Overview
 
-The Authorization Service is the OpenIddict-based identity and OAuth 2.0 / OpenID Connect token server. It authenticates users, drivers and service clients, and issues the access tokens (audience `trackhub_api`) that every other TrackHub service validates.
+The Authorization Service is the OpenIddict-based identity and OAuth 2.0 / OpenID Connect token server. It authenticates users, staff and service clients, and issues the access tokens (audience `trackhub_api`) that every other TrackHub service validates.
 
 It owns the OpenIddict tables in the `TrackHubSecurity` database and maps the Security-owned identity tables read-only.
 

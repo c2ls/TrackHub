@@ -38,8 +38,8 @@ public static class AlertEventTypes
     public const string DocumentExpired = nameof(DocumentExpired);
     public const string DocumentScanFailed = nameof(DocumentScanFailed);
     public const string NotificationDeliveryFailed = nameof(NotificationDeliveryFailed);
-    public const string DriverQualificationExpiring = nameof(DriverQualificationExpiring);
-    public const string DriverQualificationExpired = nameof(DriverQualificationExpired);
+    public const string StaffQualificationExpiring = nameof(StaffQualificationExpiring);
+    public const string StaffQualificationExpired = nameof(StaffQualificationExpired);
 
     // Trip management (spec 11 §12), emitted by TrackHub.TripManagement under `trip_client`.
     // Severity is assigned by the emitter, not here: Info for all of these EXCEPT
@@ -61,7 +61,7 @@ public static class AlertEventTypes
         GpsCredentialExpiring, GpsOperatorPositionSyncFailed, GpsOperatorDeviceSyncFailed, GpsOperatorOffline,
         GpsOperatorRecovered, GpsDeviceDetected, GpsDeviceRemoved, GpsDuplicateDeviceIdentifier,
         GpsAutoAssignGroupAmbiguous, DocumentExpiring, DocumentExpired,
-        DocumentScanFailed, NotificationDeliveryFailed, DriverQualificationExpiring, DriverQualificationExpired,
+        DocumentScanFailed, NotificationDeliveryFailed, StaffQualificationExpiring, StaffQualificationExpired,
         TripAssigned, TripStarted, TripStopArrived, TripStopDeparted, TripDelayed,
         TripRouteDeviation, TripPodSubmitted, TripCompleted, TripCancelled, TripStartDue
     ];

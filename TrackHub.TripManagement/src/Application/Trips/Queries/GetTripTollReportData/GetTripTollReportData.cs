@@ -36,7 +36,7 @@ public readonly record struct GetTripTollReportDataQuery(
     DateTimeOffset From,
     DateTimeOffset To,
     Guid? TransporterId,
-    Guid? DriverId,
+    Guid? StaffId,
     int? Skip,
     int? Take) : IRequest<TripTollReportPageVm>;
 
@@ -52,7 +52,7 @@ public sealed class GetTripTollReportDataQueryHandler(
 
         return await reader.GetTripTollReportRowsAsync(
             request.AccountId, scopeUserId, request.From, request.To,
-            request.TransporterId, request.DriverId, skip, take, cancellationToken);
+            request.TransporterId, request.StaffId, skip, take, cancellationToken);
     }
 }
 

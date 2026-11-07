@@ -23,14 +23,14 @@ namespace TrackHub.Manager.Domain.Constants;
 public static class RecipientPrincipalTypes
 {
     public const string User = nameof(User);
-    public const string Driver = nameof(Driver);
+    public const string Staff = nameof(Staff);
     public const string Role = nameof(Role);
     /// <summary>Explicit contact endpoint from a rule selector; Recipient holds the address.</summary>
     public const string Contact = nameof(Contact);
     /// <summary>Rule-level webhook delivery; Recipient holds the target URL.</summary>
     public const string Rule = nameof(Rule);
 
-    public static readonly IReadOnlyCollection<string> All = [User, Driver, Role, Contact, Rule];
+    public static readonly IReadOnlyCollection<string> All = [User, Staff, Role, Contact, Rule];
 
     public static bool IsValid(string? value) => value != null && All.Contains(value);
 }

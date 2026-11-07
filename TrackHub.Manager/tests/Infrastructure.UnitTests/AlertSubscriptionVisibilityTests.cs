@@ -24,7 +24,7 @@ using TrackHub.Manager.Infrastructure.ManagerDB.Services;
 namespace Infrastructure.UnitTests;
 
 // An e-mail subscription delivers a transporter event only to a subscriber who can see that
-// transporter: privileged role from the replica, group membership, or (drivers) their own vehicle.
+// transporter: privileged role from the replica, group membership, or (staff) their own vehicle.
 [TestFixture]
 public class AlertSubscriptionVisibilityTests
 {
@@ -100,16 +100,16 @@ public class AlertSubscriptionVisibilityTests
     }
 
     [Test]
-    public async Task DriverSubscriber_SeesOnlyTheirOwnVehicle()
+    public async Task StaffSubscriber_SeesOnlyTheirOwnVehicle()
     {
-        await using var context = NewContext(nameof(DriverSubscriber_SeesOnlyTheirOwnVehicle));
+        await using var context = NewContext(nameof(StaffSubscriber_SeesOnlyTheirOwnVehicle));
         var (accountId, transporter) = await SeedAccountAsync(context);
-        var owner = new Driver(accountId, "Owner", null, null, null, true, null, null, null, transporter.TransporterId);
-        var other = new Driver(accountId, "Other", null, null, null, true, null, null, null, null);
-        await context.Drivers.AddRangeAsync(owner, other);
+        var owner = new StaffMember(accountId, "Owner", null, null, null, true, null, null, null, transporter.TransporterId);
+        var other = new StaffMember(accountId, "Other", null, null, null, true, null, null, null, null);
+        await context.StaffMembers.AddRangeAsync(owner, other);
         await context.SaveChangesAsync(CancellationToken.None);
-        await SubscribeAsync(context, accountId, RecipientPrincipalTypes.Driver, owner.DriverId, "owner@example.com");
-        await SubscribeAsync(context, accountId, RecipientPrincipalTypes.Driver, other.DriverId, "other@example.com");
+        await SubscribeAsync(context, accountId, RecipientPrincipalTypes.Staff, owner.StaffId, "owner@example.com");
+        await SubscribeAsync(context, accountId, RecipientPrincipalTypes.Staff, other.StaffId, "other@example.com");
 
         await new AlertRuleEvaluator(context as IApplicationDbContext, NullLogger<AlertRuleEvaluator>.Instance)
             .EvaluateAsync(Event(accountId, transporter.TransporterId), CancellationToken.None);

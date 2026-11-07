@@ -53,12 +53,12 @@ internal sealed class CoreReportCatalogContribution : IReportCatalogContribution
         ("documents-share-activity", "Document share activity", "Documents", FeatureKeys.Documents, false, false, 30, []),
         ("documents-upload-volume", "Document upload volume", "Documents", FeatureKeys.Documents, false, false, 40, [From, To]),
 
-        // Workforce — Reporting-local codes. Driver personal data, so gated on the `workforce` key and
-        // ManagerOnly: the feeds require Drivers/Read, which only the Manager role holds. Widening the
-        // dispatcher (User) role to read driver records is the wrong trade for a report (SC-07).
-        ("workforce-driver-registry", "Driver registry export", "Workforce", FeatureKeys.Workforce, true, false, 10, []),
-        ("workforce-qualification-expirations", "Driver qualifications expiring within a window", "Workforce", FeatureKeys.Workforce, true, true, 20, [WithinDays]),
-        ("workforce-assignment-history", "Driver to transporter assignment history", "Workforce", FeatureKeys.Workforce, true, false, 30, [Transporter, From, To]),
+        // Workforce — Reporting-local codes. Staff personal data, so gated on the `workforce` key and
+        // ManagerOnly: the feeds require Staff/Read, which only the Manager role holds. Widening the
+        // dispatcher (User) role to read staff records is the wrong trade for a report (SC-07).
+        ("workforce-staff-registry", "Staff registry export", "Workforce", FeatureKeys.Workforce, true, false, 10, []),
+        ("workforce-qualification-expirations", "Staff qualifications expiring within a window", "Workforce", FeatureKeys.Workforce, true, true, 20, [WithinDays]),
+        ("workforce-assignment-history", "Staff to transporter assignment history", "Workforce", FeatureKeys.Workforce, true, false, 30, [Transporter, From, To]),
 
         // Trips — Reporting-local codes. Dispatch execution data, gated on the `trip-management` key.
         // Dispatcher-facing, so not ManagerOnly: the feeds require Trips/Export, which the User role holds.

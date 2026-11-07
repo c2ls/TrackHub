@@ -110,7 +110,7 @@ public static class TripStopProgress
                     eventType,
                     alertSeverity,
                     $"trip-{eventType.ToLowerInvariant()}:{tripStopId:N}",
-                    new TripAlertDto(accountId, tripId, tripStopId, trip.Code, trip.TransporterId, trip.DriverId, null, occurredAt, null, null, null, latitude, longitude),
+                    new TripAlertDto(accountId, tripId, tripStopId, trip.Code, trip.TransporterId, trip.StaffId, null, occurredAt, null, null, null, latitude, longitude),
                     cancellationToken);
             }
             catch (Exception ex)

@@ -11,9 +11,9 @@ public class GetDocumentsForOwnerQueryHandler(IDocumentReader reader) : IRequest
     public async Task<DocumentsPageVm> Handle(GetDocumentsForOwnerQuery request, CancellationToken cancellationToken) => await reader.GetDocumentsForOwnerAsync(request.AccountId, request.OwnerEntityType, request.OwnerEntityId, request.From, request.To, request.Skip, request.Take, cancellationToken);
 }
 
-// Drivers download their assigned documents via this query (assignment enforced in the reader).
-[Authorize(Resource = Resources.Documents, Action = Actions.Read, PrincipalTypes = "User,Driver,ServiceClient")]
-[AllowCrossAccount("TripManagement's DocumentClient fetches POD documents under the global trip_client identity with no account claim. User/driver callers are NOT unguarded by this: DocumentReader.GetDocumentAsync loads the row and RequireAccountAccess checks its owning account (drivers additionally by assignment).")]
+// Staff download their assigned documents via this query (assignment enforced in the reader).
+[Authorize(Resource = Resources.Documents, Action = Actions.Read, PrincipalTypes = "User,Staff,ServiceClient")]
+[AllowCrossAccount("TripManagement's DocumentClient fetches POD documents under the global trip_client identity with no account claim. User/staff callers are NOT unguarded by this: DocumentReader.GetDocumentAsync loads the row and RequireAccountAccess checks its owning account (staff additionally by assignment).")]
 public readonly record struct GetDocumentQuery(Guid DocumentId) : IRequest<DocumentVm>;
 public class GetDocumentQueryHandler(IDocumentReader reader) : IRequestHandler<GetDocumentQuery, DocumentVm>
 {

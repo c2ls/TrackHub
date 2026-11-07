@@ -142,8 +142,8 @@ public class TrialAndWorkforceJobTests
             .RunOnceAsync(now, CancellationToken.None);
 
         store.Verify(s => s.RecordJobRunAsync(AccountId, It.IsAny<string>(),
-            $"{qualification.DriverQualificationId:N}:20260921:7", now, It.IsAny<CancellationToken>()), Times.Once);
-        recorder.Verify(r => r.RecordAsync(It.Is<AlertEventDto>(a => a.DeduplicationKey == $"driver-qual:{qualification.DriverQualificationId:N}:20260921:7"), It.IsAny<CancellationToken>()), Times.Once);
+            $"{qualification.StaffQualificationId:N}:20260921:7", now, It.IsAny<CancellationToken>()), Times.Once);
+        recorder.Verify(r => r.RecordAsync(It.Is<AlertEventDto>(a => a.DeduplicationKey == $"staff-qual:{qualification.StaffQualificationId:N}:20260921:7"), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]

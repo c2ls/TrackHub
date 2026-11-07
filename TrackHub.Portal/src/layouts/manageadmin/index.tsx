@@ -25,8 +25,9 @@ import ManagePolicies from "layouts/manageadmin/components/policies";
 import ManageGroups from "layouts/manageadmin/components/groups";
 import ManagePois from "layouts/manageadmin/components/pois";
 import ManageAccountFeatures from "layouts/manageadmin/components/accountFeatures";
+import ManageAccountHolidays from "layouts/manageadmin/components/accountHolidays";
 import ManageBranding from "layouts/manageadmin/components/branding";
-import ManageDrivers from "layouts/manageadmin/components/drivers";
+import ManageStaff from "layouts/manageadmin/components/staff";
 import ManageAuditTrail from "layouts/manageadmin/components/auditTrail";
 import ManageNotificationRules from "layouts/manageadmin/components/notificationRules";
 import ManageAlertEvents from "layouts/manageadmin/components/alertEvents";
@@ -58,11 +59,11 @@ interface SectionEntry {
 // hide their sections instead of erroring server-side. Alert events stay
 // visible: their read path is deliberately ungated (other modules emit them).
 const SECTION_GROUPS: Record<SectionGroupKey, SectionEntry[]> = {
-  account: [{ Section: ManageAccount }, { Section: ManageBranding }, { Section: ManageAccountFeatures }],
+  account: [{ Section: ManageAccount }, { Section: ManageBranding }, { Section: ManageAccountFeatures }, { Section: ManageAccountHolidays }],
   fleet: [
     { Section: ManageDevices },
     { Section: ManageTransporters },
-    { Section: ManageDrivers },
+    { Section: ManageStaff },
     { Section: ManageGroups },
     { Section: ManagePois },
     { Section: ManageTollClasses, featureKey: 'trip-management' },
