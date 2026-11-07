@@ -39,8 +39,8 @@ describe('geofence list action button', () => {
 
     // 25.4px is ArgonButton's small iconOnly square (ArgonButtonRoot iconOnlyStyles).
     expect(screen.getByTitle('Delete')).toHaveStyle({
-      minWidth: '1.5875rem',
-      width: '1.5875rem',
+      minWidth: '25.4px',
+      width: '25.4px',
     });
   });
 
