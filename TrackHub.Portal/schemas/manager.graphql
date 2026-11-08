@@ -130,6 +130,8 @@ type Query {
     @cost(weight: "10")
   staffMembersByAccount(query: GetStaffMembersByAccountQueryInput!): StaffMembersPageVm!
     @cost(weight: "10")
+  staffMembersByGroup(query: GetStaffMembersByGroupQueryInput!): StaffMembersPageVm!
+    @cost(weight: "10")
   staffAssignments(query: GetStaffAssignmentsQueryInput!): [StaffAssignmentVm!]!
     @cost(weight: "10")
   validateStaffAssignment(query: ValidateStaffAssignmentQueryInput!): Boolean!
@@ -329,6 +331,9 @@ type Mutation {
     @cost(weight: "10")
   deactivateStaffMember(command: DeactivateStaffMemberCommandInput!): Boolean!
     @cost(weight: "10")
+  createStaffGroup(command: CreateStaffGroupCommandInput!): StaffGroupVm!
+    @cost(weight: "10")
+  deleteStaffGroup(staffId: UUID!, groupId: Long!): Boolean! @cost(weight: "10")
   createStaffQualification(command: CreateStaffQualificationCommandInput!): StaffQualificationVm!
     @cost(weight: "10")
   updateStaffQualification(command: UpdateStaffQualificationCommandInput!): Boolean!
@@ -1042,6 +1047,11 @@ type StaffAssignmentVm {
   assignmentType: String
 }
 
+type StaffGroupVm {
+  staffId: UUID!
+  groupId: Long!
+}
+
 type StaffLookupVm {
   staffId: UUID!
   name: String!
@@ -1406,6 +1416,10 @@ input CreatePointOfInterestCommandInput {
 
 input CreatePublicLinkGrantCommandInput {
   publicLinkGrant: PublicLinkGrantDtoInput!
+}
+
+input CreateStaffGroupCommandInput {
+  staffGroup: StaffGroupDtoInput!
 }
 
 input CreateStaffMemberCommandInput {
@@ -1883,6 +1897,13 @@ input GetStaffMembersByAccountQueryInput {
   take: Int! = 50
 }
 
+input GetStaffMembersByGroupQueryInput {
+  groupId: Long!
+  search: String
+  skip: Int! = 0
+  take: Int! = 50
+}
+
 input GetStaffOptionsQueryInput {
   search: String
   skip: Int
@@ -2167,6 +2188,11 @@ input SetSynchronizedDeviceIgnoredCommandInput {
 
 input SignDocumentCommandInput {
   signature: DocumentSignatureDtoInput!
+}
+
+input StaffGroupDtoInput {
+  staffId: UUID!
+  groupId: Long!
 }
 
 input StaffMemberDtoInput {

@@ -51,5 +51,12 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .HasMany(e => e.Transporters)
             .WithMany(e => e.Groups)
             .UsingEntity<TransporterGroup>();
+
+        builder
+            .HasMany(e => e.StaffMembers)
+            .WithMany(e => e.Groups)
+            .UsingEntity<StaffGroup>(
+                staff => staff.HasOne(x => x.StaffMember).WithMany().HasForeignKey(x => x.StaffId),
+                group => group.HasOne(x => x.Group).WithMany().HasForeignKey(x => x.GroupId));
     }
 }

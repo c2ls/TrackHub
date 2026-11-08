@@ -42,6 +42,41 @@ public sealed class StaffMemberReader(IApplicationDbContext context, ICurrentPri
         return new StaffMembersPageVm(items, totalCount);
     }
 
+    // Same rule as the group's units: a foreign or missing group is empty, and a non-privileged
+    // caller must belong to the group.
+    public async Task<StaffMembersPageVm> GetStaffMembersByGroupAsync(long groupId, string? search, int skip, int take, CancellationToken cancellationToken)
+    {
+        var groupAccountId = await Context.Groups
+            .Where(g => g.GroupId == groupId)
+            .Select(g => (Guid?)g.AccountId)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (!groupAccountId.HasValue || !HasAccountAccess(groupAccountId.Value, forWrite: false))
+        {
+            return new StaffMembersPageVm([], 0);
+        }
+
+        if (!IsPrivileged && !await Context.UsersGroup
+                .AnyAsync(ug => ug.GroupId == groupId && ug.UserId == Principal.UserId && ug.Group.Active, cancellationToken))
+        {
+            throw new NotFoundException(nameof(Entities.Group), groupId.ToString());
+        }
+
+        var query = Context.Groups.Where(g => g.GroupId == groupId).SelectMany(g => g.StaffMembers);
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var pattern = SearchPattern.Contains(search);
+            query = query.Where(x => EF.Functions.ILike(x.Name, pattern, SearchPattern.Escape));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .OrderBy(x => x.Name).ThenBy(x => x.StaffId)
+            .Skip(Offset(skip)).Take(PageSize(take))
+            .Select(x => new StaffMemberVm(x.StaffId, x.AccountId, x.Name, x.Phone, x.DocumentType, x.DocumentNumber, x.Active, x.EmployeeCode, x.LicenseNumber, x.LicenseExpiresAt, x.DefaultTransporterId, x.StaffType, x.LastModified, x.Version))
+            .ToListAsync(cancellationToken);
+        return new StaffMembersPageVm(items, totalCount);
+    }
+
     /// <summary>
     /// Real assignment rows first (spec 09 §7.2), then the synthesized default-transporter entry — but
     /// only when no active assignment already covers that transporter, so the caller never sees the

@@ -31,6 +31,7 @@ import type {
   UpdateGroupDtoInput,
   GetUsersByGroupQuery,
   GetGroupLookupQuery,
+  GetStaffByGroupQuery,
 } from './generated/graphql';
 import {
   GetGroupsDocument,
@@ -43,6 +44,9 @@ import {
   DeleteUserGroupDocument,
   CreateTransporterGroupDocument,
   DeleteTransporterGroupDocument,
+  GetStaffByGroupDocument,
+  CreateStaffGroupDocument,
+  DeleteStaffGroupDocument,
 } from './groupOperations';
 
 export type Group = GroupItemType;
@@ -50,6 +54,7 @@ export type GroupsPage = Page<Group>;
 export type GroupLookup = GetGroupLookupQuery['groupLookup'][number];
 export type GroupUser = GetUsersByGroupQuery['usersByGroup']['items'][number];
 export type GroupUsersPage = Page<GroupUser>;
+export type GroupStaff = GetStaffByGroupQuery['staffMembersByGroup']['items'][number];
 export type { GroupDtoInput, UpdateGroupDtoInput };
 
 export async function getGroups(params: ListParams = {}, options?: RequestOptions): Promise<GroupsPage> {
@@ -161,4 +166,19 @@ export async function deleteTransporterGroup(
     groupId,
   });
   return data.deleteTransporterGroup;
+}
+
+export async function getAllStaffByGroup(groupId: number, options?: RequestOptions): Promise<GroupStaff[]> {
+  return fetchAllPages(async (skip, take) =>
+    (await executeGraphQL('manager', GetStaffByGroupDocument, { groupId, skip, take, search: null }, options)).staffMembersByGroup.items);
+}
+
+export async function createStaffGroup(staffId: string, groupId: number): Promise<{ staffId: string; groupId: number }> {
+  const data = await executeGraphQL('manager', CreateStaffGroupDocument, { staffGroup: { staffId, groupId } });
+  return data.createStaffGroup;
+}
+
+export async function deleteStaffGroup(staffId: string, groupId: number): Promise<boolean> {
+  const data = await executeGraphQL('manager', DeleteStaffGroupDocument, { staffId, groupId });
+  return data.deleteStaffGroup;
 }

@@ -34,7 +34,6 @@ public static partial class StaffCapabilityFeatures
         var map = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             [StaffCapabilities.Vehicle] = FeatureKeys.StaffMobile,
-            [StaffCapabilities.Status] = FeatureKeys.StaffMobile,
             [StaffCapabilities.Capture] = FeatureKeys.Documents,
             [StaffCapabilities.Trips] = FeatureKeys.TripManagement,
         };

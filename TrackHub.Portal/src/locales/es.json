@@ -597,6 +597,7 @@
   },
   "staff": {
     "name": "Nombre",
+    "singleTitle": "Miembro del personal",
     "phone": "Teléfono",
     "document": "Documento",
     "title": "Personal",
@@ -824,7 +825,8 @@
     "deleteTitle": "Eliminar Grupo",
     "deleteMessage": "¿Está seguro de que desea eliminar este grupo?",
     "assignTransporter": "Asignar Unidad",
-    "assignUser": "Asignar Usuario"
+    "assignUser": "Asignar Usuario",
+    "assignStaff": "Asignar Personal"
   },
   "manageAdmin": {
     "groups": {

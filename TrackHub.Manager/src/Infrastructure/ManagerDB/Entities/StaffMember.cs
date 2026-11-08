@@ -30,4 +30,5 @@ public sealed class StaffMember(
     public DateOnly? LicenseExpiresAt { get; set; } = licenseExpiresAt;
     public Guid? DefaultTransporterId { get; set; } = defaultTransporterId;
     public string StaffType { get; set; } = staffType;
+    public ICollection<Group> Groups { get; } = [];
 }

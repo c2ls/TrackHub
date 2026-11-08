@@ -44,6 +44,7 @@ public interface IApplicationDbContext
     DbSet<PointOfInterest> PointsOfInterest { get; set; }
     DbSet<Transporter> Transporters { get; set; }
     DbSet<TransporterGroup> TransportersGroup { get; set; }
+    DbSet<StaffGroup> StaffGroups { get; set; }
     DbSet<Device> Devices { get; set; }
     DbSet<Group> Groups { get; set; }
     DbSet<NotificationDelivery> NotificationDeliveries { get; set; }

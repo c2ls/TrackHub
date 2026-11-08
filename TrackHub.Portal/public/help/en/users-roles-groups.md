@@ -1,7 +1,7 @@
 ---
 id: users-roles-groups
 title: Users, roles, and groups
-description: Add the people who sign in to your account, assign roles and policies, and organise units and users into groups.
+description: Add the people who sign in to your account, assign roles and policies, and organise units, staff and users into groups.
 category: administration
 screens: [manageAdmin]
 related: [roles-and-permissions, management-overview, admin-account-setup]
@@ -63,9 +63,9 @@ See [Roles and permissions](topic:roles-and-permissions) for how roles and polic
 
 ## Groups
 
-Groups let you organise units and users together — for example by branch or region.
+Groups let you organise units, staff and users together — for example by branch, region or department. Units and staff are assigned to groups, and groups are assigned to users.
 
-Columns: **Groups** (name), **Description**, **Action**, **Users**, and **Units**.
+Columns: **Groups** (name), **Description**, **Action**, **Users**, **Units**, and **Staff**.
 
 To add a group, expand the section and click the **+** (add) icon. The **Group Details** dialog asks for a **Name** (required), a **Description** (required), and an **Active** checkbox. Press **Save**.
 
@@ -74,3 +74,4 @@ Row actions:
 - **Edit** and **Delete** in the **Action** column change or remove the group (deletion asks you to confirm).
 - **Assign** in the **Users** column opens the **Assign User** dialog: add users to the group from the dropdown, or select listed users and remove them.
 - **Assign** in the **Units** column opens the **Assign Unit** dialog: add units to the group from the dropdown, or select listed units and remove them.
+- **Assign** in the **Staff** column opens the **Assign Staff** dialog: add staff members to the group from the dropdown, or select listed staff members and remove them. An inactive staff member cannot be added.

@@ -135,6 +135,7 @@
     user_group.userid
    FROM app.transporters
      JOIN app.transporter_group ON transporter_group.transporterid = transporters.id
+     JOIN app.groups ON groups.id = transporter_group.groupid AND groups.active
      JOIN app.user_group ON user_group.groupid = transporter_group.groupid;</value>
   </data>
   <data name="vw_users" xml:space="preserve">
