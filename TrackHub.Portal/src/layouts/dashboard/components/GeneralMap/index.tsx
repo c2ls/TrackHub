@@ -91,6 +91,7 @@ function GeneralMap({
                     country: item.country,
                     state: item.state,
                     transporterType: item.transporterType,
+                    status,
                 };
             });
             setMarkers(markers);

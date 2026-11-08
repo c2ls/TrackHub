@@ -157,7 +157,7 @@ Managers can see both of these values, read-only, under **GPS Integration → Po
 
 **Key:** `workforce`. **Setting:** **Block assignment when the staff member's license is expired**, default **off**.
 
-This feature does **not** control staff as such. The **Staff** registry and the **Staff Credentials & Devices** section are core platform: an authorised administrator can register staff, and issue, activate, lock, reset, and revoke their mobile credentials, on every account, whether or not this feature is on. What Workforce adds is everything built *around* the staff.
+This feature does **not** control staff as such. The **Staff** registry and its **Credentials and devices** are core platform: an authorised administrator can register staff, and issue, activate, lock, reset, and revoke their mobile credentials, on every account, whether or not this feature is on. What Workforce adds is everything built *around* the staff.
 
 When it is off:
 

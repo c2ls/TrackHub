@@ -14,32 +14,31 @@
  *  limitations under the License.
  */
 
-import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import { TestWrapper } from '../components/testHelpers';
 import { PermissionsContext } from 'context/permissions';
 import { FeaturesContext } from 'context/features';
 import { PermissionActions, PermissionResources } from 'constants/permissions';
-import Dashboard from 'layouts/dashboard';
+import ManageStaff from 'layouts/manageadmin/components/staff';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
-vi.mock('AuthContext', () => ({ useAuth: () => ({ isAuthenticated: false }) }));
-vi.mock('api/manager/settings', () => ({ getAccountSettings: vi.fn() }));
-vi.mock('queries/geofences', () => ({ useAllGeofences: () => ({ data: [], isFetching: false }) }));
-vi.mock('layouts/dashboard/components/Transporters', () => ({ default: () => null }));
-vi.mock('layouts/dashboard/components/Positions', () => ({ default: () => null }));
-vi.mock('layouts/manageadmin/components/staff/StaffAssignments', () => ({ default: () => null }));
-vi.mock('controls/Navbars/DashboardTabbar', () => ({
-  default: ({ tabs, children }: { tabs: string[]; children: ReactNode }) => (
-    <div>
-      {tabs.map((tab) => (
-        <span key={tab}>{tab}</span>
-      ))}
-      {children}
-    </div>
-  ),
+const idle = { data: undefined, isFetching: false };
+vi.mock('queries/accounts', () => ({ useAccountByUser: () => idle }));
+vi.mock('queries/staffIdentity', () => ({ useStaffCredentials: () => idle }));
+vi.mock('queries/staff', () => ({
+  useStaffMembersPage: () => idle,
+  useCreateStaffMember: () => ({}),
+  useUpdateStaffMember: () => ({}),
+  useDeactivateStaffMember: () => ({}),
+}));
+vi.mock('layouts/manageadmin/components/staff/StaffQualifications', () => ({ default: () => null }));
+vi.mock('layouts/manageadmin/components/staff/QualificationExpirations', () => ({ default: () => null }));
+vi.mock('layouts/manageadmin/components/staff/StaffDialog', () => ({ default: () => null }));
+vi.mock('layouts/manageadmin/components/staff/StaffDetailDialog', () => ({ default: () => null }));
+vi.mock('layouts/manageadmin/components/staff/StaffAssignments', () => ({
+  default: () => <span>staff-assignments</span>,
 }));
 
 const granting = (...grants: Array<[string, string]>) => ({
@@ -54,31 +53,31 @@ const features = (workforce: boolean) => ({
   reload: async () => {},
 });
 
-function renderDashboard(permissions: ReturnType<typeof granting>, workforce = true) {
+function renderStaff(permissions: ReturnType<typeof granting>, workforce = true) {
   return render(
     <TestWrapper>
       <FeaturesContext.Provider value={features(workforce)}>
         <PermissionsContext.Provider value={permissions}>
-          <Dashboard />
+          <ManageStaff />
         </PermissionsContext.Provider>
       </FeaturesContext.Provider>
     </TestWrapper>
   );
 }
 
-describe('dashboard staff tab', () => {
-  test('is offered to a dispatcher holding StaffOperations/Read', () => {
-    renderDashboard(granting([PermissionResources.StaffOperations, PermissionActions.Read]));
-    expect(screen.getByText('dashboard.staffTitle')).toBeInTheDocument();
+describe('staff assignments section', () => {
+  test('is offered to a caller holding StaffOperations/Read', () => {
+    renderStaff(granting([PermissionResources.StaffOperations, PermissionActions.Read]));
+    expect(screen.getByText('staff-assignments')).toBeInTheDocument();
   });
 
   test('is hidden from a caller who only reads the staff catalogue', () => {
-    renderDashboard(granting(['Staff', PermissionActions.Read]));
-    expect(screen.queryByText('dashboard.staffTitle')).not.toBeInTheDocument();
+    renderStaff(granting(['Staff', PermissionActions.Read]));
+    expect(screen.queryByText('staff-assignments')).not.toBeInTheDocument();
   });
 
   test('is hidden when the account has no workforce feature', () => {
-    renderDashboard(granting([PermissionResources.StaffOperations, PermissionActions.Read]), false);
-    expect(screen.queryByText('dashboard.staffTitle')).not.toBeInTheDocument();
+    renderStaff(granting([PermissionResources.StaffOperations, PermissionActions.Read]), false);
+    expect(screen.queryByText('staff-assignments')).not.toBeInTheDocument();
   });
 });

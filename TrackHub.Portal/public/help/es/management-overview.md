@@ -43,7 +43,7 @@ La pantalla está organizada en seis **grupos** con etiqueta, siempre en el mism
 ### Flota y Rastreo
 
 - **Dispositivos** y **Unidades** — sus dispositivos de rastreo y las unidades para las que reportan. Vea [Unidades y dispositivos](topic:units-devices).
-- **Personal**, **Credenciales y Dispositivos del Personal**, **Habilitaciones del Personal**, **Asignaciones del Personal** y **Vencimientos de Habilitaciones (30 días)** — las personas que operan sus unidades: el registro, su ingreso a la aplicación móvil y los dispositivos registrados, sus licencias y certificados con fechas de vencimiento, y el registro de quién condujo qué y cuándo. Las dos primeras siempre están disponibles; las tres últimas requieren la funcionalidad de personal. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
+- **Personal**, **Habilitaciones del Personal**, **Asignaciones del Personal** y **Vencimientos de Habilitaciones (30 días)** — las personas que trabajan para su cuenta: el registro (con la credencial de la aplicación móvil y los dispositivos registrados de cada miembro del personal), sus licencias y certificados con fechas de vencimiento, y el registro de qué miembro del personal usó qué unidad y cuándo. El registro siempre está disponible; habilitaciones, asignaciones y vencimientos requieren la funcionalidad de personal. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
 - **Grupos** — organice unidades y usuarios juntos, por ejemplo por sucursal o región. Vea [Usuarios, roles y grupos](topic:users-roles-groups).
 - **Puntos de Interés** — ubicaciones con nombre (sitios de clientes, bodegas, estaciones de combustible, talleres, etc.) que pueden mostrarse en el mapa.
 

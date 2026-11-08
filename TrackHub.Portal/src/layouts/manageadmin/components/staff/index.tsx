@@ -40,11 +40,14 @@ import type { StaffFormValues } from 'layouts/manageadmin/components/staff/Staff
 import StaffDetailDialog from 'layouts/manageadmin/components/staff/StaffDetailDialog';
 import ManageStaffQualifications from 'layouts/manageadmin/components/staff/StaffQualifications';
 import QualificationExpirations from 'layouts/manageadmin/components/staff/QualificationExpirations';
+import ManageStaffAssignments from 'layouts/manageadmin/components/staff/StaffAssignments';
 import { TextCell, statusColor } from 'layouts/manageadmin/components/staff/workforceShared';
 import type { BadgeColor } from 'layouts/manageadmin/components/staff/workforceShared';
 import { credentialState } from 'layouts/manageadmin/components/staff/credentialLifecycle';
 import { DEFAULT_STAFF_TYPE, STAFF_TYPES, staffTypeLabelKey } from 'layouts/manageadmin/components/staff/staffTypes';
 import { useFeatures } from 'context/features';
+import { usePermissions } from 'context/permissions';
+import { PermissionActions, PermissionResources } from 'constants/permissions';
 import { useAccountByUser } from 'queries/accounts';
 import { useStaffMembersPage, useCreateStaffMember, useUpdateStaffMember, useDeactivateStaffMember } from 'queries/staff';
 import { useStaffCredentials } from 'queries/staffIdentity';
@@ -60,6 +63,8 @@ function ManageStaff() {
   const { setLoading } = useContext(LoadingContext);
   const { isFeatureEnabled } = useFeatures();
   const workforceEnabled = isFeatureEnabled(WORKFORCE_FEATURE_KEY);
+  const { can } = usePermissions();
+  const canUseStaffOperations = can(PermissionResources.StaffOperations, PermissionActions.Read);
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<Staff | null>(null);
@@ -228,11 +233,11 @@ function ManageStaff() {
       </TableAccordion>
 
       {/* Billable workforce surfaces — hidden without the feature (cosmetic
-          only; the backend gate is authoritative). Assignments are day-to-day dispatch and live on
-          the dashboard's staff tab. */}
+          only; the backend gate is authoritative). */}
       {workforceEnabled && (
         <>
           <ManageStaffQualifications />
+          {canUseStaffOperations && <ManageStaffAssignments />}
           <QualificationExpirations />
         </>
       )}

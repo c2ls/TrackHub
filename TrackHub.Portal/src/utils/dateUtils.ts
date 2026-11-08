@@ -44,6 +44,11 @@ export function formatDateTime(value: string | number | Date | null | undefined)
     return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()} ${(date.getHours()).toString().padStart(2, '0')}:${(date.getMinutes()).toString().padStart(2, '0')}:${(date.getSeconds()).toString().padStart(2, '0')}`;
 }
 
+/** MM/DD HH:MM:SS, for dense live lists where the year adds nothing. */
+export function formatShortDateTime(value: string | number | Date | null | undefined): string {
+    return formatDateTime(value).replace(/\/\d{4} /, ' ');
+}
+
 /**
  * DateOnly (GraphQL `LocalDate`) handling.
  *

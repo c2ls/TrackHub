@@ -43,9 +43,8 @@ export function countRecentDevices(positions: Position[], interval: number): num
     return recentDevices.length;
   }
 
-  export function countDevicesInMovement(positions: Position[]): number {
-    const movingDevices = positions.filter(device => device.speed > 0);
-    return movingDevices.length;
+  export function countDevicesInMovement(positions: Position[], onlineIntervalMinutes: number): number {
+    return positions.filter(device => getUnitStatus(device, onlineIntervalMinutes) === 'moving').length;
   }
 
   export function getPercentage(count: number, total: number): string {

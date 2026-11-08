@@ -57,8 +57,21 @@ export const getRelativeTimeText = (
 /**
  * Generates HTML content for enhanced marker popup
  */
+const STATUS_BADGE = {
+    moving: { text: '#10b981', bg: '#d1fae5', fg: '#065f46' },
+    stopped: { text: '#ef4444', bg: '#fee2e2', fg: '#991b1b' },
+    offline: { text: '#6b7280', bg: '#e5e7eb', fg: '#374151' },
+} as const;
+
+/** The marker's status badge; markers without a computed status fall back to speed. */
+export const getPopupStatus = (marker: MapMarker, t: TFunction) => {
+    const status = marker.status ?? (marker.speed > 0 ? 'moving' : 'stopped');
+    return { ...STATUS_BADGE[status], label: t(`transporterMap.${status}`) };
+};
+
 export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): string => {
     const { id, name, dateTime, speed, attributes, address, altitude, city, country, state, transporterType, lat, lng } = marker;
+    const badge = getPopupStatus(marker, t);
 
     // Build the popup content with available data
     let content = `
@@ -77,9 +90,9 @@ export const createEnhancedPopupContent = (marker: MapMarker, t: TFunction): str
 
                 <div style="margin-bottom: 4px;">
                     <strong style="color: #667eea; font-size: 12px;">🚗 ${t('transporterMap.speed')}:</strong>
-                    <span style="font-size: 13px; font-weight: bold; color: ${speed > 0 ? '#10b981' : '#ef4444'};">${escapeHtml(speed)} km/h</span>
-                    <span style="margin-left: 4px; padding: 2px 5px; background: ${speed > 0 ? '#d1fae5' : '#fee2e2'}; color: ${speed > 0 ? '#065f46' : '#991b1b'}; border-radius: 2px; font-size: 10px;">
-                        ${speed > 0 ? t('transporterMap.moving') || 'Moving' : t('transporterMap.stopped') || 'Stopped'}
+                    <span style="font-size: 13px; font-weight: bold; color: ${badge.text};">${escapeHtml(speed)} km/h</span>
+                    <span style="margin-left: 4px; padding: 2px 5px; background: ${badge.bg}; color: ${badge.fg}; border-radius: 2px; font-size: 10px;">
+                        ${escapeHtml(badge.label)}
                     </span>
                 </div>`;
 

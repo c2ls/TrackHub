@@ -21,7 +21,7 @@ import { GoogleMap, LoadScript, Marker as GoogleMarker, MarkerClusterer, InfoWin
 import type { TFunction } from 'i18next';
 import { createSvgIcon } from 'controls/Maps/utils/imageUtils';
 import { formatDateTime } from "utils/dateUtils";
-import { getWhatsAppShareUrl, getStreetViewUrl, getRelativeTimeText } from 'controls/Maps/utils/popupUtils';
+import { getWhatsAppShareUrl, getStreetViewUrl, getRelativeTimeText, getPopupStatus } from 'controls/Maps/utils/popupUtils';
 import { useTranslation } from 'react-i18next';
 import UserLocation from "controls/Maps/UserLocation";
 import GeofencePolygon from 'controls/Maps/Google/GeofencePolygon';
@@ -126,6 +126,7 @@ interface MarkerInfoContentProps {
 
 const MarkerInfoContent = ({ marker, t, onResolveAddress, resolveState }: MarkerInfoContentProps) => {
     const relative = getRelativeTimeText(marker.dateTime, t);
+    const badge = getPopupStatus(marker, t);
     return (
         <div style={{ minWidth: '240px', fontFamily: 'Arial, sans-serif', fontSize: '13px' }}>
             <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '8px', margin: '-8px -8px 6px -8px', borderRadius: '3px 3px 0 0' }}>
@@ -142,9 +143,9 @@ const MarkerInfoContent = ({ marker, t, onResolveAddress, resolveState }: Marker
 
                 <div style={{ marginBottom: '4px' }}>
                     <strong style={{ color: '#667eea', fontSize: '12px' }}>🚗 {t('transporterMap.speed')}:</strong>{' '}
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: marker.speed > 0 ? '#10b981' : '#ef4444' }}>{marker.speed} km/h</span>
-                    <span style={{ marginLeft: '4px', padding: '2px 5px', background: marker.speed > 0 ? '#d1fae5' : '#fee2e2', color: marker.speed > 0 ? '#065f46' : '#991b1b', borderRadius: '2px', fontSize: '10px' }}>
-                        {marker.speed > 0 ? (t('transporterMap.moving') || 'Moving') : (t('transporterMap.stopped') || 'Stopped')}
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: badge.text }}>{marker.speed} km/h</span>
+                    <span style={{ marginLeft: '4px', padding: '2px 5px', background: badge.bg, color: badge.fg, borderRadius: '2px', fontSize: '10px' }}>
+                        {badge.label}
                     </span>
                 </div>
 
