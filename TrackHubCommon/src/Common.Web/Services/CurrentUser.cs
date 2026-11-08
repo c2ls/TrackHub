@@ -27,7 +27,7 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : IUser
     public string? SubjectId => Principal?.FindFirstValue(ClaimTypes.NameIdentifier) ?? Principal?.FindFirstValue("sub");
     public PrincipalType PrincipalType => ResolvePrincipalType();
     public Guid? UserId => TryGetGuidClaim("user_id") ?? (ResolvePrincipalType() == PrincipalType.User ? TryParseGuid(SubjectId) : null);
-    public Guid? DriverId => TryGetGuidClaim("driver_id") ?? (ResolvePrincipalType() == PrincipalType.Driver ? TryParseGuid(SubjectId) : null);
+    public Guid? StaffId => TryGetGuidClaim("staff_id") ?? (ResolvePrincipalType() == PrincipalType.Staff ? TryParseGuid(SubjectId) : null);
     public string? Client => ClientId;
     public string? ClientId => Principal?.FindFirstValue("client_id");
     public Guid? PublicLinkGrantId => TryGetGuidClaim("public_link_grant_id");
@@ -60,9 +60,9 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : IUser
             return PrincipalType.ServiceClient;
         }
 
-        if (Principal?.HasClaim(c => c.Type == "driver_id") == true)
+        if (Principal?.HasClaim(c => c.Type == "staff_id") == true)
         {
-            return PrincipalType.Driver;
+            return PrincipalType.Staff;
         }
 
         if (Principal?.HasClaim(c => c.Type == "public_link_grant_id") == true)

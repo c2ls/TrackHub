@@ -38,7 +38,7 @@ public sealed class TripStopDwellReport(ITripReportReader reader) : IReport
         var window = ReportCalendar.Window(filters);
 
         var stops = await reader.GetTripStopsAsync(
-            window.From, window.To, transporterId, driverId: null, cancellationToken);
+            window.From, window.To, transporterId, staffId: null, cancellationToken);
 
         var visits = stops
             .Select(s => new

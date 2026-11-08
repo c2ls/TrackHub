@@ -1,5 +1,5 @@
 /**
- * Account Management → Fleet & Tracking: devices, units, drivers, groups and
+ * Account Management → Fleet & Tracking: devices, units, staff, groups and
  * points of interest.
  */
 
@@ -13,16 +13,16 @@ import type { Translator } from '../fixtures/i18n';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Registers a driver and arranges for it to be deactivated afterwards.
+ * Registers a staff and arranges for it to be deactivated afterwards.
  *
- * Seeded rather than clicked: the driver record is the PRECONDITION for the
+ * Seeded rather than clicked: the staff record is the PRECONDITION for the
  * credential, qualification and assignment work being measured, and creating
  * one through the UI has its own test.
  */
-async function seedDriver(api: ApiClient, cleanup: CleanupRegistry): Promise<string> {
-  const name = uniqueName('driver');
-  const driverId = await api.createDriver(name);
-  cleanup.add(`driver ${name}`, () => api.deactivateDriver(driverId));
+async function seedStaff(api: ApiClient, cleanup: CleanupRegistry): Promise<string> {
+  const name = uniqueName('staff');
+  const staffId = await api.createStaffMember(name);
+  cleanup.add(`staff ${name}`, () => api.deactivateStaffMember(staffId));
   return name;
 }
 
@@ -37,13 +37,13 @@ async function selectFirstMatching(
   await page.getByRole('option', { name: optionLabel, exact: true }).click();
 }
 
-/** Opens the driver's detail dialog, which lands on the credentials (app access) panel. */
-async function openDriverAccess(page: Page, t: Translator, driverName: string): Promise<Locator> {
-  const drivers = new CrudFlow(page, 'drivers', t).section;
-  await drivers.expand();
-  const row = await drivers.findRow(driverName);
-  await row.getByRole('button', { name: t('driver.manage') }).click();
-  const dialog = page.getByRole('dialog').filter({ hasText: driverName });
+/** Opens the staff's detail dialog, which lands on the credentials (app access) panel. */
+async function openStaffAccess(page: Page, t: Translator, staffName: string): Promise<Locator> {
+  const staff = new CrudFlow(page, 'staff_members', t).section;
+  await staff.expand();
+  const row = await staff.findRow(staffName);
+  await row.getByRole('button', { name: t('staff.manage') }).click();
+  const dialog = page.getByRole('dialog').filter({ hasText: staffName });
   await expect(dialog).toBeVisible();
   return dialog;
 }
@@ -226,94 +226,94 @@ test.describe('account management — fleet & tracking', () => {
     await pois.remove(name);
   });
 
-  test('a manager registers a driver and the record survives a reload', async ({
+  test('a manager registers a staff and the record survives a reload', async ({
     page,
     shell,
     t,
     api,
     cleanup,
   }) => {
-    const name = uniqueName('driver');
-    const drivers = new CrudFlow(page, 'drivers', t);
+    const name = uniqueName('staff');
+    const staff = new CrudFlow(page, 'staff_members', t);
 
     await shell.open('manageAdmin');
-    await drivers.open();
-    // A driver is deactivated, never deleted, so cleanup goes through the API.
-    cleanup.add(`driver ${name}`, async () => {
+    await staff.open();
+    // A staff is deactivated, never deleted, so cleanup goes through the API.
+    cleanup.add(`staff ${name}`, async () => {
       const found = await api.tryGql<{
-        driversByAccount: { items: { driverId: string; name: string; active: boolean }[] };
+        staffMembersByAccount: { items: { staffId: string; name: string; active: boolean }[] };
       }>(
         'manager',
-        'query($accountId: UUID!, $skip: Int!, $take: Int!) { driversByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) { items { driverId name active } } }',
+        'query($accountId: UUID!, $skip: Int!, $take: Int!) { staffMembersByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) { items { staffId name active } } }',
         { accountId: await api.accountId(), skip: 0, take: 500 }
       );
-      const driver = found?.driversByAccount.items.find((row) => row.name === name && row.active);
-      if (driver) {
+      const staff = found?.staffMembersByAccount.items.find((row) => row.name === name && row.active);
+      if (staff) {
         await api.tryGql(
           'manager',
-          'mutation($driverId: UUID!) { deactivateDriver(command: { driverId: $driverId }) }',
-          { driverId: driver.driverId }
+          'mutation($staffId: UUID!) { deactivateStaffMember(command: { staffId: $staffId }) }',
+          { staffId: staff.staffId }
         );
       }
     });
 
-    await drivers.create(
+    await staff.create(
       { fields: { name, phone: '3001234567', documentNumber: String(Date.now()) } },
       name,
       'name'
     );
 
-    await drivers.reload(shell, 'manageAdmin');
-    const row = await drivers.section.findRow(name);
+    await staff.reload(shell, 'manageAdmin');
+    const row = await staff.section.findRow(name);
     await expect(row).toContainText('3001234567');
 
     // Deactivation is confirmed through the browser's own confirm dialog.
     page.once('dialog', (dialog) => void dialog.accept());
-    await row.getByRole('button', { name: t('driver.deactivate') }).click();
+    await row.getByRole('button', { name: t('staff.deactivate') }).click();
     await expect
-      .poll(async () => (await drivers.section.findRow(name)).innerText(), { timeout: 45_000 })
+      .poll(async () => (await staff.section.findRow(name)).innerText(), { timeout: 45_000 })
       .toContain(t('generic.no'));
   });
 
-  test('the driver access dialog, qualifications and assignment sections render', async ({
+  test('the staff access dialog, qualifications and assignment sections render', async ({
     page,
     shell,
     t,
     api,
     cleanup,
   }) => {
-    const driver = await seedDriver(api, cleanup);
+    const staff = await seedStaff(api, cleanup);
     await shell.open('manageAdmin');
 
-    for (const key of ['driver-qualifications', 'qualification-expirations']) {
+    for (const key of ['staff-qualifications', 'qualification-expirations']) {
       const section = new CrudFlow(page, key, t).section;
       await section.expand();
       await expect(section.root).toBeVisible();
-      // The driver-scoped section asks for a driver first, and says so
+      // The staff-scoped section asks for a staff first, and says so
       // rather than rendering an empty table that means nothing.
       if (key !== 'qualification-expirations') {
-        await expect(section.root.getByText(t('workforce.selectDriverHint'))).toBeVisible();
+        await expect(section.root.getByText(t('workforce.selectStaffHint'))).toBeVisible();
       }
     }
 
-    // Credentials live in the per-driver detail dialog: the table keeps one action per driver.
-    const dialog = await openDriverAccess(page, t, driver);
+    // Credentials live in the per-staff detail dialog: the table keeps one action per staff.
+    const dialog = await openStaffAccess(page, t, staff);
     await expect(dialog.getByText(t('workforce.credentials.title'))).toBeVisible();
     await expect(dialog.getByText(t('workforce.credentials.empty'))).toBeVisible({ timeout: 45_000 });
   });
 
-  test('a manager issues a driver credential and walks its lifecycle', async ({
+  test('a manager issues a staff credential and walks its lifecycle', async ({
     page,
     shell,
     t,
     api,
     cleanup,
   }) => {
-    const driver = await seedDriver(api, cleanup);
+    const staff = await seedStaff(api, cleanup);
     const login = `e2e${unique().replace(/-/g, '')}`;
 
     await shell.open('manageAdmin');
-    const dialog = await openDriverAccess(page, t, driver);
+    const dialog = await openStaffAccess(page, t, staff);
     await expect(dialog.getByText(t('workforce.credentials.empty'))).toBeVisible({ timeout: 45_000 });
 
     await dialog.getByRole('button', { name: t('workforce.credentials.create') }).click();
@@ -323,7 +323,7 @@ test.describe('account management — fleet & tracking', () => {
     await expect(form.anyError.first()).toBeVisible();
 
     await form.field('credentialLogin').fill(login);
-    await form.field('credentialPassword').fill('E2eDriver9!');
+    await form.field('credentialPassword').fill('E2eStaff9!');
     await form.saveAndClose();
 
     // A credential that has never been used reads "Pending Activation" — saying
@@ -333,7 +333,7 @@ test.describe('account management — fleet & tracking', () => {
 
     await row().getByRole('button', { name: t('workforce.credentials.activate') }).click();
     await form.waitOpen();
-    await form.field('credentialPassword').fill('E2eDriver9!');
+    await form.field('credentialPassword').fill('E2eStaff9!');
     await form.saveAndClose();
     await expect(row()).toContainText(t('workforce.credentials.statusActive'), { timeout: 45_000 });
 
@@ -349,7 +349,7 @@ test.describe('account management — fleet & tracking', () => {
     // Activate is offered from every state, so no state is a dead end.
     await row().getByRole('button', { name: t('workforce.credentials.activate') }).click();
     await form.waitOpen();
-    await form.field('credentialPassword').fill('E2eDriver9!');
+    await form.field('credentialPassword').fill('E2eStaff9!');
     await form.saveAndClose();
     await expect(row()).toContainText(t('workforce.credentials.statusActive'), { timeout: 45_000 });
 
@@ -368,15 +368,15 @@ test.describe('account management — fleet & tracking', () => {
     api,
     cleanup,
   }) => {
-    const driver = await seedDriver(api, cleanup);
+    const staff = await seedStaff(api, cleanup);
     const number = `e2e-lic-${unique()}`;
     // Inside the 30-day window the expirations table reports on.
     const expires = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     await shell.open('manageAdmin');
-    const section = new CrudFlow(page, 'driver-qualifications', t).section;
+    const section = new CrudFlow(page, 'staff-qualifications', t).section;
     await section.expand();
-    await selectFirstMatching(page, section.root, 'qualificationDriverId', driver);
+    await selectFirstMatching(page, section.root, 'qualificationStaffId', staff);
     await expect(section.root.getByText(t('workforce.qualifications.empty'))).toBeVisible({
       timeout: 45_000,
     });
@@ -404,7 +404,7 @@ test.describe('account management — fleet & tracking', () => {
     // The change is on the record, not just on the screen.
     await shell.reloadTo('manageAdmin');
     await section.expand();
-    await selectFirstMatching(page, section.root, 'qualificationDriverId', driver);
+    await selectFirstMatching(page, section.root, 'qualificationStaffId', staff);
     await expect(await section.findRow(number)).toContainText('E2E authority, renamed', {
       timeout: 45_000,
     });
@@ -414,33 +414,33 @@ test.describe('account management — fleet & tracking', () => {
     const expirations = new CrudFlow(page, 'qualification-expirations', t).section;
     await expirations.expand();
     // It expires inside the window, so it MUST be listed. The table is account-wide, so in
-    // an account with other expiring drivers the row is not on the first page.
-    await expect(await expirations.findRowAnyPage(driver)).toBeVisible({ timeout: 45_000 });
+    // an account with other expiring staff the row is not on the first page.
+    await expect(await expirations.findRowAnyPage(staff)).toBeVisible({ timeout: 45_000 });
 
     await (await section.findRow(number)).getByRole('button', { name: t('generic.delete') }).click();
     await new ConfirmDialog(page, t).confirm();
     await expect(section.root.getByText(number)).toHaveCount(0, { timeout: 45_000 });
   });
 
-  test('a manager assigns a driver to a unit and ends the assignment', async ({
+  test('a manager assigns a staff to a unit and ends the assignment', async ({
     page,
     shell,
     t,
     api,
     cleanup,
   }) => {
-    const driver = await seedDriver(api, cleanup);
+    const staff = await seedStaff(api, cleanup);
     const unitName = uniqueName('assign-unit');
     const transporterId = await api.createTransporter(unitName);
     cleanup.add(`unit ${unitName}`, () => api.deleteTransporter(transporterId));
 
-    // Assignments are day-to-day dispatch: they live on the dashboard's driver operations tab.
+    // Assignments are day-to-day dispatch: they live on the dashboard's staff operations tab.
     await shell.open('dashboard');
-    await openTab(page, t, 'drivers');
-    const section = new CrudFlow(page, 'driver-assignments', t).section;
+    await openTab(page, t, 'staff');
+    const section = new CrudFlow(page, 'staff-assignments', t).section;
     await section.expand();
-    await expect(section.root.getByText(t('workforce.selectDriverHint'))).toBeVisible();
-    await selectFirstMatching(page, section.root, 'assignDriverId', driver);
+    await expect(section.root.getByText(t('workforce.selectStaffHint'))).toBeVisible();
+    await selectFirstMatching(page, section.root, 'assignStaffId', staff);
     await expect(section.root.getByText(t('workforce.assignments.emptyActive'))).toBeVisible({
       timeout: 45_000,
     });

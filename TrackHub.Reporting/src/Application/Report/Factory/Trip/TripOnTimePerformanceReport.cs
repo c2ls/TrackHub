@@ -21,7 +21,7 @@ using TrackHub.Reporting.Domain.Records;
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
 // On-time performance (spec 11 §13): punctuality percentage, average and worst delay, and delayed
-// stop counts grouped by transporter/driver/customer. Filters: from/to = window, transporterId =
+// stop counts grouped by transporter/staff/customer. Filters: from/to = window, transporterId =
 // optional unit. Aggregated, so it stays inside the 500-row PDF limit — SupportsPdf.
 //
 // Only stops carrying BOTH a planned window end and an actual arrival are evaluated: a stop with no
@@ -40,13 +40,13 @@ public sealed class TripOnTimePerformanceReport(ITripReportReader reader) : IRep
         var window = ReportCalendar.Window(filters);
 
         var stops = await reader.GetTripStopsAsync(
-            window.From, window.To, transporterId, driverId: null, cancellationToken);
+            window.From, window.To, transporterId, staffId: null, cancellationToken);
 
         var evaluated = stops
             .Select(s => new
             {
                 s.TransporterName,
-                DriverName = s.DriverName.OrUnspecified(),
+                StaffName = s.StaffName.OrUnspecified(),
                 CustomerName = s.CustomerName.OrUnspecified(),
                 Delay = TripReportSupport.DelayMinutes(s.PlannedArrivalTo, s.ActualArrivalAt)
             })
@@ -54,9 +54,9 @@ public sealed class TripOnTimePerformanceReport(ITripReportReader reader) : IRep
             .ToList();
 
         var rows = evaluated
-            .GroupBy(s => (s.TransporterName, s.DriverName, s.CustomerName))
+            .GroupBy(s => (s.TransporterName, s.StaffName, s.CustomerName))
             .OrderBy(g => g.Key.TransporterName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(g => g.Key.DriverName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(g => g.Key.StaffName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(g => g.Key.CustomerName, StringComparer.OrdinalIgnoreCase)
             .Select(g =>
             {
@@ -64,7 +64,7 @@ public sealed class TripOnTimePerformanceReport(ITripReportReader reader) : IRep
                 var onTime = delays.Count(d => d <= 0d);
                 return new TripOnTimePerformanceRowVm(
                     g.Key.TransporterName,
-                    g.Key.DriverName,
+                    g.Key.StaffName,
                     g.Key.CustomerName,
                     delays.Count,
                     onTime,

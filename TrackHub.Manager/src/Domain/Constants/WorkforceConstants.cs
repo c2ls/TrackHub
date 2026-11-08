@@ -15,8 +15,8 @@
 
 namespace TrackHub.Manager.Domain.Constants;
 
-/// <summary>Driver qualification kinds. Stored as strings (spec 09 §6).</summary>
-public static class DriverQualificationTypes
+/// <summary>Staff qualification kinds. Stored as strings (spec 09 §6).</summary>
+public static class StaffQualificationTypes
 {
     public const string License = nameof(License);
     public const string MedicalExam = nameof(MedicalExam);
@@ -35,7 +35,7 @@ public static class DriverQualificationTypes
 /// Qualification lifecycle status. Expiry is DERIVED from <c>ExpiresAt</c> at read time; this column
 /// only records the states a date cannot express (explicit revocation).
 /// </summary>
-public static class DriverQualificationStatuses
+public static class StaffQualificationStatuses
 {
     public const string Valid = nameof(Valid);
     public const string Expired = nameof(Expired);
@@ -46,8 +46,8 @@ public static class DriverQualificationStatuses
     public static bool IsValid(string? value) => value != null && All.Contains(value);
 }
 
-/// <summary>Driver↔transporter assignment kinds. Stored as strings.</summary>
-public static class DriverAssignmentTypes
+/// <summary>Staff↔transporter assignment kinds. Stored as strings.</summary>
+public static class StaffAssignmentTypes
 {
     public const string Regular = nameof(Regular);
     public const string Temporary = nameof(Temporary);
@@ -57,8 +57,8 @@ public static class DriverAssignmentTypes
     public static bool IsValid(string? value) => value != null && All.Contains(value);
 }
 
-/// <summary>Driver↔transporter assignment lifecycle status. Stored as strings.</summary>
-public static class DriverAssignmentStatuses
+/// <summary>Staff↔transporter assignment lifecycle status. Stored as strings.</summary>
+public static class StaffAssignmentStatuses
 {
     public const string Active = nameof(Active);
     public const string Ended = nameof(Ended);
@@ -83,15 +83,15 @@ public static class WorkforceLimits
 
     /// <summary>
     /// Per-account opt-in flag inside the <c>workforce</c> feature row's <c>ConfigurationJson</c>.
-    /// When true, assigning a driver whose <c>License</c> qualification is expired is rejected.
+    /// When true, assigning a staff whose <c>License</c> qualification is expired is rejected.
     /// Absent/false (the default) leaves assignment unaffected — accounts differ on strictness
     /// (spec 09 §18.6).
     /// </summary>
     public const string BlockAssignmentOnExpiredLicenseKey = "blockAssignmentOnExpiredLicense";
 }
 
-/// <summary>Resource-type literals accepted by <c>ValidateDriverAssignment</c>.</summary>
-public static class DriverAssignmentResourceTypes
+/// <summary>Resource-type literals accepted by <c>ValidateStaffAssignment</c>.</summary>
+public static class StaffAssignmentResourceTypes
 {
     public const string Transporter = nameof(Transporter);
 }

@@ -4,7 +4,7 @@ title: Catálogo de funcionalidades
 description: Las once funcionalidades de cuenta — qué activa o desactiva cada una, sus ajustes, quién puede cambiarlas y qué ocurre cuando se desactiva una.
 category: reference
 screens: []
-related: [roles-and-permissions, admin-platform-setup, admin-account-setup, system-administration, drivers-workforce]
+related: [roles-and-permissions, admin-platform-setup, admin-account-setup, system-administration, staff-workforce]
 tags: [funcionalidades, suscripción, facturación, referencia, catálogo]
 order: 15
 ---
@@ -24,7 +24,7 @@ Dos reglas se aplican a todas:
 |---|---|---|---|
 | Geocercado | `geofencing` | — | Todo el elemento de menú **Geocercas**, las alertas de geocerca y dos reportes |
 | Gestión de Viajes | `trip-management` | — | Todo el elemento de menú **Viajes**, los enlaces de seguimiento para clientes, seis reportes y dos trabajos en segundo plano |
-| Móvil del Conductor | `driver-mobile` | — | Nada en el portal — derecho reservado |
+| Móvil del Personal | `staff-mobile` | — | Nada en el portal — derecho reservado |
 | Enlaces Públicos | `public-links` | — | La sección **Enlaces Públicos** y la creación de nuevos enlaces |
 | Documentos | `documents` | — | La sección **Documentos** y cuatro reportes de documentos |
 | Notificaciones | `notifications` | — | Reglas, suscripciones, plantillas, entregas y toda la entrega de alertas |
@@ -32,13 +32,13 @@ Dos reglas se aplican a todas:
 | Notificaciones por WhatsApp | `notifications.whatsapp` | — | WhatsApp como canal de entrega |
 | Integración GPS | `gps.integration` | Intervalo de Almacenamiento (Segundos) | Cómo se recopilan las posiciones, y nueve reportes GPS |
 | Historial de Posiciones GPS | `gps.positionHistory` | Días de Retención | El historial almacenado, la reproducción y un reporte |
-| Personal | `workforce` | Bloquear la asignación cuando la licencia del conductor esté vencida | Las habilitaciones de conductores, el historial de asignaciones, las alertas de vencimiento y tres reportes |
+| Personal | `workforce` | Bloquear la asignación cuando la licencia del personal esté vencida | Las habilitaciones de personal, el historial de asignaciones, las alertas de vencimiento y tres reportes |
 
 Dependencias que conviene tener presentes:
 
 - **Notificaciones por Correo** y **Notificaciones por WhatsApp** solo importan mientras la funcionalidad base **Notificaciones** esté activa. Con Notificaciones desactivada, las pantallas donde elegiría un canal no existen.
 - **Historial de Posiciones GPS** normalmente acompaña a **Integración GPS**: el historial se construye con las posiciones que recopila la integración.
-- **Personal** amplía un área de conductores que por lo demás es base: el registro de conductores y sus credenciales funcionan sin ella.
+- **Personal** amplía un área de personal que por lo demás es base: el registro de personal y sus credenciales funcionan sin ella.
 
 ## Geocercado
 
@@ -73,11 +73,11 @@ El **catálogo de peajes** de la plataforma — las estaciones, las tarifas y la
 
 La gestión de viajes también depende de **OpenRouteService**, un servicio de rutas externo que aporta la ruta de conducción, el corredor de desvío y las ETA en vivo. Se configura una sola vez para la instalación, no por cuenta. Cuando no está accesible, la planificación de ruta vuelve como fallida y las ETA recurren al horario planificado — los viajes siguen siendo plenamente utilizables, solo que sin rutas en vivo. El detalle completo está en [Viajes y planificación de rutas](topic:trip-management).
 
-## Móvil del Conductor
+## Móvil del Personal
 
-**Clave:** `driver-mobile`. **Ajustes:** ninguno.
+**Clave:** `staff-mobile`. **Ajustes:** ninguno.
 
-Un derecho reservado para la aplicación móvil de conductores de campo. Aparece en ambas listas, pero **nada cambia en el portal web** al conmutarla.
+Un derecho reservado para la aplicación móvil de personal de campo. Aparece en ambas listas, pero **nada cambia en el portal web** al conmutarla.
 
 ## Enlaces Públicos
 
@@ -155,21 +155,21 @@ Los Gestores pueden ver ambos valores, en solo lectura, en **Integración GPS �
 
 ## Personal
 
-**Clave:** `workforce`. **Ajuste:** **Bloquear la asignación cuando la licencia del conductor esté vencida**, predeterminado **desactivado**.
+**Clave:** `workforce`. **Ajuste:** **Bloquear la asignación cuando la licencia del personal esté vencida**, predeterminado **desactivado**.
 
-Esta funcionalidad **no** controla a los conductores como tales. El registro de **Conductores** y la sección **Credenciales y Dispositivos del Conductor** son plataforma base: un administrador autorizado puede registrar conductores y emitir, activar, bloquear, restablecer y revocar sus credenciales móviles en cualquier cuenta, esté o no activada esta funcionalidad. Lo que Personal agrega es todo lo que se construye *alrededor* del conductor.
+Esta funcionalidad **no** controla al personal como tal. El registro de **Personal** y la sección **Credenciales y Dispositivos del Personal** son plataforma base: un administrador autorizado puede registrar personal y emitir, activar, bloquear, restablecer y revocar sus credenciales móviles en cualquier cuenta, esté o no activada esta funcionalidad. Lo que Personal agrega es todo lo que se construye *alrededor* del personal.
 
 Cuando está desactivada:
 
-- Tres secciones desaparecen del grupo **Flota y Rastreo**: **Habilitaciones del Conductor**, **Asignaciones del Conductor** y **Vencimientos de Habilitaciones (30 días)**.
+- Tres secciones desaparecen del grupo **Flota y Rastreo**: **Habilitaciones del Personal**, **Asignaciones del Personal** y **Vencimientos de Habilitaciones (30 días)**.
 - No se pueden crear, editar ni consultar habilitaciones, y no se puede registrar ni consultar el historial de asignaciones.
-- La revisión diaria se detiene, por lo que no se generan alertas de **Habilitación del Conductor por Vencer** ni de **Habilitación del Conductor Vencida** para la cuenta.
-- Tres reportes desaparecen de la lista: registro de conductores, vencimientos de habilitaciones e historial de asignaciones de conductores — junto con toda la categoría de reportes **Personal**, que no contiene nada más.
-- El **Transportador Predeterminado** del conductor sigue funcionando. Es un campo del registro del conductor, no una asignación.
+- La revisión diaria se detiene, por lo que no se generan alertas de **Habilitación del Personal por Vencer** ni de **Habilitación del Personal Vencida** para la cuenta.
+- Tres reportes desaparecen de la lista: registro de personal, vencimientos de habilitaciones e historial de asignaciones de personal — junto con toda la categoría de reportes **Personal**, que no contiene nada más.
+- El **Transportador Predeterminado** del personal sigue funcionando. Es un campo del registro del personal, no una asignación.
 
 Las habilitaciones y asignaciones existentes no se eliminan; simplemente no pueden alcanzarse hasta que la funcionalidad se vuelva a activar.
 
-El ajuste **Bloquear la asignación cuando la licencia del conductor esté vencida** es la única elección por cuenta que trae esta funcionalidad, y está desactivado salvo que usted lo active. Con él activado, asignar a un conductor cuya habilitación de tipo **Licencia** esté vencida o revocada se rechaza con un error de validación. Las cuentas difieren en cuán estrictas necesitan ser, y por eso esto es un ajuste y no una regla. El detalle completo está en [Conductores y personal](topic:drivers-workforce).
+El ajuste **Bloquear la asignación cuando la licencia del personal esté vencida** es la única elección por cuenta que trae esta funcionalidad, y está desactivado salvo que usted lo active. Con él activado, asignar a un miembro del personal cuya habilitación de tipo **Licencia** esté vencida o revocada se rechaza con un error de validación. Las cuentas difieren en cuán estrictas necesitan ser, y por eso esto es un ajuste y no una regla. El detalle completo está en [Personal y fuerza de trabajo](topic:staff-workforce).
 
 ## Cómo se ve una funcionalidad desactivada
 

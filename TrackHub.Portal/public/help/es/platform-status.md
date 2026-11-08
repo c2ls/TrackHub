@@ -33,7 +33,7 @@ Cada indicador corresponde a una parte de la plataforma, nombrada por lo que hac
 |---|---|
 | **Inicio de sesión** | El ingreso a TrackHub. |
 | **Permisos** | Qué puede ver y hacer cada persona. |
-| **Gestión de flota** | Vehículos, conductores, grupos, documentos y configuración de la cuenta. |
+| **Gestión de flota** | Vehículos, personal, grupos, documentos y configuración de la cuenta. |
 | **Conexiones GPS** | La comunicación con sus proveedores GPS. |
 | **Datos de posición** | Las posiciones de los vehículos y su historial. |
 | **Geocercas** | Entradas, salidas y permanencias dentro de sus zonas. |

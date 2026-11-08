@@ -21,7 +21,7 @@ import { ApiError, ERROR_CODE_I18N } from './errors';
  *
  * Every Manager/Security list query clamps `take` to 1..500 server-side, so a
  * single call can never be assumed to return the whole set: a caller that asks
- * for "all drivers" and reads one page silently loses every row past the page
+ * for "all staff" and reads one page silently loses every row past the page
  * boundary. This mirrors the `FetchAllAsync` exhaustion the Reporting service
  * uses — page at the server's maximum until a short page comes back.
  */

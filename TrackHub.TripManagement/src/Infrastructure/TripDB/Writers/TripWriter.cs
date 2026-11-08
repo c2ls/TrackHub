@@ -48,7 +48,7 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
             Code = trip.Code,
             Status = TripStatuses.Created,
             TransporterId = trip.TransporterId,
-            DriverId = trip.DriverId,
+            StaffId = trip.StaffId,
             ServiceOrderId = trip.ServiceOrderId,
             ExternalReference = trip.ExternalReference,
             CustomerName = trip.CustomerName,
@@ -64,9 +64,9 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
 
         entity.AddDomainEvent(new TripDomainEvent(TripEventTypes.TripCreated, accountId, entity.TripId));
         await context.Trips.AddAsync(entity, cancellationToken);
-        if (trip.DriverId is { } driverId)
+        if (trip.StaffId is { } staffId)
         {
-            await SyncAssignmentAsync(entity, driverId, DateTimeOffset.UtcNow, cancellationToken);
+            await SyncAssignmentAsync(entity, staffId, DateTimeOffset.UtcNow, cancellationToken);
         }
 
         AddAuditEvent(accountId, "CreateTrip", entity.TripId);
@@ -111,7 +111,7 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
 
         entity.Code = trip.Code;
         entity.TransporterId = trip.TransporterId;
-        await SyncAssignmentAsync(entity, trip.DriverId, DateTimeOffset.UtcNow, cancellationToken);
+        await SyncAssignmentAsync(entity, trip.StaffId, DateTimeOffset.UtcNow, cancellationToken);
         entity.ServiceOrderId = trip.ServiceOrderId;
         entity.ExternalReference = trip.ExternalReference;
         entity.CustomerName = trip.CustomerName;
@@ -338,7 +338,7 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<TripAssignmentVm> AssignTripAsync(Guid tripId, Guid accountId, Guid driverId, Guid? transporterId, CancellationToken cancellationToken)
+    public async Task<TripAssignmentVm> AssignTripAsync(Guid tripId, Guid accountId, Guid staffId, Guid? transporterId, CancellationToken cancellationToken)
     {
         var entity = await FindAsync(tripId, accountId, cancellationToken);
 
@@ -359,8 +359,8 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
             await DisarmAsync(entity, cancellationToken);
         }
 
-        var assignment = await SyncAssignmentAsync(entity, driverId, DateTimeOffset.UtcNow, cancellationToken, force: true)
-            ?? throw new InvalidOperationException("Assigning a driver always yields an assignment.");
+        var assignment = await SyncAssignmentAsync(entity, staffId, DateTimeOffset.UtcNow, cancellationToken, force: true)
+            ?? throw new InvalidOperationException("Assigning a staff always yields an assignment.");
         AddAuditEvent(accountId, "AssignTrip", tripId);
 
         try
@@ -370,7 +370,7 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
         catch (DbUpdateException exception) when (UniqueViolation.Matches(exception, "ux_trip_assignments_active_per_trip"))
         {
             // ux_trip_assignments_active_per_trip: a concurrent assign already won.
-            throw ConflictException.WithCode(TripErrorCodes.DriverNotAssignable);
+            throw ConflictException.WithCode(TripErrorCodes.StaffNotAssignable);
         }
         catch (DbUpdateConcurrencyException) when (repointed)
         {
@@ -383,10 +383,10 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
         return TripMapper.ToVm(assignment);
     }
 
-    // The assignment is the only writer of a trip's driver: a driver reads trips through the Active
-    // TripAssignment, so a DriverId written anywhere else is a driver who never sees the trip.
+    // The assignment is the only writer of a trip's staff: a staff reads trips through the Active
+    // TripAssignment, so a StaffId written anywhere else is a staff who never sees the trip.
     // Exactly one Active assignment per trip; the prior one is ENDED, never deleted.
-    private async Task<TripAssignment?> SyncAssignmentAsync(Trip entity, Guid? driverId, DateTimeOffset now, CancellationToken cancellationToken, bool force = false)
+    private async Task<TripAssignment?> SyncAssignmentAsync(Trip entity, Guid? staffId, DateTimeOffset now, CancellationToken cancellationToken, bool force = false)
     {
         var current = await context.TripAssignments
             .AsTracking()
@@ -394,8 +394,8 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
             .ToListAsync(cancellationToken);
 
         var unchanged = !force
-            && entity.DriverId == driverId
-            && (driverId is null ? current.Count == 0 : current.Exists(a => a.DriverId == driverId && a.TransporterId == entity.TransporterId));
+            && entity.StaffId == staffId
+            && (staffId is null ? current.Count == 0 : current.Exists(a => a.StaffId == staffId && a.TransporterId == entity.TransporterId));
         if (unchanged)
         {
             return null;
@@ -407,8 +407,8 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
             previous.EndedAt = now;
         }
 
-        entity.DriverId = driverId;
-        if (driverId is not { } assignee)
+        entity.StaffId = staffId;
+        if (staffId is not { } assignee)
         {
             return null;
         }
@@ -417,7 +417,7 @@ public sealed class TripWriter(IApplicationDbContext context, IUser user) : ITri
         {
             AccountId = entity.AccountId,
             TripId = entity.TripId,
-            DriverId = assignee,
+            StaffId = assignee,
             TransporterId = entity.TransporterId,
             Status = TripAssignmentStatuses.Active,
             AssignedAt = now,

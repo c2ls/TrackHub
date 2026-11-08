@@ -2,7 +2,7 @@
 
 [← Volver a la página principal](README.md) · [English](README.en.md)
 
-El Servicio de Autorización es el **servidor de tokens de identidad y OAuth 2.0 / OpenID Connect basado en OpenIddict** de TrackHub. Autentica usuarios, conductores y clientes de servicio, y emite los tokens de acceso (audiencia `trackhub_api`) que validan todos los demás servicios de TrackHub.
+El Servicio de Autorización es el **servidor de tokens de identidad y OAuth 2.0 / OpenID Connect basado en OpenIddict** de TrackHub. Autentica usuarios, personal y clientes de servicio, y emite los tokens de acceso (audiencia `trackhub_api`) que validan todos los demás servicios de TrackHub.
 
 También aloja la UI de login de ASP.NET y es propietario de las tablas de OpenIddict en la base de datos `TrackHubSecurity`.
 
@@ -10,7 +10,7 @@ También aloja la UI de login de ASP.NET y es propietario de las tablas de OpenI
 
 ## Qué proporciona
 
-- **Flujo de Código de Autorización con PKCE** para clientes públicos — web y móvil de conductor — más el **password grant** para la app móvil propia (`mobile_client`, página de inicio de sesión integrada)
+- **Flujo de Código de Autorización con PKCE** para clientes públicos — web y móvil de personal — más el **password grant** para la app móvil propia (`mobile_client`, página de inicio de sesión integrada)
 - **Flujo de Credenciales de Cliente** para servicios backend e integraciones con socios, con derivación automática del tenant
 - **Gestión de tokens** — emisión, renovación y revocación, con delimitación basada en audiencia
 - **Una UI de login personalizable** con soporte de marca
@@ -80,7 +80,7 @@ Detalle completo: **[Security and Identity](https://github.com/shernandezp/Track
 
 ## Notas específicas del proyecto
 
-- **Este servicio es propietario únicamente de las tablas `OpenIddict*`.** La migración de su `AuthorityDbContext` apunta a la base de datos `TrackHubSecurity` y forma parte de la secuencia de instalación documentada. Su `SecurityDbContext` es una **proyección de solo lectura** acotada de tablas propiedad de TrackHubSecurity (`users`, `clients`, `driver_credentials`, `roles`, `user_role`, `service_client_permissions`), y su migración está deliberadamente **vacía**: toda la configuración usa `ExcludeFromMigrations()`. No agregar DDL ahí.
+- **Este servicio es propietario únicamente de las tablas `OpenIddict*`.** La migración de su `AuthorityDbContext` apunta a la base de datos `TrackHubSecurity` y forma parte de la secuencia de instalación documentada. Su `SecurityDbContext` es una **proyección de solo lectura** acotada de tablas propiedad de TrackHubSecurity (`users`, `clients`, `staff_credentials`, `roles`, `user_role`, `service_client_permissions`), y su migración está deliberadamente **vacía**: toda la configuración usa `ExcludeFromMigrations()`. No agregar DDL ahí.
 - **El tenant de un cliente de servicio se deriva, nunca lo suministra el llamador.** El claim `account_id` proviene de las filas activas del cliente en `security.service_client_permissions`, de modo que una credencial de socio no puede ampliar su propio alcance:
 
   | Permisos vigentes del cliente | Claim `account_id` |

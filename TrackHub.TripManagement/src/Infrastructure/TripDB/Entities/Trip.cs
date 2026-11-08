@@ -29,7 +29,7 @@ public sealed class Trip : BaseAuditableEntity
     public string Code { get; set; } = string.Empty;
     public string Status { get; set; } = TripStatuses.Created;
     public Guid TransporterId { get; set; }
-    public Guid? DriverId { get; set; }
+    public Guid? StaffId { get; set; }
     public Guid? RoutePlanId { get; set; }
     public Guid? ServiceOrderId { get; set; }
     public string? ExternalReference { get; set; }

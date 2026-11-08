@@ -27,7 +27,7 @@ namespace TrackHub.TripManagement.Application.Deliveries.Commands.UpdateOutcome;
 /// offline outbox depends on, which is why the key is built server-side from the caller's event id
 /// rather than trusted from the caller.
 /// <para>
-/// No <c>PrincipalTypes = "Driver"</c> here (acceptance 6); spec 10 widens the attribute additively.
+/// No <c>PrincipalTypes = "Staff"</c> here (acceptance 6); spec 10 widens the attribute additively.
 /// </para>
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]

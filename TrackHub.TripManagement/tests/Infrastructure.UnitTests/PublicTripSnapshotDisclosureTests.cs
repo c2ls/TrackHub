@@ -31,7 +31,7 @@ namespace Infrastructure.UnitTests;
 /// into shipped code: every other stop's exact street address projected into the "city" slot, the
 /// consignee's name projected with no flag gating it at all, the full planned route attached
 /// unconditionally, and — in the other direction — two flags (<c>IncludeVehicle</c>,
-/// <c>IncludeDriverName</c>) that were inert. A field-by-field assertion of the all-off and all-on
+/// <c>IncludeStaffName</c>) that were inert. A field-by-field assertion of the all-off and all-on
 /// snapshots, plus a sweep asserting the forbidden data cannot appear under ANY flag combination,
 /// is what makes those failures loud instead of silent.
 /// </para>
@@ -44,7 +44,7 @@ public sealed class PublicTripSnapshotDisclosureTests
     private static readonly Guid TripId = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000001");
     private static readonly Guid StopId = Guid.Parse("cccccccc-0000-0000-0000-000000000001");
     private static readonly Guid TransporterId = Guid.Parse("dddddddd-0000-0000-0000-000000000001");
-    private static readonly Guid DriverId = Guid.Parse("eeeeeeee-0000-0000-0000-000000000001");
+    private static readonly Guid StaffId = Guid.Parse("eeeeeeee-0000-0000-0000-000000000001");
     private static readonly Guid GrantId = Guid.Parse("ffffffff-0000-0000-0000-000000000001");
 
     // Every one of these is data §7.8 forbids in a public snapshot. Each appears in the seeded rows
@@ -55,9 +55,9 @@ public sealed class PublicTripSnapshotDisclosureTests
         "Cra 7 #71-52 Oficina 401",   // TripStop.Address - the exact delivery address
         "ACME Distribucion S.A.S.",   // Trip.CustomerName - one link holder's identity, to another
         "Handle with care - dispute", // Trip.Notes - internal notes
-        "Ramirez",                    // the driver's family name (given name only is allowed)
+        "Ramirez",                    // the staff's family name (given name only is allowed)
         "Gomez",                      // ditto
-        "3105557788",                 // driver contact data
+        "3105557788",                 // staff contact data
         "Warehouse loading bay code", // TripStop.Observations
         "VII",                        // toll vehicle class
         "187500.00",                  // estimated toll amount
@@ -86,7 +86,7 @@ public sealed class PublicTripSnapshotDisclosureTests
             Code = "TRIP-0001",
             Status = tripStatus,
             TransporterId = TransporterId,
-            DriverId = DriverId,
+            StaffId = StaffId,
             CustomerName = "ACME Distribucion S.A.S.",
             Notes = "Handle with care - dispute",
             TollVehicleClass = "VII",
@@ -151,9 +151,9 @@ public sealed class PublicTripSnapshotDisclosureTests
 
         // Full display name including family names and, in the real table, contact columns that are
         // deliberately NOT mapped into this DbContext at all.
-        context.Drivers.Add(new Driver
+        context.StaffMembers.Add(new StaffMember
         {
-            DriverId = DriverId,
+            StaffId = StaffId,
             AccountId = AccountId,
             Name = "Carlos Ramirez Gomez",
         });
@@ -168,7 +168,7 @@ public sealed class PublicTripSnapshotDisclosureTests
         => new(longitude, latitude) { SRID = 4326 };
 
     private static TripShare Share(
-        bool driverName = false,
+        bool staffName = false,
         bool vehicle = false,
         bool livePosition = false,
         bool stopDetail = false,
@@ -179,7 +179,7 @@ public sealed class PublicTripSnapshotDisclosureTests
             AccountId = AccountId,
             TripId = TripId,
             PublicLinkGrantId = GrantId,
-            IncludeDriverName = driverName,
+            IncludeStaffName = staffName,
             IncludeVehicle = vehicle,
             IncludeLivePosition = livePosition,
             IncludeStopDetail = stopDetail,
@@ -215,7 +215,7 @@ public sealed class PublicTripSnapshotDisclosureTests
             // Gated - every one of these must be absent.
             Assert.That(trip.Stops, Is.Empty, "IncludeStopDetail is off");
             Assert.That(trip.VehicleLabel, Is.Null, "IncludeVehicle is off");
-            Assert.That(trip.DriverGivenName, Is.Null, "IncludeDriverName is off");
+            Assert.That(trip.StaffGivenName, Is.Null, "IncludeStaffName is off");
             Assert.That(trip.LastLatitude, Is.Null, "IncludeLivePosition is off");
             Assert.That(trip.LastLongitude, Is.Null, "IncludeLivePosition is off");
             Assert.That(trip.LastPositionAt, Is.Null, "IncludeLivePosition is off");
@@ -242,7 +242,7 @@ public sealed class PublicTripSnapshotDisclosureTests
             nameof(PublicTripVm.PlannedStartAt), nameof(PublicTripVm.PlannedEndAt),
             nameof(PublicTripVm.ActualStartAt), nameof(PublicTripVm.ActualEndAt),
             nameof(PublicTripVm.Stops), nameof(PublicTripVm.VehicleLabel),
-            nameof(PublicTripVm.DriverGivenName), nameof(PublicTripVm.LastLatitude),
+            nameof(PublicTripVm.StaffGivenName), nameof(PublicTripVm.LastLatitude),
             nameof(PublicTripVm.LastLongitude), nameof(PublicTripVm.LastPositionAt),
             nameof(PublicTripVm.PlannedRoute),
         ];
@@ -293,7 +293,7 @@ public sealed class PublicTripSnapshotDisclosureTests
             // Given name ONLY: the first whitespace-delimited token. "Carlos", never
             // "Carlos Ramirez Gomez" - a first-and-last-name identification of a specific employee
             // is one public-records search away from their address.
-            Assert.That(trip.DriverGivenName, Is.EqualTo("Carlos"));
+            Assert.That(trip.StaffGivenName, Is.EqualTo("Carlos"));
 
             Assert.That(trip.LastLatitude, Is.EqualTo(4.71));
             Assert.That(trip.LastLongitude, Is.EqualTo(-74.07));
@@ -351,7 +351,7 @@ public sealed class PublicTripSnapshotDisclosureTests
         for (var mask = 0; mask < 64; mask++)
         {
             var share = Share(
-                driverName: (mask & 1) != 0,
+                staffName: (mask & 1) != 0,
                 vehicle: (mask & 2) != 0,
                 livePosition: (mask & 4) != 0,
                 stopDetail: (mask & 8) != 0,

@@ -70,8 +70,8 @@ public sealed class AuditEventReader(IApplicationDbContext context, ICurrentPrin
 
         Add((await Context.Users.Where(u => guids.Contains(u.UserId)).Select(u => new { u.UserId, u.Username }).ToListAsync(cancellationToken))
             .Select(u => ("User", u.UserId.ToString(), u.Username)));
-        Add((await Context.Drivers.Where(d => guids.Contains(d.DriverId)).Select(d => new { d.DriverId, d.Name }).ToListAsync(cancellationToken))
-            .Select(d => ("Driver", d.DriverId.ToString(), d.Name)));
+        Add((await Context.StaffMembers.Where(d => guids.Contains(d.StaffId)).Select(d => new { d.StaffId, d.Name }).ToListAsync(cancellationToken))
+            .Select(d => ("Staff", d.StaffId.ToString(), d.Name)));
         Add((await Context.Transporters.Where(t => guids.Contains(t.TransporterId)).Select(t => new { t.TransporterId, t.Name }).ToListAsync(cancellationToken))
             .Select(t => ("Transporter", t.TransporterId.ToString(), t.Name)));
         Add((await Context.Operators.Where(o => guids.Contains(o.OperatorId)).Select(o => new { o.OperatorId, o.Name }).ToListAsync(cancellationToken))

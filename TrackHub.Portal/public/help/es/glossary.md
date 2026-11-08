@@ -4,7 +4,7 @@ title: Glosario
 description: Significado en lenguaje sencillo de los términos y de la información en pantalla que encontrará en TrackHub.
 category: reference
 screens: []
-related: [getting-started, dashboard-live-map, gps-integration, drivers-workforce]
+related: [getting-started, dashboard-live-map, gps-integration, staff-workforce]
 tags: [glosario, términos, definiciones, referencia]
 order: 10
 ---
@@ -95,23 +95,23 @@ El estado propio de un dispositivo sincronizado se muestra como **Sin asignar** 
 
 **Regla de Notificación** — Una regla que decide cuándo debe generarse una alerta y a quién debe avisarse. Una regla tiene un evento disparador, una severidad, los destinatarios y ajustes de entrega, y puede estar **habilitada** o deshabilitada.
 
-## Conductores y personal
+## Personal y fuerza de trabajo
 
-**Conductor** — Una persona que opera sus unidades. Un conductor *no* es un usuario del portal: nunca inicia sesión en el portal web. Tiene un nombre, un documento de identidad, un código de empleado opcional y una licencia principal.
+**Personal** — Una persona que opera sus unidades. Un miembro del personal *no* es un usuario del portal: nunca inicia sesión en el portal web. Tiene un nombre, un documento de identidad, un código de empleado opcional y una licencia principal.
 
-**Credencial de Conductor** — El usuario y la contraseña con los que un conductor ingresa a la aplicación móvil del conductor. Una por conductor, con su propio ciclo de vida: **Pendiente de Activación, Activa, Bloqueada** o **Revocada**. Revocarla también detiene las sesiones que ya estaban en curso en el teléfono del conductor.
+**Credencial de Personal** — El usuario y la contraseña con los que un miembro del personal ingresa a la aplicación móvil del personal. Una por personal, con su propio ciclo de vida: **Pendiente de Activación, Activa, Bloqueada** o **Revocada**. Revocarla también detiene las sesiones que ya estaban en curso en el teléfono del personal.
 
-**Registro de Dispositivo** — Un teléfono o tableta que un conductor registró desde la aplicación móvil, con su plataforma, versión de la app y un token push enmascarado. Revocar un registro obliga a ese dispositivo a registrarse de nuevo; la credencial no se toca.
+**Registro de Dispositivo** — Un teléfono o tableta que un miembro del personal registró desde la aplicación móvil, con su plataforma, versión de la app y un token push enmascarado. Revocar un registro obliga a ese dispositivo a registrarse de nuevo; la credencial no se toca.
 
-**Habilitación** — Un hecho acreditado sobre un conductor, con fecha de vencimiento: una **Licencia, Examen Médico, Capacitación, Verificación de Antecedentes, Permiso de Materiales Peligrosos** u **Otra**. Cada una lleva una categoría, un número, fechas de emisión y vencimiento, una autoridad emisora, un estado (**Vigente, Vencida, Revocada**) y opcionalmente un documento vinculado.
+**Habilitación** — Un hecho acreditado sobre un miembro del personal, con fecha de vencimiento: una **Licencia, Examen Médico, Capacitación, Verificación de Antecedentes, Permiso de Materiales Peligrosos** u **Otra**. Cada una lleva una categoría, un número, fechas de emisión y vencimiento, una autoridad emisora, un estado (**Vigente, Vencida, Revocada**) y opcionalmente un documento vinculado.
 
-**Asignación** — Un registro acotado en el tiempo de que un conductor operó una unidad, con un inicio, un fin opcional, un tipo (**Regular** o **Temporal**) y un estado (**Activa, Finalizada, Cancelada**). Solo puede haber una abierta por pareja de conductor y unidad, y una asignación finalizada no se puede modificar.
+**Asignación** — Un registro acotado en el tiempo de que un miembro del personal operó una unidad, con un inicio, un fin opcional, un tipo (**Regular** o **Temporal**) y un estado (**Activa, Finalizada, Cancelada**). Solo puede haber una abierta por pareja de personal y unidad, y una asignación finalizada no se puede modificar.
 
-**Transportador Predeterminado** — La unidad que un conductor opera habitualmente, definida en el registro del conductor. Es una única preselección, no un historial — las asignaciones son el registro histórico.
+**Transportador Predeterminado** — La unidad que un miembro del personal opera habitualmente, definida en el registro del personal. Es una única preselección, no un historial — las asignaciones son el registro histórico.
 
 ## Documentos
 
-**Documento** — Un archivo almacenado en relación con algo de su cuenta (por ejemplo, el seguro de un vehículo o la licencia de un conductor). Los documentos admiten subida, **Nueva Versión** (reemplazar con un archivo actualizado conservando el historial), **Descargar**, **Vista Previa**, **Compartir**, **Firmar** y seguimiento del vencimiento.
+**Documento** — Un archivo almacenado en relación con algo de su cuenta (por ejemplo, el seguro de un vehículo o la licencia de un miembro del personal). Los documentos admiten subida, **Nueva Versión** (reemplazar con un archivo actualizado conservando el historial), **Descargar**, **Vista Previa**, **Compartir**, **Firmar** y seguimiento del vencimiento.
 
 **Tipo de documento** — Qué clase de documento es, elegido de la lista configurable de su cuenta (los ejemplos incluyen **SOAT, RTM, License, Medical, POD, Receipt, Invoice, Manifest, Certificate, Photo, Signature** y **Other**). El campo se rotula como **Tipo**.
 

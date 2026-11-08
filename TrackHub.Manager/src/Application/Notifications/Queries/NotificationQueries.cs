@@ -38,7 +38,7 @@ public class GetNotificationTemplatesQueryHandler(INotificationTemplateReader re
 }
 
 // The in-app feed is platform baseline — receiving is not feature-gated.
-[Authorize(Resource = Resources.Notifications, Action = Actions.Read, PrincipalTypes = "User,Driver")]
+[Authorize(Resource = Resources.Notifications, Action = Actions.Read, PrincipalTypes = "User,Staff")]
 public readonly record struct GetMyNotificationsQuery(bool UnreadOnly = false, int Skip = 0, int Take = 50) : IRequest<IReadOnlyCollection<MyNotificationVm>>;
 public class GetMyNotificationsQueryHandler(INotificationReader reader) : IRequestHandler<GetMyNotificationsQuery, IReadOnlyCollection<MyNotificationVm>>
 {

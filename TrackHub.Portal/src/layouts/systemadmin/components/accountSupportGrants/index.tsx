@@ -65,7 +65,7 @@ function ManageAccountSupportGrants() {
   const [open, setOpen] = useState(false);
   const [values, handleChange, setValues, setErrors, validate, errors] = useForm<SupportGrantFormValues>({ accessLevel: 'read' });
   const loaded = useRef(false);
-  const principalId = principal?.userId || principal?.driverId || principal?.clientId || principal?.subjectId || '';
+  const principalId = principal?.userId || principal?.staffId || principal?.clientId || principal?.subjectId || '';
 
   const loadGrants = async () => {
     setLoading(true);

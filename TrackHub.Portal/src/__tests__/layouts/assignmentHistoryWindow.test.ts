@@ -20,7 +20,7 @@ import {
   DEFAULT_ASSIGNMENT_HISTORY_DAYS,
   MAX_ASSIGNMENT_HISTORY_DAYS,
   toAssignmentHistoryFilters,
-} from 'layouts/manageadmin/components/drivers/assignmentHistory';
+} from 'layouts/manageadmin/components/staff/assignmentHistory';
 import { accountCalendar, addDays } from 'utils/accountCalendar';
 
 const bogota = accountCalendar('America/Bogota', () => new Date('2027-03-02T03:30:00Z'));
@@ -35,12 +35,12 @@ describe('assignment history window', () => {
 
   test('bounds are the account-zone day edges, the last day included', () => {
     const filters = toAssignmentHistoryFilters(
-      { driverId: 'd-1', transporterId: null, from: '2027-03-01', to: '2027-03-01' },
+      { staffId: 'd-1', transporterId: null, from: '2027-03-01', to: '2027-03-01' },
       bogota
     );
 
     expect(filters).toEqual({
-      driverId: 'd-1',
+      staffId: 'd-1',
       transporterId: null,
       from: '2027-03-01T05:00:00.000Z',
       to: '2027-03-02T04:59:59.999Z',

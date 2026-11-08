@@ -19,35 +19,35 @@ namespace TrackHub.Reporting.Domain.Models;
 // Date-only fields stay DateOnly to match Manager's `Date` scalar; the row VMs widen them to a UTC
 // DateTimeOffset so Excel/PDF apply the shared date column format.
 
-public readonly record struct ReportDriverVm(
-    Guid DriverId, string Name, string? Phone, string? DocumentType, string? DocumentNumber,
+public readonly record struct ReportStaffMemberVm(
+    Guid StaffId, string Name, string? Phone, string? DocumentType, string? DocumentNumber,
     bool Active, string? EmployeeCode, string? LicenseNumber, DateOnly? LicenseExpiresAt,
-    Guid? DefaultTransporterId);
+    Guid? DefaultTransporterId, string? StaffType);
 
-public readonly record struct ReportDriverQualificationVm(
-    Guid DriverQualificationId, Guid DriverId, string DriverName, string QualificationType,
+public readonly record struct ReportStaffQualificationVm(
+    Guid StaffQualificationId, Guid StaffId, string StaffName, string QualificationType,
     string? Category, string? Number, DateOnly? IssuedAt, DateOnly? ExpiresAt,
     string? IssuingAuthority, string Status);
 
-public readonly record struct ReportDriverAssignmentVm(
-    Guid DriverId, string DriverName, Guid TransporterId, string TransporterName,
+public readonly record struct ReportStaffAssignmentVm(
+    Guid StaffId, string StaffName, Guid TransporterId, string TransporterName,
     DateTimeOffset StartsAt, DateTimeOffset? EndsAt, string AssignmentType, string Status,
     string CreatedByPrincipal);
 
 // ---- Row VMs (property order = Excel column order; property name = resx header key) ----
 
-public readonly record struct DriverRegistryRowVm(
-    string DriverName, string EmployeeCode, string DocumentType, string DocumentNumber, string Phone,
+public readonly record struct StaffRegistryRowVm(
+    string StaffName, string StaffType, string EmployeeCode, string DocumentType, string DocumentNumber, string Phone,
     string LicenseNumber, DateOnly? LicenseExpiresAt, string DefaultTransporterId, bool Active);
 
 public readonly record struct QualificationExpirationRowVm(
     // `LicenseCategory` (not `Category`) because the resx key `Category` is shared with the document
     // reports and resolves to "Type"/"Tipo" — next to `QualificationType` that produced two adjacent
     // columns both headed "Type". This column carries the licence category (A1–C3 per spec 09 §6).
-    string DriverName, string QualificationType, string LicenseCategory, string Number,
+    string StaffName, string QualificationType, string LicenseCategory, string Number,
     string IssuingAuthority, DateOnly? IssuedAt, DateOnly? ExpiresAt,
     int? DaysRemaining, string Status);
 
-public readonly record struct DriverAssignmentHistoryRowVm(
-    string DriverName, string TransporterName, string AssignmentType, string Status,
+public readonly record struct StaffAssignmentHistoryRowVm(
+    string StaffName, string TransporterName, string AssignmentType, string Status,
     DateTimeOffset StartsAt, DateTimeOffset? EndsAt, int DurationDays, string CreatedByPrincipal);

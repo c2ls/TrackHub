@@ -22,7 +22,7 @@ namespace TrackHub.Reporting.Domain.Models;
 // the report is the comparison. LoadingMinutes/TransitMinutes/TotalMinutes are what answer "how long
 // did loading, transit and the whole trip actually take" (spec 11a §13).
 public readonly record struct TripSummaryRowVm(
-    string TripCode, string TripStatus, string TransporterName, string DriverName,
+    string TripCode, string TripStatus, string TransporterName, string StaffName,
     DateTimeOffset PlannedStartAt, DateTimeOffset? ActualStartAt,
     DateTimeOffset? PlannedEndAt, DateTimeOffset? ActualEndAt,
     DateTimeOffset? OriginArrivedAt, DateTimeOffset? OriginDepartedAt,
@@ -40,10 +40,10 @@ public readonly record struct TripStopDetailRowVm(
     double? DwellMinutes, string StopStatus,
     int DeliveryCount, int DeliveredCount, int FailedDeliveryCount, int PartialDeliveryCount);
 
-// Aggregated one row per (transporter, driver, customer). Only stops carrying BOTH a planned window
+// Aggregated one row per (transporter, staff, customer). Only stops carrying BOTH a planned window
 // end and an actual arrival are evaluated — an unplanned or unvisited stop is neither on time nor late.
 public readonly record struct TripOnTimePerformanceRowVm(
-    string TransporterName, string DriverName, string CustomerName,
+    string TransporterName, string StaffName, string CustomerName,
     int EvaluatedStopCount, int OnTimeStopCount, int DelayedStopCount,
     double OnTimePercent, double AverageDelayMinutes, double MaxDelayMinutes);
 

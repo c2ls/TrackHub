@@ -245,12 +245,12 @@ public static class TollStatuses
 public static class TripEventSources
 {
     public const string Portal = nameof(Portal);
-    public const string Driver = nameof(Driver);
+    public const string Staff = nameof(Staff);
     public const string Detection = nameof(Detection);
     public const string Job = nameof(Job);
     public const string ServiceClient = nameof(ServiceClient);
 
-    public static readonly IReadOnlyCollection<string> All = [Portal, Driver, Detection, Job, ServiceClient];
+    public static readonly IReadOnlyCollection<string> All = [Portal, Staff, Detection, Job, ServiceClient];
 
     public static bool IsValid(string? value) => value != null && All.Contains(value);
 }
@@ -329,7 +329,7 @@ public static class TripDocumentKinds
 
 /// <summary>
 /// Specific, localizable rejection codes. Spec 11 §9 requires these rather than generic failures
-/// so spec 10's offline error centre can explain a rejection to a driver without guessing.
+/// so spec 10's offline error centre can explain a rejection to a staff without guessing.
 /// </summary>
 public static class TripErrorCodes
 {
@@ -368,7 +368,7 @@ public static class TripErrorCodes
     /// found to back-fill from, so there is nothing honest to stamp <c>ActualStartAt</c> with (§5.4).
     /// </summary>
     public const string StartEvidenceRequired = "TRIP_START_EVIDENCE_REQUIRED";
-    public const string DriverNotAssignable = "TRIP_DRIVER_NOT_ASSIGNABLE";
+    public const string StaffNotAssignable = "TRIP_STAFF_NOT_ASSIGNABLE";
     public const string RoutingNotConfigured = "ROUTING_NOT_CONFIGURED";
     public const string RoutingUnavailable = "ROUTING_UNAVAILABLE";
 

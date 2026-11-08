@@ -33,7 +33,7 @@ namespace TrackHub.TripManagement.Application.ProofsOfDelivery.Commands.Record;
 /// </para>
 /// <para>
 /// Idempotent on the unique <c>(TripStopId, ClientEventId)</c> index (acceptance 15). No
-/// <c>PrincipalTypes = "Driver"</c> here (acceptance 6) — spec 10 widens it additively.
+/// <c>PrincipalTypes = "Staff"</c> here (acceptance 6) — spec 10 widens it additively.
 /// </para>
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Write)]
@@ -134,7 +134,7 @@ public sealed class RecordProofOfDeliveryCommandHandler(
                 $"trip-podsubmitted:{request.ProofOfDelivery.TripStopId:N}",
                 new TripAlertDto(
                     caller.AccountId, request.TripId, request.ProofOfDelivery.TripStopId, trip.Code,
-                    trip.TransporterId, trip.DriverId, null, request.ProofOfDelivery.CapturedAt,
+                    trip.TransporterId, trip.StaffId, null, request.ProofOfDelivery.CapturedAt,
                     null, null, null, request.ProofOfDelivery.Latitude, request.ProofOfDelivery.Longitude),
                 cancellationToken);
         }

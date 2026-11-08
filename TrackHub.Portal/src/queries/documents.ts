@@ -49,7 +49,7 @@ export function useDocumentTypes(
 }
 
 /**
- * Documents owned by one entity (spec 04 owner scoping — `Driver` is the owner
+ * Documents owned by one entity (spec 04 owner scoping — `Staff` is the owner
  * type spec 09 §11 uses for qualification evidence).
  */
 export function useDocumentsForOwner(

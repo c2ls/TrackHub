@@ -18,7 +18,7 @@ namespace TrackHub.TripManagement.Domain.Models;
 /// <summary>
 /// The anonymous tracking snapshot. This type is the disclosure boundary: it is projected from
 /// the <c>TripShare</c> field flags server-side, never filtered client-side. It deliberately
-/// carries no ids beyond the trip's, no internal notes, no toll or cost figures, no driver
+/// carries no ids beyond the trip's, no internal notes, no toll or cost figures, no staff
 /// contact data, no raw position history and no document bytes (spec 11 §7.8, acceptance 23).
 /// <para>
 /// <b>There is deliberately no <c>CustomerName</c>.</b> On a multi-drop trip the consignee is not
@@ -38,7 +38,7 @@ public readonly record struct PublicTripVm(
     DateTimeOffset? ActualEndAt,
     IReadOnlyCollection<PublicTripStopVm> Stops,
     string? VehicleLabel,
-    string? DriverGivenName,
+    string? StaffGivenName,
     double? LastLatitude,
     double? LastLongitude,
     DateTimeOffset? LastPositionAt,

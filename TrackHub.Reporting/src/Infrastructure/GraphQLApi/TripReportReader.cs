@@ -36,16 +36,16 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
     // none of that detail. All four take the same filter arguments and return { items, totalCount }.
 
     internal const string TripReportDataQuery = @"
-                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $driverId: UUID, $skip: Int!, $take: Int!) {
-                    tripReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, driverId: $driverId, skip: $skip, take: $take }) {
+                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $staffId: UUID, $skip: Int!, $take: Int!) {
+                    tripReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, staffId: $staffId, skip: $skip, take: $take }) {
                         items {
                             tripId
                             code
                             status
                             transporterId
                             transporterName
-                            driverId
-                            driverName
+                            staffId
+                            staffName
                             customerName
                             plannedStartAt
                             plannedEndAt
@@ -70,14 +70,14 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
                 }";
 
     internal const string TripStopReportDataQuery = @"
-                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $driverId: UUID, $skip: Int!, $take: Int!) {
-                    tripStopReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, driverId: $driverId, skip: $skip, take: $take }) {
+                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $staffId: UUID, $skip: Int!, $take: Int!) {
+                    tripStopReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, staffId: $staffId, skip: $skip, take: $take }) {
                         items {
                             tripStopId
                             tripId
                             tripCode
                             transporterName
-                            driverName
+                            staffName
                             customerName
                             sequence
                             name
@@ -99,8 +99,8 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
                 }";
 
     internal const string TripTollReportDataQuery = @"
-                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $driverId: UUID, $skip: Int!, $take: Int!) {
-                    tripTollReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, driverId: $driverId, skip: $skip, take: $take }) {
+                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $staffId: UUID, $skip: Int!, $take: Int!) {
+                    tripTollReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, staffId: $staffId, skip: $skip, take: $take }) {
                         items {
                             tripId
                             tripCode
@@ -123,8 +123,8 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
                 }";
 
     internal const string TripPodReportDataQuery = @"
-                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $driverId: UUID, $skip: Int!, $take: Int!) {
-                    tripPodReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, driverId: $driverId, skip: $skip, take: $take }) {
+                query($accountId: UUID!, $from: DateTime!, $to: DateTime!, $transporterId: UUID, $staffId: UUID, $skip: Int!, $take: Int!) {
+                    tripPodReportData(query: { accountId: $accountId, from: $from, to: $to, transporterId: $transporterId, staffId: $staffId, skip: $skip, take: $take }) {
                         items {
                             proofOfDeliveryId
                             tripId
@@ -151,24 +151,24 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
         => featureReader.EnsureFeatureEnabledAsync(AccountId, FeatureKeys.TripManagement, cancellationToken);
 
     public Task<IReadOnlyCollection<ReportTripVm>> GetTripsAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken)
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken)
         => DrainAsync<ReportTripVm, TripReportDataPageVm>(
-            TripReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, driverId, cancellationToken);
+            TripReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, staffId, cancellationToken);
 
     public Task<IReadOnlyCollection<ReportTripStopVm>> GetTripStopsAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken)
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken)
         => DrainAsync<ReportTripStopVm, TripStopReportDataPageVm>(
-            TripStopReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, driverId, cancellationToken);
+            TripStopReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, staffId, cancellationToken);
 
     public Task<IReadOnlyCollection<ReportTripTollVm>> GetTripTollsAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken)
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken)
         => DrainAsync<ReportTripTollVm, TripTollReportDataPageVm>(
-            TripTollReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, driverId, cancellationToken);
+            TripTollReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, staffId, cancellationToken);
 
     public Task<IReadOnlyCollection<ReportTripPodVm>> GetTripProofsOfDeliveryAsync(
-        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? driverId, CancellationToken cancellationToken)
+        DateTimeOffset from, DateTimeOffset to, Guid? transporterId, Guid? staffId, CancellationToken cancellationToken)
         => DrainAsync<ReportTripPodVm, TripPodReportDataPageVm>(
-            TripPodReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, driverId, cancellationToken);
+            TripPodReportDataQuery, p => p.Items, p => p.NextSkip, p => p.HasMore, from, to, transporterId, staffId, cancellationToken);
 
     // One drain loop for all four feeds, driven by the PRODUCER'S cursor.
     //
@@ -186,7 +186,7 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
         DateTimeOffset from,
         DateTimeOffset to,
         Guid? transporterId,
-        Guid? driverId,
+        Guid? staffId,
         CancellationToken cancellationToken)
     {
         var accountId = AccountId;
@@ -201,7 +201,7 @@ public class TripReportReader(IGraphQLClientFactory graphQLClient, IUser user, I
                     from,
                     to,
                     transporterId,
-                    driverId,
+                    staffId,
                     skip,
                     take
                 }

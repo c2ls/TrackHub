@@ -30,7 +30,7 @@ const server = (total: number) => {
 
 describe('fetchAllPages', () => {
   test('returns every row past the first page boundary', async () => {
-    // The exact regression: 60 drivers behind a 50-row default page.
+    // The exact regression: 60 staff behind a 50-row default page.
     const { fetchPage } = server(60);
     const items = await fetchAllPages(fetchPage, { pageSize: 50 });
     expect(items).toHaveLength(60);

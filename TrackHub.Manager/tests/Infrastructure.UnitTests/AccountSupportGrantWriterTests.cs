@@ -39,7 +39,7 @@ public class AccountSupportGrantWriterTests
         principal.SetupGet(p => p.AccountId).Returns(accountId);
         principal.SetupGet(p => p.Role).Returns(Roles.Administrator);
         principal.SetupGet(p => p.SubjectId).Returns(userId.ToString());
-        principal.SetupGet(p => p.DriverId).Returns((Guid?)null);
+        principal.SetupGet(p => p.StaffId).Returns((Guid?)null);
         principal.SetupGet(p => p.ClientId).Returns((string?)null);
         principal.SetupGet(p => p.CorrelationId).Returns("corr-1");
         return principal.Object;

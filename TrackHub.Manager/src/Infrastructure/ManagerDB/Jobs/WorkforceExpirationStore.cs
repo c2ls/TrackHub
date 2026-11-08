@@ -27,13 +27,13 @@ public sealed class WorkforceExpirationStore(IApplicationDbContext context) : IW
     // Revoked qualifications are already dead — expiry alerting would be noise.
     public async Task<IReadOnlyCollection<ExpiringQualificationVm>> GetExpiringAsync(
         IReadOnlyCollection<Guid> accountIds, DateOnly horizon, CancellationToken cancellationToken)
-        => await context.DriverQualifications
+        => await context.StaffQualifications
             .Where(q => accountIds.Contains(q.AccountId)
-                && q.Status != DriverQualificationStatuses.Revoked
+                && q.Status != StaffQualificationStatuses.Revoked
                 && q.ExpiresAt != null
                 && q.ExpiresAt <= horizon)
             .Select(q => new ExpiringQualificationVm(
-                q.DriverQualificationId, q.AccountId, q.DriverId, q.QualificationType, q.ExpiresAt!.Value))
+                q.StaffQualificationId, q.AccountId, q.StaffId, q.QualificationType, q.ExpiresAt!.Value))
             .ToListAsync(cancellationToken);
 
     public async Task<bool> JobRunSucceededAsync(string idempotencyKey, CancellationToken cancellationToken)

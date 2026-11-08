@@ -79,13 +79,13 @@ public sealed class ImportTripsCsvCommandHandler(
 
         var places = await placeReader.GetPlacesAsync(caller.AccountId, cancellationToken);
         var transporters = await reader.GetTransporterNamesAsync(caller.AccountId, scopeUserId, cancellationToken);
-        var drivers = await reader.GetDriverNamesAsync(caller.AccountId, cancellationToken);
+        var staff = await reader.GetStaffNamesAsync(caller.AccountId, cancellationToken);
 
         // Case- and accent-insensitive within the account: "plant 3" and "Plant 3" are the same
         // dock, and a dispatcher retyping a name is not making a new place.
         var placesByName = Index(places, p => p.Name);
         var transportersByName = Index(transporters, t => t.Name);
-        var driversByName = Index(drivers, d => d.Name);
+        var staffMembersByName = Index(staff, d => d.Name);
 
         var created = 0;
         var errors = new List<TripCsvImportErrorVm>();
@@ -111,7 +111,7 @@ public sealed class ImportTripsCsvCommandHandler(
             try
             {
                 if (await ImportRowAsync(rowNumber, line, caller.AccountId, scopeUserId,
-                        placesByName, transportersByName, driversByName, errors, cancellationToken))
+                        placesByName, transportersByName, staffMembersByName, errors, cancellationToken))
                 {
                     created++;
                 }
@@ -133,7 +133,7 @@ public sealed class ImportTripsCsvCommandHandler(
         Guid? scopeUserId,
         Dictionary<string, PlaceVm> placesByName,
         Dictionary<string, NamedEntityVm> transportersByName,
-        Dictionary<string, NamedEntityVm> driversByName,
+        Dictionary<string, NamedEntityVm> staffMembersByName,
         List<TripCsvImportErrorVm> errors,
         CancellationToken cancellationToken)
     {
@@ -164,27 +164,27 @@ public sealed class ImportTripsCsvCommandHandler(
             return false;
         }
 
-        Guid? driverId = null;
+        Guid? staffId = null;
         if (!string.IsNullOrWhiteSpace(fields[2]))
         {
-            if (!driversByName.TryGetValue(Key(fields[2]), out var driver))
+            if (!staffMembersByName.TryGetValue(Key(fields[2]), out var staff))
             {
-                errors.Add(new TripCsvImportErrorVm(rowNumber, InvalidRowCode, $"Unknown driver '{fields[2]}'."));
+                errors.Add(new TripCsvImportErrorVm(rowNumber, InvalidRowCode, $"Unknown staff '{fields[2]}'."));
                 return false;
             }
 
-            // The SAME rule the create dialog applies: a driver qualifies for a unit only through
+            // The SAME rule the create dialog applies: a staff qualifies for a unit only through
             // Manager's assignment. Skipping it here would have made bulk upload the one way to put
-            // a driver on a vehicle they are not cleared for (acceptance 2).
-            if (!await managerValidationClient.ValidateDriverAssignmentAsync(
-                    driver.Id, "Transporter", transporter.Id, cancellationToken))
+            // a staff on a vehicle they are not cleared for (acceptance 2).
+            if (!await managerValidationClient.ValidateStaffAssignmentAsync(
+                    staff.Id, "Transporter", transporter.Id, cancellationToken))
             {
                 errors.Add(new TripCsvImportErrorVm(
-                    rowNumber, TripErrorCodes.DriverNotAssignable, $"'{fields[2]}' is not assignable to '{fields[1]}'."));
+                    rowNumber, TripErrorCodes.StaffNotAssignable, $"'{fields[2]}' is not assignable to '{fields[1]}'."));
                 return false;
             }
 
-            driverId = driver.Id;
+            staffId = staff.Id;
         }
 
         if (!placesByName.TryGetValue(Key(fields[4]), out var origin))
@@ -248,7 +248,7 @@ public sealed class ImportTripsCsvCommandHandler(
         var dto = new TripDto(
             code,
             transporter.Id,
-            driverId,
+            staffId,
             null,
             NullIfEmpty(Field(fields, 11)),
             NullIfEmpty(fields[3]),

@@ -228,9 +228,9 @@ public class TripVisibilityEnforcementTests
     // -----------------------------------------------------------------------------------------
 
     /// <summary>
-    /// The leak this closes is concrete: the report readers resolve TransporterName/DriverName by
+    /// The leak this closes is concrete: the report readers resolve TransporterName/StaffName by
     /// unscoped id, so a trip pointing at another account's transporter printed that account's
-    /// transporter and driver names into this account's report output.
+    /// transporter and staff names into this account's report output.
     /// </summary>
     [Test]
     public async Task AnAdministrator_CannotPointATripAtAnotherAccountsTransporter()

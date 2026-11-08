@@ -29,8 +29,8 @@ public static partial class Resources
     public const string Devices = nameof(Devices);
     public const string DevicesMaster = nameof(DevicesMaster);
     public const string Documents = nameof(Documents);
-    public const string Drivers = nameof(Drivers);
-    public const string DriverOperations = nameof(DriverOperations);
+    public const string Staff = nameof(Staff);
+    public const string StaffOperations = nameof(StaffOperations);
     public const string GeocodingProviders = nameof(GeocodingProviders);
     public const string Geofences = nameof(Geofences);
     public const string Geofencing = nameof(Geofencing);

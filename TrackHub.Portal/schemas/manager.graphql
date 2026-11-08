@@ -12,6 +12,8 @@ type Query {
     @cost(weight: "10")
   validateFeatureEnabled(query: ValidateFeatureEnabledQueryInput!): Boolean!
     @cost(weight: "10")
+  accountHolidays(query: GetAccountHolidaysQueryInput!): [AccountHolidayVm!]!
+    @cost(weight: "10")
   account(query: GetAccountQueryInput!): AccountVm! @cost(weight: "10")
   accountBranding(query: GetAccountBrandingQueryInput!): AccountBrandingVm!
     @cost(weight: "10")
@@ -78,24 +80,6 @@ type Query {
   transporterDocumentCompliance(
     query: GetTransporterDocumentComplianceQueryInput!
   ): [TransporterDocumentComplianceVm!]! @cost(weight: "10")
-  driver(query: GetDriverQueryInput!): DriverVm! @cost(weight: "10")
-  driversByAccount(query: GetDriversByAccountQueryInput!): DriversPageVm!
-    @cost(weight: "10")
-  driverAssignments(query: GetDriverAssignmentsQueryInput!): [DriverAssignmentVm!]!
-    @cost(weight: "10")
-  validateDriverAssignment(query: ValidateDriverAssignmentQueryInput!): Boolean!
-    @cost(weight: "10")
-  validateDriverAccount(query: ValidateDriverAccountQueryInput!): Boolean!
-    @cost(weight: "10")
-  driverQualifications(query: GetDriverQualificationsQueryInput!): DriverQualificationsPageVm!
-    @cost(weight: "10")
-  driverAssignmentHistory(query: GetDriverAssignmentHistoryQueryInput!): DriverAssignmentHistoryPageVm!
-    @cost(weight: "10")
-  myDriverProfile: MyDriverProfileVm! @cost(weight: "10")
-  driverOptions(query: GetDriverOptionsQueryInput!): DriverOptionsPageVm!
-    @cost(weight: "10")
-  driverLookup(query: GetDriverLookupQueryInput!): [DriverLookupVm!]!
-    @cost(weight: "10")
   geocodingProviders: [GeocodingProviderVm!]! @cost(weight: "10")
   activeGeocodingProvider: GeocodingProviderTokenVm @cost(weight: "10")
   gpsIntegrationDashboard(query: GetGpsIntegrationDashboardQueryInput!): GpsIntegrationDashboardVm!
@@ -142,6 +126,25 @@ type Query {
     @cost(weight: "10")
   reports: [ReportVm!]! @cost(weight: "10")
   reportByCode(code: String!): ReportVm @cost(weight: "10")
+  staffMember(query: GetStaffMemberQueryInput!): StaffMemberVm!
+    @cost(weight: "10")
+  staffMembersByAccount(query: GetStaffMembersByAccountQueryInput!): StaffMembersPageVm!
+    @cost(weight: "10")
+  staffAssignments(query: GetStaffAssignmentsQueryInput!): [StaffAssignmentVm!]!
+    @cost(weight: "10")
+  validateStaffAssignment(query: ValidateStaffAssignmentQueryInput!): Boolean!
+    @cost(weight: "10")
+  validateStaffAccount(query: ValidateStaffAccountQueryInput!): Boolean!
+    @cost(weight: "10")
+  staffQualifications(query: GetStaffQualificationsQueryInput!): StaffQualificationsPageVm!
+    @cost(weight: "10")
+  staffAssignmentHistory(query: GetStaffAssignmentHistoryQueryInput!): StaffAssignmentHistoryPageVm!
+    @cost(weight: "10")
+  myStaffProfile: MyStaffProfileVm! @cost(weight: "10")
+  staffOptions(query: GetStaffOptionsQueryInput!): StaffOptionsPageVm!
+    @cost(weight: "10")
+  staffLookup(query: GetStaffLookupQueryInput!): [StaffLookupVm!]!
+    @cost(weight: "10")
   synchronizedDevices(query: GetSynchronizedDevicesQueryInput!): DevicesPageVm!
     @cost(weight: "10")
   unassignedSynchronizedDevices(
@@ -190,6 +193,8 @@ type Mutation {
     command: UpdateAccountFeatureConfigurationCommandInput!
   ): Boolean! @cost(weight: "10")
   seedPublicLinksFeature: Int! @cost(weight: "10")
+  setAccountHolidays(command: SetAccountHolidaysCommandInput!): [AccountHolidayVm!]!
+    @cost(weight: "10")
   createAccount(command: CreateAccountCommandInput!): AccountVm!
     @cost(weight: "10")
   changeAccountStatus(command: ChangeAccountStatusCommandInput!): AccountVm!
@@ -251,21 +256,6 @@ type Mutation {
   configureDocumentType(command: ConfigureDocumentTypeCommandInput!): DocumentTypeVm!
     @cost(weight: "10")
   disableDocumentType(command: DisableDocumentTypeCommandInput!): UUID!
-    @cost(weight: "10")
-  createDriver(command: CreateDriverCommandInput!): DriverVm!
-    @cost(weight: "10")
-  updateDriver(command: UpdateDriverCommandInput!): Boolean! @cost(weight: "10")
-  deactivateDriver(command: DeactivateDriverCommandInput!): Boolean!
-    @cost(weight: "10")
-  createDriverQualification(command: CreateDriverQualificationCommandInput!): DriverQualificationVm!
-    @cost(weight: "10")
-  updateDriverQualification(command: UpdateDriverQualificationCommandInput!): Boolean!
-    @cost(weight: "10")
-  deleteDriverQualification(command: DeleteDriverQualificationCommandInput!): UUID!
-    @cost(weight: "10")
-  assignDriverToTransporter(command: AssignDriverToTransporterCommandInput!): DriverTransporterAssignmentVm!
-    @cost(weight: "10")
-  endDriverAssignment(command: EndDriverAssignmentCommandInput!): Boolean!
     @cost(weight: "10")
   createGeocodingProvider(command: CreateGeocodingProviderCommandInput!): GeocodingProviderVm!
     @cost(weight: "10")
@@ -332,6 +322,22 @@ type Mutation {
   resolvePublicLinkGrant(command: ResolvePublicLinkGrantCommandInput!): PublicLinkResolutionVm!
     @cost(weight: "10")
   updateReport(id: UUID!, command: UpdateReportCommandInput!): Boolean!
+    @cost(weight: "10")
+  createStaffMember(command: CreateStaffMemberCommandInput!): StaffMemberVm!
+    @cost(weight: "10")
+  updateStaffMember(command: UpdateStaffMemberCommandInput!): Boolean!
+    @cost(weight: "10")
+  deactivateStaffMember(command: DeactivateStaffMemberCommandInput!): Boolean!
+    @cost(weight: "10")
+  createStaffQualification(command: CreateStaffQualificationCommandInput!): StaffQualificationVm!
+    @cost(weight: "10")
+  updateStaffQualification(command: UpdateStaffQualificationCommandInput!): Boolean!
+    @cost(weight: "10")
+  deleteStaffQualification(command: DeleteStaffQualificationCommandInput!): UUID!
+    @cost(weight: "10")
+  assignStaffToTransporter(command: AssignStaffToTransporterCommandInput!): StaffTransporterAssignmentVm!
+    @cost(weight: "10")
+  endStaffAssignment(command: EndStaffAssignmentCommandInput!): Boolean!
     @cost(weight: "10")
   synchronizeOperatorDevices(command: SynchronizeOperatorDevicesCommandInput!): OperatorSyncRunVm!
     @cost(weight: "10")
@@ -400,6 +406,13 @@ type AccountFeatureVm {
   effectiveTo: DateTime
   configurationJson: String
   lastModified: DateTime!
+}
+
+type AccountHolidayVm {
+  accountHolidayId: UUID!
+  accountId: UUID!
+  date: LocalDate!
+  name: String!
 }
 
 type AccountSettingsVm {
@@ -589,7 +602,7 @@ type CurrentPrincipalVm {
   subjectId: String
   principalType: PrincipalType!
   userId: UUID
-  driverId: UUID
+  staffId: UUID
   clientId: String
   publicLinkGrantId: UUID
   role: String
@@ -727,91 +740,6 @@ type DocumentVm {
   lastModified: DateTime!
 }
 
-type DriverAssignmentHistoryPageVm {
-  items: [DriverTransporterAssignmentVm!]!
-  totalCount: Int!
-}
-
-type DriverAssignmentVm {
-  driverId: UUID!
-  accountId: UUID!
-  resourceType: String!
-  resourceId: String!
-  active: Boolean!
-  startsAt: DateTime
-  endsAt: DateTime
-  assignmentType: String
-}
-
-type DriverLookupVm {
-  driverId: UUID!
-  name: String!
-  active: Boolean!
-}
-
-type DriverOptionsPageVm {
-  items: [DriverLookupVm!]!
-  totalCount: Int!
-}
-
-type DriverQualificationsPageVm {
-  items: [DriverQualificationVm!]!
-  totalCount: Int!
-}
-
-type DriverQualificationVm {
-  driverQualificationId: UUID!
-  accountId: UUID!
-  driverId: UUID!
-  driverName: String!
-  qualificationType: String!
-  category: String
-  number: String
-  issuedAt: LocalDate
-  expiresAt: LocalDate
-  issuingAuthority: String
-  status: String!
-  documentId: UUID
-  notes: String
-  lastModified: DateTime!
-}
-
-type DriversPageVm {
-  items: [DriverVm!]!
-  totalCount: Int!
-}
-
-type DriverTransporterAssignmentVm {
-  driverTransporterAssignmentId: UUID!
-  accountId: UUID!
-  driverId: UUID!
-  driverName: String!
-  transporterId: UUID!
-  transporterName: String!
-  startsAt: DateTime!
-  endsAt: DateTime
-  assignmentType: String!
-  status: String!
-  createdByPrincipal: String!
-  lastModified: DateTime!
-}
-
-type DriverVm {
-  driverId: UUID!
-  accountId: UUID!
-  name: String!
-  phone: String
-  documentType: String
-  documentNumber: String
-  active: Boolean!
-  employeeCode: String
-  licenseNumber: String
-  licenseExpiresAt: LocalDate
-  defaultTransporterId: UUID
-  lastModified: DateTime!
-  version: UnsignedInt!
-}
-
 type GeocodingProviderTokenVm {
   geocodingProviderId: UUID!
   name: String!
@@ -877,12 +805,6 @@ type GroupVm {
   version: UnsignedInt!
 }
 
-type MyDriverProfileVm {
-  driver: DriverVm!
-  qualifications: [DriverQualificationVm!]!
-  activeAssignments: [DriverTransporterAssignmentVm!]!
-}
-
 type MyNotificationVm {
   notificationDeliveryId: UUID!
   alertEventId: UUID
@@ -894,6 +816,12 @@ type MyNotificationVm {
   payloadJson: String
   createdAt: DateTime!
   readAt: DateTime
+}
+
+type MyStaffProfileVm {
+  staff: StaffMemberVm!
+  qualifications: [StaffQualificationVm!]!
+  activeAssignments: [StaffTransporterAssignmentVm!]!
 }
 
 type NotificationDeliveriesPageVm {
@@ -1098,6 +1026,92 @@ type ReportVm {
   requiredGrants: String
 }
 
+type StaffAssignmentHistoryPageVm {
+  items: [StaffTransporterAssignmentVm!]!
+  totalCount: Int!
+}
+
+type StaffAssignmentVm {
+  staffId: UUID!
+  accountId: UUID!
+  resourceType: String!
+  resourceId: String!
+  active: Boolean!
+  startsAt: DateTime
+  endsAt: DateTime
+  assignmentType: String
+}
+
+type StaffLookupVm {
+  staffId: UUID!
+  name: String!
+  active: Boolean!
+}
+
+type StaffMembersPageVm {
+  items: [StaffMemberVm!]!
+  totalCount: Int!
+}
+
+type StaffMemberVm {
+  staffId: UUID!
+  accountId: UUID!
+  name: String!
+  phone: String
+  documentType: String
+  documentNumber: String
+  active: Boolean!
+  employeeCode: String
+  licenseNumber: String
+  licenseExpiresAt: LocalDate
+  defaultTransporterId: UUID
+  staffType: String!
+  lastModified: DateTime!
+  version: UnsignedInt!
+}
+
+type StaffOptionsPageVm {
+  items: [StaffLookupVm!]!
+  totalCount: Int!
+}
+
+type StaffQualificationsPageVm {
+  items: [StaffQualificationVm!]!
+  totalCount: Int!
+}
+
+type StaffQualificationVm {
+  staffQualificationId: UUID!
+  accountId: UUID!
+  staffId: UUID!
+  staffName: String!
+  qualificationType: String!
+  category: String
+  number: String
+  issuedAt: LocalDate
+  expiresAt: LocalDate
+  issuingAuthority: String
+  status: String!
+  documentId: UUID
+  notes: String
+  lastModified: DateTime!
+}
+
+type StaffTransporterAssignmentVm {
+  staffTransporterAssignmentId: UUID!
+  accountId: UUID!
+  staffId: UUID!
+  staffName: String!
+  transporterId: UUID!
+  transporterName: String!
+  startsAt: DateTime!
+  endsAt: DateTime
+  assignmentType: String!
+  status: String!
+  createdByPrincipal: String!
+  lastModified: DateTime!
+}
+
 type TokenVm {
   token: String
   tokenExpiration: DateTime
@@ -1225,6 +1239,11 @@ input AccountFeatureDtoInput {
   configurationJson: String
 }
 
+input AccountHolidayDtoInput {
+  date: LocalDate!
+  name: String!
+}
+
 input AccountSettingsDtoInput {
   accountId: UUID!
   maps: String!
@@ -1279,8 +1298,8 @@ input AssignDeviceToTransporterCommandInput {
   assignment: TransporterDeviceAssignmentDtoInput!
 }
 
-input AssignDriverToTransporterCommandInput {
-  driverId: UUID!
+input AssignStaffToTransporterCommandInput {
+  staffId: UUID!
   transporterId: UUID!
   startsAt: DateTime!
   assignmentType: String!
@@ -1353,14 +1372,6 @@ input CreateCredentialCommandInput {
   credential: CredentialDtoInput!
 }
 
-input CreateDriverCommandInput {
-  driver: DriverDtoInput!
-}
-
-input CreateDriverQualificationCommandInput {
-  qualification: DriverQualificationDtoInput!
-}
-
 input CreateGeocodingProviderCommandInput {
   geocodingProvider: GeocodingProviderDtoInput!
 }
@@ -1397,6 +1408,14 @@ input CreatePublicLinkGrantCommandInput {
   publicLinkGrant: PublicLinkGrantDtoInput!
 }
 
+input CreateStaffMemberCommandInput {
+  staff: StaffMemberDtoInput!
+}
+
+input CreateStaffQualificationCommandInput {
+  qualification: StaffQualificationDtoInput!
+}
+
 input CreateTransporterCommandInput {
   transporter: TransporterDtoInput!
 }
@@ -1422,8 +1441,8 @@ input CredentialDtoInput {
   operatorId: UUID!
 }
 
-input DeactivateDriverCommandInput {
-  driverId: UUID!
+input DeactivateStaffMemberCommandInput {
+  staffId: UUID!
 }
 
 input DeleteAlertSubscriptionCommandInput {
@@ -1434,16 +1453,16 @@ input DeleteDocumentReferenceCommandInput {
   documentId: UUID!
 }
 
-input DeleteDriverQualificationCommandInput {
-  driverQualificationId: UUID!
-}
-
 input DeleteNotificationTemplateCommandInput {
   notificationTemplateId: UUID!
 }
 
 input DeletePlatformAnnouncementCommandInput {
   platformAnnouncementId: UUID!
+}
+
+input DeleteStaffQualificationCommandInput {
+  staffQualificationId: UUID!
 }
 
 input DeviceDtoInput {
@@ -1515,34 +1534,6 @@ input DocumentVersionDtoInput {
   expiresAt: DateTime
 }
 
-input DriverDtoInput {
-  accountId: UUID!
-  name: String!
-  phone: String
-  documentType: String
-  documentNumber: String
-  active: Boolean!
-  employeeCode: String
-  licenseNumber: String
-  licenseExpiresAt: LocalDate
-  defaultTransporterId: UUID
-  expectedVersion: UnsignedInt
-}
-
-input DriverQualificationDtoInput {
-  accountId: UUID!
-  driverId: UUID!
-  qualificationType: String!
-  category: String
-  number: String
-  issuedAt: LocalDate
-  expiresAt: LocalDate
-  issuingAuthority: String
-  status: String!
-  documentId: UUID
-  notes: String
-}
-
 input EmitExpiringCredentialAlertsCommandInput {
   withinDays: Int! = 7
 }
@@ -1552,8 +1543,8 @@ input EndDeviceTransporterAssignmentCommandInput {
   reason: String
 }
 
-input EndDriverAssignmentCommandInput {
-  driverTransporterAssignmentId: UUID!
+input EndStaffAssignmentCommandInput {
+  staffTransporterAssignmentId: UUID!
   endsAt: DateTime
 }
 
@@ -1592,6 +1583,11 @@ input GetAccountFeaturesMasterQueryInput {
 
 input GetAccountFeaturesQueryInput {
   accountId: UUID!
+}
+
+input GetAccountHolidaysQueryInput {
+  accountId: UUID!
+  year: Int!
 }
 
 input GetAccountQueryInput {
@@ -1756,50 +1752,6 @@ input GetDocumentVersionsQueryInput {
   take: Int! = 50
 }
 
-input GetDriverAssignmentHistoryQueryInput {
-  accountId: UUID!
-  driverId: UUID
-  transporterId: UUID
-  from: DateTime
-  to: DateTime
-  skip: Int! = 0
-  take: Int! = 50
-}
-
-input GetDriverAssignmentsQueryInput {
-  driverId: UUID!
-}
-
-input GetDriverLookupQueryInput {
-  search: String
-  driverIds: [UUID!]
-}
-
-input GetDriverOptionsQueryInput {
-  search: String
-  skip: Int
-  take: Int
-}
-
-input GetDriverQualificationsQueryInput {
-  accountId: UUID!
-  driverId: UUID
-  expiringWithinDays: Int
-  skip: Int! = 0
-  take: Int! = 50
-}
-
-input GetDriverQueryInput {
-  driverId: UUID!
-}
-
-input GetDriversByAccountQueryInput {
-  accountId: UUID!
-  search: String
-  skip: Int! = 0
-  take: Int! = 50
-}
-
 input GetExpiringDocumentsQueryInput {
   withinDays: Int! = 30
   skip: Int! = 0
@@ -1898,6 +1850,51 @@ input GetRetiredTransportersQueryInput {
   skip: Int
   take: Int
   search: String
+}
+
+input GetStaffAssignmentHistoryQueryInput {
+  accountId: UUID!
+  staffId: UUID
+  transporterId: UUID
+  from: DateTime
+  to: DateTime
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetStaffAssignmentsQueryInput {
+  staffId: UUID!
+}
+
+input GetStaffLookupQueryInput {
+  search: String
+  staffIds: [UUID!]
+}
+
+input GetStaffMemberQueryInput {
+  staffId: UUID!
+}
+
+input GetStaffMembersByAccountQueryInput {
+  accountId: UUID!
+  search: String
+  staffType: String
+  skip: Int! = 0
+  take: Int! = 50
+}
+
+input GetStaffOptionsQueryInput {
+  search: String
+  skip: Int
+  take: Int
+}
+
+input GetStaffQualificationsQueryInput {
+  accountId: UUID!
+  staffId: UUID
+  expiringWithinDays: Int
+  skip: Int! = 0
+  take: Int! = 50
 }
 
 input GetSupportGrantStatusQueryInput {
@@ -2146,6 +2143,12 @@ input SetAccountFeatureMasterCommandInput {
   feature: AccountFeatureDtoInput!
 }
 
+input SetAccountHolidaysCommandInput {
+  accountId: UUID!
+  year: Int!
+  dates: [AccountHolidayDtoInput!]!
+}
+
 input SetOperatorEnabledCommandInput {
   operatorId: UUID!
   enabled: Boolean!
@@ -2164,6 +2167,35 @@ input SetSynchronizedDeviceIgnoredCommandInput {
 
 input SignDocumentCommandInput {
   signature: DocumentSignatureDtoInput!
+}
+
+input StaffMemberDtoInput {
+  accountId: UUID!
+  name: String!
+  phone: String
+  documentType: String
+  documentNumber: String
+  active: Boolean!
+  employeeCode: String
+  licenseNumber: String
+  licenseExpiresAt: LocalDate
+  defaultTransporterId: UUID
+  staffType: String!
+  expectedVersion: UnsignedInt
+}
+
+input StaffQualificationDtoInput {
+  accountId: UUID!
+  staffId: UUID!
+  qualificationType: String!
+  category: String
+  number: String
+  issuedAt: LocalDate
+  expiresAt: LocalDate
+  issuingAuthority: String
+  status: String!
+  documentId: UUID
+  notes: String
 }
 
 input SynchronizeOperatorDevicesCommandInput {
@@ -2257,16 +2289,6 @@ input UpdateCredentialDtoInput {
   password: String!
   key: String!
   key2: String!
-}
-
-input UpdateDriverCommandInput {
-  driverId: UUID!
-  driver: DriverDtoInput!
-}
-
-input UpdateDriverQualificationCommandInput {
-  driverQualificationId: UUID!
-  qualification: DriverQualificationDtoInput!
 }
 
 input UpdateGeocodingProviderCommandInput {
@@ -2374,6 +2396,16 @@ input UpdateReportDtoInput {
   sortOrder: Int!
 }
 
+input UpdateStaffMemberCommandInput {
+  staffId: UUID!
+  staff: StaffMemberDtoInput!
+}
+
+input UpdateStaffQualificationCommandInput {
+  staffQualificationId: UUID!
+  qualification: StaffQualificationDtoInput!
+}
+
 input UpdateTokenCommandInput {
   credential: UpdateTokenDtoInput!
 }
@@ -2437,17 +2469,6 @@ input UserSettingsDtoInput {
   userId: UUID!
 }
 
-input ValidateDriverAccountQueryInput {
-  driverId: UUID!
-  accountId: UUID!
-}
-
-input ValidateDriverAssignmentQueryInput {
-  driverId: UUID!
-  resourceType: String!
-  resourceId: String!
-}
-
 input ValidateFeatureEnabledQueryInput {
   accountId: UUID!
   featureKey: String!
@@ -2456,6 +2477,17 @@ input ValidateFeatureEnabledQueryInput {
 input ValidateGroupVisibilityQueryInput {
   accountId: UUID!
   userId: UUID!
+  resourceType: String!
+  resourceId: String!
+}
+
+input ValidateStaffAccountQueryInput {
+  staffId: UUID!
+  accountId: UUID!
+}
+
+input ValidateStaffAssignmentQueryInput {
+  staffId: UUID!
   resourceType: String!
   resourceId: String!
 }
@@ -2546,7 +2578,7 @@ enum OperatorSyncResult {
 enum PrincipalType {
   UNKNOWN
   USER
-  DRIVER
+  STAFF
   SERVICE_CLIENT
   PUBLIC_LINK
 }

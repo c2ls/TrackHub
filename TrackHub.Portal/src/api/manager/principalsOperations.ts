@@ -26,7 +26,7 @@ export const CurrentPrincipalItemFragment = graphql(`
     subjectId
     principalType
     userId
-    driverId
+    staffId
     clientId
     publicLinkGrantId
     role

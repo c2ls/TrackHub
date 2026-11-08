@@ -189,7 +189,7 @@ e2e/
 4. **Assert the visible outcome AND the reload.** A closed dialog is not proof
    that anything was stored — `CrudFlow.reload(shell, screen)` then re-assert.
 5. **Register the cleanup as soon as the row exists**, with an API fallback for
-   rows the UI cannot delete (drivers, notification rules, document types and
+   rows the UI cannot delete (staff, notification rules, document types and
    toll classes are deactivated, not deleted).
 6. **Never wait on network idle.** Wait on the UI state you expect.
 
@@ -218,7 +218,7 @@ e2e/
 | `10-dashboard` | Units tab (cards, filters, map, side list, refresh counter) and the Positions/replay tab |
 | `20-system-admin` | Accounts (create, edit, the status state machine), clients, service-client permissions, transporter types, geocoding providers, the toll catalog and its CSV import, the role and policy matrices, account features, support grants |
 | `30-manage-admin-account` | Account record, branding, feature entitlements |
-| `31-manage-admin-fleet` | Devices, units, groups + allocators, points of interest, drivers, driver credentials/qualifications/assignments |
+| `31-manage-admin-fleet` | Devices, units, groups + allocators, points of interest, staff, staff credentials/qualifications/assignments |
 | `32-manage-admin-access` | Users, the password dialog, the role and policy allocators, lockout and unlock |
 | `33-manage-admin-alerts` | Notification rules, alert subscriptions, templates, alert events, deliveries |
 | `34-manage-admin-documents` | Document library, expirations, document types, the embedded document panel (upload, share, remove), public links |
@@ -242,12 +242,12 @@ test that seeds data:
   `transporterLookupByUser`, so a unit created through the API without group
   membership is invisible to the signed-in user and never offered. Use
   `api.visibleTransporters()` and pick one the user can already see.
-- **A driver is assignable only to a trip on a unit it is linked to.**
-  `ValidateDriverAssignment` matches the driver's default transporter (or a live
+- **A staff member is assignable only to a trip on a unit it is linked to.**
+  `ValidateStaffAssignment` matches the staff member's default transporter (or a live
   assignment) against the trip's; anything else is refused with
-  `TRIP_DRIVER_NOT_ASSIGNABLE`, the toast is easy to miss, and the panel simply
-  keeps saying "No driver assigned yet". Seed the driver with
-  `api.createDriver(name, transporterId)` and plan the trip on that unit.
+  `TRIP_STAFF_NOT_ASSIGNABLE`, the toast is easy to miss, and the panel simply
+  keeps saying "No staff member assigned yet". Seed the staff with
+  `api.createStaffMember(name, transporterId)` and plan the trip on that unit.
 - **Assert inside the panel, not the page.** The picker keeps showing the name
   it selected whether or not the write was accepted, so a page-wide
   `getByText(name)` passes on a refusal. Scope to `panel-assignment`.

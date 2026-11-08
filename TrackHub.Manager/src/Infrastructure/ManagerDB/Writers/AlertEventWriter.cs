@@ -60,8 +60,8 @@ public sealed class AlertEventWriter(IApplicationDbContext context, ICurrentPrin
                 && await Context.Operators.AnyAsync(x => x.OperatorId == operatorId && x.AccountId == accountId, cancellationToken),
             "Document" => Guid.TryParse(resourceId, out var documentId)
                 && await Context.Documents.AnyAsync(x => x.DocumentId == documentId && x.AccountId == accountId, cancellationToken),
-            "Driver" => Guid.TryParse(resourceId, out var driverId)
-                && await Context.Drivers.AnyAsync(x => x.DriverId == driverId && x.AccountId == accountId, cancellationToken),
+            "Staff" => Guid.TryParse(resourceId, out var staffId)
+                && await Context.StaffMembers.AnyAsync(x => x.StaffId == staffId && x.AccountId == accountId, cancellationToken),
             _ => true
         };
 

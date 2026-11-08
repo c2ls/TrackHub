@@ -14,20 +14,20 @@ public class DocumentAccessPolicyTests
     private static ApplicationDbContext NewContext(string name)
         => new(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(name).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).Options);
 
-    private static Mock<ICurrentPrincipal> PrincipalMock(Guid accountId, PrincipalType type = PrincipalType.User, string? role = null, Guid? userId = null, Guid? driverId = null)
+    private static Mock<ICurrentPrincipal> PrincipalMock(Guid accountId, PrincipalType type = PrincipalType.User, string? role = null, Guid? userId = null, Guid? staffId = null)
     {
         var p = new Mock<ICurrentPrincipal>();
         p.SetupGet(x => x.AccountId).Returns(accountId);
         p.SetupGet(x => x.PrincipalType).Returns(type);
         p.SetupGet(x => x.Role).Returns(role);
         p.SetupGet(x => x.UserId).Returns(userId);
-        p.SetupGet(x => x.DriverId).Returns(driverId);
+        p.SetupGet(x => x.StaffId).Returns(staffId);
         return p;
     }
 
     private static DocumentAccessPolicy NewPolicy(ApplicationDbContext context, ICurrentPrincipal principal,
-        IVisibleTransporterReader? visible = null, IDriverReader? driver = null)
-        => new(context, principal, visible ?? Mock.Of<IVisibleTransporterReader>(), driver ?? Mock.Of<IDriverReader>());
+        IVisibleTransporterReader? visible = null, IStaffMemberReader? staff = null)
+        => new(context, principal, visible ?? Mock.Of<IVisibleTransporterReader>(), staff ?? Mock.Of<IStaffMemberReader>());
 
     [Test]
     public void IsClearedForClassification_PublicAlways_SensitiveNeedsPrivilege()
@@ -56,33 +56,33 @@ public class DocumentAccessPolicyTests
     }
 
     [Test]
-    public async Task CanAccessOwner_DriverPrincipal_Transporter_UsesAssignment()
+    public async Task CanAccessOwner_StaffPrincipal_Transporter_UsesAssignment()
     {
-        using var context = NewContext(nameof(CanAccessOwner_DriverPrincipal_Transporter_UsesAssignment));
+        using var context = NewContext(nameof(CanAccessOwner_StaffPrincipal_Transporter_UsesAssignment));
         var accountId = Guid.NewGuid();
-        var driverId = Guid.NewGuid();
+        var staffId = Guid.NewGuid();
         var transporterId = Guid.NewGuid();
 
-        var driverReader = new Mock<IDriverReader>();
-        driverReader.Setup(r => r.ValidateDriverAssignmentAsync(driverId, DocumentOwnerTypes.Transporter, transporterId.ToString(), It.IsAny<CancellationToken>()))
+        var staffMemberReader = new Mock<IStaffMemberReader>();
+        staffMemberReader.Setup(r => r.ValidateStaffAssignmentAsync(staffId, DocumentOwnerTypes.Transporter, transporterId.ToString(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var policy = NewPolicy(context, PrincipalMock(accountId, PrincipalType.Driver, driverId: driverId).Object, driver: driverReader.Object);
+        var policy = NewPolicy(context, PrincipalMock(accountId, PrincipalType.Staff, staffId: staffId).Object, staff: staffMemberReader.Object);
 
         Assert.That(await policy.CanAccessOwnerAsync(accountId, DocumentOwnerTypes.Transporter, transporterId.ToString(), false, CancellationToken.None), Is.True);
         Assert.That(await policy.CanAccessOwnerAsync(accountId, DocumentOwnerTypes.Transporter, Guid.NewGuid().ToString(), false, CancellationToken.None), Is.False);
     }
 
     [Test]
-    public async Task CanAccessOwner_DriverOwner_OnlySelf()
+    public async Task CanAccessOwner_StaffOwner_OnlySelf()
     {
-        using var context = NewContext(nameof(CanAccessOwner_DriverOwner_OnlySelf));
+        using var context = NewContext(nameof(CanAccessOwner_StaffOwner_OnlySelf));
         var accountId = Guid.NewGuid();
-        var driverId = Guid.NewGuid();
-        var policy = NewPolicy(context, PrincipalMock(accountId, PrincipalType.Driver, driverId: driverId).Object);
+        var staffId = Guid.NewGuid();
+        var policy = NewPolicy(context, PrincipalMock(accountId, PrincipalType.Staff, staffId: staffId).Object);
 
-        Assert.That(await policy.CanAccessOwnerAsync(accountId, DocumentOwnerTypes.Driver, driverId.ToString(), false, CancellationToken.None), Is.True);
-        Assert.That(await policy.CanAccessOwnerAsync(accountId, DocumentOwnerTypes.Driver, Guid.NewGuid().ToString(), false, CancellationToken.None), Is.False);
+        Assert.That(await policy.CanAccessOwnerAsync(accountId, DocumentOwnerTypes.Staff, staffId.ToString(), false, CancellationToken.None), Is.True);
+        Assert.That(await policy.CanAccessOwnerAsync(accountId, DocumentOwnerTypes.Staff, Guid.NewGuid().ToString(), false, CancellationToken.None), Is.False);
     }
 
     [Test]

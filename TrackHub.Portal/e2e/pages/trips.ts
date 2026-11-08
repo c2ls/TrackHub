@@ -45,7 +45,7 @@ export async function planTrip(
 
   await form.field('code').fill(code);
   await form.field('customerName').fill('E2E customer');
-  // A named unit matters when the trip has to carry a driver: a driver is only
+  // A named unit matters when the trip has to carry a staff: a staff is only
   // assignable to a trip whose unit it is actually linked to.
   if (transporterName) {
     // The unit picker searches the server, so the name is typed rather than scrolled to.

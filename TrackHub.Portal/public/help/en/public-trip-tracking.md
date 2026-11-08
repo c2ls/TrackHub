@@ -40,10 +40,10 @@ Some things are never shared **regardless of what you tick**:
 
 - **Toll and cost figures of any kind.** These never leave your account.
 - **Internal notes** on the trip or its stops.
-- **Driver contact details.** If you shared the driver at all, only their **first name** appears.
+- **Staff contact details.** If you shared the staff at all, only their **first name** appears.
 - **Document and photo files**, including proof-of-delivery attachments. The customer sees only *whether* a stop has proof of delivery, never the signature or photo itself.
 - **Raw position history.** The customer sees the current position at most, never the full track.
-- **Internal identifiers** for your units, drivers, geofences or documents.
+- **Internal identifiers** for your units, staff, geofences or documents.
 
 The live position is also time-limited by the trip's own state: it appears only while the trip is **in progress**, and disappears once the trip is completed, cancelled or aborted, even if the link is still valid.
 

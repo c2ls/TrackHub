@@ -147,10 +147,10 @@ public class DocumentWriterTests
         var doc = await writer.RegisterUploadedDocumentAsync(Guid.NewGuid(), Dto(accountId), CancellationToken.None);
 
         var sig = await writer.SignDocumentAsync(
-            new DocumentSignatureDto(doc.DocumentId, "User", "u", "Jane Driver", "I accept the terms."),
+            new DocumentSignatureDto(doc.DocumentId, "User", "u", "Jane Staff", "I accept the terms."),
             CancellationToken.None);
 
-        Assert.That(sig.SignerName, Is.EqualTo("Jane Driver"));
+        Assert.That(sig.SignerName, Is.EqualTo("Jane Staff"));
         Assert.That(sig.LegalTextAccepted, Is.EqualTo("I accept the terms."));
         Assert.That(context.DocumentSignatures.Any(s => s.DocumentId == doc.DocumentId), Is.True);
         Assert.That(context.AuditEvents.Any(e => e.Action == "SignDocument"), Is.True);
@@ -255,12 +255,12 @@ public class DocumentWriterTests
     }
 
     [Test]
-    public async Task RegisterUploadedDocumentAsync_ADriverFilesOnlyInternalPlatformEvidence()
+    public async Task RegisterUploadedDocumentAsync_AStaffFilesOnlyInternalPlatformEvidence()
     {
-        await using var context = NewContext(nameof(RegisterUploadedDocumentAsync_ADriverFilesOnlyInternalPlatformEvidence));
+        await using var context = NewContext(nameof(RegisterUploadedDocumentAsync_AStaffFilesOnlyInternalPlatformEvidence));
         var accountId = Guid.NewGuid();
         SeedDocumentType(context, accountId);
-        var writer = new DocumentWriter(context, Principal(accountId, PrincipalType.Driver), PrivilegedPolicy(), Mock.Of<IAlertRecorder>());
+        var writer = new DocumentWriter(context, Principal(accountId, PrincipalType.Staff), PrivilegedPolicy(), Mock.Of<IAlertRecorder>());
         var evidence = Dto(accountId) with { Category = Common.Domain.Evidence.PlatformDocumentCategories.Pod };
 
         var accepted = await writer.RegisterUploadedDocumentAsync(Guid.NewGuid(), evidence, CancellationToken.None);

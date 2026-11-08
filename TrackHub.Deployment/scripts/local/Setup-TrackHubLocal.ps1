@@ -72,7 +72,7 @@ $CrtPath     = Join-Path $CertDir 'trackhub-local.crt'
 $KeyPath     = Join-Path $CertDir 'trackhub-local.key'
 $BundlePath  = Join-Path $LocalDir 'ca-bundle.crt'
 $EnvPath     = Join-Path $ProjectDir '.env.local'
-$HostsPath   = "$env:SystemRoot\System32\drivers\etc\hosts"
+$HostsPath   = "$env:SystemRoot\System32\staff\etc\hosts"
 
 # Docker wants forward slashes in -v arguments.
 $ProjectDirU = $ProjectDir -replace '\\', '/'

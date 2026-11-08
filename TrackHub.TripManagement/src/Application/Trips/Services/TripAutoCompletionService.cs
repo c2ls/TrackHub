@@ -89,7 +89,7 @@ public sealed class TripAutoCompletionService(
                 TripEventTypes.TripCompleted,
                 TripAlertSeverities.Info,
                 $"trip-{TripEventTypes.TripCompleted.ToLowerInvariant()}:{tripId:N}",
-                new TripAlertDto(accountId, tripId, null, trip.Code, trip.TransporterId, trip.DriverId, null,
+                new TripAlertDto(accountId, tripId, null, trip.Code, trip.TransporterId, trip.StaffId, null,
                     measuredEnd, null, null, null, null, null),
                 cancellationToken);
         }

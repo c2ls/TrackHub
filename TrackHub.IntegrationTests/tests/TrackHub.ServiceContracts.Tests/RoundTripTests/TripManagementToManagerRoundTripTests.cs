@@ -45,7 +45,7 @@ public class TripManagementToManagerRoundTripTests
     private static readonly Guid TripId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid TripStopId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid TransporterId = Guid.Parse("44444444-4444-4444-4444-444444444444");
-    private static readonly Guid DriverId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+    private static readonly Guid StaffId = Guid.Parse("55555555-5555-5555-5555-555555555555");
     private static readonly DateTimeOffset OccurredAt = new(2026, 7, 1, 12, 30, 45, TimeSpan.Zero);
 
     private Mock<ISender> _sender = null!;
@@ -133,7 +133,7 @@ public class TripManagementToManagerRoundTripTests
             Assert.That(payload.GetProperty("tripStopId").GetGuid(), Is.EqualTo(TripStopId));
             Assert.That(payload.GetProperty("tripCode").GetString(), Is.EqualTo("TRIP-0001"));
             Assert.That(payload.GetProperty("transporterId").GetGuid(), Is.EqualTo(TransporterId));
-            Assert.That(payload.GetProperty("driverId").GetGuid(), Is.EqualTo(DriverId));
+            Assert.That(payload.GetProperty("staffId").GetGuid(), Is.EqualTo(StaffId));
             Assert.That(payload.GetProperty("delayMinutes").GetInt32(), Is.EqualTo(17));
             Assert.That(payload.GetProperty("occurredAt").GetDateTimeOffset(), Is.EqualTo(OccurredAt));
         }
@@ -211,7 +211,7 @@ public class TripManagementToManagerRoundTripTests
             TripStopId,
             "TRIP-0001",
             TransporterId,
-            DriverId,
+            StaffId,
             "Bodega Norte",
             OccurredAt,
             OccurredAt.AddMinutes(20),

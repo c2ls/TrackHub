@@ -28,51 +28,51 @@ namespace TrackHub.Manager.Infrastructure.Events;
 /// audit writes on the assumption that a handler covers them.
 /// </para>
 /// </summary>
-public sealed class DriverAssignedToTransporterEvent(Guid accountId, Guid driverTransporterAssignmentId, Guid driverId, Guid transporterId, DateTimeOffset startsAt, string assignmentType) : BaseEvent
+public sealed class StaffAssignedToTransporterEvent(Guid accountId, Guid staffTransporterAssignmentId, Guid staffId, Guid transporterId, DateTimeOffset startsAt, string assignmentType) : BaseEvent
 {
     public Guid AccountId { get; } = accountId;
-    public Guid DriverTransporterAssignmentId { get; } = driverTransporterAssignmentId;
-    public Guid DriverId { get; } = driverId;
+    public Guid StaffTransporterAssignmentId { get; } = staffTransporterAssignmentId;
+    public Guid StaffId { get; } = staffId;
     public Guid TransporterId { get; } = transporterId;
     public DateTimeOffset StartsAt { get; } = startsAt;
     public string AssignmentType { get; } = assignmentType;
 }
 
-/// <inheritdoc cref="DriverAssignedToTransporterEvent"/>
-public sealed class DriverAssignmentEndedEvent(Guid accountId, Guid driverTransporterAssignmentId, Guid driverId, Guid transporterId, DateTimeOffset endsAt) : BaseEvent
+/// <inheritdoc cref="StaffAssignedToTransporterEvent"/>
+public sealed class StaffAssignmentEndedEvent(Guid accountId, Guid staffTransporterAssignmentId, Guid staffId, Guid transporterId, DateTimeOffset endsAt) : BaseEvent
 {
     public Guid AccountId { get; } = accountId;
-    public Guid DriverTransporterAssignmentId { get; } = driverTransporterAssignmentId;
-    public Guid DriverId { get; } = driverId;
+    public Guid StaffTransporterAssignmentId { get; } = staffTransporterAssignmentId;
+    public Guid StaffId { get; } = staffId;
     public Guid TransporterId { get; } = transporterId;
     public DateTimeOffset EndsAt { get; } = endsAt;
 }
 
-/// <inheritdoc cref="DriverAssignedToTransporterEvent"/>
-public sealed class DriverQualificationCreatedEvent(Guid accountId, Guid driverQualificationId, Guid driverId, string qualificationType, DateOnly? expiresAt) : BaseEvent
+/// <inheritdoc cref="StaffAssignedToTransporterEvent"/>
+public sealed class StaffQualificationCreatedEvent(Guid accountId, Guid staffQualificationId, Guid staffId, string qualificationType, DateOnly? expiresAt) : BaseEvent
 {
     public Guid AccountId { get; } = accountId;
-    public Guid DriverQualificationId { get; } = driverQualificationId;
-    public Guid DriverId { get; } = driverId;
+    public Guid StaffQualificationId { get; } = staffQualificationId;
+    public Guid StaffId { get; } = staffId;
     public string QualificationType { get; } = qualificationType;
     public DateOnly? ExpiresAt { get; } = expiresAt;
 }
 
-/// <inheritdoc cref="DriverAssignedToTransporterEvent"/>
-public sealed class DriverQualificationUpdatedEvent(Guid accountId, Guid driverQualificationId, Guid driverId, string qualificationType, DateOnly? expiresAt) : BaseEvent
+/// <inheritdoc cref="StaffAssignedToTransporterEvent"/>
+public sealed class StaffQualificationUpdatedEvent(Guid accountId, Guid staffQualificationId, Guid staffId, string qualificationType, DateOnly? expiresAt) : BaseEvent
 {
     public Guid AccountId { get; } = accountId;
-    public Guid DriverQualificationId { get; } = driverQualificationId;
-    public Guid DriverId { get; } = driverId;
+    public Guid StaffQualificationId { get; } = staffQualificationId;
+    public Guid StaffId { get; } = staffId;
     public string QualificationType { get; } = qualificationType;
     public DateOnly? ExpiresAt { get; } = expiresAt;
 }
 
-/// <inheritdoc cref="DriverAssignedToTransporterEvent"/>
-public sealed class DriverQualificationDeletedEvent(Guid accountId, Guid driverQualificationId, Guid driverId, string qualificationType) : BaseEvent
+/// <inheritdoc cref="StaffAssignedToTransporterEvent"/>
+public sealed class StaffQualificationDeletedEvent(Guid accountId, Guid staffQualificationId, Guid staffId, string qualificationType) : BaseEvent
 {
     public Guid AccountId { get; } = accountId;
-    public Guid DriverQualificationId { get; } = driverQualificationId;
-    public Guid DriverId { get; } = driverId;
+    public Guid StaffQualificationId { get; } = staffQualificationId;
+    public Guid StaffId { get; } = staffId;
     public string QualificationType { get; } = qualificationType;
 }

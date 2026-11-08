@@ -28,8 +28,8 @@ public static class AlertKeys
     public static string GpsCredentialExpiring(Guid operatorId, DateTimeOffset? expiresAt)
         => $"gps-credential-expiring:{operatorId:N}:{expiresAt?.UtcTicks ?? 0}";
 
-    public static string DriverQualification(Guid driverQualificationId, DateOnly expiresAt, int threshold)
-        => $"driver-qual:{driverQualificationId:N}:{expiresAt:yyyyMMdd}:{threshold}";
+    public static string StaffQualification(Guid staffQualificationId, DateOnly expiresAt, int threshold)
+        => $"staff-qual:{staffQualificationId:N}:{expiresAt:yyyyMMdd}:{threshold}";
 
     public static string DocumentExpiration(string eventType, Guid documentId, DateTimeOffset expiresAt, string threshold)
         => $"{eventType}:{documentId:N}:{expiresAt.UtcTicks}:{threshold}";

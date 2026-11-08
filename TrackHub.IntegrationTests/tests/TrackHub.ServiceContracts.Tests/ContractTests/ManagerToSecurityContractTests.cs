@@ -45,12 +45,12 @@ public class ManagerToSecurityContractTests
     }
 
     [Test]
-    public void RevokeDriverCredentialsMutation_IsValidAgainstSecuritySchema()
+    public void RevokeStaffCredentialsMutation_IsValidAgainstSecuritySchema()
     {
-        var document = Utf8GraphQLParser.Parse(DriverCredentialRevoker.RevokeDriverCredentialsMutation);
+        var document = Utf8GraphQLParser.Parse(StaffCredentialRevoker.RevokeStaffCredentialsMutation);
         var result = Validator.Validate(_schema, document);
         Assert.That(result.HasErrors, Is.False,
-            () => "Manager→Security DriverCredentialRevoker.RevokeDriverCredentials no longer matches the Security schema: "
+            () => "Manager→Security StaffCredentialRevoker.RevokeStaffCredentials no longer matches the Security schema: "
                 + string.Join("; ", result.Errors.Select(e => e.Message)));
     }
 }

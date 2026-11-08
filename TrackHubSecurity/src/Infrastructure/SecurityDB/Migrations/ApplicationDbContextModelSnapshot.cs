@@ -106,168 +106,6 @@ namespace TrackHub.Security.Infrastructure.Migrations
                     b.ToTable("clients", "security");
                 });
 
-            modelBuilder.Entity("TrackHub.Security.Infrastructure.Entities.DriverCredential", b =>
-                {
-                    b.Property<Guid>("DriverCredentialId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accountid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean")
-                        .HasColumnName("active");
-
-                    b.Property<DateTimeOffset>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("driverid");
-
-                    b.Property<int>("FailedAttempts")
-                        .HasColumnType("integer")
-                        .HasColumnName("failedattempts");
-
-                    b.Property<DateTimeOffset?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lastloginat");
-
-                    b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("LockedUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lockeduntil");
-
-                    b.Property<string>("NormalizedLogin")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("normalizedlogin");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("passwordhash");
-
-                    b.Property<bool>("ResetRequired")
-                        .HasColumnType("boolean")
-                        .HasColumnName("resetrequired");
-
-                    b.Property<Guid>("SecurityStamp")
-                        .HasColumnType("uuid")
-                        .HasColumnName("securitystamp");
-
-                    b.Property<DateTimeOffset?>("VerifiedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("verifiedat");
-
-                    b.HasKey("DriverCredentialId");
-
-                    b.HasIndex("AccountId", "NormalizedLogin")
-                        .IsUnique()
-                        .HasFilter("active = TRUE");
-
-                    b.ToTable("driver_credentials", "security");
-                });
-
-            modelBuilder.Entity("TrackHub.Security.Infrastructure.Entities.DriverDeviceRegistration", b =>
-                {
-                    b.Property<Guid>("DriverDeviceRegistrationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("accountid");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean")
-                        .HasColumnName("active");
-
-                    b.Property<string>("AppVersion")
-                        .HasColumnType("text")
-                        .HasColumnName("appversion");
-
-                    b.Property<DateTimeOffset>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("deviceid");
-
-                    b.Property<string>("DeviceName")
-                        .HasColumnType("text")
-                        .HasColumnName("devicename");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("driverid");
-
-                    b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("LastSeenAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lastseenat");
-
-                    b.Property<string>("Platform")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("platform");
-
-                    b.Property<string>("PushToken")
-                        .HasColumnType("text")
-                        .HasColumnName("pushtoken");
-
-                    b.Property<string>("RefreshTokenFamilyId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("refreshtokenfamilyid");
-
-                    b.Property<DateTimeOffset>("RegisteredAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("registeredat");
-
-                    b.Property<DateTimeOffset?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revokedat");
-
-                    b.Property<string>("RevokedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("revokedby");
-
-                    b.HasKey("DriverDeviceRegistrationId");
-
-                    b.HasIndex("RefreshTokenFamilyId");
-
-                    b.HasIndex("DriverId", "DeviceId");
-
-                    b.ToTable("driver_device_registrations", "security");
-                });
-
             modelBuilder.Entity("TrackHub.Security.Infrastructure.Entities.OutboxMessage", b =>
                 {
                     b.Property<Guid>("OutboxMessageId")
@@ -577,6 +415,168 @@ namespace TrackHub.Security.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("service_client_permissions", "security");
+                });
+
+            modelBuilder.Entity("TrackHub.Security.Infrastructure.Entities.StaffCredential", b =>
+                {
+                    b.Property<Guid>("StaffCredentialId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failedattempts");
+
+                    b.Property<DateTimeOffset?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lastloginat");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LockedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lockeduntil");
+
+                    b.Property<string>("NormalizedLogin")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("normalizedlogin");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("passwordhash");
+
+                    b.Property<bool>("ResetRequired")
+                        .HasColumnType("boolean")
+                        .HasColumnName("resetrequired");
+
+                    b.Property<Guid>("SecurityStamp")
+                        .HasColumnType("uuid")
+                        .HasColumnName("securitystamp");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
+
+                    b.Property<DateTimeOffset?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verifiedat");
+
+                    b.HasKey("StaffCredentialId");
+
+                    b.HasIndex("AccountId", "NormalizedLogin")
+                        .IsUnique()
+                        .HasFilter("active = TRUE");
+
+                    b.ToTable("staff_credentials", "security");
+                });
+
+            modelBuilder.Entity("TrackHub.Security.Infrastructure.Entities.StaffDeviceRegistration", b =>
+                {
+                    b.Property<Guid>("StaffDeviceRegistrationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<string>("AppVersion")
+                        .HasColumnType("text")
+                        .HasColumnName("appversion");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("deviceid");
+
+                    b.Property<string>("DeviceName")
+                        .HasColumnType("text")
+                        .HasColumnName("devicename");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lastseenat");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("platform");
+
+                    b.Property<string>("PushToken")
+                        .HasColumnType("text")
+                        .HasColumnName("pushtoken");
+
+                    b.Property<string>("RefreshTokenFamilyId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("refreshtokenfamilyid");
+
+                    b.Property<DateTimeOffset>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("registeredat");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revokedat");
+
+                    b.Property<string>("RevokedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("revokedby");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
+
+                    b.HasKey("StaffDeviceRegistrationId");
+
+                    b.HasIndex("RefreshTokenFamilyId");
+
+                    b.HasIndex("StaffId", "DeviceId");
+
+                    b.ToTable("staff_device_registrations", "security");
                 });
 
             modelBuilder.Entity("TrackHub.Security.Infrastructure.Entities.User", b =>

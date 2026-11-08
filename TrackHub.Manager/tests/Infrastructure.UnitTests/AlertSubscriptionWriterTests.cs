@@ -106,17 +106,17 @@ public class AlertSubscriptionWriterTests
     }
 
     [Test]
-    public async Task CreateAlertSubscriptionAsync_DriverWhatsAppWithoutContact_DefaultsFromDriverPhone()
+    public async Task CreateAlertSubscriptionAsync_StaffWhatsAppWithoutContact_DefaultsFromStaffPhone()
     {
         var accountId = Guid.NewGuid();
-        await using var context = NewContext(nameof(CreateAlertSubscriptionAsync_DriverWhatsAppWithoutContact_DefaultsFromDriverPhone));
-        var driver = new Driver(accountId, "Dave", "+573001234567", null, null, true, null, null, null, null);
-        await context.Drivers.AddAsync(driver);
+        await using var context = NewContext(nameof(CreateAlertSubscriptionAsync_StaffWhatsAppWithoutContact_DefaultsFromStaffPhone));
+        var staff = new StaffMember(accountId, "Dave", "+573001234567", null, null, true, null, null, null, null);
+        await context.StaffMembers.AddAsync(staff);
         await context.SaveChangesAsync(CancellationToken.None);
 
         var writer = new AlertSubscriptionWriter(context as IApplicationDbContext, Principal(accountId, userId: Guid.NewGuid(), role: "Administrator"));
         var result = await writer.CreateAlertSubscriptionAsync(
-            new AlertSubscriptionDto(accountId, RecipientPrincipalTypes.Driver, driver.DriverId, null, NotificationChannels.WhatsApp, null, true), CancellationToken.None);
+            new AlertSubscriptionDto(accountId, RecipientPrincipalTypes.Staff, staff.StaffId, null, NotificationChannels.WhatsApp, null, true), CancellationToken.None);
 
         Assert.That(result.Contact, Is.EqualTo("+573001234567"));
     }

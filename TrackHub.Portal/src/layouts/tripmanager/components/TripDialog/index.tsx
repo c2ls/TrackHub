@@ -29,10 +29,10 @@ import CustomSelect from 'controls/Dialogs/CustomSelect';
 import SearchSelect from 'edition/SearchSelect';
 import type { SearchOption } from 'edition/SearchSelect';
 import { usePointOfInterestOptions, useUserTransporterOptions } from 'edition/pickerOptions';
-import { useDriverSearchOptions } from 'queries/drivers';
+import { useStaffSearchOptions } from 'queries/staff';
 import type { FormChangeHandler } from 'controls/Dialogs/useForm';
 import type { TransporterLookup } from 'api/manager/transporters';
-import type { DriverLookup } from 'api/manager/drivers';
+import type { StaffLookup } from 'api/manager/staff';
 import type { PointOfInterestLookup } from 'api/manager/pointsOfInterest';
 import type { Geofence } from 'api/geofencing/geofencing';
 import type { Trip, TollVehicleClass } from 'api/tripManagement/trips';
@@ -51,7 +51,7 @@ export interface TripFormValues {
   lastModified?: string | null;
   code?: string;
   transporterId?: string;
-  driverId?: string;
+  staffId?: string;
   serviceOrderId?: string | null;
   externalReference?: string | null;
   customerName?: string | null;
@@ -84,7 +84,7 @@ interface TripDialogProps {
   handleChange: FormChangeHandler;
   errors: Record<string, string>;
   transporters: TransporterLookup[];
-  drivers: DriverLookup[];
+  staff: StaffLookup[];
   vehicleClasses: TollVehicleClass[];
   pois: PointOfInterestLookup[];
   geofences: Geofence[];
@@ -133,7 +133,7 @@ function TripDialog({
   handleChange,
   errors,
   transporters,
-  drivers,
+  staff,
   vehicleClasses,
   pois,
   geofences,
@@ -168,7 +168,7 @@ function TripDialog({
   const transporterLabel =
     transporters.find((transporter) => transporter.transporterId === values.transporterId)?.name ?? null;
   const originPoiLabel = pois.find((poi) => poi.pointOfInterestId === values.originPoiId)?.name ?? null;
-  const driverLabel = drivers.find((driver) => driver.driverId === values.driverId)?.name ?? null;
+  const staffLabel = staff.find((staff) => staff.staffId === values.staffId)?.name ?? null;
   // Only active classes are offerable; an inactive class stays on historical
   // trips but must not be picked for a new one.
   const classOptions = vehicleClasses
@@ -318,13 +318,13 @@ function TripDialog({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <SearchSelect
-              id="driverId"
-              label={t('trips.driver')}
-              value={values.driverId || null}
-              valueLabel={driverLabel}
-              onChange={(option) => handleChange({ target: { name: 'driverId', value: option?.value ?? '' } })}
-              useOptions={useDriverSearchOptions}
-              placeholder={t('trips.assignment.selectDriver')}
+              id="staffId"
+              label={t('trips.staff')}
+              value={values.staffId || null}
+              valueLabel={staffLabel}
+              onChange={(option) => handleChange({ target: { name: 'staffId', value: option?.value ?? '' } })}
+              useOptions={useStaffSearchOptions}
+              placeholder={t('trips.assignment.selectStaff')}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>

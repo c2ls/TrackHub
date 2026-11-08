@@ -14,7 +14,7 @@ It is also where **user documentation lives**: the contextual help topics under 
 - **Multi-operator integration** — one interface for every connected GPS provider, with device management, manual sync, connectivity ping and health
 - **Geofencing** — a polygon and circle editor on both map providers, with server-paged lists and dashboard overlays
 - **Trip management** — a dispatch board for trips, stops, deliveries, route plans, tolls, proof of delivery and public tracking links
-- **Documents and workforce** — versioned uploads with signatures and sharing; the driver registry, qualifications and assignments
+- **Documents and workforce** — versioned uploads with signatures and sharing; the staff registry, qualifications and assignments
 - **Alerts and notifications** — the in-app feed, notification rules, subscriptions and templates
 - **Reporting** — the governed report catalog with in-app preview and Excel/PDF export
 - **Administration** — accounts, users, groups, permissions, features and service clients
@@ -94,7 +94,7 @@ Full detail: **[Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend)
 - **Calendar defaults and day filters come from `useAccountCalendar()`** (`src/context/account`, backed by `src/utils/accountCalendar.ts`): `today()`, `daysAgo`, `monthStart`/`monthEnd`, `dayStartIso`/`dayEndIso` are computed in the ACCOUNT's IANA zone (`accountContext.timeZoneId`), never from `new Date()` parts or a local-midnight `datetime-local` string — that is the browser's calendar, not the fleet's. Formatting a picked `Date` for a `date` input and displaying an instant stay browser-local.
 - **Help content is validated at build time.** `scripts/build-help.mjs` runs on `predev` and `prebuild` and checks language parity, id-equals-filename, `screens:` ↔ `routes.tsx` **in both directions**, `topic:` link targets, absence of raw HTML, and asset existence. Adding or renaming a screen without updating the topic frontmatter **fails the build**.
 - **`/status` must keep working with no token.** Its two anonymous fetches (`api/core/healthProbe.ts` and `getVisibleAnnouncements`) are the only sanctioned exceptions to the api-layering rule; both are documented in their file headers and reached only through `src/queries/platformStatus.ts`.
-- **`RouteDefinition.principalTypes` defaults to `[User]`.** A route reachable by driver or public-link principals must set `public: true` explicitly, or those principals bounce between it and `/dashboard` forever.
+- **`RouteDefinition.principalTypes` defaults to `[User]`.** A route reachable by staff or public-link principals must set `public: true` explicitly, or those principals bounce between it and `/dashboard` forever.
 - **`typescript-eslint` is disabled** until it supports TypeScript 7. `tsc` is the TypeScript lint gate.
 - Reporting is REST-only (`api/BasicReports`), and the Manager documents REST base is `~/documents` — **no `api/` prefix**.
 

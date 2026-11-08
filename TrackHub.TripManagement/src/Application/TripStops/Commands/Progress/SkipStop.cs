@@ -24,7 +24,7 @@ namespace TrackHub.TripManagement.Application.TripStops.Commands.Progress;
 /// Marks a stop <c>Skipped</c> with a reason (customer closed, refused, no access). Idempotent on
 /// <c>trip-skip:{tripStopId:N}:{clientEventId:N}</c> (acceptance 15).
 /// <para>
-/// No <c>PrincipalTypes = "Driver"</c> here (acceptance 6); spec 10 widens the attribute additively.
+/// No <c>PrincipalTypes = "Staff"</c> here (acceptance 6); spec 10 widens the attribute additively.
 /// </para>
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]

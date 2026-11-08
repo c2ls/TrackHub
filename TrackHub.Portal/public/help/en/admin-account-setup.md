@@ -4,7 +4,7 @@ title: Setting up your account
 description: For a Manager setting up a new account — the order to do things in, what to know before creating users and GPS operators, and the two mistakes everyone makes.
 category: getting-started
 screens: []
-related: [admin-platform-setup, feature-catalog, users-roles-groups, gps-integration, management-overview, drivers-workforce]
+related: [admin-platform-setup, feature-catalog, users-roles-groups, gps-integration, management-overview, staff-workforce]
 tags: [setup, onboarding, manager, users, groups, operators, order]
 order: 40
 ---
@@ -107,7 +107,7 @@ A **device** is the tracker hardware; a **unit** is the vehicle or asset you act
 
 1. **Units** (**Account Management → Fleet & Tracking → Units**) — click **+**, give the unit a **Name** and a **Type**, and **Save**. The **Type** determines the movement thresholds used to decide when the unit counts as stopped.
 2. **Assign the device** — on the **GPS Integration** screen, under **Device Assignments**, choose the unit and an unassigned device and press **Assign Device**. Only devices not currently assigned to a unit are offered.
-3. **Drivers** (**Fleet & Tracking → Drivers**) — if you track who is driving, add them here. A driver can carry a **Default Transporter**, so create the units first. Once a driver exists you can also issue them a **driver credential** for the mobile app, in the **Driver Credentials & Devices** section just below — that part works on every account. See [Drivers and workforce](topic:drivers-workforce).
+3. **Staff** (**Fleet & Tracking → Staff**) — if you track who is driving, add them here. A staff member can carry a **Default Transporter**, so create the units first. Once a staff member exists you can also issue them a **staff credential** for the mobile app, in the **Staff Credentials & Devices** section just below — that part works on every account. See [Staff and workforce](topic:staff-workforce).
 4. **Points of Interest** (**Fleet & Tracking → Points of Interest**) — named locations such as client sites, warehouses, fuel stations, and workshops, with a name, coordinates, a type, a colour, and optionally a group.
 
 Now go back to **Groups** and complete step 5.3 — assign the units to their groups.
@@ -118,9 +118,9 @@ Only the features enabled for your account will be there. One line each:
 
 - **Geofences** — draw the zones you want entry and exit alerts for. See [Geofences](topic:geofences).
 - **Notification rules** — decide what raises an alert and where it goes. Email and WhatsApp are separate entitlements from the base notifications feature, so a channel you cannot select is a billing question, not a bug. See [Alerts and notifications](topic:alerts-notifications).
-- **Documents** — store vehicle and driver paperwork, with expiry tracking. See [Documents](topic:documents).
+- **Documents** — store vehicle and staff paperwork, with expiry tracking. See [Documents](topic:documents).
 - **Public Links** — share a limited, time-boxed view with someone who has no login. See [Public links](topic:public-links).
-- **Workforce** — record your drivers' licences, medical exams and training with expiry dates, get alerted before they lapse, and keep a history of who drove which unit. See [Drivers and workforce](topic:drivers-workforce).
+- **Workforce** — record your staff' licences, medical exams and training with expiry dates, get alerted before they lapse, and keep a history of who drove which unit. See [Staff and workforce](topic:staff-workforce).
 
 ## 9. Verify the setup
 

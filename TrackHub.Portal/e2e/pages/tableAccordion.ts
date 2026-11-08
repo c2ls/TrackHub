@@ -109,10 +109,19 @@ export class Section {
   /**
    * Types into the section's server-side search box. The draft is debounced
    * (350 ms) before it reaches the query, so callers assert on the ROW, never on
-   * a timer.
+   * a timer. The query's response is awaited too: a row already on screen from
+   * the unfiltered page passes the visibility check before the debounced fetch
+   * raises the loading overlay, and the next click would land on the overlay.
    */
   async search(text: string): Promise<void> {
+    if ((await this.searchBox.inputValue()) === text) return;
+    const applied = this.page
+      .waitForResponse((response) => (response.request().postData() ?? '').includes(JSON.stringify(text)), {
+        timeout: 30_000,
+      })
+      .catch(() => null);
     await this.searchBox.fill(text);
+    await applied;
   }
 
   /** Finds one row by a search term, proving the server-side search works. */

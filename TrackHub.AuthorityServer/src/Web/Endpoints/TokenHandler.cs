@@ -59,7 +59,7 @@ public sealed class TokenHandler(
             var claimsPrincipal = (await context.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal
                 ?? throw new NotImplementedException("The specified grant type is not implemented.");
 
-            // On refresh, re-validate the subject so that a deactivated/locked user or a driver whose
+            // On refresh, re-validate the subject so that a deactivated/locked user or a staff whose
             // credential was revoked cannot keep exchanging refresh tokens for the token's full lifetime.
             if (request.IsRefreshTokenGrantType())
             {

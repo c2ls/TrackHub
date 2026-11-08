@@ -92,7 +92,7 @@ public class TripReportReaderPagingTests
 
             json.Append($$"""
                 {"tripId":"{{Guid.NewGuid()}}","code":"T-{{i}}","status":"Completed",
-                 "transporterId":"{{Guid.NewGuid()}}","transporterName":"Truck","driverId":null,"driverName":null,
+                 "transporterId":"{{Guid.NewGuid()}}","transporterName":"Truck","staffId":null,"staffName":null,
                  "customerName":null,"plannedStartAt":"2026-07-01T00:00:00+00:00","plannedEndAt":null,
                  "actualStartAt":null,"actualEndAt":null,"plannedDistanceMeters":null,"actualDistanceMeters":0,
                  "stopCount":0,"estimatedTollAmount":null,"tollCurrency":null,"tollStatus":"NoStations"}
@@ -317,7 +317,7 @@ public class TripReportReaderPagingTests
         var from = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero);
         var transporterId = Guid.NewGuid();
-        var driverId = Guid.NewGuid();
+        var staffId = Guid.NewGuid();
 
         GraphQLRequest? captured = null;
         _client
@@ -328,7 +328,7 @@ public class TripReportReaderPagingTests
                 return Task.FromResult(new GraphQLResponse<object> { Data = TripPage(0, 0) });
             });
 
-        await _reader.GetTripsAsync(from, to, transporterId, driverId, CancellationToken.None);
+        await _reader.GetTripsAsync(from, to, transporterId, staffId, CancellationToken.None);
 
         var variables = captured!.Variables!;
         var type = variables.GetType();
@@ -338,7 +338,7 @@ public class TripReportReaderPagingTests
             Assert.That(type.GetProperty("from")!.GetValue(variables), Is.EqualTo(from));
             Assert.That(type.GetProperty("to")!.GetValue(variables), Is.EqualTo(to));
             Assert.That(type.GetProperty("transporterId")!.GetValue(variables), Is.EqualTo(transporterId));
-            Assert.That(type.GetProperty("driverId")!.GetValue(variables), Is.EqualTo(driverId));
+            Assert.That(type.GetProperty("staffId")!.GetValue(variables), Is.EqualTo(staffId));
         });
     }
 
@@ -394,7 +394,7 @@ public class TripReportReaderPagingTests
     private static string StopRows(int count)
         => string.Join(',', Enumerable.Range(0, count).Select(i => $$"""
             {"tripStopId":"{{Guid.NewGuid()}}","tripId":"{{Guid.NewGuid()}}","tripCode":"T-{{i}}",
-             "transporterName":"Truck","driverName":null,"customerName":null,"sequence":{{i}},"name":"S{{i}}",
+             "transporterName":"Truck","staffName":null,"customerName":null,"sequence":{{i}},"name":"S{{i}}",
              "status":"Departed","plannedArrivalFrom":null,"plannedArrivalTo":null,"actualArrivalAt":null,
              "actualDepartureAt":null,"deliveryCount":0,"deliveredCount":0,"failedDeliveryCount":0,
              "partialDeliveryCount":0}

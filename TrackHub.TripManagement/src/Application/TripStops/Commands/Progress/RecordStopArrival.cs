@@ -26,9 +26,9 @@ namespace TrackHub.TripManagement.Application.TripStops.Commands.Progress;
 /// returns success and creates no second row (acceptance 15) — the guarantee spec 10's offline
 /// outbox is built on.
 /// <para>
-/// This spec declares no <c>PrincipalTypes = "Driver"</c> operation (acceptance 6). Spec 10 widens
-/// this command to drivers by adding <c>Driver</c> to the attribute below plus an assignment check
-/// and <c>[RequireFeature(FeatureKeys.DriverMobile)]</c> — additively, one line, no fork.
+/// This spec declares no <c>PrincipalTypes = "Staff"</c> operation (acceptance 6). Spec 10 widens
+/// this command to staff by adding <c>Staff</c> to the attribute below plus an assignment check
+/// and <c>[RequireFeature(FeatureKeys.StaffMobile)]</c> — additively, one line, no fork.
 /// </para>
 /// </summary>
 [Authorize(Resource = Resources.Trips, Action = Actions.Edit)]

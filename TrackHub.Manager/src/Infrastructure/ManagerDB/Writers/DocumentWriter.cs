@@ -223,7 +223,7 @@ public sealed class DocumentWriter(IApplicationDbContext context, ICurrentPrinci
         await Context.SaveChangesAsync(cancellationToken);
     }
 
-    // What a principal may file: a driver only platform evidence, as an internal record with no
+    // What a principal may file: a staff only platform evidence, as an internal record with no
     // expiry; anyone else the account's enabled document types or a platform module category.
     private async Task<DocumentDto> ValidateUploadAsync(Guid accountId, DocumentDto document, CancellationToken cancellationToken)
     {
@@ -244,21 +244,21 @@ public sealed class DocumentWriter(IApplicationDbContext context, ICurrentPrinci
             failures.Add(new(nameof(document.ExpiresAt), "The expiry date must be in the future."));
         }
 
-        if (Principal.PrincipalType == PrincipalType.Driver)
+        if (Principal.PrincipalType == PrincipalType.Staff)
         {
-            if (!PlatformDocumentCategories.DriverUploadable.Contains(document.Category))
+            if (!PlatformDocumentCategories.StaffUploadable.Contains(document.Category))
             {
-                failures.Add(new(nameof(document.Category), "Drivers may not file documents in this category."));
+                failures.Add(new(nameof(document.Category), "Staff may not file documents in this category."));
             }
 
             if (classification is not null && classification != DocumentClassifications.Internal)
             {
-                failures.Add(new(nameof(document.Classification), "Drivers file internal documents only."));
+                failures.Add(new(nameof(document.Classification), "Staff file internal documents only."));
             }
 
             if (document.ExpiresAt is not null)
             {
-                failures.Add(new(nameof(document.ExpiresAt), "Drivers may not set an expiry date."));
+                failures.Add(new(nameof(document.ExpiresAt), "Staff may not set an expiry date."));
             }
         }
         else if (!PlatformDocumentCategories.All.Contains(document.Category)
@@ -286,7 +286,7 @@ public sealed class DocumentWriter(IApplicationDbContext context, ICurrentPrinci
         }
 
         // Unregistered (module-owned) owner types have no resolver yet: only trusted service/privileged
-        // identities may register metadata for them; plain users and drivers are denied.
+        // identities may register metadata for them; plain users and staff are denied.
         if (!DocumentOwnerTypes.IsRegistered(ownerEntityType) && accessPolicy.IsPrivilegedPrincipal)
         {
             return;
@@ -315,7 +315,7 @@ public sealed class DocumentWriter(IApplicationDbContext context, ICurrentPrinci
     }
 
     private string ActorId()
-        => Principal.UserId?.ToString() ?? Principal.DriverId?.ToString() ?? Principal.ClientId ?? Principal.SubjectId ?? "unknown";
+        => Principal.UserId?.ToString() ?? Principal.StaffId?.ToString() ?? Principal.ClientId ?? Principal.SubjectId ?? "unknown";
 
     private DocumentVm ToVm(Document x)
     {

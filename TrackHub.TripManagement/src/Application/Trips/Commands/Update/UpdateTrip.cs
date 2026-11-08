@@ -48,12 +48,12 @@ public sealed class UpdateTripCommandHandler(
 
         await TripVisibility.EnsureTransporterVisibleAsync(reader, user, caller.AccountId, UserId, request.Trip.TransporterId, cancellationToken);
 
-        if (request.Trip.DriverId is { } driverId)
+        if (request.Trip.StaffId is { } staffId)
         {
-            var assignable = await managerValidationClient.ValidateDriverAssignmentAsync(
-                driverId, "Transporter", request.Trip.TransporterId, cancellationToken);
+            var assignable = await managerValidationClient.ValidateStaffAssignmentAsync(
+                staffId, "Transporter", request.Trip.TransporterId, cancellationToken);
             if (!assignable)
-                throw new ForbiddenAccessException(Resources.Trips, Actions.Edit, TripErrorCodes.DriverNotAssignable);
+                throw new ForbiddenAccessException(Resources.Trips, Actions.Edit, TripErrorCodes.StaffNotAssignable);
         }
 
         await TripVisibility.EnsureServiceOrderInAccountAsync(

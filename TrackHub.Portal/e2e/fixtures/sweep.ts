@@ -126,18 +126,18 @@ export async function sweep(
   }
 
   if (accountId) {
-    const drivers = await api.tryGql<{ driversByAccount: { items: Named[] } }>(
+    const staff = await api.tryGql<{ staffMembersByAccount: { items: Named[] } }>(
       'manager',
-      'query($accountId: UUID!, $skip: Int!, $take: Int!) { driversByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) { items { driverId name active } } }',
+      'query($accountId: UUID!, $skip: Int!, $take: Int!) { staffMembersByAccount(query: { accountId: $accountId, skip: $skip, take: $take }) { items { staffId name active } } }',
       { accountId, skip: 0, take: 500 }
     );
-    for (const row of drivers?.driversByAccount.items ?? []) {
+    for (const row of staff?.staffMembersByAccount.items ?? []) {
       if (!stale(nameOf(row, 'name')) || row.active === false) continue;
       await drop(
-        `driver ${row.name}`,
+        `staff ${row.name}`,
         'manager',
-        'mutation($driverId: UUID!) { deactivateDriver(command: { driverId: $driverId }) }',
-        { driverId: row.driverId }
+        'mutation($staffId: UUID!) { deactivateStaffMember(command: { staffId: $staffId }) }',
+        { staffId: row.staffId }
       );
     }
 

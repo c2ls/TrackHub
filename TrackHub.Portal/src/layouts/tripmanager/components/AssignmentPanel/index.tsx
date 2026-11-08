@@ -23,26 +23,26 @@ import ArgonButton from 'components/ArgonButton';
 import ArgonTypography from 'components/ArgonTypography';
 import SearchSelect from 'edition/SearchSelect';
 import { useUserTransporterOptions } from 'edition/pickerOptions';
-import { useDriverSearchOptions } from 'queries/drivers';
+import { useStaffSearchOptions } from 'queries/staff';
 import { formatDateTime } from 'utils/dateUtils';
-import type { DriverLookup } from 'api/manager/drivers';
+import type { StaffLookup } from 'api/manager/staff';
 import type { TransporterLookup } from 'api/manager/transporters';
 import type { TripDetail } from 'api/tripManagement/trips';
 
 interface AssignmentPanelProps {
   detail: TripDetail;
-  /** Names for the drivers this trip references; the picker searches the server itself. */
-  drivers: DriverLookup[];
+  /** Names for the staff this trip references; the picker searches the server itself. */
+  staff: StaffLookup[];
   transporters: TransporterLookup[];
-  onAssign: (driverId: string, transporterId: string | null) => void;
+  onAssign: (staffId: string, transporterId: string | null) => void;
   assigning: boolean;
   editable: boolean;
 }
 
-/** Driver assignment for a trip, plus the current assignment's acknowledgement state. */
+/** Staff assignment for a trip, plus the current assignment's acknowledgement state. */
 function AssignmentPanel({
   detail,
-  drivers,
+  staff,
   transporters,
   onAssign,
   assigning,
@@ -50,15 +50,15 @@ function AssignmentPanel({
 }: AssignmentPanelProps) {
   const { t } = useTranslation();
   const assignment = detail.assignment;
-  const [driverId, setDriverId] = useState<string>(assignment?.driverId ?? '');
-  const [pickedDriverName, setPickedDriverName] = useState<string | null>(null);
+  const [staffId, setStaffId] = useState<string>(assignment?.staffId ?? '');
+  const [pickedStaffName, setPickedStaffName] = useState<string | null>(null);
   const [transporterId, setTransporterId] = useState<string>(
     assignment?.transporterId ?? detail.trip.transporterId
   );
   const [pickedTransporterName, setPickedTransporterName] = useState<string | null>(null);
 
-  const driverName = (id?: string | null) =>
-    drivers.find((driver) => driver.driverId === id)?.name ?? t('trips.unassigned');
+  const staffName = (id?: string | null) =>
+    staff.find((staff) => staff.staffId === id)?.name ?? t('trips.unassigned');
   const transporterName = (id?: string | null) =>
     transporters.find((transporter) => transporter.transporterId === id)?.name ?? '-';
 
@@ -68,10 +68,10 @@ function AssignmentPanel({
         <ArgonBox display="flex" gap={2} flexWrap="wrap" alignItems="center" mb={1}>
           <ArgonBox>
             <ArgonTypography variant="caption" color="secondary" display="block">
-              {t('trips.assignment.driver')}
+              {t('trips.assignment.staff')}
             </ArgonTypography>
             <ArgonTypography variant="button" fontWeight="medium">
-              {driverName(assignment.driverId)}
+              {staffName(assignment.staffId)}
             </ArgonTypography>
           </ArgonBox>
           <ArgonBox>
@@ -112,16 +112,16 @@ function AssignmentPanel({
         <ArgonBox display="flex" gap={1} alignItems="flex-end" flexWrap="wrap">
           <ArgonBox width="240px">
             <SearchSelect
-              id="assignDriverId"
-              label={t('trips.assignment.driver')}
-              value={driverId || null}
-              valueLabel={pickedDriverName ?? (driverId ? driverName(driverId) : null)}
+              id="assignStaffId"
+              label={t('trips.assignment.staff')}
+              value={staffId || null}
+              valueLabel={pickedStaffName ?? (staffId ? staffName(staffId) : null)}
               onChange={(option) => {
-                setDriverId(option?.value ?? '');
-                setPickedDriverName(option?.label ?? null);
+                setStaffId(option?.value ?? '');
+                setPickedStaffName(option?.label ?? null);
               }}
-              useOptions={useDriverSearchOptions}
-              placeholder={t('trips.assignment.selectDriver')}
+              useOptions={useStaffSearchOptions}
+              placeholder={t('trips.assignment.selectStaff')}
             />
           </ArgonBox>
           <ArgonBox width="240px">
@@ -141,8 +141,8 @@ function AssignmentPanel({
             variant="gradient"
             color="info"
             size="small"
-            disabled={!driverId || assigning}
-            onClick={() => onAssign(driverId, transporterId || null)}
+            disabled={!staffId || assigning}
+            onClick={() => onAssign(staffId, transporterId || null)}
           >
             <Icon>person_add</Icon>&nbsp;{t('trips.assignment.assign')}
           </ArgonButton>

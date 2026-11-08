@@ -117,7 +117,7 @@ public sealed class NotificationWriter(IApplicationDbContext context, ICurrentPr
     }
 
 
-    // Cross-account recipients are invalid: every explicit user/driver id in the
+    // Cross-account recipients are invalid: every explicit user/staff id in the
     // selector must belong to the rule's account. Malformed JSON is rejected upstream by the
     // command validator; this guard owns the membership part.
     private async Task RequireSelectorPrincipalsInAccountAsync(Guid accountId, string recipientSelector, CancellationToken cancellationToken)
@@ -142,13 +142,13 @@ public sealed class NotificationWriter(IApplicationDbContext context, ICurrentPr
             }
         }
 
-        if (selector.DriverIds is { Count: > 0 })
+        if (selector.StaffIds is { Count: > 0 })
         {
-            var driverIds = selector.DriverIds.Distinct().ToList();
-            var known = await Context.Drivers.CountAsync(d => d.AccountId == accountId && driverIds.Contains(d.DriverId), cancellationToken);
-            if (known != driverIds.Count)
+            var staffIds = selector.StaffIds.Distinct().ToList();
+            var known = await Context.StaffMembers.CountAsync(d => d.AccountId == accountId && staffIds.Contains(d.StaffId), cancellationToken);
+            if (known != staffIds.Count)
             {
-                throw new ForbiddenAccessException("recipientSelector.driverIds contains principals outside the account.");
+                throw new ForbiddenAccessException("recipientSelector.staffIds contains principals outside the account.");
             }
         }
     }
@@ -173,10 +173,10 @@ public sealed class NotificationWriter(IApplicationDbContext context, ICurrentPr
             return false;
         }
 
-        return Principal.PrincipalType == PrincipalType.Driver
-            && Principal.DriverId.HasValue
-            && entity.RecipientPrincipalType == RecipientPrincipalTypes.Driver
-            && entity.Recipient == Principal.DriverId.Value.ToString();
+        return Principal.PrincipalType == PrincipalType.Staff
+            && Principal.StaffId.HasValue
+            && entity.RecipientPrincipalType == RecipientPrincipalTypes.Staff
+            && entity.Recipient == Principal.StaffId.Value.ToString();
     }
 
     private static NotificationRuleVm ToVm(NotificationRule x) => new(x.NotificationRuleId, x.AccountId, x.RuleKey, x.RuleType, x.Enabled, x.TriggerEvent, x.RecipientSelector, x.ChannelsJson, x.ThrottlingJson, x.ConfigurationJson, x.LastModified, x.Version);

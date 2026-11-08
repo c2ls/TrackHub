@@ -40,7 +40,7 @@ const SEEDED_CODES = [
   'documents-missing-required',
   'documents-share-activity',
   'documents-upload-volume',
-  'workforce-driver-registry',
+  'workforce-staff-registry',
   'workforce-qualification-expirations',
   'workforce-assignment-history',
   'trip-summary',
@@ -98,7 +98,7 @@ describe('parseFilterDefinitions', () => {
   // the form must degrade to a free input, never break.
   test('unknown datatype falls back to text; unknown source falls back to a free input', () => {
     const json = JSON.stringify([
-      { name: 'weird', type: 'money', labelKey: 'reports.maxRows', source: 'drivers' },
+      { name: 'weird', type: 'money', labelKey: 'reports.maxRows', source: 'staff' },
     ]);
 
     expect(parseFilterDefinitions(json)).toEqual([

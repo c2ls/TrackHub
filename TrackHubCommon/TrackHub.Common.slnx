@@ -17,12 +17,14 @@
     <Project Path="src/Common.Application/Common.Application.csproj" />
     <Project Path="src/Common.Domain/Common.Domain.csproj" />
     <Project Path="src/Common.Infrastructure/Common.Infrastructure.csproj" />
+    <Project Path="src/Common.Pdf/Common.Pdf.csproj" />
     <Project Path="src/Common.Web/Common.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Common.Application.Tests/Common.Application.Tests.csproj" />
     <Project Path="tests/Common.Domain.Tests/Common.Domain.Tests.csproj" />
     <Project Path="tests/Common.Infrastructure.Tests/Common.Infrastructure.Tests.csproj" />
+    <Project Path="tests/Common.Pdf.Tests/Common.Pdf.Tests.csproj" />
     <Project Path="tests/Common.Web.Tests/Common.Web.Tests.csproj" />
   </Folder>
 </Solution>

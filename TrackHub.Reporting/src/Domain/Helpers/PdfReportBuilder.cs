@@ -13,146 +13,82 @@
 //  limitations under the License.
 //
 
-using Common.Domain.Time;
 using System.Globalization;
-using MigraDoc.DocumentObjectModel;
-using MigraDoc.DocumentObjectModel.Shapes;
-using MigraDoc.DocumentObjectModel.Tables;
-using MigraDoc.Rendering;
-using PdfSharp.Fonts;
+using Common.Domain.Time;
+using Common.Pdf;
 using TrackHub.Reporting.Domain.Interfaces.Helpers;
 using TrackHub.Reporting.Domain.Models;
 
 namespace TrackHub.Reporting.Domain.Helpers;
 
 /// <summary>
-/// Renders a <see cref="ReportDataset"/> to a single clean A4 tabular PDF via PDFsharp-MigraDoc
-///: document title, optional account branding (logo + name), generation timestamp,
-/// applied-filters block, a table with resx-localized headers repeated on page breaks, page numbers in
-/// the footer, and image content cells (byte[] rendered inline). One shared layout — no per-report PDF.
+/// Renders a <see cref="ReportDataset"/> to one A4 tabular PDF: account branding, title, generation
+/// stamp, applied filters, a content-sized table whose header repeats on every page, and page numbers.
+/// Wide datasets switch to landscape. One shared layout — no per-report PDF.
 /// </summary>
 public sealed class PdfReportBuilder : IPdfReportBuilder
 {
-    private const string FontName = EmbeddedFontResolver.FamilyName;
-    private const double PageContentWidthCm = 17.0; // A4 (21cm) minus default left/right margins.
-
-    static PdfReportBuilder()
-        // Assigning the resolver is process-global and rejected once a font has been resolved,
-        // so it happens here, before any document exists.
-        => GlobalFontSettings.FontResolver = new EmbeddedFontResolver();
+    private const int LandscapeFromColumns = 7;
+    private const string TimestampFormat = "yyyy-MM-dd HH:mm";
+    private static readonly string[] CoordinatesFields = ["Latitude", "Longitude"];
 
     public byte[] Build(ReportDataset dataset, CultureInfo culture)
     {
-        var document = new Document();
-        document.Styles["Normal"]!.Font.Name = FontName;
+        string Label(string key) => ReportHeaderResolver.Resolve(key, culture);
 
-        var section = document.AddSection();
-        section.PageSetup.PageFormat = PageFormat.A4;
-
-        AddHeaderBlock(section, dataset, culture);
-        AddTable(section, dataset, culture);
-        AddFooter(section, culture);
-
-        var renderer = new PdfDocumentRenderer { Document = document };
-        renderer.RenderDocument();
-
-        using var stream = new MemoryStream();
-        renderer.PdfDocument.Save(stream, false);
-        return stream.ToArray();
-    }
-
-    private static void AddHeaderBlock(Section section, ReportDataset dataset, CultureInfo culture)
-    {
-        if (dataset.LogoImage is { Length: > 0 } logo)
-        {
-            var logoImage = section.AddImage("base64:" + Convert.ToBase64String(logo));
-            logoImage.Height = Unit.FromCentimeter(1.5);
-            logoImage.LockAspectRatio = true;
-        }
-
-        if (!string.IsNullOrWhiteSpace(dataset.AccountName))
-        {
-            var account = section.AddParagraph(dataset.AccountName);
-            account.Format.Font.Size = 11;
-            account.Format.Font.Bold = true;
-        }
-
-        var title = section.AddParagraph(dataset.Title);
-        title.Format.Font.Size = 16;
-        title.Format.Font.Bold = true;
-        title.Format.SpaceAfter = Unit.FromPoint(4);
-
-        var generated = section.AddParagraph(
-            $"{ReportHeaderResolver.Resolve("GeneratedAt", culture)}: " +
-            Local(dataset.GeneratedAt, dataset.TimeZone).ToString("yyyy-MM-dd HH:mm", culture));
-        generated.Format.Font.Size = 9;
-
-        var zone = section.AddParagraph($"{ReportHeaderResolver.Resolve("TimeZone", culture)}: {dataset.TimeZone.Id}");
-        zone.Format.Font.Size = 9;
+        var page = dataset.Columns.Count >= LandscapeFromColumns ? PdfPageSetup.A4Landscape : PdfPageSetup.A4Portrait;
+        var document = new PdfDocumentBuilder(page)
+            .Image(dataset.LogoImage, PdfPageSetup.Cm(1.5))
+            .ParagraphIf(dataset.AccountName, PdfTextStyle.Subtitle)
+            .Paragraph(dataset.Title, PdfTextStyle.Title)
+            .Paragraph($"{Label("GeneratedAt")}: {Local(dataset.GeneratedAt, dataset.TimeZone).ToString(TimestampFormat, culture)}")
+            .Paragraph($"{Label("TimeZone")}: {dataset.TimeZone.Id}");
 
         foreach (var filter in dataset.AppliedFilters)
         {
-            var line = section.AddParagraph(
-                $"{ReportHeaderResolver.Resolve(filter.Key, culture)}: {(filter.Value is DateTimeOffset at ? Local(at, dataset.TimeZone).ToString("yyyy-MM-dd HH:mm", culture) : filter.Value)}");
-            line.Format.Font.Size = 9;
+            var value = filter.Value is DateTimeOffset at ? Local(at, dataset.TimeZone).ToString(TimestampFormat, culture) : filter.Value;
+            document.Paragraph($"{Label(filter.Key)}: {value}");
         }
 
-        section.AddParagraph().Format.SpaceAfter = Unit.FromPoint(6);
+        document.Space();
+        if (dataset.Columns.Count > 0)
+        {
+            document.Table(BuildTable(dataset, culture));
+        }
+
+        return document
+            .Footer((number, total) => $"{Label("Page")} {number} {Label("PageOf")} {total}")
+            .Build(new PdfMetadata { Title = dataset.Title, Author = dataset.AccountName, Created = dataset.GeneratedAt.UtcDateTime });
     }
 
-    private static void AddTable(Section section, ReportDataset dataset, CultureInfo culture)
+    private static PdfTable BuildTable(ReportDataset dataset, CultureInfo culture)
     {
         var columns = dataset.Columns;
-        if (columns.Count == 0)
-        {
-            return;
-        }
-
-        var table = section.AddTable();
-        table.Borders.Width = 0.5;
-        table.Format.Font.Size = 8;
-
-        var columnWidth = Unit.FromCentimeter(PageContentWidthCm / columns.Count);
-        foreach (var _ in columns)
-        {
-            table.AddColumn(columnWidth);
-        }
-
-        // Header row — repeats at the top of every page (MigraDoc HeadingFormat).
-        var header = table.AddRow();
-        header.HeadingFormat = true;
-        header.Format.Font.Bold = true;
-        header.Shading.Color = Colors.LightGray;
-        for (var col = 0; col < columns.Count; col++)
-        {
-            header.Cells[col].AddParagraph(ReportHeaderResolver.Resolve(columns[col].PropertyName, culture));
-        }
+        var table = new PdfTable(columns.Count)
+            .HeaderRow([.. columns.Select(column => (PdfCell)ReportHeaderResolver.Resolve(column.PropertyName, culture))]);
 
         foreach (var values in dataset.Rows)
         {
-            var row = table.AddRow();
+            var cells = new PdfCell[columns.Count];
             for (var col = 0; col < columns.Count; col++)
             {
-                AddCell(row.Cells[col], columns[col], values[col], culture, dataset.TimeZone);
+                cells[col] = ToCell(values[col], columns[col], culture, dataset.TimeZone);
             }
+
+            table.Row(cells);
         }
+
+        return table;
     }
 
-    private static void AddCell(Cell cell, ReportColumn column, object? value, CultureInfo culture, AccountTimeZone timeZone)
-    {
-        if (value is byte[] image)
+    private static PdfCell ToCell(object? value, ReportColumn column, CultureInfo culture, AccountTimeZone timeZone)
+        => value switch
         {
-            if (image.Length > 0)
-            {
-                var rendered = cell.AddImage("base64:" + Convert.ToBase64String(image));
-                rendered.Height = Unit.FromCentimeter(1.0);
-                rendered.LockAspectRatio = true;
-            }
-            return;
-        }
-
-        cell.AddParagraph(FormatValue(value, column, culture, timeZone));
-    }
+            byte[] { Length: > 0 } image => PdfCell.Picture(image, PdfPageSetup.Cm(1.0)),
+            byte[] => string.Empty,
+            double or float or decimal or int or long => new PdfCell(FormatValue(value, column, culture, timeZone), Align: PdfAlign.Right),
+            _ => FormatValue(value, column, culture, timeZone)
+        };
 
     private static DateTimeOffset Local(DateTimeOffset value, AccountTimeZone timeZone) => TimeZoneInfo.ConvertTime(value, timeZone.Zone);
 
@@ -161,9 +97,9 @@ public sealed class PdfReportBuilder : IPdfReportBuilder
         {
             null => string.Empty,
             string s => s,
-            DateTimeOffset dto => Local(dto, timeZone).ToString("yyyy-MM-dd HH:mm", culture),
+            DateTimeOffset dto => Local(dto, timeZone).ToString(TimestampFormat, culture),
             DateOnly date => date.ToString("yyyy-MM-dd", culture),
-            DateTime dt => dt.ToString("yyyy-MM-dd HH:mm", culture),
+            DateTime dt => dt.ToString(TimestampFormat, culture),
             double d => d.ToString(NumberFormat(column), culture),
             float f => f.ToString(NumberFormat(column), culture),
             decimal m => m.ToString(NumberFormat(column), culture),
@@ -171,19 +107,6 @@ public sealed class PdfReportBuilder : IPdfReportBuilder
             _ => value.ToString() ?? string.Empty
         };
 
-    private static readonly string[] CoordinatesFields = ["Latitude", "Longitude"];
-
     private static string NumberFormat(ReportColumn column)
         => CoordinatesFields.Contains(column.PropertyName) ? "0.00000" : "0.00";
-
-    private static void AddFooter(Section section, CultureInfo culture)
-    {
-        var footer = section.Footers.Primary.AddParagraph();
-        footer.Format.Alignment = ParagraphAlignment.Center;
-        footer.Format.Font.Size = 8;
-        footer.AddText(ReportHeaderResolver.Resolve("Page", culture) + " ");
-        footer.AddPageField();
-        footer.AddText(" " + ReportHeaderResolver.Resolve("PageOf", culture) + " ");
-        footer.AddNumPagesField();
-    }
 }

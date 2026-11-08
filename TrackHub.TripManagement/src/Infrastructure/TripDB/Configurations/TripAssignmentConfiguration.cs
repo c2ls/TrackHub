@@ -28,7 +28,7 @@ public sealed class TripAssignmentConfiguration : IEntityTypeConfiguration<TripA
         builder.Property(x => x.TripAssignmentId).HasColumnName("id");
         builder.Property(x => x.AccountId).HasColumnName("accountid");
         builder.Property(x => x.TripId).HasColumnName("tripid");
-        builder.Property(x => x.DriverId).HasColumnName("driverid");
+        builder.Property(x => x.StaffId).HasColumnName("staffid");
         builder.Property(x => x.TransporterId).HasColumnName("transporterid");
         builder.Property(x => x.Status).HasColumnName("status").HasMaxLength(40).IsRequired();
         builder.Property(x => x.AssignedAt).HasColumnName("assignedat");

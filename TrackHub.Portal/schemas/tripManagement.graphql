@@ -267,7 +267,7 @@ type TripAssignmentVm {
   tripAssignmentId: UUID!
   accountId: UUID!
   tripId: UUID!
-  driverId: UUID!
+  staffId: UUID!
   transporterId: UUID!
   status: String!
   assignedAt: DateTime!
@@ -367,7 +367,7 @@ type TripReportRowVm {
   code: String!
   status: String!
   transporterId: UUID!
-  driverId: UUID
+  staffId: UUID
   routePlanId: UUID
   serviceOrderId: UUID
   externalReference: String
@@ -395,7 +395,7 @@ type TripReportRowVm {
   stopCount: Int!
   lastModified: DateTime!
   transporterName: String
-  driverName: String
+  staffName: String
   plannedDistanceMeters: Float
   estimatedTollAmount: Decimal
   tollCurrency: String
@@ -407,7 +407,7 @@ type TripShareVm {
   accountId: UUID!
   tripId: UUID!
   publicLinkGrantId: UUID!
-  includeDriverName: Boolean!
+  includeStaffName: Boolean!
   includeVehicle: Boolean!
   includeLivePosition: Boolean!
   includeStopDetail: Boolean!
@@ -443,7 +443,7 @@ type TripStopReportRowVm {
   tripId: UUID!
   tripCode: String!
   transporterName: String
-  driverName: String
+  staffName: String
   customerName: String
   sequence: Int!
   name: String!
@@ -526,7 +526,7 @@ type TripVm {
   code: String!
   status: String!
   transporterId: UUID!
-  driverId: UUID
+  staffId: UUID
   routePlanId: UUID
   serviceOrderId: UUID
   externalReference: String
@@ -573,7 +573,7 @@ input AddTripStopCommandInput {
 
 input AssignTripCommandInput {
   tripId: UUID!
-  driverId: UUID!
+  staffId: UUID!
   transporterId: UUID
 }
 
@@ -648,7 +648,7 @@ input GetTripPodReportDataQueryInput {
   from: DateTime!
   to: DateTime!
   transporterId: UUID
-  driverId: UUID
+  staffId: UUID
   skip: Int
   take: Int
 }
@@ -658,7 +658,7 @@ input GetTripReportDataQueryInput {
   from: DateTime!
   to: DateTime!
   transporterId: UUID
-  driverId: UUID
+  staffId: UUID
   skip: Int
   take: Int
 }
@@ -673,7 +673,7 @@ input GetTripsQueryInput {
   from: DateTime
   to: DateTime
   transporterId: UUID
-  driverId: UUID
+  staffId: UUID
   customer: String
   search: String
   skip: Int
@@ -686,7 +686,7 @@ input GetTripStopReportDataQueryInput {
   from: DateTime!
   to: DateTime!
   transporterId: UUID
-  driverId: UUID
+  staffId: UUID
   skip: Int
   take: Int
 }
@@ -708,7 +708,7 @@ input GetTripTollReportDataQueryInput {
   from: DateTime!
   to: DateTime!
   transporterId: UUID
-  driverId: UUID
+  staffId: UUID
   skip: Int
   take: Int
 }
@@ -843,7 +843,7 @@ input TransporterPositionDtoInput {
 input TripDtoInput {
   code: String!
   transporterId: UUID!
-  driverId: UUID
+  staffId: UUID
   serviceOrderId: UUID
   externalReference: String
   customerName: String
@@ -862,7 +862,7 @@ input TripImportDtoInput {
   externalReference: String!
   code: String!
   transporterId: UUID!
-  driverId: UUID
+  staffId: UUID
   customerName: String
   originName: String!
   originLatitude: Float!
@@ -876,7 +876,7 @@ input TripImportDtoInput {
 }
 
 input TripShareFieldFlagsDtoInput {
-  includeDriverName: Boolean!
+  includeStaffName: Boolean!
   includeVehicle: Boolean!
   includeLivePosition: Boolean!
   includeStopDetail: Boolean!

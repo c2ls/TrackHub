@@ -4,14 +4,14 @@ title: Reportes
 description: Elija un reporte del catálogo, ajuste sus filtros y véalo en pantalla o expórtelo a Excel o PDF.
 category: operation
 screens: [reports]
-related: [dashboard-trips-replay, units-devices, drivers-workforce, trip-management]
+related: [dashboard-trips-replay, units-devices, staff-workforce, trip-management]
 tags: [reportes, exportar, excel, pdf, vista previa, filtros]
 order: 40
 ---
 
 # Reportes
 
-Los reportes convierten los datos de su flota —posiciones, actividad de geocercas, salud de la integración GPS, documentos, conductores, viajes y administración de cuentas— en una tabla que puede ver en pantalla o descargar. Qué reportes ve, y los datos que contienen, dependen de las funciones de su cuenta, su rol y sus grupos, por lo que es posible que vea menos que el catálogo completo. Consulte [Roles y permisos](topic:roles-and-permissions).
+Los reportes convierten los datos de su flota —posiciones, actividad de geocercas, salud de la integración GPS, documentos, personal, viajes y administración de cuentas— en una tabla que puede ver en pantalla o descargar. Qué reportes ve, y los datos que contienen, dependen de las funciones de su cuenta, su rol y sus grupos, por lo que es posible que vea menos que el catálogo completo. Consulte [Roles y permisos](topic:roles-and-permissions).
 
 ## Abrir Reportes
 
@@ -56,17 +56,17 @@ Los reportes que TrackHub puede ofrecer incluyen los siguientes. La lista exacta
 
 ### Personal
 
-- **Registro de Conductores** – registro completo de conductores con licencia, código de empleado y unidad predeterminada.
-- **Vencimientos de Habilitaciones** – habilitaciones de conductores que vencen dentro del número de días seleccionado.
-- **Historial de Asignaciones de Conductores** – historial de asignaciones de conductor a unidad, acotado en el tiempo, sobre un rango de fechas.
+- **Registro de Personal** – registro completo de personal con licencia, código de empleado y unidad predeterminada.
+- **Vencimientos de Habilitaciones** – habilitaciones de personal que vencen dentro del número de días seleccionado.
+- **Historial de Asignaciones de Personal** – historial de asignaciones de personal a unidad, acotado en el tiempo, sobre un rango de fechas.
 
-Toda la categoría **Personal** requiere la funcionalidad de personal; sin ella la categoría no aparece en el catálogo. **Vencimientos de Habilitaciones** es el único de los tres que ofrece PDF además de Excel. Estos reportes contienen datos personales, por lo que su ejecución queda registrada en la auditoría de su cuenta. Vea [Conductores y personal](topic:drivers-workforce).
+Toda la categoría **Personal** requiere la funcionalidad de personal; sin ella la categoría no aparece en el catálogo. **Vencimientos de Habilitaciones** es el único de los tres que ofrece PDF además de Excel. Estos reportes contienen datos personales, por lo que su ejecución queda registrada en la auditoría de su cuenta. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
 
 ### Viajes
 
 - **Resumen de Viajes** – viajes en un rango de fechas con inicio, fin, distancia y peaje estimado, planificados frente a reales.
 - **Detalle de Paradas del Viaje** – detalle por parada de cada viaje: ventana planificada, llegada, salida, permanencia y resultado de las entregas.
-- **Cumplimiento de Horarios de Viajes** – porcentaje de cumplimiento, retraso promedio y paradas con retraso por unidad, conductor y cliente.
+- **Cumplimiento de Horarios de Viajes** – porcentaje de cumplimiento, retraso promedio y paradas con retraso por unidad, personal y cliente.
 - **Permanencia en Paradas** – distribución del tiempo de permanencia por parada y cliente en un rango de fechas.
 - **Costo de Peajes por Viaje** – peaje estimado por viaje, ruta, estación y clase de vehículo, señalando las estaciones sin tarifa.
 - **Registro de Pruebas de Entrega** – registro de pruebas de entrega con receptor, fecha de captura, ubicación y cantidad de documentos.

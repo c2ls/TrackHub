@@ -48,7 +48,7 @@ public class TripReportsTests
         DateTimeOffset plannedStart,
         DateTimeOffset? plannedEnd = null,
         DateTimeOffset? actualEnd = null,
-        string? driverName = "Ana",
+        string? staffName = "Ana",
         double? plannedDistanceMeters = 12_500,
         double actualDistanceMeters = 13_000,
         decimal? toll = 42.5m,
@@ -59,7 +59,7 @@ public class TripReportsTests
         int? transitMinutes = null,
         int? totalMinutes = null)
         => new(
-            Guid.NewGuid(), code, "Completed", Guid.NewGuid(), "Truck 1", Guid.NewGuid(), driverName, "ACME",
+            Guid.NewGuid(), code, "Completed", Guid.NewGuid(), "Truck 1", Guid.NewGuid(), staffName, "ACME",
             plannedStart, plannedEnd, plannedStart.AddMinutes(5), actualEnd,
             originArrivedAt, originDepartedAt, loadingMinutes, transitMinutes, totalMinutes,
             plannedDistanceMeters, actualDistanceMeters, 3, toll, currency, "Complete");
@@ -71,7 +71,7 @@ public class TripReportsTests
         DateTimeOffset? plannedTo,
         DateTimeOffset? arrivedAt,
         DateTimeOffset? departedAt = null,
-        string? driverName = "Ana",
+        string? staffName = "Ana",
         string? customerName = "ACME",
         string transporterName = "Truck 1",
         int deliveries = 2,
@@ -80,7 +80,7 @@ public class TripReportsTests
         int partial = 0,
         string activity = "Unload")
         => new(
-            Guid.NewGuid(), Guid.NewGuid(), tripCode, transporterName, driverName, customerName,
+            Guid.NewGuid(), Guid.NewGuid(), tripCode, transporterName, staffName, customerName,
             sequence, name, activity, "Departed", plannedTo?.AddMinutes(-30), plannedTo, arrivedAt, departedAt,
             deliveries, delivered, failed, partial);
 
@@ -146,13 +146,13 @@ public class TripReportsTests
     public async Task Summary_NullsProjectToEmptyStringsNeverNullCells()
     {
         _reader.Setup(r => r.GetTripsAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(List(Trip("T-1", Base, driverName: null, plannedDistanceMeters: null, toll: null, currency: null)));
+            .ReturnsAsync(List(Trip("T-1", Base, staffName: null, plannedDistanceMeters: null, toll: null, currency: null)));
 
         var result = await new TripSummaryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Cell(0, "DriverName"), Is.EqualTo(string.Empty));
+            Assert.That(result.Cell(0, "StaffName"), Is.EqualTo(string.Empty));
             Assert.That(result.Cell(0, "TollCurrency"), Is.EqualTo(string.Empty));
             // A missing plan or an unpopulated toll catalog stays NULL — never 0, which would read
             // as "no distance"/"free" (spec 11 §7.7).
@@ -206,7 +206,7 @@ public class TripReportsTests
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "TripCode", "TripStatus", "TransporterName", "DriverName",
+            "TripCode", "TripStatus", "TransporterName", "StaffName",
             "PlannedStartAt", "ActualStartAt", "PlannedEndAt", "ActualEndAt",
             "OriginArrivedAt", "OriginDepartedAt",
             "LoadingMinutes", "TransitMinutes", "TotalMinutes",
@@ -277,7 +277,7 @@ public class TripReportsTests
     // ---- trip-on-time-performance ----
 
     [Test]
-    public async Task OnTime_AggregatesPerTransporterDriverCustomer()
+    public async Task OnTime_AggregatesPerTransporterStaffCustomer()
     {
         _reader.Setup(r => r.GetTripStopsAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(List(
@@ -325,19 +325,19 @@ public class TripReportsTests
     }
 
     [Test]
-    public async Task OnTime_MissingDriverOrCustomerGroupsUnderOneExplicitBucket()
+    public async Task OnTime_MissingStaffOrCustomerGroupsUnderOneExplicitBucket()
     {
         _reader.Setup(r => r.GetTripStopsAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(List(
-                Stop("T-1", 1, "A", Base, Base, driverName: null, customerName: null),
-                Stop("T-2", 1, "B", Base, Base, driverName: "", customerName: "   ")));
+                Stop("T-1", 1, "A", Base, Base, staffName: null, customerName: null),
+                Stop("T-2", 1, "B", Base, Base, staffName: "", customerName: "   ")));
 
         var result = await new TripOnTimePerformanceReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.Multiple(() =>
         {
             Assert.That(result.RowCount, Is.EqualTo(1));
-            Assert.That(result.Cell(0, "DriverName"), Is.EqualTo("-"));
+            Assert.That(result.Cell(0, "StaffName"), Is.EqualTo("-"));
             Assert.That(result.Cell(0, "CustomerName"), Is.EqualTo("-"));
             Assert.That(result.Cell(0, "EvaluatedStopCount"), Is.EqualTo(2));
         });
@@ -353,7 +353,7 @@ public class TripReportsTests
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
-            "TransporterName", "DriverName", "CustomerName",
+            "TransporterName", "StaffName", "CustomerName",
             "EvaluatedStopCount", "OnTimeStopCount", "DelayedStopCount",
             "OnTimePercent", "AverageDelayMinutes", "MaxDelayMinutes"
         }));

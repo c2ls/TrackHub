@@ -44,7 +44,7 @@ interface TripImportDialogProps {
 const TEMPLATE_COLUMNS = [
   'code',
   'transporter',
-  'driver',
+  'staff',
   'customer',
   'origin',
   'destinations',

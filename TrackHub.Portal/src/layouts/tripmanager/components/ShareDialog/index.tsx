@@ -43,7 +43,7 @@ interface ShareDialogProps {
  * land silently, because an unrendered flag is an undisclosed disclosure.
  */
 export type FieldFlagName =
-  | 'includeDriverName'
+  | 'includeStaffName'
   | 'includeVehicle'
   | 'includeLivePosition'
   | 'includeStopDetail'
@@ -55,7 +55,7 @@ export const FIELD_FLAGS: FieldFlagName[] = [
   'includeRoute',
   'includeLivePosition',
   'includeVehicle',
-  'includeDriverName',
+  'includeStaffName',
   'includePodSummary',
 ];
 
@@ -66,7 +66,7 @@ export const FIELD_FLAGS: FieldFlagName[] = [
  * default and ticking it is a deliberate act (spec 11 §7.8).
  */
 export const DEFAULT_FLAGS: Record<FieldFlagName, boolean> = {
-  includeDriverName: false,
+  includeStaffName: false,
   includeVehicle: false,
   includeLivePosition: true,
   includeStopDetail: true,
@@ -208,7 +208,7 @@ function ShareDialog({ open, setOpen, detail }: ShareDialogProps) {
                     name={flag}
                     id={flag}
                     value={flags[flag]}
-                    label={t(`tripShare.${flag}` as 'tripShare.includeDriverName')}
+                    label={t(`tripShare.${flag}` as 'tripShare.includeStaffName')}
                     handleChange={(event) =>
                       setFlags((previous) => ({
                         ...previous,
@@ -275,7 +275,7 @@ function ShareDialog({ open, setOpen, detail }: ShareDialogProps) {
                         {granted.length === 0
                           ? t('tripShare.nothingShared')
                           : granted
-                              .map((flag) => t(`tripShare.${flag}` as 'tripShare.includeDriverName'))
+                              .map((flag) => t(`tripShare.${flag}` as 'tripShare.includeStaffName'))
                               .join(' · ')}
                       </ArgonTypography>
                     </ArgonBox>

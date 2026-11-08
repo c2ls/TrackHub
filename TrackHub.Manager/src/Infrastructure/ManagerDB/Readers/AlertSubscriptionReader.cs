@@ -16,7 +16,7 @@ public sealed class AlertSubscriptionReader(IApplicationDbContext context, ICurr
         // Full contact values are intentionally returned: this query backs the subscription editor.
         if (!IsPrivileged)
         {
-            principalId = Principal.UserId ?? Principal.DriverId;
+            principalId = Principal.UserId ?? Principal.StaffId;
         }
 
         var query = Context.AlertSubscriptions.Where(x => x.AccountId == scopedAccountId);

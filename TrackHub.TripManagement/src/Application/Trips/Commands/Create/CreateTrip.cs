@@ -49,13 +49,13 @@ public sealed class CreateTripCommandHandler(
         await TripVisibility.EnsureTransporterVisibleAsync(reader, user, caller.AccountId, UserId, request.Trip.TransporterId, cancellationToken);
 
         // Every referenced parent is validated against the trip's account at write time
-        // (acceptance 2). A driver qualifies only through Manager's assignment rules.
-        if (request.Trip.DriverId is { } driverId)
+        // (acceptance 2). A staff qualifies only through Manager's assignment rules.
+        if (request.Trip.StaffId is { } staffId)
         {
-            var assignable = await managerValidationClient.ValidateDriverAssignmentAsync(
-                driverId, "Transporter", request.Trip.TransporterId, cancellationToken);
+            var assignable = await managerValidationClient.ValidateStaffAssignmentAsync(
+                staffId, "Transporter", request.Trip.TransporterId, cancellationToken);
             if (!assignable)
-                throw new ForbiddenAccessException(Resources.Trips, Actions.Write, TripErrorCodes.DriverNotAssignable);
+                throw new ForbiddenAccessException(Resources.Trips, Actions.Write, TripErrorCodes.StaffNotAssignable);
         }
 
         // Spec 11 §5 lists ServiceOrderId among the cross-account references validated at write

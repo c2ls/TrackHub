@@ -27,7 +27,7 @@ namespace TrackHub.AuthorityServer.Web.Endpoints;
 // This class handles the authorization process.
 public sealed class AuthorizationHandler(SubjectValidity subjectValidity, IUserReader userReader)
 {
-    private const string DriverMobileClientId = "driver_mobile_client";
+    private const string StaffMobileClientId = "staff_mobile_client";
 
     // This method is responsible for authorizing the request.
     public async Task Authorize(HttpContext context)
@@ -59,16 +59,16 @@ public sealed class AuthorizationHandler(SubjectValidity subjectValidity, IUserR
 
         var principalType = cookiePrincipal.FindFirst("principal_type")?.Value ?? "User";
 
-        if (string.Equals(request.ClientId, DriverMobileClientId, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(principalType, "Driver", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(request.ClientId, StaffMobileClientId, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(principalType, "Staff", StringComparison.OrdinalIgnoreCase))
         {
             await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await ChallengeWithCurrentRequestAsync(context);
             return;
         }
 
-        if (string.Equals(principalType, "Driver", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(request.ClientId, DriverMobileClientId, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(principalType, "Staff", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(request.ClientId, StaffMobileClientId, StringComparison.OrdinalIgnoreCase))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
@@ -89,12 +89,12 @@ public sealed class AuthorizationHandler(SubjectValidity subjectValidity, IUserR
         };
         AddRequiredClaim(cookiePrincipal, claims, SubjectValidity.SecurityStampClaim);
 
-        if (string.Equals(principalType, "Driver", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(principalType, "Staff", StringComparison.OrdinalIgnoreCase))
         {
-            AddRequiredClaim(cookiePrincipal, claims, "driver_id");
-            AddRequiredClaim(cookiePrincipal, claims, "driver_credential_id");
+            AddRequiredClaim(cookiePrincipal, claims, "staff_id");
+            AddRequiredClaim(cookiePrincipal, claims, "staff_credential_id");
             AddRequiredClaim(cookiePrincipal, claims, "account_id");
-            claims.Add(AccessTokenClaim("client_id", DriverMobileClientId));
+            claims.Add(AccessTokenClaim("client_id", StaffMobileClientId));
         }
         else
         {

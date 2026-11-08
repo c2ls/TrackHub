@@ -157,7 +157,7 @@ public sealed class TripDetectionUnitOfWork(
             t.Code,
             t.Status,
             t.TransporterId,
-            t.DriverId,
+            t.StaffId,
             t.RoutePlanId,
             readyPlanTripIds.Contains(t.TripId),
             t.PlannedStartAt,

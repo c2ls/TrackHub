@@ -20,7 +20,7 @@ public sealed record RecipientSelectorModel
 {
     public List<string>? Roles { get; init; }
     public List<Guid>? UserIds { get; init; }
-    public List<Guid>? DriverIds { get; init; }
+    public List<Guid>? StaffIds { get; init; }
     /// <summary>When true, enabled AlertSubscriptions for the event type are included.</summary>
     public bool? Subscribers { get; init; }
     public List<ContactRecipientModel>? Contacts { get; init; }

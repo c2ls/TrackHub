@@ -25,6 +25,7 @@ public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext>
     public DbSet<Account> Accounts { get; set; }
     public DbSet<AccountBranding> AccountBrandings { get; set; }
     public DbSet<AccountFeature> AccountFeatures { get; set; }
+    public DbSet<AccountHoliday> AccountHolidays { get; set; }
     public DbSet<AccountSettings> AccountSettings { get; set; }
     public DbSet<AccountSupportGrant> AccountSupportGrants { get; set; }
     public DbSet<AlertEvent> AlertEvents { get; set; }
@@ -37,9 +38,9 @@ public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext>
     public DbSet<DocumentVersion> DocumentVersions { get; set; }
     public DbSet<DocumentSignature> DocumentSignatures { get; set; }
     public DbSet<DocumentType> DocumentTypes { get; set; }
-    public DbSet<Driver> Drivers { get; set; }
-    public DbSet<DriverQualification> DriverQualifications { get; set; }
-    public DbSet<DriverTransporterAssignment> DriverTransporterAssignments { get; set; }
+    public DbSet<StaffMember> StaffMembers { get; set; }
+    public DbSet<StaffQualification> StaffQualifications { get; set; }
+    public DbSet<StaffTransporterAssignment> StaffTransporterAssignments { get; set; }
     public DbSet<GeocodingProvider> GeocodingProviders { get; set; }
     public DbSet<PointOfInterest> PointsOfInterest { get; set; }
     public DbSet<Transporter> Transporters { get; set; }

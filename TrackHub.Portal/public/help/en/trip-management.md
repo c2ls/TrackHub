@@ -1,7 +1,7 @@
 ---
 id: trip-management
 title: Trips and route planning
-description: Plan multi-stop trips, place stops from the map, a point of interest or a geofence, get an ORS route with a deviation corridor and a toll estimate, assign a driver, follow progress, and share a tracking link with your customer.
+description: Plan multi-stop trips, place stops from the map, a point of interest or a geofence, get an ORS route with a deviation corridor and a toll estimate, assign a staff member, follow progress, and share a tracking link with your customer.
 category: operation
 screens: [tripManager]
 featureKey: trip-management
@@ -46,7 +46,7 @@ Use the **Exceptions** filter to cut the board down to what needs a human:
 | Off corridor | The vehicle has strayed from the planned route. |
 | Stalled at final stop | It arrived at the last stop and the route has nowhere left to go. |
 
-The other filters — status, unit, driver, date from, date to — and the search box in the top bar are applied by the server, so the list is a true page of matching trips rather than a filtered view of the first few. Use the arrows below the board to move between pages; the counter tells you which rows you are looking at.
+The other filters — status, unit, staff, date from, date to — and the search box in the top bar are applied by the server, so the list is a true page of matching trips rather than a filtered view of the first few. Use the arrows below the board to move between pages; the counter tells you which rows you are looking at.
 
 Click a row to open that trip in the workspace below.
 
@@ -73,7 +73,7 @@ Click **New trip** and fill in the dialog:
 
 - **Trip code** (required) — your own reference. It must be unique within the account; reusing a code is rejected.
 - **Customer** — shown to the customer on the tracking page.
-- **Unit** (required) and **Driver** — the vehicle doing the work, and who is driving it.
+- **Unit** (required) and **Staff** — the vehicle doing the work, and who is driving it.
 - **Origin** (required) — an existing **place**: one of your geofences, or a point of interest. There is no coordinate box, on purpose. The origin is what the automatic start is measured against, so a geofence is better than a point: the trip is judged against the plant's real shape instead of a 150 m circle around a pin.
 - **Destinations** (at least one) and the **activity** at them — see below.
 - **Planned start** (required) and **planned end**.
@@ -170,9 +170,9 @@ New trips pick up their toll class from these rules automatically. Trips that al
 
 Until at least one rule exists, trips are created with no toll class and the estimate has nothing to price against, so it never engages. If the class list is empty, the platform's toll catalog has no vehicle classes yet — a super administrator has to define them first.
 
-## Assigning a driver
+## Assigning a staff
 
-The assignment panel shows who is currently assigned, on which unit, when they were assigned, and whether they have acknowledged it. Pick a driver and a unit and press **Assign driver** to change it. Only active drivers are offered.
+The assignment panel shows who is currently assigned, on which unit, when they were assigned, and whether they have acknowledged it. Pick a staff member and a unit and press **Assign staff** to change it. Only active staff are offered.
 
 ## Running the trip
 
@@ -212,13 +212,13 @@ Under the planner you get the full picture of the trip:
 
 - **Stops** — the planned window, the ETA with its source, the actual arrival and departure, and the current status of each stop. The ETA label tells you whether it is a **live estimate** from the routing service or a fallback to your **planned schedule**, so you know how much to trust it.
 - **Deliveries** — the consignments registered against each stop and how each one turned out. See *Deliveries and proof of delivery* below for how to register and close them.
-- **History** — every event on the trip, with when it happened and whether it came from the portal, the driver, automatic detection or a background job.
+- **History** — every event on the trip, with when it happened and whether it came from the portal, the staff, automatic detection or a background job.
 - **Proof of delivery** — one card per capture, with who received it, when, where, any notes, and buttons to download the attachments.
 - **Route replay** — press **Load replay** to draw the positions the vehicle actually recorded over the planned line. If the trip has more history than the replay limit, a warning says so and tells you how many points are shown; use the position history report for the complete track rather than assuming the drawn line is everything. See [Trips and replay](topic:dashboard-trips-replay).
 
 ## Deliveries and proof of delivery
 
-Deliveries and proof of delivery are recorded **from this screen**. You do not need the driver app: a dispatcher taking details over the phone or radio can keep the trip's record complete on their own.
+Deliveries and proof of delivery are recorded **from this screen**. You do not need the staff app: a dispatcher taking details over the phone or radio can keep the trip's record complete on their own.
 
 Both stay available until the trip is completed, cancelled or aborted.
 
@@ -257,14 +257,14 @@ Captured proofs appear as cards in the trip detail, with buttons to download eac
 Press **Share** to create a read-only link your customer can open without an account.
 
 1. Set a **purpose** and, required, an **expiry** date and time.
-2. Tick exactly what the customer may see: **stop detail**, **the planned route on the map**, **live position**, **vehicle**, **driver first name**, and **whether each stop has proof of delivery**.
+2. Tick exactly what the customer may see: **stop detail**, **the planned route on the map**, **live position**, **vehicle**, **staff first name**, and **whether each stop has proof of delivery**.
 3. Press save. The link appears **once**.
 
 Every box starts **unticked unless it is deliberately safe**, and the **planned route** in particular starts off. Leaving it off is not a mistake — the customer simply gets the stop timeline and, if you shared it, the live marker, with no route line drawn. Tick it when you actually want the customer to see the intended path. The dialog tells you which of the two the link will produce before you save.
 
 Copy it immediately — the token inside the link is shown at creation and can never be retrieved again. If you lose it, revoke the link and create a new one.
 
-Anything you did not tick is never sent to the customer at all. Costs, tolls, internal notes, driver contact details, document files and raw position history are **never** shared, whatever you tick. Live position is only ever visible while the trip is actually in progress.
+Anything you did not tick is never sent to the customer at all. Costs, tolls, internal notes, staff contact details, document files and raw position history are **never** shared, whatever you tick. Live position is only ever visible while the trip is actually in progress.
 
 Existing links are listed in the same dialog with their state — active, expired or revoked. **Revoke** stops a link working immediately. Trip links are ordinary public links and also appear in [Public links](topic:public-links).
 

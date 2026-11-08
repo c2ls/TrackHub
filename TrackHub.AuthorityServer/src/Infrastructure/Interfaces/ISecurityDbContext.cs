@@ -20,7 +20,7 @@ public interface ISecurityDbContext
 {
     DbSet<User> Users { get; set; }
     DbSet<Client> Clients { get; set; }
-    DbSet<DriverCredential> DriverCredentials { get; set; }
+    DbSet<StaffCredential> StaffCredentials { get; set; }
     DbSet<Role> Roles { get; set; }
     DbSet<UserRole> UserRoles { get; set; }
     DbSet<ServiceClientPermission> ServiceClientPermissions { get; set; }

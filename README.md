@@ -45,7 +45,7 @@ It is open source, self-hosted, multi-tenant and bilingual (English / Spanish), 
 | **Multi-provider GPS integration** | One pluggable Router service per protocol, with device management, manual sync, connectivity ping and derived operator health |
 | **Geofencing** | Polygon and circle zones on both map providers, PostGIS containment detection, entry / exit / dwell alerts and visit history |
 | **Trip management** | Zero-touch trip lifecycle — trips arm, start and complete from origin and stop zones — plus route plans, tolls, proof of delivery, ETAs and public tracking links |
-| **Documents & workforce** | Versioned documents with signatures, sharing, expiration and retention; the driver registry with qualifications and assignment history |
+| **Documents & workforce** | Versioned documents with signatures, sharing, expiration and retention; the staff registry with qualifications and assignment history |
 | **Alerts & notifications** | Rule-driven alerts delivered in-app, by email, WhatsApp or webhook, with throttling, digests and escalation |
 | **Reporting** | A governed catalog of reports with in-app preview and Excel / PDF export |
 | **Multi-tenancy** | Account lifecycle, per-account feature flags, branding, and a role + policy permission model enforced service-side |

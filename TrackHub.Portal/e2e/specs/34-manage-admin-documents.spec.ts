@@ -107,11 +107,11 @@ test.describe('account management — documents & sharing', () => {
   }) => {
     // Documents are added from the panel embedded in the record they belong to,
     // not from the library — the library is the cross-account LIST and correctly
-    // offers no Upload of its own. Today that panel is mounted on a driver's
+    // offers no Upload of its own. Today that panel is mounted on a staff's
     // qualifications, so that is where upload/version/share/void live.
-    const driverName = uniqueName('driver');
-    const driverId = await api.createDriver(driverName);
-    cleanup.add(`driver ${driverName}`, () => api.deactivateDriver(driverId));
+    const staffName = uniqueName('staff');
+    const staffId = await api.createStaffMember(staffName);
+    cleanup.add(`staff ${staffName}`, () => api.deactivateStaffMember(staffId));
 
     // The upload dialog's category picker is fed by the account's document
     // types. An account whose types were all disabled can store no document at
@@ -125,9 +125,9 @@ test.describe('account management — documents & sharing', () => {
     fs.writeFileSync(file, 'uploaded by the TrackHub e2e suite\n');
 
     await shell.open('manageAdmin');
-    const qualifications = new Section(page, 'driver-qualifications', t);
+    const qualifications = new Section(page, 'staff-qualifications', t);
     await qualifications.expand();
-    await pickOption(page, qualifications.root.locator('#qualificationDriverId'), driverName, true);
+    await pickOption(page, qualifications.root.locator('#qualificationStaffId'), staffName, true);
 
     const upload = qualifications.root.getByRole('button', {
       name: t('documentManagement.upload'),
@@ -193,18 +193,18 @@ test.describe('account management — documents & sharing', () => {
     api,
     cleanup,
   }) => {
-    const driverName = uniqueName('driver');
-    const driverId = await api.createDriver(driverName);
-    cleanup.add(`driver ${driverName}`, () => api.deactivateDriver(driverId));
+    const staffName = uniqueName('staff');
+    const staffId = await api.createStaffMember(staffName);
+    cleanup.add(`staff ${staffName}`, () => api.deactivateStaffMember(staffId));
 
     const category = `e2e-type-${unique()}`;
     const documentTypeId = await api.ensureDocumentType(category);
     cleanup.add(`document type ${category}`, () => api.disableDocumentType(documentTypeId));
 
     await shell.open('manageAdmin');
-    const qualifications = new Section(page, 'driver-qualifications', t);
+    const qualifications = new Section(page, 'staff-qualifications', t);
     await qualifications.expand();
-    await pickOption(page, qualifications.root.locator('#qualificationDriverId'), driverName, true);
+    await pickOption(page, qualifications.root.locator('#qualificationStaffId'), staffName, true);
 
     await qualifications.root
       .getByRole('button', { name: t('documentManagement.upload') })

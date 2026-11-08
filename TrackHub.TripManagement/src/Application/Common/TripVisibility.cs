@@ -50,8 +50,8 @@ public static class TripVisibility
     /// This method used to return early for Administrator/Manager/ServiceClient with no check at
     /// all, so an Account A administrator could create a trip pointing at Account B's transporter.
     /// That is not a cosmetic dangling reference: the report readers resolve
-    /// <c>TransporterName</c>/<c>DriverName</c> by unscoped id, so Account B's transporter and
-    /// driver names surfaced inside Account A's report output. Cross-account references are invalid
+    /// <c>TransporterName</c>/<c>StaffName</c> by unscoped id, so Account B's transporter and
+    /// staff names surfaced inside Account A's report output. Cross-account references are invalid
     /// at write time (spec 11 §5, acceptance 2).
     /// </para>
     /// <para>

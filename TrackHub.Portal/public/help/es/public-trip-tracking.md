@@ -40,10 +40,10 @@ Hay cosas que nunca se comparten, **marque lo que marque**:
 
 - **Cifras de peajes y costos de cualquier tipo.** Nunca salen de su cuenta.
 - **Notas internas** del viaje o de sus paradas.
-- **Datos de contacto del conductor.** Si compartió al conductor, solo aparece su **nombre de pila**.
+- **Datos de contacto del personal.** Si compartió al personal, solo aparece su **nombre de pila**.
 - **Archivos de documentos y fotos**, incluidos los adjuntos de las pruebas de entrega. El cliente solo ve *si* una parada tiene prueba de entrega, nunca la firma ni la foto.
 - **Historial de posiciones sin procesar.** El cliente ve, como máximo, la posición actual; nunca el recorrido completo.
-- **Identificadores internos** de sus unidades, conductores, geocercas o documentos.
+- **Identificadores internos** de sus unidades, personal, geocercas o documentos.
 
 La posición en vivo además está limitada por el propio estado del viaje: aparece solo mientras el viaje está **en curso** y desaparece cuando se completa, se cancela o se aborta, aunque el enlace siga vigente.
 

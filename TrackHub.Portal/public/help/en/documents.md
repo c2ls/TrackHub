@@ -4,7 +4,7 @@ title: Documents
 description: Store, classify, virus-scan, version and share your account's documents from the Account Management screen.
 category: administration
 screens: [manageAdmin]
-related: [management-overview, units-devices, drivers-workforce]
+related: [management-overview, units-devices, staff-workforce]
 tags: [documents, files, upload, versions, expiry, virus scan]
 order: 40
 ---
@@ -13,7 +13,7 @@ order: 40
 
 The **Documents** area of the **Account Management** screen lets you store files, keep them classified and versioned, watch for expiry, and share them safely. You find it under the **Documents & Sharing** group of the page.
 
-The area has three collapsible sections — **Document Library**, **Expiring Documents** and **Document Types** — plus an embedded documents panel that appears on the detail of the thing a document belongs to (for example a unit or a driver).
+The area has three collapsible sections — **Document Library**, **Expiring Documents** and **Document Types** — plus an embedded documents panel that appears on the detail of the thing a document belongs to (for example a unit or a staff member).
 
 ## Document Library
 
@@ -36,7 +36,7 @@ An account-wide search across your documents.
 
 A dashboard of documents nearing expiry. Columns: **Type**, **Owner**, **Expires At** and **Status**. Use it to catch licences, permits and certificates before they lapse.
 
-> Driver licences and certificates are tracked separately, on the driver’s qualification records, which have their own expiry list and their own alerts. Upload the scan here and reference it from the qualification’s **Linked Document** field. See [Drivers and workforce](topic:drivers-workforce).
+> Staff licences and certificates are tracked separately, on the staff’s qualification records, which have their own expiry list and their own alerts. Upload the scan here and reference it from the qualification’s **Linked Document** field. See [Staff and workforce](topic:staff-workforce).
 
 ## Document Types
 

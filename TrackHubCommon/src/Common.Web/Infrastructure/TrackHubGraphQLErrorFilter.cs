@@ -88,7 +88,7 @@ public sealed class TrackHubGraphQLErrorFilter : IErrorFilter
         // (CustomExceptionHandler), but the GraphQL filter never had a branch for it — so every
         // "not found" on a GraphQL surface arrived as an unmapped "Unexpected Execution Error" with
         // no code. That covers the DELIBERATE non-disclosure path: a cross-account transporter,
-        // driver, geofence or document id is answered NotFound precisely so it cannot be probed,
+        // staff, geofence or document id is answered NotFound precisely so it cannot be probed,
         // and the caller could not tell that apart from a server fault.
         if (error.Exception is NotFoundException notFound)
         {

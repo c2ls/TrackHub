@@ -21,8 +21,8 @@ public interface IApplicationDbContext
 {
     public DbSet<Action> Actions { get; set; }
     public DbSet<Client> Clients { get; set; }
-    public DbSet<DriverCredential> DriverCredentials { get; set; }
-    public DbSet<DriverDeviceRegistration> DriverDeviceRegistrations { get; set; }
+    public DbSet<StaffCredential> StaffCredentials { get; set; }
+    public DbSet<StaffDeviceRegistration> StaffDeviceRegistrations { get; set; }
     public DbSet<Policy> Policies { get; set; }
     public DbSet<Resource> Resources { get; set; }
     public DbSet<ResourceAction> ResourceActions { get; set; }

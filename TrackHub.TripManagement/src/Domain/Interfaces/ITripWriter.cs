@@ -84,6 +84,6 @@ public interface ITripWriter
         DateTimeOffset? departedAt,
         CancellationToken cancellationToken);
 
-    Task<TripAssignmentVm> AssignTripAsync(Guid tripId, Guid accountId, Guid driverId, Guid? transporterId, CancellationToken cancellationToken);
+    Task<TripAssignmentVm> AssignTripAsync(Guid tripId, Guid accountId, Guid staffId, Guid? transporterId, CancellationToken cancellationToken);
 
 }

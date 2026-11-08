@@ -2,7 +2,7 @@ namespace TrackHub.Manager.Domain.Interfaces;
 
 /// <summary>
 /// Maps a document's <c>OwnerEntityType</c> to the correct visibility primitive:
-/// Transporter → group visibility, Driver → assignment/default-transporter visibility, and
+/// Transporter → group visibility, Staff → assignment/default-transporter visibility, and
 /// deny-by-default for owner types without a registered resolver. Also enforces the classification gate.
 /// </summary>
 public interface IDocumentAccessPolicy
@@ -10,7 +10,7 @@ public interface IDocumentAccessPolicy
     /// <summary>
     /// Whether the current principal may access a document owned by
     /// (<paramref name="ownerEntityType"/>, <paramref name="ownerEntityId"/>) in
-    /// <paramref name="accountId"/>. Drivers are assignment-scoped; users get group visibility; owner
+    /// <paramref name="accountId"/>. Staff are assignment-scoped; users get group visibility; owner
     /// types without a resolver return false.
     /// </summary>
     Task<bool> CanAccessOwnerAsync(Guid accountId, string ownerEntityType, string ownerEntityId, bool forWrite, CancellationToken cancellationToken);

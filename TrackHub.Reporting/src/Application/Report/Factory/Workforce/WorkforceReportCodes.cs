@@ -18,7 +18,7 @@ namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 // Report codes for the workforce reports (spec 09 §13). Local literals (no TrackHubCommon repack).
 internal static class WorkforceReportCodes
 {
-    public const string DriverRegistry = "workforce-driver-registry";
+    public const string StaffRegistry = "workforce-staff-registry";
     public const string QualificationExpirations = "workforce-qualification-expirations";
     public const string AssignmentHistory = "workforce-assignment-history";
 }

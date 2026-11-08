@@ -1,7 +1,7 @@
 ---
 id: trip-management
 title: Viajes y planificación de rutas
-description: Planifique viajes con varias paradas, ubíquelas desde el mapa, un punto de interés o una geocerca, obtenga la ruta de ORS con su corredor de desvío y la estimación de peajes, asigne conductor, siga el avance y comparta un enlace de seguimiento con su cliente.
+description: Planifique viajes con varias paradas, ubíquelas desde el mapa, un punto de interés o una geocerca, obtenga la ruta de ORS con su corredor de desvío y la estimación de peajes, asigne personal, siga el avance y comparta un enlace de seguimiento con su cliente.
 category: operation
 screens: [tripManager]
 featureKey: trip-management
@@ -46,7 +46,7 @@ Use el filtro **Excepciones** para reducir el tablero a lo que necesita una pers
 | Fuera de corredor | El vehículo se apartó de la ruta planeada. |
 | Detenido en la última parada | Llegó a la última parada y la ruta ya no tiene a dónde seguir. |
 
-Los demás filtros —estado, unidad, conductor, desde, hasta— y el buscador de la barra superior los aplica el servidor, de modo que la lista es una página real de viajes coincidentes y no un recorte de los primeros resultados. Use las flechas debajo del tablero para pasar de página; el contador le indica qué filas está viendo.
+Los demás filtros —estado, unidad, personal, desde, hasta— y el buscador de la barra superior los aplica el servidor, de modo que la lista es una página real de viajes coincidentes y no un recorte de los primeros resultados. Use las flechas debajo del tablero para pasar de página; el contador le indica qué filas está viendo.
 
 Haga clic en una fila para abrir ese viaje en el área de trabajo de abajo.
 
@@ -73,7 +73,7 @@ Haga clic en **Nuevo viaje** y complete el diálogo:
 
 - **Código del viaje** (obligatorio) — su propia referencia. Debe ser único dentro de la cuenta; repetir un código se rechaza.
 - **Cliente** — se muestra al cliente en la página de seguimiento.
-- **Unidad** (obligatorio) y **Conductor** — el vehículo que hace el trabajo y quién lo conduce.
+- **Unidad** (obligatorio) y **Personal** — el vehículo que hace el trabajo y quién lo conduce.
 - **Origen** (obligatorio) — un **lugar** existente: una de sus geocercas o un punto de interés. No hay casilla de coordenadas, y es a propósito. El origen es contra lo que se mide el inicio automático, así que una geocerca es mejor que un punto: el viaje se evalúa contra la forma real de la planta y no contra un círculo de 150 m alrededor de un pin.
 - **Destinos** (al menos uno) y la **actividad** en ellos; vea más abajo.
 - **Inicio planeado** (obligatorio) y **fin planeado**.
@@ -170,9 +170,9 @@ Los viajes nuevos toman su clase de peaje de estas reglas automáticamente. Los 
 
 Mientras no exista al menos una regla, los viajes se crean sin clase de peaje y la estimación no tiene con qué calcular, por lo que nunca se activa. Si la lista de clases aparece vacía, el catálogo de peajes de la plataforma todavía no tiene clases de vehículo: un superadministrador debe definirlas primero.
 
-## Asignar un conductor
+## Asignar un miembro del personal
 
-El panel de asignación muestra quién está asignado actualmente, en qué unidad, cuándo se le asignó y si ya lo confirmó. Elija conductor y unidad y presione **Asignar conductor** para cambiarlo. Solo se ofrecen conductores activos.
+El panel de asignación muestra quién está asignado actualmente, en qué unidad, cuándo se le asignó y si ya lo confirmó. Elija personal y unidad y presione **Asignar personal** para cambiarlo. Solo se ofrecen personal activos.
 
 ## Ejecutar el viaje
 
@@ -212,13 +212,13 @@ Debajo del planificador está el panorama completo del viaje:
 
 - **Paradas** — la ventana planeada, el ETA con su origen, la llegada y la salida reales y el estado actual de cada parada. La etiqueta del ETA le indica si es una **estimación en vivo** del servicio de rutas o un respaldo tomado de su **horario planeado**, para que sepa cuánto confiar en ella.
 - **Entregas** — las remesas registradas en cada parada y el resultado de cada una. Vea *Entregas y prueba de entrega* más abajo para saber cómo registrarlas y cerrarlas.
-- **Historial** — todos los eventos del viaje, con la hora y si provinieron del portal, del conductor, de la detección automática o de un proceso en segundo plano.
+- **Historial** — todos los eventos del viaje, con la hora y si provinieron del portal, del personal, de la detección automática o de un proceso en segundo plano.
 - **Prueba de entrega** — una tarjeta por captura, con quién recibió, cuándo, dónde, las notas y botones para descargar los adjuntos.
 - **Reproducción del recorrido** — presione **Cargar reproducción** para dibujar sobre la línea planeada las posiciones que el vehículo realmente registró. Si el viaje tiene más historial que el límite de reproducción, un aviso se lo indica y le dice cuántos puntos se muestran; use el reporte de historial de posiciones para el recorrido completo en vez de suponer que la línea dibujada lo es todo. Vea [Viajes y reproducción](topic:dashboard-trips-replay).
 
 ## Entregas y prueba de entrega
 
-Las entregas y las pruebas de entrega se registran **desde esta pantalla**. No hace falta la aplicación del conductor: un despachador que reciba los datos por teléfono o radio puede mantener completo el registro del viaje por su cuenta.
+Las entregas y las pruebas de entrega se registran **desde esta pantalla**. No hace falta la aplicación del personal: un despachador que reciba los datos por teléfono o radio puede mantener completo el registro del viaje por su cuenta.
 
 Ambas cosas siguen disponibles hasta que el viaje se complete, se cancele o se aborte.
 
@@ -257,14 +257,14 @@ Las pruebas capturadas aparecen como tarjetas en el detalle del viaje, con boton
 Presione **Compartir** para crear un enlace de solo lectura que su cliente puede abrir sin tener una cuenta.
 
 1. Indique un **propósito** y, obligatoriamente, una fecha y hora de **vencimiento**.
-2. Marque exactamente lo que el cliente puede ver: **detalle de paradas**, **la ruta planeada en el mapa**, **posición en vivo**, **vehículo**, **nombre de pila del conductor** y **si cada parada tiene prueba de entrega**.
+2. Marque exactamente lo que el cliente puede ver: **detalle de paradas**, **la ruta planeada en el mapa**, **posición en vivo**, **vehículo**, **nombre de pila del personal** y **si cada parada tiene prueba de entrega**.
 3. Guarde. El enlace aparece **una sola vez**.
 
 Todas las casillas empiezan **desmarcadas salvo las que son deliberadamente seguras**, y la **ruta planeada** en particular empieza apagada. Dejarla apagada no es un olvido: el cliente recibe la línea de tiempo de paradas y, si la compartió, el marcador en vivo, sin ninguna línea de ruta dibujada. Márquela cuando realmente quiera que el cliente vea el trayecto previsto. El diálogo le indica cuál de las dos cosas producirá el enlace antes de guardar.
 
 Cópielo de inmediato: el token que contiene se muestra al crearlo y nunca se puede volver a obtener. Si lo pierde, revoque el enlace y cree uno nuevo.
 
-Todo lo que no marque nunca se le envía al cliente. Los costos, los peajes, las notas internas, los datos de contacto del conductor, los archivos de documentos y el historial de posiciones **nunca** se comparten, marque lo que marque. La posición en vivo solo es visible mientras el viaje está efectivamente en curso.
+Todo lo que no marque nunca se le envía al cliente. Los costos, los peajes, las notas internas, los datos de contacto del personal, los archivos de documentos y el historial de posiciones **nunca** se comparten, marque lo que marque. La posición en vivo solo es visible mientras el viaje está efectivamente en curso.
 
 Los enlaces existentes se listan en el mismo diálogo con su estado —activo, vencido o revocado—. **Revocar** deja el enlace inservible de inmediato. Los enlaces de viaje son enlaces públicos comunes y también aparecen en [Enlaces públicos](topic:public-links).
 

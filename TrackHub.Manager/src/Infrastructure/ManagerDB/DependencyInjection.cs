@@ -64,6 +64,8 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IAccountSettingsWriter, AccountSettingsWriter>();
         services.AddScoped<IAccountSettingsReader, AccountSettingsReader>();
+        services.AddScoped<IAccountHolidayReader, AccountHolidayReader>();
+        services.AddScoped<IAccountHolidayWriter, AccountHolidayWriter>();
         services.AddScoped<IAccountWriter, AccountWriter>();
         services.AddScoped<IAccountReader, AccountReader>();
         services.AddScoped<ICredentialWriter, CredentialWriter>();
@@ -85,12 +87,12 @@ public static class DependencyInjection
         services.AddScoped<IOperatorReader, OperatorReader>();
         services.AddScoped<IReportWriter, ReportWriter>();
         services.AddScoped<IReportReader, ReportReader>();
-        services.AddScoped<IDriverReader, DriverReader>();
-        services.AddScoped<IDriverWriter, DriverWriter>();
-        services.AddScoped<IDriverQualificationReader, DriverQualificationReader>();
-        services.AddScoped<IDriverQualificationWriter, DriverQualificationWriter>();
-        services.AddScoped<IDriverAssignmentReader, DriverAssignmentReader>();
-        services.AddScoped<IDriverAssignmentWriter, DriverAssignmentWriter>();
+        services.AddScoped<IStaffMemberReader, StaffMemberReader>();
+        services.AddScoped<IStaffMemberWriter, StaffMemberWriter>();
+        services.AddScoped<IStaffQualificationReader, StaffQualificationReader>();
+        services.AddScoped<IStaffQualificationWriter, StaffQualificationWriter>();
+        services.AddScoped<IStaffAssignmentReader, StaffAssignmentReader>();
+        services.AddScoped<IStaffAssignmentWriter, StaffAssignmentWriter>();
         services.AddScoped<IGroupVisibilityReader, GroupVisibilityReader>();
         services.AddScoped<IVisibleTransporterReader, VisibleTransporterReader>();
         services.AddScoped<IAccountFeatureReader, AccountFeatureReader>();

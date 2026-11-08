@@ -17,16 +17,16 @@ namespace TrackHub.TripManagement.Infrastructure.ManagerApi;
 
 /// <summary>
 /// Cross-account reference validation against Manager, under the service's own
-/// <c>trip_client</c> identity: driver-to-transporter assignment, group visibility over a
+/// <c>trip_client</c> identity: staff-to-transporter assignment, group visibility over a
 /// referenced resource, and the account's feature keys (spec 11 §5).
 /// Manager's <c>resourceId</c> arguments are strings on the wire.
 /// </summary>
 public class ManagerValidationClient(IGraphQLClientFactory graphQLClient)
     : GraphQLService(graphQLClient.CreateClient(Clients.Manager, asService: true)), IManagerValidationClient
 {
-    internal const string ValidateDriverAssignmentQuery = @"
-                query($driverId: UUID!, $resourceType: String!, $resourceId: String!) {
-                    validateDriverAssignment(query: { driverId: $driverId, resourceType: $resourceType, resourceId: $resourceId })
+    internal const string ValidateStaffAssignmentQuery = @"
+                query($staffId: UUID!, $resourceType: String!, $resourceId: String!) {
+                    validateStaffAssignment(query: { staffId: $staffId, resourceType: $resourceType, resourceId: $resourceId })
                 }";
 
     internal const string ValidateGroupVisibilityQuery = @"
@@ -39,12 +39,12 @@ public class ManagerValidationClient(IGraphQLClientFactory graphQLClient)
                     validateFeatureEnabled(query: { accountId: $accountId, featureKey: $featureKey })
                 }";
 
-    public async Task<bool> ValidateDriverAssignmentAsync(Guid driverId, string resourceType, Guid resourceId, CancellationToken cancellationToken)
+    public async Task<bool> ValidateStaffAssignmentAsync(Guid staffId, string resourceType, Guid resourceId, CancellationToken cancellationToken)
     {
         var request = new GraphQLRequest
         {
-            Query = ValidateDriverAssignmentQuery,
-            Variables = new { driverId, resourceType, resourceId = resourceId.ToString() }
+            Query = ValidateStaffAssignmentQuery,
+            Variables = new { staffId, resourceType, resourceId = resourceId.ToString() }
         };
         return await QueryAsync<bool>(request, cancellationToken);
     }

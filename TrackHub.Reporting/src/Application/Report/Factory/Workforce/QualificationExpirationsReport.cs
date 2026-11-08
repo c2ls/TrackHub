@@ -22,7 +22,7 @@ using TrackHub.Reporting.Domain.Records;
 
 namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 
-// Driver qualification expirations (spec 09 §13). Qualifications expiring inside the window
+// Staff qualification expirations (spec 09 §13). Qualifications expiring inside the window
 // (withinDays, default 30), nearest expiry first. Short report — also SupportsPdf.
 public sealed class QualificationExpirationsReport(IWorkforceReportReader reader, IUser user, IAccountTimeZoneResolver zones) : IReport
 {
@@ -35,14 +35,14 @@ public sealed class QualificationExpirationsReport(IWorkforceReportReader reader
         await reader.EnsureWorkforceFeatureAsync(cancellationToken);
 
         var withinDays = (int)(filters.GetNumber(FilterNames.WithinDays) ?? DefaultWithinDays);
-        var qualifications = await reader.GetDriverQualificationsAsync(null, withinDays, cancellationToken);
+        var qualifications = await reader.GetStaffQualificationsAsync(null, withinDays, cancellationToken);
         var today = (await ReportCalendar.ForCallerAsync(user, zones, cancellationToken)).Today();
 
         var rows = qualifications
             .OrderBy(q => q.ExpiresAt ?? DateOnly.MaxValue)
-            .ThenBy(q => q.DriverName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(q => q.StaffName, StringComparer.OrdinalIgnoreCase)
             .Select(q => new QualificationExpirationRowVm(
-                q.DriverName,
+                q.StaffName,
                 q.QualificationType,
                 q.Category.OrEmpty(), // → LicenseCategory column
 

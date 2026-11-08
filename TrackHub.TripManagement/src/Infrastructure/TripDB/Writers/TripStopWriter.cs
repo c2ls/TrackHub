@@ -347,7 +347,7 @@ public sealed class TripStopWriter(IApplicationDbContext context) : ITripStopWri
         // IDEMPOTENCY IS CHECKED BEFORE THE TRANSITION GUARD, and the order is the whole point.
         //
         // The guard used to run first, so a replayed arrival threw STOP_ALREADY_DEPARTED once the
-        // stop had moved on. That is exactly what spec 10's offline outbox produces: a driver
+        // stop had moved on. That is exactly what spec 10's offline outbox produces: a staff
         // captures arrival and departure with no signal, the departure syncs first (or the arrival
         // is retried after both landed), and the queued arrival then fails permanently with an
         // error the device can only surface as a hard failure. Acceptance 15 requires a duplicate
@@ -361,7 +361,7 @@ public sealed class TripStopWriter(IApplicationDbContext context) : ITripStopWri
 
         GuardStopTransition(entity.Status, toStatus);
 
-        if (source is TripEventSources.Portal or TripEventSources.Driver)
+        if (source is TripEventSources.Portal or TripEventSources.Staff)
         {
             await GuardManualProgressAsync(entity, toStatus, occurredAt, source, cancellationToken);
         }
