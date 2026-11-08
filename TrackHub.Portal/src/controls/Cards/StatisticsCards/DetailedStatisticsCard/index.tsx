@@ -79,6 +79,8 @@ export interface DetailedStatisticsCardProps {
     component: ReactNode;
   };
   direction?: "right" | "left";
+  /** Half-height layout for rows of tiles that sit above a map or table. */
+  dense?: boolean;
 }
 
 function DetailedStaticsCard({
@@ -96,6 +98,7 @@ function DetailedStaticsCard({
     component: <i className="default-icon" />,
   },
   direction = "right",
+  dense = false,
 }: DetailedStatisticsCardProps) {
   const [controller] = useArgonController();
   const { darkMode } = controller;
@@ -113,7 +116,7 @@ function DetailedStaticsCard({
       <ArgonBox
         bgColor={bgColor === "white" && darkMode ? "transparent" : bgColor}
         variant={bgColor === "white" && darkMode ? "contained" : "gradient"}>
-        <ArgonBox p={2}>
+        <ArgonBox p={dense ? 1 : 2}>
           <Grid container>
             {direction === "left" ? (
               <Grid>
@@ -121,15 +124,15 @@ function DetailedStaticsCard({
                   variant="gradient"
                   bgColor={bgColor === "white" ? icon.color : "white"}
                   color={bgColor === "white" ? "white" : "dark"}
-                  width="3rem"
-                  height="3rem"
+                  width={dense ? "2rem" : "3rem"}
+                  height={dense ? "2rem" : "3rem"}
                   borderRadius="section"
                   display="flex"
                   justifyContent="center"
                   alignItems="center">
                   <ArgonBox
                     {...iconInnerProps}
-                    fontSize="1.125rem"
+                    fontSize={dense ? "0.875rem" : "1.125rem"}
                     display="grid"
                     color="inherit">
                     {icon.component}
@@ -137,20 +140,22 @@ function DetailedStaticsCard({
                 </ArgonBox>
               </Grid>
             ) : null}
-            <Grid size={{xs: 8}}>
+            <Grid size={dense ? "grow" : { xs: 8 }} sx={{ minWidth: 0 }}>
               <ArgonBox ml={direction === "left" ? 2 : 0} lineHeight={1}>
                 <ArgonTypography
-                  variant="button"
+                  variant={dense ? "caption" : "button"}
                   color={bgColor === "white" ? "text" : "white"}
                   textTransform="uppercase"
-                  fontWeight="medium">
+                  fontWeight="medium"
+                  noWrap
+                  display="block">
                   {title}
                 </ArgonTypography>
                 <ArgonTypography
-                  variant="h5"
+                  variant={dense ? "h6" : "h5"}
                   fontWeight="bold"
                   color={bgColor === "white" ? "dark" : "white"}
-                  mb={1}>
+                  mb={dense ? 0 : 1}>
                   {`${count} `}
                   {!percentage.hide && (
                     <ArgonTypography
@@ -164,13 +169,13 @@ function DetailedStaticsCard({
               </ArgonBox>
             </Grid>
             {direction === "right" ? (
-              <Grid size={{xs: 4}}>
+              <Grid size={dense ? "auto" : { xs: 4 }}>
                 <ArgonBox
                   variant="gradient"
                   bgColor={bgColor === "white" ? icon.color : "white"}
                   color={bgColor === "white" ? "white" : "dark"}
-                  width="3rem"
-                  height="3rem"
+                  width={dense ? "2rem" : "3rem"}
+                  height={dense ? "2rem" : "3rem"}
                   borderRadius="section"
                   display="flex"
                   justifyContent="center"
@@ -178,7 +183,7 @@ function DetailedStaticsCard({
                   ml="auto">
                   <ArgonBox
                     {...iconInnerProps}
-                    fontSize="1.125rem"
+                    fontSize={dense ? "0.875rem" : "1.125rem"}
                     display="grid"
                     color="inherit">
                     {icon.component}

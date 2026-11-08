@@ -48,6 +48,7 @@ export interface MapMarker {
   state?: string | null;
   country?: string | null;
   attributes?: MarkerAttributes | null;
+  status?: 'moving' | 'stopped' | 'offline';
 }
 
 /** A geofence rendered as an overlay: a true circle when the circle fields are set, else a polygon. */

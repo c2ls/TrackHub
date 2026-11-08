@@ -1,7 +1,7 @@
 ---
 id: staff-workforce
 title: Personal y fuerza de trabajo
-description: Registre personal, otórgueles credenciales y dispositivos móviles, controle licencias y otras habilitaciones, y mantenga un registro acotado en el tiempo de quién condujo cada unidad.
+description: Registre personal, otórgueles credenciales y dispositivos móviles, controle licencias y otras habilitaciones, y mantenga un registro acotado en el tiempo de qué miembro del personal usó cada unidad.
 category: administration
 screens: [manageAdmin]
 related: [management-overview, units-devices, documents, alerts-notifications, feature-catalog]
@@ -11,21 +11,20 @@ order: 35
 
 # Personal y fuerza de trabajo
 
-Un **miembro del personal** es una persona operativa — alguien que conduce sus unidades. El personal no son usuarios del portal: nunca inician sesión en el portal web, tienen sus propias credenciales para la aplicación móvil del personal y se administran íntegramente desde el grupo **Flota y Rastreo** de la pantalla **Administración de Cuentas**.
+Un **miembro del personal** es cualquier persona que trabaja para su cuenta — un conductor, un operador, un mecánico, un vendedor, un supervisor. Un miembro del personal se rastrea a través de una unidad: registre el dispositivo que lleva como una unidad con un nombre que diga quién es (por ejemplo *Representante de Ventas Norte*) y vincule al miembro del personal con ella mediante **Transportador Predeterminado** o una asignación. El tablero muestra unidades, así que esa unidad es la que usted sigue en el mapa. El personal no son usuarios del portal: nunca inician sesión en el portal web, tienen sus propias credenciales para la aplicación móvil del personal y se administran íntegramente desde el grupo **Flota y Rastreo** de la pantalla **Administración de Cuentas**.
 
-El área tiene cinco secciones plegables, en este orden:
+El área tiene cuatro secciones plegables, en este orden:
 
 | Sección | Para qué sirve |
 |---|---|
-| **Personal** | El registro — quién existe, su documento, código de empleado y licencia principal. |
-| **Credenciales y Dispositivos del Personal** | La credencial con la que cada miembro del personal inicia sesión en la aplicación móvil, y los dispositivos en los que está registrada. |
+| **Personal** | El registro — quién existe, su documento, código de empleado y licencia principal. Cada fila también abre la credencial de la aplicación móvil y los dispositivos registrados del miembro del personal. |
 | **Habilitaciones del Personal** | Licencias, exámenes médicos, capacitaciones, verificaciones de antecedentes y permisos de materiales peligrosos, con sus fechas de vencimiento. |
 | **Asignaciones del Personal** | Registros acotados en el tiempo de qué personal operó qué unidad, y cuándo. |
 | **Vencimientos de Habilitaciones (30 días)** | Una lista, para toda la cuenta, de todo lo que está por vencer. |
 
 ## Qué requiere la funcionalidad Personal
 
-Las dos primeras secciones son **plataforma base**. Siempre están disponibles para un administrador con los permisos correspondientes, en cualquier cuenta, sin importar lo que diga la suscripción. Siempre puede registrar personal, y siempre puede emitir, bloquear, restablecer y revocar sus credenciales móviles.
+El registro de **Personal** y sus **Credenciales y dispositivos** son **plataforma base**. Siempre están disponibles para un administrador con los permisos correspondientes, en cualquier cuenta, sin importar lo que diga la suscripción. Siempre puede registrar personal, y siempre puede emitir, bloquear, restablecer y revocar sus credenciales móviles.
 
 Las tres últimas secciones — **Habilitaciones del Personal**, **Asignaciones del Personal** y **Vencimientos de Habilitaciones** — pertenecen a la funcionalidad facturable **Personal**. Sin ella simplemente no aparecen en la pantalla, no se generan alertas de vencimiento y los tres reportes de personal no están en el catálogo de reportes. Vea el [Catálogo de funcionalidades](topic:feature-catalog).
 
@@ -44,11 +43,11 @@ Presione el icono **+** (agregar) para abrir el diálogo **Crear Personal**:
 - **Transportador Predeterminado** — la unidad que este miembro del personal opera habitualmente, elegida entre las unidades de su cuenta. Es un *valor predeterminado*, no una asignación; vea más abajo.
 - **Activo** — desmarque para dejar al personal fuera de uso.
 
-Las acciones de fila son **Editar** y **Desactivar Personal** (se le pide confirmación). Desactivar no elimina nada, y a un miembro del personal inactivo no se le puede dar una nueva asignación.
+Las acciones de fila son **Editar**, **Credenciales y dispositivos** (vea más abajo) y **Desactivar Personal** (se le pide confirmación). Desactivar no elimina nada, y a un miembro del personal inactivo no se le puede dar una nueva asignación.
 
 ## Credenciales y Dispositivos del Personal
 
-Esta sección administra cómo un miembro del personal inicia sesión en la **aplicación móvil del personal**. Elija un miembro del personal en el selector **Personal** de la parte superior; la sección muestra entonces la credencial de ese miembro del personal y los dispositivos registrados con ella.
+Así es como un miembro del personal inicia sesión en la **aplicación móvil del personal**. Ábralo con la acción **Credenciales y dispositivos** en la fila del miembro del personal; el diálogo muestra la credencial de ese miembro del personal y los dispositivos registrados con ella.
 
 Un miembro del personal tiene como máximo una credencial. Presione **Crear Credencial** y defina un **Usuario** y una **Contraseña**. La credencial nace **Pendiente de Activación**, y el personal no puede iniciar sesión hasta que se active.
 
@@ -143,6 +142,8 @@ Los datos del personal son datos personales, por lo que estas exportaciones se r
 
 ## Quién puede usar esto
 
-Las cinco secciones residen dentro de **Administración de Cuentas**, que está disponible para los Gestores. Una sección, un botón **+** o una acción de fila también puede faltar porque su rol no tiene el permiso de personal correspondiente — leer, escribir, editar y eliminar se otorgan por separado. Vea [Roles y permisos](topic:roles-and-permissions) y [Administración de Cuentas](topic:management-overview).
+Todas las secciones residen dentro de **Administración de Cuentas**, que está disponible para los Gestores. Una sección, un botón **+** o una acción de fila también puede faltar porque su rol no tiene el permiso de personal correspondiente — leer, escribir, editar y eliminar se otorgan por separado. Vea [Roles y permisos](topic:roles-and-permissions) y [Administración de Cuentas](topic:management-overview).
 
 Si faltan las secciones de habilitaciones, asignaciones o vencimientos pero el registro de personal sí está, se trata de la funcionalidad Personal, no de sus permisos.
+
+**Asignaciones del Personal** también requiere el permiso de operaciones de personal (leer para verla, escribir para asignar, editar para terminar una asignación).

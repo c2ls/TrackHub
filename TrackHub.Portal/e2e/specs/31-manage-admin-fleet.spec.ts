@@ -6,7 +6,6 @@
 import { test, expect, unique, uniqueName } from '../fixtures';
 import { CrudFlow } from '../pages/crud';
 import { ConfirmDialog, FormDialog } from '../pages/dialogs';
-import { openTab } from '../pages/dashboard';
 import type { ApiClient } from '../fixtures/api';
 import type { CleanupRegistry } from '../fixtures/data';
 import type { Translator } from '../fixtures/i18n';
@@ -434,9 +433,7 @@ test.describe('account management — fleet & tracking', () => {
     const transporterId = await api.createTransporter(unitName);
     cleanup.add(`unit ${unitName}`, () => api.deleteTransporter(transporterId));
 
-    // Assignments are day-to-day dispatch: they live on the dashboard's staff operations tab.
-    await shell.open('dashboard');
-    await openTab(page, t, 'staff');
+    await shell.open('manageAdmin');
     const section = new CrudFlow(page, 'staff-assignments', t).section;
     await section.expand();
     await expect(section.root.getByText(t('workforce.selectStaffHint'))).toBeVisible();

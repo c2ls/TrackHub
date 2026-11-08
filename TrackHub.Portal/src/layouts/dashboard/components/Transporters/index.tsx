@@ -219,7 +219,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
         displayedScopeRef.current = scope;
         setPositions(result);
         setActive(countRecentDevices(result, settings.onlineInterval));
-        setMovement(countDevicesInMovement(result));
+        setMovement(countDevicesInMovement(result, settings.onlineInterval));
       }
     } catch {
       // Keep the last known positions on a failed or cancelled refresh.
@@ -369,25 +369,28 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
 
   return (
     <ArgonBox py={1}>
-        <Grid container spacing={3} sx={{ mb: 1 }}>
-            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
+        <Grid container spacing={1.5} sx={{ mb: 1 }}>
+            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
                 <DetailedStatisticsCard
+                    dense
                     title={t("dashboard.totalTitle")}
                     count={positions.length}
                     icon={{ color: "info", component: <i className="ni ni-map-big" /> }}
                     percentage={{ color: "success", count: "", hide: true }}
                 />
             </Grid>
-            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
+            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
                 <DetailedStatisticsCard
+                    dense
                     title={t("dashboard.activeTitle")}
                     count={active}
                     icon={{ color: "error", component: <i className="ni ni-watch-time" /> }}
                     percentage={{ color: "success", count: `${getPercentage(active, positions.length)}%`, hide: false }}
                 />
             </Grid>
-            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
+            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
                 <DetailedStatisticsCard
+                    dense
                     title={t("dashboard.movementTitle")}
                     count={movement}
                     icon={{ color: "success", component: <i className="ni ni-button-play" /> }}
@@ -395,8 +398,9 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                 />
             </Grid>
             {geofencingEnabled && (
-            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
+            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
                 <DetailedStatisticsCard
+                    dense
                     title={t("dashboard.inGeofence")}
                     count={inGeofence}
                     icon={{
@@ -407,8 +411,9 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                 />
             </Grid>
             )}
-            <Grid size={{xs: 12, md:6, lg:statCardWidth}}>
+            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
                 <DetailedStatisticsCard
+                    dense
                     title={t("dashboard.criticalAlerts")}
                     count={criticalAlerts}
                     icon={{ color: "error", component: <i className="ni ni-notification-70" /> }}
@@ -458,7 +463,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
             </MapControlStyle>
             </Grid>
             <Grid size={{xs: 12, lg:3}}>
-                <ArgonBox ref={chipContainerRef} mb={2} display="flex" flexWrap="wrap" gap={1}>
+                <ArgonBox ref={chipContainerRef} position="relative" mb={1} display="flex" flexWrap="wrap" gap={1}>
                     {typeSummary.map(({ name, total }) => (
                         <Chip
                             key={name}
@@ -466,6 +471,7 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                             size="small"
                             color="primary"
                             variant="outlined"
+                            sx={{ bgcolor: 'background.paper' }}
                         />
                     ))}
                 </ArgonBox>
@@ -474,7 +480,8 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                     selected={selectedTransporter}
                     handleSelected={handleSelected}
                     searchQuery={searchQuery}
-                    maxHeight={tableHeight}/>
+                    maxHeight={tableHeight}
+                    onlineInterval={settings.onlineInterval}/>
             </Grid>
         </Grid>
     </ArgonBox>

@@ -24,6 +24,7 @@ interface TransportersTableProps {
   handleSelected: (value: string | null) => void;
   searchQuery?: string;
   maxHeight?: string;
+  onlineInterval: number;
 }
 
 function TransportersTable({
@@ -31,8 +32,9 @@ function TransportersTable({
     selected,
     handleSelected,
     searchQuery = '',
-    maxHeight = 'calc(100vh - 400px)'}: TransportersTableProps) {
-  const { data } = useTransportersTableData(transporters);
+    maxHeight = 'calc(100vh - 400px)',
+    onlineInterval}: TransportersTableProps) {
+  const { data } = useTransportersTableData(transporters, onlineInterval);
   const { columns, rows } = data;
 
   return (

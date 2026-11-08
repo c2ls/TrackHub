@@ -107,7 +107,7 @@ A **device** is the tracker hardware; a **unit** is the vehicle or asset you act
 
 1. **Units** (**Account Management → Fleet & Tracking → Units**) — click **+**, give the unit a **Name** and a **Type**, and **Save**. The **Type** determines the movement thresholds used to decide when the unit counts as stopped.
 2. **Assign the device** — on the **GPS Integration** screen, under **Device Assignments**, choose the unit and an unassigned device and press **Assign Device**. Only devices not currently assigned to a unit are offered.
-3. **Staff** (**Fleet & Tracking → Staff**) — if you track who is driving, add them here. A staff member can carry a **Default Transporter**, so create the units first. Once a staff member exists you can also issue them a **staff credential** for the mobile app, in the **Staff Credentials & Devices** section just below — that part works on every account. See [Staff and workforce](topic:staff-workforce).
+3. **Staff** (**Fleet & Tracking → Staff**) — the people who work for you — drivers, operators, salespeople — go here. A staff member can carry a **Default Transporter**, so create the units first. Once a staff member exists you can also issue them a **staff credential** for the mobile app, with the **Credentials and devices** action on their row — that part works on every account. See [Staff and workforce](topic:staff-workforce).
 4. **Points of Interest** (**Fleet & Tracking → Points of Interest**) — named locations such as client sites, warehouses, fuel stations, and workshops, with a name, coordinates, a type, a colour, and optionally a group.
 
 Now go back to **Groups** and complete step 5.3 — assign the units to their groups.
