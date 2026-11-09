@@ -32,6 +32,7 @@ export const groupKeys = {
   byAccount: (params: ListParams = {}) => [...groupKeys.all, 'byAccount', params] as const,
   lookup: () => [...groupKeys.all, 'lookup'] as const,
   usersByGroup: (groupId: number) => [...groupKeys.all, 'users', groupId] as const,
+  staffByGroup: (groupId: number) => [...groupKeys.all, 'staff', groupId] as const,
 };
 
 /** One server page of groups (`{ items, totalCount }`) for the group list. */
@@ -68,6 +69,15 @@ export function useUsersByGroup(groupId: number | undefined) {
   return useQuery({
     queryKey: groupKeys.usersByGroup(groupId ?? -1),
     queryFn: ({ signal }) => api.getAllUsersByGroup(groupId as number, { signal }),
+    enabled: groupId !== undefined,
+  });
+}
+
+/** A group's complete staff membership, drained so assigned staff never reappear as available. */
+export function useStaffByGroup(groupId: number | undefined) {
+  return useQuery({
+    queryKey: groupKeys.staffByGroup(groupId ?? -1),
+    queryFn: ({ signal }) => api.getAllStaffByGroup(groupId as number, { signal }),
     enabled: groupId !== undefined,
   });
 }

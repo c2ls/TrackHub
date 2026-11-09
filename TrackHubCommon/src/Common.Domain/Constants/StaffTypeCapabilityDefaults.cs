@@ -23,19 +23,15 @@ public static partial class StaffTypeCapabilityDefaults
         switch (staffType)
         {
             case StaffTypes.Driver:
-                set.UnionWith([StaffCapabilities.Vehicle, StaffCapabilities.Status, StaffCapabilities.Capture, StaffCapabilities.Trips]);
+                set.UnionWith([StaffCapabilities.Vehicle, StaffCapabilities.Capture, StaffCapabilities.Trips]);
                 break;
             case StaffTypes.Operator:
-                set.UnionWith([StaffCapabilities.Vehicle, StaffCapabilities.Status, StaffCapabilities.Capture]);
+                set.UnionWith([StaffCapabilities.Vehicle, StaffCapabilities.Capture]);
                 break;
             case StaffTypes.DriverAssistant:
             case StaffTypes.Mechanic:
             case StaffTypes.Supervisor:
-                set.UnionWith([StaffCapabilities.Status, StaffCapabilities.Capture]);
-                break;
-            case StaffTypes.Administrative:
-            case StaffTypes.Other:
-                set.Add(StaffCapabilities.Status);
+                set.Add(StaffCapabilities.Capture);
                 break;
         }
 

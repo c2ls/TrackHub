@@ -170,16 +170,16 @@ test.describe('account management — fleet & tracking', () => {
       'name'
     );
 
-    // The row carries two allocators in a fixed column order: users, then units.
+    // The row carries three allocators in a fixed column order: users, units, then staff.
     const row = await groups.section.findRow(groupName);
-    await row.getByRole('button', { name: t('generic.assign') }).last().click();
+    await row.getByRole('button', { name: t('generic.assign') }).nth(1).click();
     await allocator.waitOpen();
     await allocator.add(unitName);
     await expect(allocator.row(unitName)).toBeVisible({ timeout: 30_000 });
     await allocator.close();
 
     // Re-opening shows the saved membership, not just the optimistic row.
-    await row.getByRole('button', { name: t('generic.assign') }).last().click();
+    await row.getByRole('button', { name: t('generic.assign') }).nth(1).click();
     await allocator.waitOpen();
     await expect(allocator.row(unitName)).toBeVisible({ timeout: 30_000 });
     await allocator.remove(unitName);

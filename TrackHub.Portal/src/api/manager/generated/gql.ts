@@ -93,6 +93,9 @@ type Documents = {
     "\n  mutation DeleteUserGroup($userId: UUID!, $groupId: Long!) {\n    deleteUserGroup(userId: $userId, groupId: $groupId)\n  }\n": typeof types.DeleteUserGroupDocument,
     "\n  mutation CreateTransporterGroup($transporterGroup: TransporterGroupDtoInput!) {\n    createTransporterGroup(command: { transporterGroup: $transporterGroup }) {\n      transporterId\n      groupId\n    }\n  }\n": typeof types.CreateTransporterGroupDocument,
     "\n  mutation DeleteTransporterGroup($transporterId: UUID!, $groupId: Long!) {\n    deleteTransporterGroup(transporterId: $transporterId, groupId: $groupId)\n  }\n": typeof types.DeleteTransporterGroupDocument,
+    "\n  query GetStaffByGroup($groupId: Long!, $skip: Int!, $take: Int!, $search: String) {\n    staffMembersByGroup(query: { groupId: $groupId, skip: $skip, take: $take, search: $search }) {\n      items {\n        staffId\n        name\n      }\n      totalCount\n    }\n  }\n": typeof types.GetStaffByGroupDocument,
+    "\n  mutation CreateStaffGroup($staffGroup: StaffGroupDtoInput!) {\n    createStaffGroup(command: { staffGroup: $staffGroup }) {\n      staffId\n      groupId\n    }\n  }\n": typeof types.CreateStaffGroupDocument,
+    "\n  mutation DeleteStaffGroup($staffId: UUID!, $groupId: Long!) {\n    deleteStaffGroup(staffId: $staffId, groupId: $groupId)\n  }\n": typeof types.DeleteStaffGroupDocument,
     "\n  fragment NotificationDeliveryItem on NotificationDeliveryVm {\n    notificationDeliveryId\n    accountId\n    notificationRuleId\n    alertEventId\n    channel\n    recipientPrincipalType\n    recipient\n    status\n    attempts\n    providerMessageId\n    error\n    sentAt\n    readAt\n  }\n": typeof types.NotificationDeliveryItemFragmentDoc,
     "\n  query GetNotificationDeliveries(\n    $accountId: UUID!\n    $status: String\n    $channel: String\n    $from: DateTime\n    $to: DateTime\n    $skip: Int!\n    $take: Int!\n  ) {\n    notificationDeliveries(\n      query: {\n        accountId: $accountId\n        status: $status\n        channel: $channel\n        from: $from\n        to: $to\n        skip: $skip\n        take: $take\n      }\n    ) {\n      items {\n        ...NotificationDeliveryItem\n      }\n      totalCount\n    }\n  }\n": typeof types.GetNotificationDeliveriesDocument,
     "\n  query GetDeliveryHealth($accountId: UUID!, $from: DateTime!, $to: DateTime!) {\n    deliveryHealth(query: { accountId: $accountId, from: $from, to: $to }) {\n      channel\n      status\n      count\n      averageAttempts\n    }\n  }\n": typeof types.GetDeliveryHealthDocument,
@@ -270,6 +273,9 @@ const documents: Documents = {
     "\n  mutation DeleteUserGroup($userId: UUID!, $groupId: Long!) {\n    deleteUserGroup(userId: $userId, groupId: $groupId)\n  }\n": types.DeleteUserGroupDocument,
     "\n  mutation CreateTransporterGroup($transporterGroup: TransporterGroupDtoInput!) {\n    createTransporterGroup(command: { transporterGroup: $transporterGroup }) {\n      transporterId\n      groupId\n    }\n  }\n": types.CreateTransporterGroupDocument,
     "\n  mutation DeleteTransporterGroup($transporterId: UUID!, $groupId: Long!) {\n    deleteTransporterGroup(transporterId: $transporterId, groupId: $groupId)\n  }\n": types.DeleteTransporterGroupDocument,
+    "\n  query GetStaffByGroup($groupId: Long!, $skip: Int!, $take: Int!, $search: String) {\n    staffMembersByGroup(query: { groupId: $groupId, skip: $skip, take: $take, search: $search }) {\n      items {\n        staffId\n        name\n      }\n      totalCount\n    }\n  }\n": types.GetStaffByGroupDocument,
+    "\n  mutation CreateStaffGroup($staffGroup: StaffGroupDtoInput!) {\n    createStaffGroup(command: { staffGroup: $staffGroup }) {\n      staffId\n      groupId\n    }\n  }\n": types.CreateStaffGroupDocument,
+    "\n  mutation DeleteStaffGroup($staffId: UUID!, $groupId: Long!) {\n    deleteStaffGroup(staffId: $staffId, groupId: $groupId)\n  }\n": types.DeleteStaffGroupDocument,
     "\n  fragment NotificationDeliveryItem on NotificationDeliveryVm {\n    notificationDeliveryId\n    accountId\n    notificationRuleId\n    alertEventId\n    channel\n    recipientPrincipalType\n    recipient\n    status\n    attempts\n    providerMessageId\n    error\n    sentAt\n    readAt\n  }\n": types.NotificationDeliveryItemFragmentDoc,
     "\n  query GetNotificationDeliveries(\n    $accountId: UUID!\n    $status: String\n    $channel: String\n    $from: DateTime\n    $to: DateTime\n    $skip: Int!\n    $take: Int!\n  ) {\n    notificationDeliveries(\n      query: {\n        accountId: $accountId\n        status: $status\n        channel: $channel\n        from: $from\n        to: $to\n        skip: $skip\n        take: $take\n      }\n    ) {\n      items {\n        ...NotificationDeliveryItem\n      }\n      totalCount\n    }\n  }\n": types.GetNotificationDeliveriesDocument,
     "\n  query GetDeliveryHealth($accountId: UUID!, $from: DateTime!, $to: DateTime!) {\n    deliveryHealth(query: { accountId: $accountId, from: $from, to: $to }) {\n      channel\n      status\n      count\n      averageAttempts\n    }\n  }\n": types.GetDeliveryHealthDocument,
@@ -698,6 +704,18 @@ export function graphql(source: "\n  mutation CreateTransporterGroup($transporte
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation DeleteTransporterGroup($transporterId: UUID!, $groupId: Long!) {\n    deleteTransporterGroup(transporterId: $transporterId, groupId: $groupId)\n  }\n"): (typeof documents)["\n  mutation DeleteTransporterGroup($transporterId: UUID!, $groupId: Long!) {\n    deleteTransporterGroup(transporterId: $transporterId, groupId: $groupId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetStaffByGroup($groupId: Long!, $skip: Int!, $take: Int!, $search: String) {\n    staffMembersByGroup(query: { groupId: $groupId, skip: $skip, take: $take, search: $search }) {\n      items {\n        staffId\n        name\n      }\n      totalCount\n    }\n  }\n"): (typeof documents)["\n  query GetStaffByGroup($groupId: Long!, $skip: Int!, $take: Int!, $search: String) {\n    staffMembersByGroup(query: { groupId: $groupId, skip: $skip, take: $take, search: $search }) {\n      items {\n        staffId\n        name\n      }\n      totalCount\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateStaffGroup($staffGroup: StaffGroupDtoInput!) {\n    createStaffGroup(command: { staffGroup: $staffGroup }) {\n      staffId\n      groupId\n    }\n  }\n"): (typeof documents)["\n  mutation CreateStaffGroup($staffGroup: StaffGroupDtoInput!) {\n    createStaffGroup(command: { staffGroup: $staffGroup }) {\n      staffId\n      groupId\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteStaffGroup($staffId: UUID!, $groupId: Long!) {\n    deleteStaffGroup(staffId: $staffId, groupId: $groupId)\n  }\n"): (typeof documents)["\n  mutation DeleteStaffGroup($staffId: UUID!, $groupId: Long!) {\n    deleteStaffGroup(staffId: $staffId, groupId: $groupId)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

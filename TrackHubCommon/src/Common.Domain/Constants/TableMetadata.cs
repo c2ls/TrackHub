@@ -37,6 +37,7 @@ public static partial class TableMetadata
     public const string StaffQualification = "staff_qualifications";
     public const string StaffTransporterAssignment = "staff_transporter_assignments";
     public const string TransporterGroup = "transporter_group";
+    public const string StaffGroup = "staff_group";
     public const string TransporterDetectionCursor = "transporter_detection_cursors";
     public const string GeocodingProvider = "geocoding_providers";
     public const string Geofence = "geofences";

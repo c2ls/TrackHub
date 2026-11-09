@@ -45,6 +45,7 @@ public partial class ApplicationDbContext(DbContextOptions<ApplicationDbContext>
     public DbSet<PointOfInterest> PointsOfInterest { get; set; }
     public DbSet<Transporter> Transporters { get; set; }
     public DbSet<TransporterGroup> TransportersGroup { get; set; }
+    public DbSet<StaffGroup> StaffGroups { get; set; }
     public DbSet<Device> Devices { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<NotificationDelivery> NotificationDeliveries { get; set; }

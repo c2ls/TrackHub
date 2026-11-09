@@ -44,7 +44,6 @@ public class StaffTypesTests
 
     [Theory]
     [InlineData(StaffCapabilities.Vehicle, "Vehicle")]
-    [InlineData(StaffCapabilities.Status, "Status")]
     [InlineData(StaffCapabilities.Capture, "Capture")]
     [InlineData(StaffCapabilities.Trips, "Trips")]
     public void StaffCapabilities_HaveExpectedValues(string actual, string expected) =>
@@ -53,11 +52,11 @@ public class StaffTypesTests
     [Fact]
     public void Defaults_OnlyVehicleTypesCarryTheVehicleCapability()
     {
-        StaffTypeCapabilityDefaults.For(StaffTypes.Driver).Should().Contain([StaffCapabilities.Vehicle, StaffCapabilities.Status, StaffCapabilities.Capture, StaffCapabilities.Trips]);
+        StaffTypeCapabilityDefaults.For(StaffTypes.Driver).Should().Contain([StaffCapabilities.Vehicle, StaffCapabilities.Capture, StaffCapabilities.Trips]);
         StaffTypeCapabilityDefaults.For(StaffTypes.Operator).Should().Contain(StaffCapabilities.Vehicle).And.NotContain(StaffCapabilities.Trips);
         foreach (var type in new[] { StaffTypes.DriverAssistant, StaffTypes.Mechanic, StaffTypes.Supervisor, StaffTypes.Administrative, StaffTypes.Other })
         {
-            StaffTypeCapabilityDefaults.For(type).Should().NotContain(StaffCapabilities.Vehicle).And.Contain(StaffCapabilities.Status);
+            StaffTypeCapabilityDefaults.For(type).Should().NotContain(StaffCapabilities.Vehicle);
         }
 
         StaffTypeCapabilityDefaults.For("Unknown").Should().BeEmpty();

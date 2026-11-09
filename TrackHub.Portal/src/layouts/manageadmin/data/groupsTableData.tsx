@@ -48,6 +48,7 @@ export interface GroupRow {
   action: ReactNode;
   user: ReactNode;
   transporter: ReactNode;
+  staff: ReactNode;
   id: number;
 }
 export interface GroupTableData { columns: GroupColumn[]; rows: GroupRow[]; }
@@ -58,6 +59,7 @@ function useGroupTableData(
   handleDeleteClick: (groupId: number) => void,
   handleUserClick: (groupId: number) => void,
   handleTransporterClick: (groupId: number) => void,
+  handleStaffClick: (groupId: number) => void,
   listParams: ListParams
 ) {
   const { t } = useTranslation();
@@ -143,6 +145,7 @@ function useGroupTableData(
       { name: "action", title:t('generic.action'), align: "center" },
       { name: "user", title:t('user.title'), align: "center" },
       { name: "transporter", title:t('transporter.title'), align: "center" },
+      { name: "staff", title:t('staff.title'), align: "center" },
       { name: "id" }
     ],
     rows: rows.map(group => ({
@@ -177,6 +180,14 @@ function useGroupTableData(
             variant="text"
             color="dark"
             onClick={() => handleOpenTransporter(group.groupId)}>
+          <Icon>assignment</Icon>&nbsp;{t('generic.assign')}
+        </ArgonButton>
+      ),
+      staff: (
+        <ArgonButton
+            variant="text"
+            color="dark"
+            onClick={() => handleStaffClick(group.groupId)}>
           <Icon>assignment</Icon>&nbsp;{t('generic.assign')}
         </ArgonButton>
       ),

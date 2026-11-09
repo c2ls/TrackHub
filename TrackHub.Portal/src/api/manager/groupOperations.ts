@@ -117,3 +117,30 @@ export const DeleteTransporterGroupDocument = graphql(`
     deleteTransporterGroup(transporterId: $transporterId, groupId: $groupId)
   }
 `);
+
+export const GetStaffByGroupDocument = graphql(`
+  query GetStaffByGroup($groupId: Long!, $skip: Int!, $take: Int!, $search: String) {
+    staffMembersByGroup(query: { groupId: $groupId, skip: $skip, take: $take, search: $search }) {
+      items {
+        staffId
+        name
+      }
+      totalCount
+    }
+  }
+`);
+
+export const CreateStaffGroupDocument = graphql(`
+  mutation CreateStaffGroup($staffGroup: StaffGroupDtoInput!) {
+    createStaffGroup(command: { staffGroup: $staffGroup }) {
+      staffId
+      groupId
+    }
+  }
+`);
+
+export const DeleteStaffGroupDocument = graphql(`
+  mutation DeleteStaffGroup($staffId: UUID!, $groupId: Long!) {
+    deleteStaffGroup(staffId: $staffId, groupId: $groupId)
+  }
+`);

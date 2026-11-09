@@ -24,6 +24,7 @@ import TableAccordion from "controls/Accordions/TableAccordion";
 import GroupFormDialog from 'layouts/manageadmin/components/groups/GroupDialog';
 import TransporterAllocatorDialog from 'layouts/manageadmin/components/groups/TransporterAllocatorDialog';
 import UserAllocatorDialog from 'layouts/manageadmin/components/groups/UserAllocatorDialog';
+import StaffAllocatorDialog from 'layouts/manageadmin/components/groups/StaffAllocatorDialog';
 import useForm from 'controls/Dialogs/useForm';
 import ConfirmDialog from 'controls/Dialogs/ConfirmDialog';
 import useGroupTableData from "layouts/manageadmin/data/groupsTableData";
@@ -57,6 +58,11 @@ function ManageGroups() {
     setOpenTransporterAllocator(true);
   };
 
+  const handleStaffClick = (groupId: number) => {
+    setGroupId(groupId);
+    setOpenStaffAllocator(true);
+  };
+
   const [expanded, setExpanded] = useState(false);
   const { page, setPage, searchDraft, setSearchDraft, params } = useServerList(PAGE_SIZE);
   const {
@@ -67,7 +73,7 @@ function ManageGroups() {
     onSave,
     onDelete,
     setOpen,
-    setConfirmOpen} = useGroupTableData(expanded, handleEditClick, handleDeleteClick, handleUserClick, handleTransporterClick, params);
+    setConfirmOpen} = useGroupTableData(expanded, handleEditClick, handleDeleteClick, handleUserClick, handleTransporterClick, handleStaffClick, params);
   useClampPage(page, PAGE_SIZE, totalCount, setPage);
 
   const [values, handleChange, setValues, setErrors, validate, errors] = useForm<GroupFormValues>({});
@@ -76,6 +82,7 @@ function ManageGroups() {
   const [groupId, setGroupId] = useState(0);
   const [openUserAllocator, setOpenUserAllocator] = useState(false);
   const [openTransporterAllocator, setOpenTransporterAllocator] = useState(false);
+  const [openStaffAllocator, setOpenStaffAllocator] = useState(false);
 
   const handleSubmit = async () => {
     const requiredFields = ['name', 'description'];
@@ -130,6 +137,12 @@ function ManageGroups() {
       <UserAllocatorDialog
         open={openUserAllocator}
         setOpen={setOpenUserAllocator}
+        groupId={groupId}
+      />
+
+      <StaffAllocatorDialog
+        open={openStaffAllocator}
+        setOpen={setOpenStaffAllocator}
         groupId={groupId}
       />
 

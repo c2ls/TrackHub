@@ -34,7 +34,6 @@ public class WriterAuditCoverageTests
         "AuditEventWriter.cs",
         "BackgroundJobRunWriter.cs",
         "DirectApiUsageSink.cs",
-        "StaffStatusEventWriter.cs",
         "PublicLinkGrantResolver.cs",
         // Per-user UI preferences (language, theme, navbar): no security or compliance meaning.
         "UserSettingsWriter.cs",
