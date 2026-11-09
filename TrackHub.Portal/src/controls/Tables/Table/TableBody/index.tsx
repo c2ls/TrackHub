@@ -155,6 +155,7 @@ const TableBody = ({
           return (
             <TableRow
               key={rowKey}
+              hover
               data-testid={`row-${rowKey}`}
               // Selecting a row is an action, so it answers the keyboard as well as the mouse.
               tabIndex={0}

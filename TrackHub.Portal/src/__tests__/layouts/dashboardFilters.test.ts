@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-import { filterPositions } from 'layouts/dashboard/utils/dashboard';
+import { countDevicesInMovement, filterPositions } from 'layouts/dashboard/utils/dashboard';
 import type { Position } from 'api/router/router';
 
 // Minimal Position fixtures — only the fields filterPositions actually reads
@@ -51,5 +51,15 @@ describe('filterPositions defaults (live map regression)', () => {
     expect(filterPositions(positions, { transporterType: 'Truck' })).toHaveLength(2);
     expect(filterPositions(positions, { searchText: 'abc' })).toHaveLength(1);
     expect(filterPositions(positions, { status: 'offline', onlineInterval: 60 })).toHaveLength(1);
+  });
+});
+
+describe('countDevicesInMovement', () => {
+  test('a stale report with speed is offline, not moving', () => {
+    const stale = [
+      ...positions,
+      { transporterId: 't-4', deviceName: 'OLD-001', transporterType: 'Truck', speed: 80, deviceDateTime: '2001-01-01T00:00:00Z' },
+    ] as unknown as Position[];
+    expect(countDevicesInMovement(stale, 60)).toBe(1);
   });
 });

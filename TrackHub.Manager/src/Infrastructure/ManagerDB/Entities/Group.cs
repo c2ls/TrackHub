@@ -30,6 +30,7 @@ public sealed class Group(string name, string description, bool active, Guid acc
     public Guid AccountId { get; set; } = accountId;
     public ICollection<User> Users { get; } = [];
     public ICollection<Transporter> Transporters { get; } = [];
+    public ICollection<StaffMember> StaffMembers { get; } = [];
 
     public Account Account
     {

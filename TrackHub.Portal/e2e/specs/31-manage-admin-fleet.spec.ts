@@ -6,7 +6,6 @@
 import { test, expect, unique, uniqueName } from '../fixtures';
 import { CrudFlow } from '../pages/crud';
 import { ConfirmDialog, FormDialog } from '../pages/dialogs';
-import { openTab } from '../pages/dashboard';
 import type { ApiClient } from '../fixtures/api';
 import type { CleanupRegistry } from '../fixtures/data';
 import type { Translator } from '../fixtures/i18n';
@@ -171,16 +170,16 @@ test.describe('account management — fleet & tracking', () => {
       'name'
     );
 
-    // The row carries two allocators in a fixed column order: users, then units.
+    // The row carries three allocators in a fixed column order: users, units, then staff.
     const row = await groups.section.findRow(groupName);
-    await row.getByRole('button', { name: t('generic.assign') }).last().click();
+    await row.getByRole('button', { name: t('generic.assign') }).nth(1).click();
     await allocator.waitOpen();
     await allocator.add(unitName);
     await expect(allocator.row(unitName)).toBeVisible({ timeout: 30_000 });
     await allocator.close();
 
     // Re-opening shows the saved membership, not just the optimistic row.
-    await row.getByRole('button', { name: t('generic.assign') }).last().click();
+    await row.getByRole('button', { name: t('generic.assign') }).nth(1).click();
     await allocator.waitOpen();
     await expect(allocator.row(unitName)).toBeVisible({ timeout: 30_000 });
     await allocator.remove(unitName);
@@ -434,9 +433,7 @@ test.describe('account management — fleet & tracking', () => {
     const transporterId = await api.createTransporter(unitName);
     cleanup.add(`unit ${unitName}`, () => api.deleteTransporter(transporterId));
 
-    // Assignments are day-to-day dispatch: they live on the dashboard's staff operations tab.
-    await shell.open('dashboard');
-    await openTab(page, t, 'staff');
+    await shell.open('manageAdmin');
     const section = new CrudFlow(page, 'staff-assignments', t).section;
     await section.expand();
     await expect(section.root.getByText(t('workforce.selectStaffHint'))).toBeVisible();

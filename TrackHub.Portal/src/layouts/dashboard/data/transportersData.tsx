@@ -17,11 +17,11 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from 'react-i18next';
-import { Name, Description } from "controls/Tables/components/tableComponents";
+import ArgonBox from "components/ArgonBox";
 import ArgonTypography from "components/ArgonTypography";
-import Icon from "@mui/material/Icon";
-import ArgonButton from "components/ArgonButton";
-import { formatDateTime } from "utils/dateUtils";
+import { formatDateTime, formatShortDateTime } from "utils/dateUtils";
+import { getUnitStatus } from "layouts/dashboard/utils/dashboard";
+import type { UnitStatus } from "layouts/dashboard/utils/dashboard";
 import type { Position } from "api/router/router";
 import type { TableColumn } from "controls/Tables/Table";
 
@@ -44,36 +44,61 @@ export interface UseTransportersTableData {
   data: TransporterTableData;
 }
 
-function useTransportersTableData(transporters: Position[]): UseTransportersTableData {
+const STATUS_RANK: Record<UnitStatus, number> = { moving: 2, stopped: 1, offline: 0 };
+const STATUS_COLOR: Record<UnitStatus, "success" | "error" | "secondary"> = { moving: "success", stopped: "error", offline: "secondary" };
+const STATUS_LABEL = {
+  moving: "dashboard.statusMoving",
+  stopped: "dashboard.statusStopped",
+  offline: "dashboard.statusOffline",
+} as const;
+function useTransportersTableData(transporters: Position[], onlineInterval: number): UseTransportersTableData {
   const { t } = useTranslation();
   const [data, setData] = useState<TransporterTableData>({ columns: [], rows: [] });
 
   const buildTableData = (transporters: Position[]): TransporterTableData => ({
     columns: [
-      { name: "status", title:t('transporterMap.status'), align: "center", width: "10%", sortValue: (row) => Number(row.speedValue) > 0 ? 1 : 0 },
-      { name: "name", title:t('transporterMap.name'), align: "left", width: "35%" },
+      { name: "status", title: t('transporterMap.status'), hideTitle: true, align: "center", width: "7%", sortValue: (row) => STATUS_RANK[row.statusValue as UnitStatus] },
+      { name: "name", title:t('transporterMap.name'), align: "left", width: "30%" },
       // The cells render formatted text, so the columns sort on the raw values carried alongside.
-      { name: "datetime", title:t('transporterMap.dateTime'), align: "left", width: "35%", sortValue: (row) => row.datetimeValue as string },
-      { name: "speed", title:t('transporterMap.speed'), align: "left", width: "20%", sortValue: (row) => Number(row.speedValue) },
+      { name: "datetime", title:t('transporterMap.dateTime'), align: "left", width: "44%", sortValue: (row) => row.datetimeValue as string },
+      { name: "speed", title:t('transporterMap.speedShort'), align: "right", width: "19%", sortValue: (row) => Number(row.speedValue) },
       { name: "id" }
     ],
-    rows: transporters.map(transporter => ({
-      status: (
-        <ArgonButton variant="outlined" color={transporter.speed > 0 ? 'success' : 'error'} size="xsmall" iconOnly circular>
-          <Icon sx={{ fontWeight: "bold", fontSize: "0.75rem" }}>{transporter.speed > 0 ? 'radio_button_checked' : 'radio_button_unchecked'}</Icon>
-        </ArgonButton>
+    rows: transporters.map(transporter => {
+      const status = getUnitStatus(transporter, onlineInterval);
+      return {
+        status: (
+          <ArgonBox
+            component="span"
+            display="inline-block"
+            width="0.625rem"
+            height="0.625rem"
+            borderRadius="50%"
+            bgColor={STATUS_COLOR[status]}
+            title={t(STATUS_LABEL[status])}
+          />
         ),
-      name: <Name name={transporter.deviceName} />,
-      datetime: (
-        <ArgonTypography variant="caption" color="secondary" fontWeight="medium">
-          {formatDateTime(transporter.deviceDateTime)}
-        </ArgonTypography>
-      ),
-      speed: <Description description={transporter.speed} />,
-      speedValue: transporter.speed,
-      datetimeValue: transporter.deviceDateTime,
-      id: transporter.transporterId
-    })),
+        name: (
+          <ArgonTypography variant="button" fontWeight="medium" noWrap display="block" title={transporter.deviceName}>
+            {transporter.deviceName}
+          </ArgonTypography>
+        ),
+        datetime: (
+          <ArgonTypography variant="caption" color="secondary" fontWeight="medium" noWrap display="block" title={formatDateTime(transporter.deviceDateTime)}>
+            {formatShortDateTime(transporter.deviceDateTime)}
+          </ArgonTypography>
+        ),
+        speed: (
+          <ArgonTypography variant="caption" fontWeight="medium" color="text" noWrap display="block">
+            {transporter.speed}
+          </ArgonTypography>
+        ),
+        statusValue: status,
+        speedValue: transporter.speed,
+        datetimeValue: transporter.deviceDateTime,
+        id: transporter.transporterId
+      };
+    }),
   });
 
   useEffect(() => {
@@ -84,7 +109,7 @@ function useTransportersTableData(transporters: Position[]): UseTransportersTabl
       }
       fetchData();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transporters]);
+  }, [transporters, onlineInterval]);
 
   return {
     data

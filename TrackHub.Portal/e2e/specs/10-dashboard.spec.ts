@@ -111,7 +111,7 @@ test.describe('dashboard', () => {
     await shell.open('dashboard');
 
     // The four columns a dispatcher reads the fleet by.
-    for (const column of ['status', 'name', 'dateTime', 'speed'] as const) {
+    for (const column of ['status', 'name', 'dateTime', 'speedShort'] as const) {
       await expect(
         page.getByRole('columnheader', { name: t(`transporterMap.${column}`) })
       ).toBeVisible({ timeout: 60_000 });

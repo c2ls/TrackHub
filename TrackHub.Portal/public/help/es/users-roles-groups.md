@@ -1,7 +1,7 @@
 ---
 id: users-roles-groups
 title: Usuarios, roles y grupos
-description: Agregue las personas que inician sesión en su cuenta, asígneles roles y políticas, y organice unidades y usuarios en grupos.
+description: Agregue las personas que inician sesión en su cuenta, asígneles roles y políticas, y organice unidades, personal y usuarios en grupos.
 category: administration
 screens: [manageAdmin]
 related: [roles-and-permissions, management-overview, admin-account-setup]
@@ -63,9 +63,9 @@ Vea [Roles y permisos](topic:roles-and-permissions) para saber cómo se combinan
 
 ## Grupos
 
-Los grupos le permiten organizar unidades y usuarios juntos — por ejemplo, por sucursal o región.
+Los grupos le permiten organizar unidades, personal y usuarios juntos — por ejemplo, por sucursal, región o dependencia. Las unidades y el personal se asignan a los grupos, y los grupos se asignan a los usuarios.
 
-Columnas: **Grupos** (nombre), **Descripción**, **Acción**, **Usuarios** y **Unidades**.
+Columnas: **Grupos** (nombre), **Descripción**, **Acción**, **Usuarios**, **Unidades** y **Personal**.
 
 Para agregar un grupo, expanda la sección y haga clic en el icono **+** (agregar). El diálogo **Detalle del Grupo** solicita un **Nombre** (obligatorio), una **Descripción** (obligatoria) y una casilla **Activo**. Presione **Guardar**.
 
@@ -74,3 +74,4 @@ Acciones de fila:
 - **Editar** y **Eliminar** en la columna **Acción** cambian o quitan el grupo (la eliminación pide confirmar).
 - **Asignar** en la columna **Usuarios** abre el diálogo **Asignar Usuario**: agregue usuarios al grupo desde la lista desplegable, o seleccione usuarios listados y quítelos.
 - **Asignar** en la columna **Unidades** abre el diálogo **Asignar Unidad**: agregue unidades al grupo desde la lista desplegable, o seleccione unidades listadas y quítelas.
+- **Asignar** en la columna **Personal** abre el diálogo **Asignar Personal**: agregue miembros del personal al grupo desde la lista desplegable, o seleccione miembros listados y quítelos. Un miembro del personal inactivo no se puede agregar.

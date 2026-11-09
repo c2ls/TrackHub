@@ -77,8 +77,9 @@ For each group:
 1. Click the **+** icon and fill in the **Group Details** dialog: **Name** (required), **Description** (required), and the **Active** checkbox. Press **Save**.
 2. On the group's row, click **Assign** in the **Users** column and add the users who should see this group's units.
 3. Click **Assign** in the **Units** column and add the units.
+4. Click **Assign** in the **Staff** column and add the staff members who belong to the group.
 
-Step 3 has to wait until your units exist (step 7), so expect to come back here. What you can do now is decide the shape — by branch, by region, by customer — and create the groups.
+Steps 3 and 4 have to wait until your units and staff exist (step 7), so expect to come back here. What you can do now is decide the shape — by branch, by region, by customer — and create the groups.
 
 **Points of Interest** behave differently and are worth knowing about: a point of interest with no group is visible to *everyone* in the account, while one assigned to a group is limited to that group's members.
 
@@ -107,10 +108,10 @@ A **device** is the tracker hardware; a **unit** is the vehicle or asset you act
 
 1. **Units** (**Account Management → Fleet & Tracking → Units**) — click **+**, give the unit a **Name** and a **Type**, and **Save**. The **Type** determines the movement thresholds used to decide when the unit counts as stopped.
 2. **Assign the device** — on the **GPS Integration** screen, under **Device Assignments**, choose the unit and an unassigned device and press **Assign Device**. Only devices not currently assigned to a unit are offered.
-3. **Staff** (**Fleet & Tracking → Staff**) — if you track who is driving, add them here. A staff member can carry a **Default Transporter**, so create the units first. Once a staff member exists you can also issue them a **staff credential** for the mobile app, in the **Staff Credentials & Devices** section just below — that part works on every account. See [Staff and workforce](topic:staff-workforce).
+3. **Staff** (**Fleet & Tracking → Staff**) — the people who work for you — drivers, operators, salespeople — go here. A staff member can carry a **Default Transporter**, so create the units first. Once a staff member exists you can also issue them a **staff credential** for the mobile app, with the **Credentials and devices** action on their row — that part works on every account. See [Staff and workforce](topic:staff-workforce).
 4. **Points of Interest** (**Fleet & Tracking → Points of Interest**) — named locations such as client sites, warehouses, fuel stations, and workshops, with a name, coordinates, a type, a colour, and optionally a group.
 
-Now go back to **Groups** and complete step 5.3 — assign the units to their groups.
+Now go back to **Groups** and complete steps 5.3 and 5.4 — assign the units and the staff to their groups.
 
 ## 8. Set up the optional features you have
 

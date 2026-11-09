@@ -157,7 +157,7 @@ Los Gestores pueden ver ambos valores, en solo lectura, en **Integraci贸n GPS 鈫
 
 **Clave:** `workforce`. **Ajuste:** **Bloquear la asignaci贸n cuando la licencia del personal est茅 vencida**, predeterminado **desactivado**.
 
-Esta funcionalidad **no** controla al personal como tal. El registro de **Personal** y la secci贸n **Credenciales y Dispositivos del Personal** son plataforma base: un administrador autorizado puede registrar personal y emitir, activar, bloquear, restablecer y revocar sus credenciales m贸viles en cualquier cuenta, est茅 o no activada esta funcionalidad. Lo que Personal agrega es todo lo que se construye *alrededor* del personal.
+Esta funcionalidad **no** controla al personal como tal. El registro de **Personal** y sus **Credenciales y dispositivos** son plataforma base: un administrador autorizado puede registrar personal y emitir, activar, bloquear, restablecer y revocar sus credenciales m贸viles en cualquier cuenta, est茅 o no activada esta funcionalidad. Lo que Personal agrega es todo lo que se construye *alrededor* del personal.
 
 Cuando est谩 desactivada:
 

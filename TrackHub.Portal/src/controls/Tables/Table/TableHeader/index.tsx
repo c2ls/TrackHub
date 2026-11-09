@@ -18,6 +18,7 @@ import ArgonBox from "components/ArgonBox";
 import typography from "assets/theme/base/typography";
 import borders from "assets/theme/base/borders";
 import { TableRow } from "@mui/material";
+import { visuallyHidden } from "@mui/utils";
 import type { TableColumn } from "controls/Tables/Table";
 
 export interface TableHeaderProps {
@@ -40,7 +41,7 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
       <TableRow>
         {columns
           .filter(({ name }) => name !== "id") // Hide the id column
-          .map(({ name, title, align, width }, key) => {
+          .map(({ name, title, align, width, hideTitle }, key) => {
             let pl;
             let pr;
 
@@ -62,8 +63,8 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
                 width={width || "auto"}
                 pt={compact ? 0.75 : 1.5}
                 pb={compact ? 0.5 : 1.25}
-                pl={compact ? (align === "left" ? 1.5 : 1.5) : align === "left" ? pl : 3}
-                pr={compact ? (align === "right" ? 1.5 : 1.5) : align === "right" ? pr : 3}
+                pl={compact ? 1 : align === "left" ? pl : 3}
+                pr={compact ? 1 : align === "right" ? pr : 3}
                 textAlign={align}
                 fontSize={size.xxs}
                 fontWeight={fontWeightBold}
@@ -82,7 +83,11 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
                 onClick={sortable ? () => handleSort(name) : undefined}
                 style={{ cursor: sortable ? "pointer" : "default" }}
               >
-                {(title || name).toUpperCase()}
+                {hideTitle ? (
+                  <ArgonBox component="span" sx={visuallyHidden}>{title || name}</ArgonBox>
+                ) : (
+                  (title || name).toUpperCase()
+                )}
               </ArgonBox>
             );
           })}

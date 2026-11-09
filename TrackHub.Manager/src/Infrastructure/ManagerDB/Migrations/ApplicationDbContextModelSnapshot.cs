@@ -18,7 +18,7 @@ namespace TrackHub.Manager.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -2226,6 +2226,23 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffGroup", b =>
+                {
+                    b.Property<long>("GroupId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("groupid");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("staffid");
+
+                    b.HasKey("GroupId", "StaffId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("staff_group", "app");
+                });
+
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffMember", b =>
                 {
                     b.Property<Guid>("StaffId")
@@ -3021,6 +3038,25 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffGroup", b =>
+                {
+                    b.HasOne("TrackHub.Manager.Infrastructure.Entities.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TrackHub.Manager.Infrastructure.Entities.StaffMember", "StaffMember")
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("StaffMember");
                 });
 
             modelBuilder.Entity("TrackHub.Manager.Infrastructure.Entities.StaffMember", b =>

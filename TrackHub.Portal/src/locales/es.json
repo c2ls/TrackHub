@@ -129,12 +129,11 @@
   "dashboard": {
     "totalTitle": "Total de Unidades",
     "activeTitle": "Unidades Activas",
-    "movementTitle": "Unidades en Movimiento",
+    "movementTitle": "En Movimiento",
     "typesTitle": "Tipos de Unidades",
     "inGeofence": "En Geocerca",
     "transportersTitle": "Unidades",
     "positionsTitle": "Posiciones",
-    "staffTitle": "Personal",
     "filterType": "Tipo de Unidad",
     "filterGroup": "Grupo",
     "filterOperator": "Operador",
@@ -598,6 +597,7 @@
   },
   "staff": {
     "name": "Nombre",
+    "singleTitle": "Miembro del personal",
     "phone": "Teléfono",
     "document": "Documento",
     "title": "Personal",
@@ -825,7 +825,8 @@
     "deleteTitle": "Eliminar Grupo",
     "deleteMessage": "¿Está seguro de que desea eliminar este grupo?",
     "assignTransporter": "Asignar Unidad",
-    "assignUser": "Asignar Usuario"
+    "assignUser": "Asignar Usuario",
+    "assignStaff": "Asignar Personal"
   },
   "manageAdmin": {
     "groups": {
@@ -1131,6 +1132,7 @@
     "details": "Detalle de la Unidad",
     "dateTime": "Fecha Hora",
     "speed": "Velocidad (Km/Hr)",
+    "speedShort": "Km/h",
     "address": "Dirección",
     "status": "Est.",
     "state": "Estado",

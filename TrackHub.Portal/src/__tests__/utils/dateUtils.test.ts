@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-import { formatDate, formatDateTime, toISOStringWithTimezone, formatDurationString } from 'utils/dateUtils';
+import { formatDate, formatDateTime, formatShortDateTime, toISOStringWithTimezone, formatDurationString } from 'utils/dateUtils';
 
 describe('formatDate', () => {
   test('formats a valid date correctly', () => {
@@ -53,6 +53,16 @@ describe('formatDate', () => {
     // Epoch 0 may render as 12/31/1969 or 01/01/1970 depending on timezone
     const result = formatDate(0);
     expect(result).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+  });
+});
+
+describe('formatShortDateTime', () => {
+  test('drops the year and keeps the time', () => {
+    expect(formatShortDateTime(new Date(2025, 8, 16, 19, 55, 0))).toBe('09/16 19:55:00');
+  });
+
+  test('returns empty for an invalid value', () => {
+    expect(formatShortDateTime('not a date')).toBe('');
   });
 });
 

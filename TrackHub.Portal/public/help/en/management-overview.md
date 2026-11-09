@@ -42,7 +42,7 @@ The screen is organised into six labelled **groups**, always shown in the same o
 ### Fleet & Tracking
 
 - **Devices** and **Units** — your tracking devices and the units they report for. See [Units and devices](topic:units-devices).
-- **Staff**, **Staff Credentials & Devices**, **Staff Qualifications**, **Staff Assignments**, and **Qualification Expirations (30 days)** — the people who operate your units: the registry, their mobile-app sign-in and enrolled devices, their licences and certificates with expiry dates, and the record of who drove what and when. The first two are always available; the last three need the workforce feature. See [Staff and workforce](topic:staff-workforce).
+- **Staff**, **Staff Qualifications**, **Staff Assignments**, and **Qualification Expirations (30 days)** — the people who work for your account: the registry (with each staff member's mobile-app credential and enrolled devices), their licences and certificates with expiry dates, and the record of which staff member used which unit and when. The registry is always available; qualifications, assignments and expirations need the workforce feature. See [Staff and workforce](topic:staff-workforce).
 - **Groups** — organise units and users together, for example by branch or region. See [Users, roles, and groups](topic:users-roles-groups).
 - **Points of Interest** — named locations (client sites, warehouses, fuel stations, workshops, and so on) that can be shown on the map.
 

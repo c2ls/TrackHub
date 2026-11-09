@@ -20,6 +20,19 @@ public class GetStaffMembersByAccountQueryHandler(IStaffMemberReader reader) : I
     public async Task<StaffMembersPageVm> Handle(GetStaffMembersByAccountQuery request, CancellationToken cancellationToken) => await reader.GetStaffMembersByAccountAsync(request.AccountId, request.Search, request.StaffType, request.Skip, request.Take, cancellationToken);
 }
 
+[Authorize(Resource = Resources.Staff, Action = Actions.Read)]
+// Enforcement: StaffMemberReader.GetStaffMembersByGroupAsync checks the group's account and the caller's membership.
+[AccountScopeEnforcedInHandler]
+public readonly record struct GetStaffMembersByGroupQuery(long GroupId, string? Search = null, int Skip = 0, int Take = 50) : IRequest<StaffMembersPageVm>;
+public class GetStaffMembersByGroupQueryHandler(IStaffMemberReader reader) : IRequestHandler<GetStaffMembersByGroupQuery, StaffMembersPageVm>
+{
+    public async Task<StaffMembersPageVm> Handle(GetStaffMembersByGroupQuery request, CancellationToken cancellationToken) => await reader.GetStaffMembersByGroupAsync(request.GroupId, request.Search, request.Skip, request.Take, cancellationToken);
+}
+public class GetStaffMembersByGroupQueryValidator : AbstractValidator<GetStaffMembersByGroupQuery>
+{
+    public GetStaffMembersByGroupQueryValidator() => RuleFor(x => x.GroupId).NotEmpty();
+}
+
 [Authorize(Resource = Resources.StaffOperations, Action = Actions.Read)]
 // Enforcement: the reader/writer this handler delegates to extends AccountScopedDataAccess and
 // checks the loaded row's owning account (RequireAccountAccess) or filters on the caller's scope.

@@ -6,6 +6,7 @@ public partial class Query
 {
     public async Task<StaffMemberVm> GetStaffMember([Service] ISender sender, [AsParameters] GetStaffMemberQuery query, CancellationToken cancellationToken) => await sender.Send(query, cancellationToken);
     public async Task<StaffMembersPageVm> GetStaffMembersByAccount([Service] ISender sender, [AsParameters] GetStaffMembersByAccountQuery query, CancellationToken cancellationToken) => await sender.Send(query, cancellationToken);
+    public async Task<StaffMembersPageVm> GetStaffMembersByGroup([Service] ISender sender, [AsParameters] GetStaffMembersByGroupQuery query, CancellationToken cancellationToken) => await sender.Send(query, cancellationToken);
     public async Task<IReadOnlyCollection<StaffAssignmentVm>> GetStaffAssignments([Service] ISender sender, [AsParameters] GetStaffAssignmentsQuery query, CancellationToken cancellationToken) => await sender.Send(query, cancellationToken);
     public async Task<bool> ValidateStaffAssignment([Service] ISender sender, [AsParameters] ValidateStaffAssignmentQuery query, CancellationToken cancellationToken) => await sender.Send(query, cancellationToken);
     public async Task<bool> ValidateStaffAccount([Service] ISender sender, [AsParameters] ValidateStaffAccountQuery query, CancellationToken cancellationToken) => await sender.Send(query, cancellationToken);

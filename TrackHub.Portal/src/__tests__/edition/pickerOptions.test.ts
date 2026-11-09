@@ -16,7 +16,8 @@
 
 import { MAX_PAGE_SIZE } from 'api/core/paging';
 import type { SearchOption } from 'edition/SearchSelect';
-import { excludingOptions, PICKER_PAGE, usePointOfInterestOptions } from 'edition/pickerOptions';
+import { accountStaffOptions, excludingOptions, PICKER_PAGE, usePointOfInterestOptions } from 'edition/pickerOptions';
+import { useStaffMembersPage } from 'queries/staff';
 
 const mockPois = vi.fn();
 
@@ -67,5 +68,17 @@ describe('usePointOfInterestOptions', () => {
 
     expect(mockPois).toHaveBeenCalledWith(expect.objectContaining({ search: 'depot', take: PICKER_PAGE, active: true }));
     expect(options).toEqual([{ value: 'p-1', label: 'Depot' }]);
+  });
+});
+
+describe('accountStaffOptions', () => {
+  test('can leave inactive staff out of the picker', () => {
+    vi.mocked(useStaffMembersPage).mockReturnValue({
+      data: { items: [{ staffId: 'a', name: 'Ana', active: true }, { staffId: 'b', name: 'Beto', active: false }], totalCount: 2 },
+      isFetching: false,
+    } as unknown as ReturnType<typeof useStaffMembersPage>);
+
+    expect(accountStaffOptions('acc')('').options.map((option) => option.value)).toEqual(['a', 'b']);
+    expect(accountStaffOptions('acc', true)('').options.map((option) => option.value)).toEqual(['a']);
   });
 });

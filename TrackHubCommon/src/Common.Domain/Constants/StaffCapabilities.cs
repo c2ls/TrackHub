@@ -18,7 +18,6 @@ namespace Common.Domain.Constants;
 public static partial class StaffCapabilities
 {
     public const string Vehicle = nameof(Vehicle);
-    public const string Status = nameof(Status);
     public const string Capture = nameof(Capture);
     public const string Trips = nameof(Trips);
 
@@ -30,7 +29,7 @@ public static partial class StaffCapabilities
 
     private static IReadOnlyCollection<string> Build()
     {
-        var capabilities = new List<string> { Vehicle, Status, Capture, Trips };
+        var capabilities = new List<string> { Vehicle, Capture, Trips };
         AddEditionCapabilities(capabilities);
         return capabilities.AsReadOnly();
     }

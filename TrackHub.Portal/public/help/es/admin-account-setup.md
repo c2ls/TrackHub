@@ -77,8 +77,9 @@ Para cada grupo:
 1. Haga clic en el ícono **+** y complete el diálogo **Detalle del Grupo**: **Nombre** (obligatorio), **Descripción** (obligatoria) y la casilla **Activo**. Presione **Guardar**.
 2. En la fila del grupo, haga clic en **Asignar** en la columna **Usuarios** y agregue los usuarios que deben ver las unidades de este grupo.
 3. Haga clic en **Asignar** en la columna **Unidades** y agregue las unidades.
+4. Haga clic en **Asignar** en la columna **Personal** y agregue los miembros del personal que pertenecen al grupo.
 
-El paso 3 debe esperar a que existan sus unidades (paso 7), así que cuente con volver aquí. Lo que sí puede hacer ahora es decidir la forma —por sucursal, por región, por cliente— y crear los grupos.
+Los pasos 3 y 4 deben esperar a que existan sus unidades y su personal (paso 7), así que cuente con volver aquí. Lo que sí puede hacer ahora es decidir la forma —por sucursal, por región, por cliente— y crear los grupos.
 
 **Los Puntos de Interés se comportan distinto** y conviene saberlo: un punto de interés sin grupo es visible para *todos* en la cuenta, mientras que uno asignado a un grupo queda limitado a los miembros de ese grupo.
 
@@ -107,10 +108,10 @@ Un **dispositivo** es el equipo rastreador; una **unidad** es el vehículo o act
 
 1. **Unidades** (**Administración de Cuentas → Flota y Rastreo → Unidades**) — haga clic en **+**, dele a la unidad un **Nombre** y un **Tipo**, y **Guarde**. El **Tipo** determina los umbrales de movimiento usados para decidir cuándo la unidad cuenta como detenida.
 2. **Asigne el dispositivo** — en la pantalla **Integración GPS**, bajo **Asignaciones de Dispositivos**, elija la unidad y un dispositivo sin asignar y presione **Asignar Dispositivo**. Solo se ofrecen los dispositivos que no están asignados actualmente a una unidad.
-3. **Personal** (**Flota y Rastreo → Personal**) — si registra quién conduce, agréguelos aquí. Un miembro del personal puede llevar un **Transportador Predeterminado**, así que cree primero las unidades. Una vez que el personal existe, también puede emitirle una **credencial de personal** para la aplicación móvil, en la sección **Credenciales y Dispositivos del Personal** justo debajo — esa parte funciona en cualquier cuenta. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
+3. **Personal** (**Flota y Rastreo → Personal**) — las personas que trabajan para usted — conductores, operadores, vendedores — van aquí. Un miembro del personal puede llevar un **Transportador Predeterminado**, así que cree primero las unidades. Una vez que el personal existe, también puede emitirle una **credencial de personal** para la aplicación móvil, con la acción **Credenciales y dispositivos** de su fila — esa parte funciona en cualquier cuenta. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
 4. **Puntos de Interés** (**Flota y Rastreo → Puntos de Interés**) — ubicaciones con nombre, como sitios de cliente, bodegas, estaciones de combustible y talleres, con un nombre, coordenadas, un tipo, un color y opcionalmente un grupo.
 
-Ahora vuelva a **Grupos** y complete el paso 5.3 — asigne las unidades a sus grupos.
+Ahora vuelva a **Grupos** y complete los pasos 5.3 y 5.4 — asigne las unidades y el personal a sus grupos.
 
 ## 8. Configure las funcionalidades opcionales que tenga
 

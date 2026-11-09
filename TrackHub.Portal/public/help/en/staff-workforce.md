@@ -1,7 +1,7 @@
 ---
 id: staff-workforce
 title: Staff and workforce
-description: Register staff, give them mobile credentials and devices, track licences and other qualifications, and keep a time-bounded record of who drove which unit.
+description: Register staff, give them mobile credentials and devices, track licences and other qualifications, and keep a time-bounded record of which staff member used which unit.
 category: administration
 screens: [manageAdmin]
 related: [management-overview, units-devices, documents, alerts-notifications, feature-catalog]
@@ -11,21 +11,20 @@ order: 35
 
 # Staff and workforce
 
-A **staff member** is an operational person — someone who drives your units. Staff are not portal users: they never sign in to the web portal, they have their own credentials for the staff mobile app, and they are managed entirely from the **Fleet & Tracking** group of the **Account Management** screen.
+A **staff member** is anyone who works for your account — a driver, an operator, a mechanic, a salesperson, a supervisor. A staff member is tracked through a unit: register the device they carry as a unit with a name that says who it is (for example *Sales Representative North*) and link the staff member to it with **Default Transporter** or an assignment. The dashboard shows units, so that unit is what you follow on the map. Staff are not portal users: they never sign in to the web portal, they have their own credentials for the staff mobile app, and they are managed entirely from the **Fleet & Tracking** group of the **Account Management** screen.
 
-The area has five collapsible sections, in this order:
+The area has four collapsible sections, in this order:
 
 | Section | What it is for |
 |---|---|
-| **Staff** | The registry — who exists, their document, employee code, and primary licence. |
-| **Staff Credentials & Devices** | The sign-in credential each staff member uses in the mobile app, and the devices it is enrolled on. |
+| **Staff** | The registry — who exists, their document, employee code, and primary licence. Each row also opens the staff member's mobile-app credential and enrolled devices. |
 | **Staff Qualifications** | Licences, medical exams, training, background checks, and HAZMAT permits, with expiry dates. |
 | **Staff Assignments** | Time-bounded records of which staff member operated which unit, and when. |
 | **Qualification Expirations (30 days)** | An account-wide list of everything about to lapse. |
 
 ## What needs the Workforce feature
 
-The first two sections are **core platform**. They are always there for an administrator with the right permissions, on every account, whatever the subscription says. You can always register staff, and you can always issue, lock, reset, and revoke their mobile credentials.
+The **Staff** registry and its **Credentials and devices** are **core platform**. They are always there for an administrator with the right permissions, on every account, whatever the subscription says. You can always register staff, and you can always issue, lock, reset, and revoke their mobile credentials.
 
 The last three sections — **Staff Qualifications**, **Staff Assignments**, and **Qualification Expirations** — belong to the billable **Workforce** feature. Without it they are simply not on the screen, expiration alerts are not raised, and the three workforce reports are absent from the report catalogue. See the [Feature catalogue](topic:feature-catalog).
 
@@ -44,11 +43,11 @@ Press the **+** (add) icon to open the **Create Staff Member** dialog:
 - **Default Transporter** — the unit this staff member normally operates, picked from your account's units. This is a *default*, not an assignment; see below.
 - **Active** — untick to take the staff out of use.
 
-Row actions are **Edit** and **Deactivate Staff Member** (you are asked to confirm). Deactivating does not delete anything, and an inactive staff cannot be given a new assignment.
+Row actions are **Edit**, **Credentials and devices** (see below), and **Deactivate Staff Member** (you are asked to confirm). Deactivating does not delete anything, and an inactive staff cannot be given a new assignment.
 
 ## Staff Credentials & Devices
 
-This section administers how a staff member signs in to the **staff mobile app**. Pick a staff member from the **Staff** selector at the top; the section then shows that staff member's credential and the devices enrolled on it.
+This is how a staff member signs in to the **staff mobile app**. Open it with the **Credentials and devices** action on the staff member's row; the dialog shows that staff member's credential and the devices enrolled on it.
 
 A staff member has at most one credential. Press **Create Credential** and set a **Login** and a **Password**. The credential starts **Pending Activation**, and the staff cannot sign in until it is activated.
 
@@ -143,6 +142,8 @@ Staff data is personal data, so these exports are recorded in the audit trail at
 
 ## Who can use this
 
-All five sections live inside **Account Management**, which is available to Managers. A section, a **+** button, or a row action can also be missing because your role does not carry the matching staff permission — read, write, edit, and delete are granted separately. See [Roles and permissions](topic:roles-and-permissions) and [Account Management](topic:management-overview).
+Every section lives inside **Account Management**, which is available to Managers. A section, a **+** button, or a row action can also be missing because your role does not carry the matching staff permission — read, write, edit, and delete are granted separately. See [Roles and permissions](topic:roles-and-permissions) and [Account Management](topic:management-overview).
 
 If the qualification, assignment, or expiration sections are missing but the staff registry is there, that is the Workforce feature, not your permissions.
+
+**Staff Assignments** also needs the staff operations permission (read to see it, write to assign, edit to end an assignment).

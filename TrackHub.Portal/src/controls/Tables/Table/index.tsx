@@ -30,6 +30,8 @@ export interface TableColumn {
   title?: string;
   align?: "left" | "right" | "center";
   width?: string | number;
+  /** Keep the title for assistive technology only, for narrow icon columns. */
+  hideTitle?: boolean;
   /**
    * The value this column sorts on. Cells hold rendered elements, so without it a column sorts by
    * the text inside them: speeds order 100 < 12 < 9 and dates by their formatted MM/DD/YYYY string.

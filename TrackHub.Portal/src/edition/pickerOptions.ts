@@ -92,11 +92,13 @@ export const usePointOfInterestOptions: SearchOptionsHook = (search, take) => {
 };
 
 export const accountStaffOptions =
-  (accountId: string | undefined): SearchOptionsHook =>
+  (accountId: string | undefined, activeOnly = false): SearchOptionsHook =>
   (search, take) => {
     const { data, isFetching } = useStaffMembersPage(accountId, pageParams(search, take));
     return {
-      options: (data?.items ?? []).map((staff) => ({ value: staff.staffId, label: staff.name })),
+      options: (data?.items ?? [])
+        .filter((staff) => !activeOnly || staff.active)
+        .map((staff) => ({ value: staff.staffId, label: staff.name })),
       loading: isFetching,
     };
   };

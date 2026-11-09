@@ -30,7 +30,7 @@ import {
   getTransporterLookupByUser,
   getAllTransportersByGroup,
 } from 'api/manager/transporters';
-import { getGroups, getGroupLookup, getAllUsersByGroup } from 'api/manager/groups';
+import { getGroups, getGroupLookup, getAllUsersByGroup, getAllStaffByGroup } from 'api/manager/groups';
 import {
   getDevicesByAccount,
   getDeviceName,
@@ -204,6 +204,11 @@ describe('exhaustive drains', () => {
   test('the group transporter drain exhausts every page', async () => {
     pagedServer('transportersByGroup', 501);
     expect(await getAllTransportersByGroup(9)).toHaveLength(501);
+  });
+
+  test('the group staff drain exhausts every page', async () => {
+    pagedServer('staffMembersByGroup', 501);
+    expect(await getAllStaffByGroup(9)).toHaveLength(501);
   });
 
   test('a drain of a single short page costs exactly one round trip', async () => {

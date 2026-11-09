@@ -18,10 +18,6 @@ import { useState, useEffect, useContext } from 'react';
 import DashboardTabbar from "controls/Navbars/DashboardTabbar";
 import Transporters from "layouts/dashboard/components/Transporters";
 import Positions from "layouts/dashboard/components/Positions";
-import ManageStaffAssignments from "layouts/manageadmin/components/staff/StaffAssignments";
-import { usePermissions } from 'context/permissions';
-import { useFeatures } from 'context/features';
-import { PermissionActions, PermissionResources } from 'constants/permissions';
 import { getAccountSettings } from 'api/manager/settings';
 import type { AccountSettings } from 'api/manager/settings';
 import { notifyApiError } from 'api/core/errors';
@@ -36,10 +32,6 @@ function Default() {
   const { setLoading } = useContext(LoadingContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
-  const { can } = usePermissions();
-  const { isFeatureEnabled } = useFeatures();
-  const canUseStaffOperations =
-    can(PermissionResources.StaffOperations, PermissionActions.Read) && isFeatureEnabled('workforce');
   const [showGeofence, setShowGeofence] = useState(false);
   const [searchVisibility, setSearchVisibility] = useState(true);
   // The bootstrap value is a partial AccountSettings (the map defaults) until
@@ -97,8 +89,6 @@ function Default() {
           settings={settings}
           geofences={geofences}
           showGeofence={showGeofence}/>;
-      case 2:
-        return canUseStaffOperations ? <ManageStaffAssignments /> : null;
       default:
         return null;
     }
@@ -113,7 +103,6 @@ function Default() {
       tabs={[
         t("dashboard.transportersTitle"),
         t("dashboard.positionsTitle"),
-        ...(canUseStaffOperations ? [t("dashboard.staffTitle")] : []),
       ]}
       onTabChange={handleTabChange}>
       {renderContent()}
