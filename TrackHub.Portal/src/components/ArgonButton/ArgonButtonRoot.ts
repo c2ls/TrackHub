@@ -52,6 +52,8 @@ export default styled(Button)<{ ownerState: ArgonButtonOwnerState }>(({ theme, o
   const { boxShadow, linearGradient, pxToRem, rgba } = functions;
   const { borderRadius } = borders;
   const paletteColors = palette as unknown as ArgonColorMap;
+  // The dark theme's `info` is a light tint, so a button filled with it needs dark text.
+  const brightFill = palette.mode === "dark" && color === "info";
 
   // styles for the button with variant="contained"
   const containedStyles = () => {
@@ -73,6 +75,8 @@ export default styled(Button)<{ ownerState: ArgonButtonOwnerState }>(({ theme, o
       colorValue = gradients.dark.main;
     } else if (color === "light") {
       colorValue = gradients.dark.state;
+    } else if (brightFill) {
+      colorValue = palette.background.default;
     }
 
     // color value when button is focused
@@ -82,6 +86,8 @@ export default styled(Button)<{ ownerState: ArgonButtonOwnerState }>(({ theme, o
       focusedColorValue = gradients.dark.main;
     } else if (color === "primary" || color === "error" || color === "dark") {
       focusedColorValue = white.main;
+    } else if (brightFill) {
+      focusedColorValue = palette.background.default;
     }
 
     return {

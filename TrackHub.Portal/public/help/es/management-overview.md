@@ -25,10 +25,10 @@ Si su cuenta está suspendida o cancelada, todo el portal muestra una pantalla d
 
 ## Cómo funcionan las secciones
 
-La pantalla está organizada en seis **grupos** con etiqueta, siempre en el mismo orden. Bajo el encabezado de cada grupo hay una pila de **secciones plegables** (acordeones):
+La pantalla está organizada en seis **grupos** con etiqueta, siempre en el mismo orden. Una **lista de secciones** a la izquierda nombra cada sección bajo su grupo, y la sección que elija se abre a la derecha — una a la vez:
 
-- Haga clic en el encabezado de una sección para expandirla. La mayoría de las secciones cargan sus datos la primera vez que las abre.
-- Cuando una sección permite agregar registros, aparece un botón **+** (agregar) en su encabezado una vez que la sección está expandida.
+- Haga clic en una sección de la lista para abrirla. La mayoría de las secciones cargan sus datos la primera vez que las abre.
+- Cuando una sección permite agregar registros, aparece un botón **Agregar** en la parte superior derecha de la sección abierta. Al agregar o editar un registro se abre un panel de formulario en el borde derecho de la pantalla.
 - Dentro de una sección, las filas tienen sus propias acciones — normalmente **Editar** y **Eliminar**, además de botones **Asignar** donde una sección vincula registros entre sí. Las eliminaciones piden confirmación primero.
 
 ## Los seis grupos

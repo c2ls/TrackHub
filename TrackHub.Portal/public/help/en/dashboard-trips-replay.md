@@ -64,7 +64,7 @@ Select a trip in the list. If the trip has a timeline, playback controls appear 
 
 - **Play / Pause** — start or stop the animation; a marker moves along the route.
 - **Speed** — choose **1x**, **2x**, **4x**, or **8x** playback speed.
-- **Timeline slider** — drag to jump to any point in the trip.
+- **Speed profile** — a chart of the unit's speed across the trip, with the time and speed at the current point shown above it. Drag across the chart, or use the **timeline slider** under it, to jump to any point in the trip.
 
 ## Exporting to CSV
 

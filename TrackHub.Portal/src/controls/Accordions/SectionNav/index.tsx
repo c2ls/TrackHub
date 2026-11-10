@@ -17,6 +17,7 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import Card from '@mui/material/Card';
+import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import ArgonBox from 'components/ArgonBox';
 import ArgonTypography from 'components/ArgonTypography';
@@ -25,11 +26,14 @@ interface SectionEntry {
   key: string;
   title: string;
   group?: string;
+  /** Position of the group on the screen, so a group whose sections arrive late keeps its place. */
+  groupOrder?: number;
 }
 
 interface SectionNavValue {
   active: string | null;
-  register: (entry: SectionEntry) => () => void;
+  register: (entry: SectionEntry) => void;
+  unregister: (key: string) => void;
 }
 
 /**
@@ -38,20 +42,31 @@ interface SectionNavValue {
  */
 export const SectionNavContext = createContext<SectionNavValue | null>(null);
 
-const SectionGroupContext = createContext<string | undefined>(undefined);
-export { SectionGroupContext };
+export const SectionGroupContext = createContext<{ label: string; order: number } | undefined>(undefined);
 
-/** Names the navigation group of the sections rendered inside it. */
-export function SectionGroup({ label, children }: { label: string; children: ReactNode }) {
-  return <SectionGroupContext.Provider value={label}>{children}</SectionGroupContext.Provider>;
+/** Names the navigation group of the sections rendered inside it; `order` is its place on the screen. */
+export function SectionGroup({ label, order, children }: { label: string; order: number; children: ReactNode }) {
+  const value = useMemo(() => ({ label, order }), [label, order]);
+  return <SectionGroupContext.Provider value={value}>{children}</SectionGroupContext.Provider>;
 }
+
+const readRemembered = (storageKey: string): string | null => {
+  try {
+    return window.sessionStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
+};
 
 export function SectionNavLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [entries, setEntries] = useState<SectionEntry[]>([]);
   const [active, setActive] = useState<string | null>(null);
-  // Until the user picks (or closes) a section, the first one listed is shown.
+  // Until the user picks (or closes) a section, the one they last had open on this screen is
+  // shown, or the first one listed.
   const chosenRef = useRef(false);
+  const storageKey = `trackhub.section.${useLocation().pathname}`;
+  const rememberedRef = useRef(readRemembered(storageKey));
 
   const register = useCallback((entry: SectionEntry) => {
     setEntries((current) =>
@@ -59,30 +74,44 @@ export function SectionNavLayout({ children }: { children: ReactNode }) {
         ? current.map((item) => (item.key === entry.key ? entry : item))
         : [...current, entry]
     );
-    return () => setEntries((current) => current.filter((item) => item.key !== entry.key));
   }, []);
 
+  const unregister = useCallback(
+    (key: string) => setEntries((current) => current.filter((item) => item.key !== key)),
+    []);
+
   useEffect(() => {
-    if (!chosenRef.current && entries.length > 0 && !entries.some((item) => item.key === active)) {
+    if (chosenRef.current || entries.length === 0) return;
+    const remembered = entries.find((item) => item.key === rememberedRef.current);
+    if (remembered) {
+      if (active !== remembered.key) setActive(remembered.key);
+    } else if (!entries.some((item) => item.key === active)) {
       setActive(entries[0].key);
     }
   }, [entries, active]);
 
-  const value = useMemo(() => ({ active, register }), [active, register]);
+  const value = useMemo(() => ({ active, register, unregister }), [active, register, unregister]);
 
-  // Sections register as they mount, so a group whose sections arrive late (feature flags) is
-  // still listed as one block, in the order its first section appeared.
+  // Sections register as they mount; a group whose sections arrive late (feature flags) is
+  // still listed as one block, at its own place on the screen.
   const groups = useMemo(() => {
     const byGroup = new Map<string, SectionEntry[]>();
-    entries.forEach((entry) => {
-      const label = entry.group ?? '';
-      byGroup.set(label, [...(byGroup.get(label) ?? []), entry]);
-    });
+    [...entries]
+      .sort((a, b) => (a.groupOrder ?? 0) - (b.groupOrder ?? 0))
+      .forEach((entry) => {
+        const label = entry.group ?? '';
+        byGroup.set(label, [...(byGroup.get(label) ?? []), entry]);
+      });
     return [...byGroup.entries()];
   }, [entries]);
 
   const select = (key: string) => {
     chosenRef.current = true;
+    try {
+      window.sessionStorage.setItem(storageKey, key);
+    } catch {
+      // Storage blocked: the choice simply is not remembered.
+    }
     setActive((current) => (current === key ? null : key));
   };
 
