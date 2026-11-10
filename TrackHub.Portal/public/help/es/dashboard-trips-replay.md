@@ -64,7 +64,7 @@ Seleccione un viaje en la lista. Si el viaje tiene una línea de tiempo, aparece
 
 - **Reproducir / Pausar** — inicia o detiene la animación; un marcador se desplaza a lo largo de la ruta.
 - **Velocidad** — elija velocidad de reproducción **1x**, **2x**, **4x** u **8x**.
-- **Control deslizante de la línea de tiempo** — arrastre para saltar a cualquier punto del viaje.
+- **Perfil de velocidad** — una gráfica de la velocidad de la unidad a lo largo del viaje, con la hora y la velocidad del punto actual sobre ella. Arrastre sobre la gráfica, o use el **control deslizante de la línea de tiempo** debajo de ella, para saltar a cualquier punto del viaje.
 
 ## Exportar a CSV
 

@@ -25,10 +25,10 @@ If your account is suspended or cancelled, the whole portal shows a status scree
 
 ## How the sections work
 
-The screen is organised into six labelled **groups**, always shown in the same order. Under each group heading sits a stack of **collapsible sections** (accordions):
+The screen is organised into six labelled **groups**, always shown in the same order. A **section list** on the left names every section under its group, and the section you pick opens on the right — one at a time:
 
-- Click a section heading to expand it. Most sections load their data the first time you open them.
-- When a section supports adding records, a **+** (add) button appears in its header once the section is expanded.
+- Click a section in the list to open it. Most sections load their data the first time you open them.
+- When a section supports adding records, an **Add** button appears at the top right of the open section. Adding or editing a record opens a form panel on the right edge of the screen.
 - Inside a section, rows carry their own actions — typically **Edit** and **Delete**, plus **Assign** buttons where a section links records together. Deletions ask you to confirm first.
 
 ## The six groups

@@ -192,7 +192,7 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
   const timeline = useMemo(() => buildTimeline(selectedTripPoints), [selectedTripPoints]);
   const showPlayback = !!selectedTrip && playback.hasTimeline;
   // The playback card takes its height out of the map so the tab still fits the viewport.
-  const mapHeight = showPlayback ? 'calc(100vh - 424px)' : 'calc(100vh - 200px)';
+  const mapHeight = showPlayback ? 'max(280px, calc(100vh - 424px))' : 'max(360px, calc(100vh - 200px))';
 
   return (
     <ArgonBox>

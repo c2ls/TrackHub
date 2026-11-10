@@ -31,7 +31,7 @@ interface FormDialogProps {
 }
 
 // Forms open as a panel on the right edge; `maxWidth` keeps its dialog meaning as a size hint.
-const DRAWER_WIDTH: Record<string, number> = { xs: 400, sm: 480, md: 720, lg: 960, xl: 1200 };
+const DRAWER_WIDTH: Record<string, number> = { xs: 420, sm: 560, md: 760, lg: 960, xl: 1200 };
 
 const FormDialog = ({
         title,

@@ -39,6 +39,7 @@ import ArgonBox from "components/ArgonBox";
 
 // Argon Dashboard 2 MUI example components
 import DashboardLayout from "controls/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "controls/Navbars/DashboardNavbar";
 import Footer from "controls/Footer";
 import ProfileInfoCard from "layouts/profile/components/ProfileInfoCard";
 import UserPartOf from "layouts/profile/components/UserPartOf";
@@ -87,6 +88,7 @@ function Overview() {
 
   return (
     <DashboardLayout>
+      <DashboardNavbar />
       <Header user= {user}/>
       <ArgonBox mt={3} mb={3}>
         <Grid container spacing={3}>

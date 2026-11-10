@@ -69,4 +69,4 @@ El pie bajo la lista muestra "Mostrando *desde*–*hasta* de *total*" con flecha
 
 ## Cómo aparecen las geocercas en el mapa en vivo
 
-En el mapa en vivo, las geocercas se dibujan solo cuando activa allí la capa de geocercas (mediante la tarjeta **En Geocerca**). Con la capa activada, cada geocerca se dibuja en el color que eligió, y la tarjeta **En Geocerca** le indica cuántas unidades están dentro de una zona en ese momento. Consulte [Mapa en vivo](topic:dashboard-live-map).
+En el mapa en vivo, las geocercas se dibujan solo cuando activa allí la capa de geocercas (con el chip **Geocercas** del mapa). Con la capa activada, cada geocerca se dibuja en el color que eligió, y la cifra **En Geocerca** le indica cuántas unidades están dentro de una zona en ese momento. Consulte [Mapa en vivo](topic:dashboard-live-map).

@@ -31,7 +31,7 @@ No necesita escribir una dirección web para la página de inicio de sesión ni 
 Una vez que ha iniciado sesión, todas las pantallas comparten el mismo marco:
 
 - Un **menú lateral izquierdo** (el sidenav) a lo largo del costado izquierdo, para moverse entre pantallas.
-- Una **barra superior** en la parte de arriba, que indica dónde se encuentra, con una campana de notificaciones y un enlace **Cerrar Sesión**.
+- Una **barra superior** en la parte de arriba, que muestra el nombre de la pantalla en la que se encuentra, una campana de notificaciones y su **menú de cuenta**.
 - El **área principal** en el centro, que cambia según la pantalla que elija.
 
 ## El menú lateral izquierdo
@@ -55,22 +55,20 @@ Para abrir una pantalla, **haga clic en su nombre en el menú lateral izquierdo*
 
 La barra superior muestra, de izquierda a derecha:
 
-- La **ruta de navegación**, que le indica dónde se encuentra (vea más abajo).
 - Un **ícono de menú** en el que puede hacer clic para contraer o expandir el menú lateral izquierdo.
+- El **nombre de la pantalla** en la que se encuentra. En el Tablero, las pestañas **Unidades** y **Posiciones** aparecen a su lado.
+- Un ícono de **ayuda** que abre esta ayuda.
 - Una **campana de notificaciones** con un contador rojo de notificaciones sin leer.
-- Un enlace **Cerrar Sesión** (con un pequeño ícono redondo de persona) para salir de la aplicación.
+- Un ícono de **configuración** (solo para gerentes) que abre los ajustes de mapa de la cuenta.
+- Su **menú de cuenta** (el ícono redondo de persona), con **Perfil** y **Cerrar Sesión**.
 
 ### La campana de notificaciones
 
-La campana (rotulada **Notificaciones**) está junto a **Cerrar Sesión**. Una insignia roja indica cuántas notificaciones no ha leído todavía. Haga clic en la campana para abrir la lista de sus notificaciones recientes; cada una muestra su tipo de evento, su severidad y cuándo llegó. Al hacer clic en una notificación se marca como leída. Cuando no hay nada que mostrar, la lista dice **No hay notificaciones**.
-
-## Ruta de navegación
-
-En la parte superior izquierda, junto a un pequeño ícono de **inicio**, TrackHub muestra el rastro de dónde se encuentra (la pantalla actual). Haga clic en el **ícono de inicio** para volver al comienzo, o haga clic en un paso anterior del rastro para regresar a él. El nombre de la pantalla actual también se muestra en negrita justo debajo del rastro.
+La campana (rotulada **Notificaciones**) está cerca del extremo derecho de la barra superior. Una insignia roja indica cuántas notificaciones no ha leído todavía. Haga clic en la campana para abrir la lista de sus notificaciones recientes; cada una muestra su tipo de evento, su severidad y cuándo llegó. Al hacer clic en una notificación se marca como leída. Cuando no hay nada que mostrar, la lista dice **No hay notificaciones**.
 
 ## Cerrar sesión
 
-1. Haga clic en **Cerrar Sesión** en la esquina superior derecha de la barra superior (junto al ícono redondo de persona).
+1. Haga clic en el **ícono redondo de persona** en el extremo derecho de la barra superior y elija **Cerrar Sesión**.
 2. TrackHub finaliza su sesión de forma segura y lo regresa a la **página de inicio de sesión**.
 
 Cierre siempre la sesión cuando termine, especialmente en una computadora compartida o pública.
