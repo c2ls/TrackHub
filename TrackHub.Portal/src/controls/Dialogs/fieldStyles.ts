@@ -36,3 +36,12 @@ export const errorFieldSx: SystemStyleObject<Theme> = {
         borderColor: 'error.main',
     },
 };
+
+// Labelled fields carry a bottom margin; unlabelled selects and buttons beside them need the
+// same one to sit on the same line.
+export const filterRowSx: SystemStyleObject<Theme> = {
+    alignItems: 'flex-end',
+    '& > .MuiFormControl-root, & > .MuiButton-root, & > .MuiGrid-root > .MuiFormControl-root, & > .MuiGrid-root > .MuiButton-root': {
+        mb: 1,
+    },
+};
