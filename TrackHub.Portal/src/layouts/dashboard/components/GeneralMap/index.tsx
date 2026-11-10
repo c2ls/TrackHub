@@ -18,7 +18,6 @@ import { useState, useEffect } from 'react';
 import OSMClusteredMap from 'controls/Maps/OSM/OSMClusteredMap';
 import GoogleClusteredMap from 'controls/Maps/Google/GoogleClusteredMap';
 import { getUnitStatus } from 'layouts/dashboard/utils/dashboard';
-import { getStatusMarkerColor, getStatusMarkerLabel } from 'controls/Maps/utils/markerUtils';
 import type { MapMarker, MapPoi } from 'controls/Maps/core/mapTypes';
 import type { Position } from 'api/router/router';
 import type { Geofence } from 'api/geofencing/geofencing';
@@ -81,8 +80,6 @@ function GeneralMap({
                     name: item.deviceName,
                     dateTime: item.deviceDateTime,
                     speed: item.speed,
-                    color: getStatusMarkerColor(status),
-                    text: getStatusMarkerLabel(status),
                     // Additional attributes
                     attributes: item.attributes || {},
                     address: item.address,

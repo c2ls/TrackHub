@@ -48,33 +48,29 @@ export interface ArgonBadgeOwnerState {
 
 export default styled(Badge)<{ ownerState: ArgonBadgeOwnerState }>(({ theme, ownerState }) => {
   const { palette, typography, borders, functions } = theme;
-  const { color, circular, border, size, indicator, variant, container, children } = ownerState;
+  const { color, border, size, indicator, container, children } = ownerState;
 
   const { white, dark, gradients, badgeColors } = palette;
-  const { size: fontSize, fontWeightBold } = typography;
+  const { size: fontSize, fontWeightMedium } = typography;
   const { borderRadius, borderWidth } = borders;
   const { pxToRem, linearGradient } = functions;
 
   // padding values
   const paddings: Record<string, string> = {
-    xs: "0.45em 0.775em",
-    sm: "0.55em 0.9em",
+    xs: "0.4em 0.75em",
+    sm: "0.45em 0.85em",
     md: "0.65em 1em",
     lg: "0.85em 1.375em",
   };
 
   // fontSize value
-  const fontSizeValue = size === "xs" ? fontSize.xxs : fontSize.xs;
+  const fontSizeValue = fontSize.xs;
 
   // border value
   const borderValue = border ? `${borderWidth[3]} solid ${white.main}` : "none";
 
   // borderRadius value
-  let borderRadiusValue = size === "xs" ? borderRadius.sm : borderRadius.md;
-
-  if (circular) {
-    borderRadiusValue = borderRadius.section;
-  }
+  const borderRadiusValue = borderRadius.section;
 
   // styles for the badge with indicator={true}
   const indicatorStyles = (sizeProp?: string) => {
@@ -149,8 +145,7 @@ export default styled(Badge)<{ ownerState: ArgonBadgeOwnerState }>(({ theme, own
       height: "auto",
       padding: paddings[size ?? "xs"] || paddings.xs,
       fontSize: fontSizeValue,
-      fontWeight: fontWeightBold,
-      textTransform: "uppercase",
+      fontWeight: fontWeightMedium,
       lineHeight: 1,
       textAlign: "center",
       whiteSpace: "nowrap",
@@ -158,8 +153,8 @@ export default styled(Badge)<{ ownerState: ArgonBadgeOwnerState }>(({ theme, own
       border: borderValue,
       borderRadius: borderRadiusValue,
       ...(indicator && indicatorStyles(size)),
-      ...(variant === "gradient" && gradientStyles(color)),
-      ...(variant === "contained" && containedStyles(color)),
+      // Labels are soft tinted pills; only the round count indicator keeps a solid fill.
+      ...(indicator ? gradientStyles(color) : containedStyles(color)),
       ...(!children && !container && standAloneStyles()),
       ...(container && containerStyles()),
     },

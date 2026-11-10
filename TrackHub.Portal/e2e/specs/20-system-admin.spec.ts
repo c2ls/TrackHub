@@ -30,8 +30,8 @@ test.describe('system admin', () => {
       'support-grants',
     ]) {
       const section = new Section(page, key, t);
-      await expect(section.root).toBeVisible();
       await section.expand();
+      await expect(section.root).toBeVisible();
       await section.collapse();
     }
   });

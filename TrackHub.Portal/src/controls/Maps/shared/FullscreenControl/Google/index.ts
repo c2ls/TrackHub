@@ -18,7 +18,7 @@ import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
-type ControlCorner = 'TOP_LEFT' | 'TOP_RIGHT' | 'BOTTOM_LEFT' | 'BOTTOM_RIGHT';
+type ControlCorner = 'TOP_LEFT' | 'TOP_RIGHT' | 'RIGHT_TOP' | 'BOTTOM_LEFT' | 'BOTTOM_RIGHT';
 
 // Vendor-prefixed fullscreen APIs not present in the standard DOM lib types.
 interface FullscreenCapableElement extends HTMLElement {
@@ -50,6 +50,7 @@ const FullscreenControl = ({ mapRef, position = 'TOP_RIGHT' }: FullscreenControl
         fullscreenButton.title = t('utilsmap.toogleFullScreen');
         fullscreenButton.style.cssText = `
             background: white;
+            color: #333;
             border: 2px solid rgba(0,0,0,.2);
             border-radius: 3px;
             box-shadow: rgba(0,0,0,.3) 0 1px 4px -1px;

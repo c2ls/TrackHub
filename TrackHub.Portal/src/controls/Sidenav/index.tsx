@@ -37,7 +37,6 @@ import { useLocation, NavLink } from "react-router";
 
 // @mui material components
 import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
 import Link from "@mui/material/Link";
 import Icon from "@mui/material/Icon";
 
@@ -61,7 +60,6 @@ import type { RouteDefinition } from "routes";
 import type { CurrentPrincipal } from "api/manager/principals";
 
 export interface SidenavProps {
-  color?: "primary" | "secondary" | "info" | "success" | "warning" | "error" | "dark";
   brand?: string;
   isAdmin?: boolean;
   isManager?: boolean;
@@ -85,7 +83,6 @@ function Sidenav({
   const { miniSidenav, darkSidenav, layout } = controller;
   const location = useLocation();
   const { pathname } = location;
-  const itemName = pathname.split("/").slice(1)[0];
   const { t } = useTranslation();
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
@@ -111,76 +108,84 @@ function Sidenav({
   // is an anonymous customer page reached only through a shared link token — a
   // Sidenav entry would lead a portal user to an "invalid link" screen.
   const keysToFilterOut = ["authorize-redirect", "callback", "tripTracking"];
-  // Render all the routes (except keysToFilterOut) from the routes.js
-  const renderRoutes = routes
-    .filter(({ key }) => !keysToFilterOut.includes(key))
+
+  const roleAllowed = (key: string): boolean => {
+    if (key === "systemAdmin") return isAdmin;
+    if (key === "manageAdmin" || key === "gpsIntegration") return isManager;
+    return true;
+  };
+
+  const visibleRoutes = routes
+    .filter(({ key, type }) => !keysToFilterOut.includes(key) && (type === "route" || type === "title"))
     .filter((route) => {
+      if (route.type === "title") return true;
+      if (!roleAllowed(route.key)) return false;
       // Public routes are visible to every principal type (see RouteDefinition.public).
       if (route.public) return true;
       if (!currentPrincipal?.principalType) return true;
       const allowedPrincipalTypes = route.principalTypes || [PrincipalTypes.User];
       return allowedPrincipalTypes.includes(currentPrincipal.principalType);
     })
-    .map(({ type, name, icon, title, key, href, route }) => {
-      let returnValue: ReactNode;
+    // A group heading with nothing under it for this user is dropped.
+    .filter((route, index, all) => route.type !== "title" || all[index + 1]?.type === "route");
 
-      if (type === "route") {
-        if (href) {
-          returnValue = (
-            <Link href={href} key={key} target="_blank" rel="noreferrer">
-              <SidenavItem name={t(name as never)} icon={icon} active={key === itemName} />
-            </Link>
-          );
-        } else {
-          returnValue = (
-            <NavLink to={route!} key={key} data-testid={`nav-${key}`}>
-              <SidenavItem name={t(name as never)} icon={icon} active={key === itemName} />
-            </NavLink>
-          );
-        }
-      } else if (type === "title") {
-        returnValue = (
-          <ArgonTypography
-            key={key}
-            color={darkSidenav ? "white" : "dark"}
-            display="block"
-            variant="caption"
-            fontWeight="bold"
-            textTransform="uppercase"
-            opacity={0.6}
-            pl={3}
-            mt={2}
-            mb={1}
-            ml={1}
-          >
-            {t(title as never)}
-          </ArgonTypography>
-        );
-      } else if (type === "divider") {
-        returnValue = <Divider key={key} className={darkSidenav ? "divider-light" : undefined} />;
-      }
+  const renderRoutes = visibleRoutes.map(({ type, name, icon, title, key, href, route }): ReactNode => {
+    if (type === "title") {
+      return (
+        <ArgonTypography
+          key={key}
+          component="li"
+          display={miniSidenav ? { xs: "block", xl: "none" } : "block"}
+          variant="caption"
+          fontWeight="bold"
+          textTransform="uppercase"
+          color="secondary"
+          sx={{ letterSpacing: "0.06em", px: 2.75, pt: 2.5, pb: 0.75 }}
+        >
+          {t(title as never)}
+        </ArgonTypography>
+      );
+    }
 
-      if (key === "systemAdmin" && !isAdmin) {
-        return null;
-      } else if ((key === "manageAdmin" || key === "gpsIntegration") && !isManager) {
-        return null;
-      } else {
-        return returnValue;
-      }
-    });
+    const active = route === pathname;
+    return href ? (
+      <Link href={href} key={key} target="_blank" rel="noreferrer">
+        <SidenavItem name={t(name as never)} icon={icon} active={active} />
+      </Link>
+    ) : (
+      <NavLink to={route!} key={key} data-testid={`nav-${key}`}>
+        <SidenavItem name={t(name as never)} icon={icon} active={active} />
+      </NavLink>
+    );
+  });
 
   const brandLinkProps = { component: NavLink, to: "/" };
   const brandImgProps = { component: "img" as const, src: brand, alt: t("sidenav.brandAlt") };
 
   return (
     <SidenavRoot {...rest} variant="permanent" ownerState={{ darkSidenav, miniSidenav, layout }}>
-      <ArgonBox pt={3} pb={1} px={4} textAlign="center">
+      <ArgonBox
+        display="flex"
+        alignItems="center"
+        justifyContent={miniSidenav ? { xs: "flex-start", xl: "center" } : "flex-start"}
+        minHeight="3.5rem"
+        px={2.25}
+        sx={({ borders }) => ({
+          borderBottom: `${borders.borderWidth[1]} solid ${borders.borderColor}`,
+        })}
+      >
+        <ArgonBox {...brandLinkProps} display="flex" alignItems="center">
+          {brand && <ArgonBox {...brandImgProps} width="2rem" />}
+          <ArgonBox sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}>
+            <ArgonTypography component="span" variant="h6" fontWeight="bold" color="dark">
+              {brandName}
+            </ArgonTypography>
+          </ArgonBox>
+        </ArgonBox>
         <ArgonBox
           display={{ xs: "block", xl: "none" }}
-          position="absolute"
-          top={0}
-          right={0}
-          p={1.625}
+          ml="auto"
+          lineHeight={0}
           role="button"
           tabIndex={0}
           aria-label={t("generic.close")}
@@ -188,29 +193,12 @@ function Sidenav({
           onKeyDown={activateOnKeyboard(closeSidenav)}
           sx={{ cursor: "pointer" }}
         >
-          <ArgonTypography variant="h6" color="secondary">
-            <Icon sx={{ fontWeight: "bold" }}>close</Icon>
+          <ArgonTypography variant="h6" color="secondary" lineHeight={0}>
+            <Icon>close</Icon>
           </ArgonTypography>
         </ArgonBox>
-        <ArgonBox {...brandLinkProps} display="flex" alignItems="center">
-          {brand && <ArgonBox {...brandImgProps} width="3rem" mr={0.25} />}
-          <ArgonBox
-            width={!brandName ? "100%" : undefined}
-            sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
-          >
-            <ArgonTypography
-              component="h6"
-              variant="button"
-              fontWeight="medium"
-              color={darkSidenav ? "white" : "dark"}
-            >
-              {brandName}
-            </ArgonTypography>
-          </ArgonBox>
-        </ArgonBox>
       </ArgonBox>
-      <Divider className={darkSidenav ? "divider-light" : undefined} />
-      <List>{renderRoutes}</List>
+      <List sx={{ pb: 2 }}>{renderRoutes}</List>
     </SidenavRoot>
   );
 }

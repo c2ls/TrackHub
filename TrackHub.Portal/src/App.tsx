@@ -38,10 +38,6 @@ import { Routes, Route, Navigate, useLocation } from "react-router";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
-import Icon from "@mui/material/Icon";
-
-// Argon Dashboard 2 MUI components
-import ArgonBox from "components/ArgonBox";
 
 // Argon Dashboard 2 MUI example components
 import Sidenav from "controls/Sidenav";
@@ -58,7 +54,6 @@ import type { RouteDefinition } from "routes";
 // Argon Dashboard 2 MUI contexts
 import {
   useArgonController,
-  setOpenConfigurator,
   setDarkSidenav,
   setMiniSidenav,
   setDarkMode,
@@ -83,7 +78,6 @@ import type { AccountContext, AccountStatus } from "api/manager/accounts";
 import { getCurrentPrincipal } from "api/manager/principals";
 import type { CurrentPrincipal } from "api/manager/principals";
 import { isDarkStyle, isMiniSidenav, writeUiPreferences } from "utils/uiPreferences";
-import { activateOnKeyboard } from 'utils/keyboard';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from "components/ErrorBoundary";
 import SuspensionScreen from "components/SuspensionScreen";
@@ -109,7 +103,7 @@ export default function App() {
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { isAuthenticated, login, isLoggingIn, authError } = useAuth();
   const { pathname } = useLocation();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const saveAccountSettings = async (
     accountId: string,
@@ -245,9 +239,6 @@ export default function App() {
     }
   };
 
-  // Change the openConfigurator state
-  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
-
   // Other screens write the same settings row; open the panel on its current version.
   useEffect(() => {
     if (!openConfigurator || !isAuthenticated) return;
@@ -373,41 +364,12 @@ export default function App() {
   const featuresValue = useMemo(
     () => ({ features: accountFeatures, isFeatureEnabled: featureEnabled, reload: reloadAccountContext }),
     [accountFeatures, featureEnabled, reloadAccountContext]);
-  const accountValue = useMemo(() => ({ timeZoneId: accountTimeZoneId }), [accountTimeZoneId]);
+  const accountValue = useMemo(
+    () => ({ timeZoneId: accountTimeZoneId, isManager: userIsManager }),
+    [accountTimeZoneId, userIsManager]);
   const permissionsValue = useMemo(
     () => ({ actions: authorizedActions, can, loaded: permissionsLoaded }),
     [authorizedActions, can, permissionsLoaded]);
-
-  const configsButton = (
-    <ArgonBox
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      width="3.5rem"
-      height="3.5rem"
-      bgColor="white"
-      shadow="sm"
-      borderRadius="50%"
-      position="fixed"
-      right="2rem"
-      bottom="2rem"
-      zIndex={99}
-      color="dark"
-      sx={{ cursor: "pointer" }}
-      onClick={handleConfiguratorOpen}
-      // Reachable from a keyboard: as a bare styled div this could not be focused or activated at
-      // all, and account settings open from here.
-      role="button"
-      tabIndex={0}
-      aria-label={t("settings.title")}
-      onKeyDown={activateOnKeyboard(handleConfiguratorOpen)}
-      data-testid="configurator-toggle"
-    >
-      <Icon color="inherit">
-        settings
-      </Icon>
-    </ArgonBox>
-  );
 
   return (
     <LoadingContext.Provider value={loadingValue}>
@@ -428,7 +390,7 @@ export default function App() {
           <>
             <Sidenav
               brand={darkMode ? brand : brandDark}
-              brandName="Track Hub"
+              brandName="TrackHub"
               routes={enabledRoutes}
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
@@ -440,7 +402,6 @@ export default function App() {
               settings={accountSettings}
               updateSettings={saveAccountSettings}
                />
-            {userIsManager && configsButton}
           </>
         )}
         {/* Platform announcements reach every signed-in user on every screen; the
@@ -478,7 +439,7 @@ export default function App() {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 9999,
           }}>
-            <ClipLoader color="#00BFFF" loading={loading} size={150} />
+            <ClipLoader color={(darkMode ? themeDark : theme).palette.info.main} loading={loading} size={96} />
           </div>
         )}
       </ThemeProvider>

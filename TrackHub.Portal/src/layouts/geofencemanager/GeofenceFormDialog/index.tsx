@@ -51,7 +51,7 @@ function GeofenceFormDialog({ open, setOpen, handleSubmit, handleCancel, values,
   }));
   return (
     <FormDialog 
-      title={t('user.details')}
+      title={t('geofence.details')}
       handleSave={handleSubmit}
       handleCancel={handleCancel}
       open={open}

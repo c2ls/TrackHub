@@ -41,7 +41,7 @@ import colors from "assets/theme-dark/base/colors";
 // Argon Dashboard 2 MUI Helper Functions
 import boxShadow from "assets/theme-dark/functions/boxShadow";
 
-const { black, info, dark } = colors;
+const { black, info } = colors;
 
 const boxShadows = {
   xs: boxShadow([0, 2], [9, -5], black.main, 0.15),
@@ -69,18 +69,8 @@ const boxShadows = {
   )}`,
   cardBoxShadow: `${boxShadow([0, 0], [16, 0], black.main, 0.075)}`,
   buttonBoxShadow: {
-    main: `${boxShadow([0, 4], [6, 0], dark.main, 0.1)}, ${boxShadow(
-      [0, 1],
-      [3, 0],
-      black.main,
-      0.08
-    )}`,
-    stateOf: `${boxShadow([0, 7], [14, 0], dark.main, 0.1)}, ${boxShadow(
-      [0, 3],
-      [6, 0],
-      black.main,
-      0.08
-    )}`,
+    main: boxShadow([0, 1], [2, 0], black.main, 0.08),
+    stateOf: boxShadow([0, 2], [6, 0], black.main, 0.12),
     stateOfNotHover: boxShadow([0, 0], [0, 3.2], info.main, 0.5),
   },
   inputBoxShadow: `${boxShadow([0, 3], [9, 0], info.main, 0)}, ${boxShadow(

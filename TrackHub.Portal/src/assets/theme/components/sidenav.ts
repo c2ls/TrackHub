@@ -31,28 +31,26 @@ Coded by www.creative-tim.com
 
 // Argon Dashboard 2 MUI base styles
 import colors from "assets/theme/base/colors";
-import borders from "assets/theme/base/borders";
 
 // Argon Dashboard 2 MUI helper functions
 import pxToRem from "assets/theme/functions/pxToRem";
 
 const { white } = colors;
-const { borderRadius } = borders;
 
 const sidenav = {
   styleOverrides: {
     root: {
-      width: pxToRem(256),
+      width: pxToRem(240),
       whiteSpace: "nowrap",
       border: "none",
     },
 
     paper: {
-      width: pxToRem(256),
+      width: pxToRem(240),
       backgroundColor: white.main,
-      height: `calc(100vh - ${pxToRem(32)})`,
-      margin: `${pxToRem(16)} 0 ${pxToRem(16)} ${pxToRem(16)}`,
-      borderRadius: borderRadius.xl,
+      height: "100vh",
+      margin: 0,
+      borderRadius: 0,
       border: "none",
     },
 

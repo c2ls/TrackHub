@@ -181,7 +181,7 @@ test.describe('shell', () => {
     await interval.fill(original);
   });
 
-  test('every screen names itself in the breadcrumb it navigated to', async ({ shell }) => {
+  test('every screen names itself in the top bar', async ({ shell }) => {
     await shell.enter();
 
     for (const key of NAV_KEYS) {
@@ -189,11 +189,8 @@ test.describe('shell', () => {
       if (key === 'platformStatus') continue;
       await shell.open(key);
 
-      const segment = NAV_ROUTES[key].split('/').pop() ?? '';
-      // `Breadcrumbs` renders the route's last segment as the current page, with
-      // hyphens spaced out and capitalised by CSS — so the comparison is on the
-      // text, case-insensitively, not on the styling.
-      await expect(shell.breadcrumb).toContainText(new RegExp(segment.replace('-', ' '), 'i'), {
+      const label = await shell.nav(key).locator('.MuiListItemText-root').innerText();
+      await expect(shell.screenTitle).toHaveText(label, {
         timeout: 30_000,
       });
     }

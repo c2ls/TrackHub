@@ -15,14 +15,15 @@
 */
 
 import { useState, useEffect, useContext, useRef, useMemo, useCallback } from 'react';
-import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
 import ArgonBox from "components/ArgonBox";
-import DetailedStatisticsCard from "controls/Cards/StatisticsCards/DetailedStatisticsCard";
+import ArgonTypography from "components/ArgonTypography";
+import UnitCard from "layouts/dashboard/components/UnitCard";
 import TransportersTable from "layouts/dashboard/components/TransportersTable";
 import RefreshCounter from 'layouts/dashboard/components/RefreshCounter';
 import FilterBar from 'layouts/dashboard/components/Transporters/FilterBar';
-import type { FilterOption, DashboardFilters } from 'layouts/dashboard/components/Transporters/FilterBar';
+import type { FilterOption, DashboardFilters, FleetStat } from 'layouts/dashboard/components/Transporters/FilterBar';
 import { getPointOfInterestLookup } from 'api/manager/pointsOfInterest';
 import type { PointOfInterestLookup } from 'api/manager/pointsOfInterest';
 import { getGroupLookup } from 'api/manager/groups';
@@ -52,8 +53,7 @@ import { useArgonController } from 'context';
 // Dashboard layout components
 import GeneralMap from "layouts/dashboard/components/GeneralMap";
 import type { TrailPoint } from "layouts/dashboard/components/GeneralMap";
-import MapControlStyle from 'controls/Maps/styles/MapControl';
-import { countRecentDevices, countDevicesInMovement, getPercentage, filterPositions } from 'layouts/dashboard/utils/dashboard';
+import { countRecentDevices, countDevicesInMovement, getPercentage, getUnitStatus, filterPositions } from 'layouts/dashboard/utils/dashboard';
 
 const TRAIL_LENGTH = 10;
 const GEOFENCING_FEATURE_KEY = 'geofencing';
@@ -90,12 +90,6 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   const [criticalAlerts, setCriticalAlerts] = useState(0);
   const [selectedTransporter, setSelectedTransporter] = useState<string | null>(null);
   const [typeSummary, setTypeSummary] = useState<TypeSummaryItem[]>([]);
-  // Distance from the page top to the map row plus the fixed below-map spacing (70px). The header
-  // stack above the map (navbar, tabs, stat cards, filter bar) is width-dependent — the filter bar
-  // wraps on smaller screens — so it is measured, not hardcoded: the dashboard must always fit the
-  // viewport with no page-level scroll (the map view and the side grid's own scroll depend on it).
-  const [mapViewportOffset, setMapViewportOffset] = useState(371);
-  const [tableHeight, setTableHeight] = useState('calc(100vh - 371px)');
   // Plate/name search lives in the page's top-right search box (searchQuery);
   // the filter bar only narrows by type/group/operator/status.
   const [filters, setFilters] = useState<DashboardFilters>({ transporterType: 'all', groupId: 'all', operatorId: 'all', status: 'all' });
@@ -106,7 +100,6 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
   const [followMode, setFollowMode] = useState(false);
   const [showTrail, setShowTrail] = useState(false);
   const [trails, setTrails] = useState<Record<string, TrailPoint[]>>({});
-  const chipContainerRef = useRef<HTMLDivElement>(null);
   const poisLoadedRef = useRef(false);
   // A slow round-trip (providers timing out server-side) can outlast the refresh
   // countdown; never stack overlapping position fetches.
@@ -128,48 +121,6 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
     }, {});
     setTypeSummary(Object.values(typesObject));
   }, [positions]);
-
-  // Self-fitting: absorb any page-level overflow into the offset whenever the app content's
-  // height changes (the #root element grows with content; ResizeObserver on it also catches
-  // font/wrap shifts that happen without a React render). The header stack (cards, filter bar)
-  // wraps differently per width, so this converges to an exact viewport fit instead of chasing a
-  // constant; a window resize re-fits from the base.
-  useEffect(() => {
-    let frame = 0;
-    const fit = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const doc = document.documentElement;
-        const root = document.getElementById('root') ?? document.body;
-        const excess = doc.scrollHeight - doc.clientHeight;
-        if (excess > 0) {
-          // Page overflows: shrink the map/grid by the overflow.
-          setMapViewportOffset((offset) => offset + excess);
-          return;
-        }
-        // Page fits with room to spare: grow the map/grid into the free space.
-        const slack = doc.clientHeight - Math.ceil(root.getBoundingClientRect().bottom);
-        if (slack > 1) {
-          setMapViewportOffset((offset) => Math.max(200, offset - slack));
-        }
-      });
-    };
-    const observer = new ResizeObserver(fit);
-    observer.observe(document.getElementById('root') ?? document.body);
-    window.addEventListener('resize', fit);
-    return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener('resize', fit);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (chipContainerRef.current) {
-      const chipHeight = chipContainerRef.current.offsetHeight;
-      setTableHeight(`calc(100vh - ${chipHeight + mapViewportOffset}px)`); // Viewport minus the measured header stack and chip row
-    }
-  }, [typeSummary, mapViewportOffset]);
 
   // Client-side ring buffer of the last N received points per unit,
   // used to render the trail of the selected unit.
@@ -363,81 +314,67 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
     return trails[key] || [];
   }, [selectedTransporter, positions, trails]);
 
-  // The row is 5-up with geofencing and 4-up without it; the lg width follows the
-  // tile count so dropping the geofence tile does not leave a gap in the row.
-  const statCardWidth = geofencingEnabled ? 2.4 : 3;
+  const selectedPosition = useMemo(
+    () => positions.find((position) => position.deviceName === selectedTransporter) ?? null,
+    [positions, selectedTransporter]
+  );
+
+  const stats: FleetStat[] = [
+    { title: t("dashboard.totalTitle"), count: positions.length },
+    { title: t("dashboard.activeTitle"), count: active, share: getPercentage(active, positions.length) },
+    { title: t("dashboard.movementTitle"), count: movement, share: getPercentage(movement, positions.length) },
+    ...(geofencingEnabled
+      ? [{ title: t("dashboard.inGeofence"), count: inGeofence, share: getPercentage(inGeofence, positions.length) }]
+      : []),
+    { title: t("dashboard.criticalAlerts"), count: criticalAlerts },
+  ];
+
+  const layerChips = [
+    ...(geofencingEnabled
+      ? [{ label: t('screen.geofence'), on: showGeofence, toggle: () => setShowGeofence(!showGeofence) }]
+      : []),
+    { label: t('dashboard.poiLayer'), on: showPois, toggle: handleTogglePois },
+    { label: t('dashboard.followMode'), on: followMode, toggle: () => setFollowMode(value => !value), disabled: !selectedTransporter },
+    { label: t('dashboard.trail'), on: showTrail, toggle: () => setShowTrail(value => !value) },
+  ];
 
   return (
-    <ArgonBox py={1}>
-        <Grid container spacing={1.5} sx={{ mb: 1 }}>
-            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
-                <DetailedStatisticsCard
-                    dense
-                    title={t("dashboard.totalTitle")}
-                    count={positions.length}
-                    icon={{ color: "info", component: <i className="ni ni-map-big" /> }}
-                    percentage={{ color: "success", count: "", hide: true }}
-                />
-            </Grid>
-            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
-                <DetailedStatisticsCard
-                    dense
-                    title={t("dashboard.activeTitle")}
-                    count={active}
-                    icon={{ color: "error", component: <i className="ni ni-watch-time" /> }}
-                    percentage={{ color: "success", count: `${getPercentage(active, positions.length)}%`, hide: false }}
-                />
-            </Grid>
-            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
-                <DetailedStatisticsCard
-                    dense
-                    title={t("dashboard.movementTitle")}
-                    count={movement}
-                    icon={{ color: "success", component: <i className="ni ni-button-play" /> }}
-                    percentage={{ color: "error", count: `${getPercentage(movement, positions.length)}%`, hide: false }}
-                />
-            </Grid>
-            {geofencingEnabled && (
-            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
-                <DetailedStatisticsCard
-                    dense
-                    title={t("dashboard.inGeofence")}
-                    count={inGeofence}
-                    icon={{
-                      color: "warning",
-                      onClick: () => setShowGeofence(!showGeofence),
-                      component: <i className="ni ni-pin-3" /> }}
-                    percentage={{ color: "success", count: `${getPercentage(inGeofence, positions.length)}%`, hide: false }}
-                />
-            </Grid>
-            )}
-            <Grid size={{xs: 6, md:4, lg:statCardWidth}}>
-                <DetailedStatisticsCard
-                    dense
-                    title={t("dashboard.criticalAlerts")}
-                    count={criticalAlerts}
-                    icon={{ color: "error", component: <i className="ni ni-notification-70" /> }}
-                    percentage={{ color: "success", count: "", hide: true }}
-                />
-            </Grid>
-        </Grid>
+    <ArgonBox
+      sx={({ breakpoints }) => ({
+        display: 'flex',
+        flexDirection: 'column',
+        // Top bar (56px + its 24px gap) and the layout's 24px bottom padding.
+        [breakpoints.up('lg')]: { height: 'calc(100vh - 104px)', minHeight: 480 },
+      })}
+    >
         <FilterBar
+            stats={stats}
             typeOptions={typeOptions}
             groupOptions={groupOptions}
             operatorOptions={operatorOptions}
             filters={filters}
             onFilterChange={handleFilterChange}
-            showPois={showPois}
-            onTogglePois={handleTogglePois}
-            followMode={followMode}
-            onToggleFollow={() => setFollowMode(value => !value)}
-            followDisabled={!selectedTransporter}
-            showTrail={showTrail}
-            onToggleTrail={() => setShowTrail(value => !value)}
         />
-        <Grid container spacing={3}>
-            <Grid size={{xs: 12, lg:9}}>
-            <MapControlStyle>
+        <ArgonBox
+          sx={({ breakpoints }) => ({
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            [breakpoints.up('lg')]: { flexDirection: 'row', flex: 1, minHeight: 0 },
+          })}
+        >
+            <ArgonBox
+              sx={({ breakpoints, borders: { borderWidth, borderColor, borderRadius } }) => ({
+                position: 'relative',
+                height: '60vh',
+                border: `${borderWidth[1]} solid ${borderColor}`,
+                borderRadius: borderRadius.lg,
+                overflow: 'hidden',
+                '& .map-container': { height: '100%', borderRadius: 0 },
+                [breakpoints.up('lg')]: { flex: 1, minWidth: 0, height: 'auto' },
+              })}
+            >
                 <GeneralMap
                     mapType={settings.maps as 'OSM' | 'Google'}
                     positions={filteredPositions}
@@ -454,38 +391,103 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
                     followUnit={followMode ? selectedTransporter : null}
                     onFollowDisengage={handleFollowDisengage}
                     darkMode={darkMode}
-                    height={`calc(100vh - ${mapViewportOffset}px)`}/>
-                <RefreshCounter
-                    settings={settings}
-                    refreshing={refreshing}
-                    fetchPositions={fetchPositions}
-                    calculateReference={calculateReference} />
-            </MapControlStyle>
-            </Grid>
-            <Grid size={{xs: 12, lg:3}}>
-                <ArgonBox ref={chipContainerRef} position="relative" mb={1} display="flex" flexWrap="wrap" gap={1}>
-                    {typeSummary.map(({ name, total }) => (
+                    height="100%"/>
+                <ArgonBox
+                  display="flex"
+                  flexWrap="wrap"
+                  alignItems="center"
+                  gap={1}
+                  sx={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 12,
+                    right: 64,
+                    zIndex: 1000,
+                    pointerEvents: 'none',
+                    '& > *': { pointerEvents: 'auto' },
+                  }}
+                >
+                    {layerChips.map(({ label, on, toggle, disabled }) => (
                         <Chip
-                            key={name}
-                            label={`${t(`transporterTypes.${cleanString(name)}` as 'transporterTypes.car')}: ${total}`}
+                            key={label}
+                            label={label}
                             size="small"
-                            color="primary"
-                            variant="outlined"
-                            sx={{ bgcolor: 'background.paper' }}
+                            clickable
+                            disabled={disabled}
+                            aria-pressed={on}
+                            color={on ? 'primary' : 'default'}
+                            variant={on ? 'filled' : 'outlined'}
+                            onClick={toggle}
+                            sx={{ bgcolor: on ? undefined : 'background.paper', boxShadow: 1 }}
                         />
                     ))}
+                    <ArgonBox ml="auto">
+                        <RefreshCounter
+                            settings={settings}
+                            refreshing={refreshing}
+                            fetchPositions={fetchPositions}
+                            calculateReference={calculateReference} />
+                    </ArgonBox>
                 </ArgonBox>
-                <TransportersTable
-                    transporters={positions}
-                    selected={selectedTransporter}
-                    handleSelected={handleSelected}
-                    searchQuery={searchQuery}
-                    maxHeight={tableHeight}
-                    onlineInterval={settings.onlineInterval}/>
-            </Grid>
-        </Grid>
+                {selectedPosition && (
+                    <ArgonBox
+                      sx={({ breakpoints }) => ({
+                        position: 'absolute',
+                        left: 12,
+                        right: 12,
+                        bottom: 28,
+                        zIndex: 1000,
+                        [breakpoints.up('md')]: { right: 'auto', width: 480 },
+                      })}
+                    >
+                        <UnitCard
+                            position={selectedPosition}
+                            status={getUnitStatus(selectedPosition, settings.onlineInterval)}
+                            onClose={() => handleSelected(null)} />
+                    </ArgonBox>
+                )}
+            </ArgonBox>
+            <Card
+              sx={({ breakpoints }) => ({
+                overflow: 'hidden',
+                maxHeight: '60vh',
+                '& .MuiTableContainer-root': { border: 0, borderRadius: 0 },
+                [breakpoints.up('lg')]: { flex: 'none', width: 332, maxHeight: 'none' },
+              })}
+            >
+                <ArgonBox
+                  px={2}
+                  py={1.25}
+                  sx={({ borders: { borderWidth, borderColor } }) => ({
+                    borderBottom: `${borderWidth[1]} solid ${borderColor}`,
+                  })}
+                >
+                    <ArgonBox display="flex" alignItems="baseline" justifyContent="space-between">
+                        <ArgonTypography variant="button" fontWeight="bold">
+                            {t("dashboard.transportersTitle")}
+                        </ArgonTypography>
+                        <ArgonTypography variant="caption" color="secondary">
+                            {positions.length}
+                        </ArgonTypography>
+                    </ArgonBox>
+                    <ArgonTypography variant="caption" color="secondary" display="block">
+                        {typeSummary
+                          .map(({ name, total }) => `${t(`transporterTypes.${cleanString(name)}` as 'transporterTypes.car')} ${total}`)
+                          .join(' · ')}
+                    </ArgonTypography>
+                </ArgonBox>
+                <ArgonBox sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                    <TransportersTable
+                        transporters={positions}
+                        selected={selectedTransporter}
+                        handleSelected={handleSelected}
+                        searchQuery={searchQuery}
+                        maxHeight="100%"
+                        onlineInterval={settings.onlineInterval}/>
+                </ArgonBox>
+            </Card>
+        </ArgonBox>
     </ArgonBox>
   );
 }
-
 export default Transporters;

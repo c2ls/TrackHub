@@ -73,8 +73,6 @@ async function openScreen(page: Page, navKey: string, path: string): Promise<voi
 
 /** Opens Account Management and expands one section by its stable test id. */
 async function openSection(page: Page, key: string): Promise<void> {
-  const section = page.getByTestId(`section-${key}`);
-  await expect(section).toBeVisible({ timeout: 30_000 });
   // Retried: expanding a section above this one reflows the page, and a header
   // that moves out from under the pointer mid-click swallows the toggle.
   const header = page.getByTestId(`section-${key}-header`);

@@ -18,10 +18,11 @@ import { MAP_DEFAULTS } from 'api/core/endpoints';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { RefObject } from 'react';
 import { v4 as uuidv4 } from "uuid";
-import { GoogleMap, LoadScript, DrawingManager, Polygon, Circle } from '@react-google-maps/api';
-import type { Libraries } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Polygon, Polyline, Circle, Marker } from '@react-google-maps/api';
 import UserLocation from "controls/Maps/UserLocation";
 import { closePolygon, circleBoundsCorners } from 'controls/Maps/utils/coordinateUtils';
+import { calculateDistance } from 'utils/distanceUtils';
+import { getColor } from 'data/colors';
 import { GoogleScaleControl } from 'controls/Maps/shared/ScaleControl';
 import { GoogleFullscreenControl } from 'controls/Maps/shared/FullscreenControl';
 import { GoogleMeasurementTool } from 'controls/Maps/shared/MeasurementTool';
@@ -41,7 +42,9 @@ import type {
   RemoveGeofenceHandler
 } from 'layouts/geofencemanager/components/GeofenceEditor';
 
-const libraries: Libraries = ['drawing'];
+type DrawMode = 'polygon' | 'circle' | null;
+
+const DRAFT_STYLE = { clickable: false, strokeColor: '#0B7499', strokeWeight: 2, fillColor: '#0B7499', fillOpacity: 0.15 };
 
 /** A geofence held in the editor's mutable ref. Polygons carry `latlngs`; circles carry `center`/`radiusMeters`. */
 interface EditorShape {
@@ -51,7 +54,13 @@ interface EditorShape {
   latlngs: MapPoint[];
   center?: MapPoint;
   radiusMeters?: number;
+  color?: number;
 }
+
+const shapeStyle = (color?: number) => {
+  const value = color === undefined ? DRAFT_STYLE.strokeColor : getColor(color);
+  return { strokeColor: value, strokeWeight: 2, fillColor: value, fillOpacity: 0.25 };
+};
 
 interface GoogleGeofenceEditorProps {
   mapKey?: string;
@@ -98,7 +107,13 @@ const GoogleGeofenceEditor = ({
     lat: MAP_DEFAULTS.lat,
     lng: MAP_DEFAULTS.lng
   });
-  const [drawingMode, setDrawingMode] = useState<google.maps.drawing.OverlayType | null>(null);
+  // The Maps API dropped its DrawingManager, so new shapes are drawn here: clicks add polygon
+  // vertices (double-click or a click on the first vertex closes the ring); a circle is a click
+  // for the centre and a second click for the radius.
+  const [drawMode, setDrawMode] = useState<DrawMode>(null);
+  const [draftPath, setDraftPath] = useState<MapPoint[]>([]);
+  const [draftCenter, setDraftCenter] = useState<MapPoint | null>(null);
+  const [cursor, setCursor] = useState<MapPoint | null>(null);
   // `shapes` lives in a ref (edited imperatively), so bumping this forces the
   // canvas to re-render after a re-sync reflects freshly persisted changes.
   const [, setSyncVersion] = useState(0);
@@ -109,7 +124,6 @@ const GoogleGeofenceEditor = ({
   const mapRef = useRef<google.maps.Map | null>(null);
   // The pending (just-drawn, not yet saved) shape.
   const pendingRef = useRef<EditorShape | null>(null);
-  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null);
   // Editing an existing shape.
   const editedIdRef = useRef<string | null>(null);
   const editedShapeRef = useRef<GeofenceShape | null>(null);
@@ -131,12 +145,14 @@ const GoogleGeofenceEditor = ({
             latlngs: [],
             center: { lat: polygon.center[0], lng: polygon.center[1] },
             radiusMeters: polygon.radiusMeters,
+            color: polygon.color,
           }
         : {
             id: polygon.id,
             name: polygon.name,
             shape: 'polygon' as const,
             latlngs: polygon.latlngs.map(([lat, lng]) => ({ lat, lng })),
+            color: polygon.color,
           }
     ));
     setSyncVersion((v) => v + 1);
@@ -172,45 +188,57 @@ const GoogleGeofenceEditor = ({
     setMapReady(true);
   }, []);
 
-  const onDrawingManagerLoad = useCallback((drawingManager: google.maps.drawing.DrawingManager) => {
-    drawingManagerRef.current = drawingManager;
-  }, []);
+  const stopDrawing = () => {
+    setDrawMode(null);
+    setDraftPath([]);
+    setDraftCenter(null);
+    setCursor(null);
+  };
 
-  const handlePolygonComplete = (polygon: google.maps.Polygon) => {
-    const path = polygon.getPath().getArray().map(latlng => ({
-      lat: latlng.lat(),
-      lng: latlng.lng()
-    }));
-    const newShape: EditorShape = {
+  const commitShape = (shape: EditorShape) => {
+    shapes.current = [...shapes.current, shape];
+    pendingRef.current = shape;
+    setOpen(true);
+    stopDrawing();
+  };
+
+  const finishPolygon = (path: MapPoint[]) => {
+    if (path.length < 3) return;
+    commitShape({
       id: uuidv4(),
       name: `Polygon ${shapes.current.length + 1}`,
       shape: 'polygon',
       latlngs: path,
-    };
-
-    shapes.current = [...shapes.current, newShape];
-    pendingRef.current = newShape;
-    setOpen(true);
-    setDrawingMode(null);
-    polygon.setMap(null);
+    });
   };
 
-  const handleCircleComplete = (circle: google.maps.Circle) => {
-    const center = circle.getCenter();
-    const newShape: EditorShape = {
-      id: uuidv4(),
-      name: `Circle ${shapes.current.length + 1}`,
-      shape: 'circle',
-      latlngs: [],
-      center: { lat: center!.lat(), lng: center!.lng() },
-      radiusMeters: circle.getRadius(),
-    };
+  const handleMapClick = (event: google.maps.MapMouseEvent) => {
+    if (!drawMode || !event.latLng) return;
+    const point = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+    if (drawMode === 'polygon') {
+      setDraftPath((path) => [...path, point]);
+    } else if (!draftCenter) {
+      setDraftCenter(point);
+    } else {
+      commitShape({
+        id: uuidv4(),
+        name: `Circle ${shapes.current.length + 1}`,
+        shape: 'circle',
+        latlngs: [],
+        center: draftCenter,
+        radiusMeters: calculateDistance(draftCenter.lat, draftCenter.lng, point.lat, point.lng),
+      });
+    }
+  };
 
-    shapes.current = [...shapes.current, newShape];
-    pendingRef.current = newShape;
-    setOpen(true);
-    setDrawingMode(null);
-    circle.setMap(null);
+  // A double-click arrives after its two clicks, so the last vertex is a duplicate.
+  const handleMapDoubleClick = () => {
+    if (drawMode === 'polygon') finishPolygon(draftPath.slice(0, -1));
+  };
+
+  const handleMapMouseMove = (event: google.maps.MapMouseEvent) => {
+    if (!drawMode || !event.latLng) return;
+    setCursor({ lat: event.latLng.lat(), lng: event.latLng.lng() });
   };
 
   const save = (): GeofenceShapeHandle | undefined => {
@@ -225,6 +253,11 @@ const GoogleGeofenceEditor = ({
   };
 
   const cancel = () => {
+    const pending = pendingRef.current;
+    if (pending) {
+      shapes.current = shapes.current.filter((shape) => shape.id !== pending.id);
+      setSyncVersion((v) => v + 1);
+    }
     pendingRef.current = null;
   };
 
@@ -286,13 +319,15 @@ const GoogleGeofenceEditor = ({
   };
 
   const add = () => {
-    setDrawingMode('polygon' as google.maps.drawing.OverlayType);
+    stopDrawing();
+    setDrawMode('polygon');
     resetDrawState();
     setIsEditing(false);
   };
 
   const addCircle = () => {
-    setDrawingMode('circle' as google.maps.drawing.OverlayType);
+    stopDrawing();
+    setDrawMode('circle');
     resetDrawState();
     setIsEditing(false);
   };
@@ -307,7 +342,7 @@ const GoogleGeofenceEditor = ({
   }, [addRef, addCircleRef, saveRef, cancelRef, removeRef, editingRef, endEditing]);
 
   return (
-    <LoadScript googleMapsApiKey={mapKey ?? ''} libraries={libraries}>
+    <LoadScript googleMapsApiKey={mapKey ?? ''}>
       <UserLocation setUserLocation={setUserLocation} />
       <GoogleMap
         onLoad={onLoad}
@@ -315,25 +350,38 @@ const GoogleGeofenceEditor = ({
         mapContainerStyle={{ height: height, width: "100%" }}
         center={userLocation}
         zoom={DEFAULT_GOOGLE_ZOOM}
-        options={{ gestureHandling: 'greedy', styles: darkMode ? GOOGLE_NIGHT_STYLES : null }}
+        onClick={handleMapClick}
+        onDblClick={handleMapDoubleClick}
+        onMouseMove={handleMapMouseMove}
+        options={{
+          gestureHandling: 'greedy',
+          styles: darkMode ? GOOGLE_NIGHT_STYLES : null,
+          draggableCursor: drawMode ? 'crosshair' : undefined,
+          disableDoubleClickZoom: drawMode !== null,
+        }}
       >
-        {window.google && window.google.maps && (
-          <DrawingManager
-            onLoad={onDrawingManagerLoad}
-            onPolygonComplete={handlePolygonComplete}
-            onCircleComplete={handleCircleComplete}
-            options={{
-              drawingControl: false,
-              drawingMode: drawingMode,
-              polygonOptions: {
-                editable: true,
-                draggable: true
-              },
-              circleOptions: {
-                editable: true,
-                draggable: true
-              }
-            }}
+        {drawMode === 'polygon' && draftPath.length > 0 && (
+          <>
+            <Polyline path={cursor ? [...draftPath, cursor] : draftPath} options={DRAFT_STYLE} />
+            <Marker
+              position={draftPath[0]}
+              onClick={() => finishPolygon(draftPath)}
+              icon={{
+                path: window.google.maps.SymbolPath.CIRCLE,
+                scale: 6,
+                fillColor: '#ffffff',
+                fillOpacity: 1,
+                strokeColor: DRAFT_STYLE.strokeColor,
+                strokeWeight: 2,
+              }}
+            />
+          </>
+        )}
+        {drawMode === 'circle' && draftCenter && cursor && (
+          <Circle
+            center={draftCenter}
+            radius={calculateDistance(draftCenter.lat, draftCenter.lng, cursor.lat, cursor.lng)}
+            options={DRAFT_STYLE}
           />
         )}
         {shapes.current.map((shape) => (
@@ -343,8 +391,10 @@ const GoogleGeofenceEditor = ({
               center={shape.center}
               radius={shape.radiusMeters}
               options={{
+                ...shapeStyle(shape.color),
                 editable: shape.name === selectedPolygon,
                 draggable: shape.name === selectedPolygon,
+                clickable: drawMode === null,
               }}
               onLoad={circleInstance => {
                 circleInstance.addListener('center_changed', () => handleCircleEdit(shape.id, circleInstance));
@@ -356,8 +406,10 @@ const GoogleGeofenceEditor = ({
               key={shape.id}
               path={shape.latlngs}
               options={{
+                ...shapeStyle(shape.color),
                 editable: shape.name === selectedPolygon,
                 draggable: shape.name === selectedPolygon,
+                clickable: drawMode === null,
               }}
               onLoad={polygonInstance => {
                 polygonInstance.addListener('mouseup', () => handlePolygonEdit(shape.id, polygonInstance));

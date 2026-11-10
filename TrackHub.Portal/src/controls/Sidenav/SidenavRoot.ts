@@ -40,10 +40,10 @@ export interface SidenavRootOwnerState {
 }
 
 export default styled(Drawer)<{ ownerState: SidenavRootOwnerState }>(({ theme, ownerState }) => {
-  const { palette, boxShadows, transitions, breakpoints, functions } = theme;
+  const { palette, boxShadows, borders, transitions, breakpoints, functions } = theme;
   const { darkSidenav, miniSidenav, layout } = ownerState;
 
-  const sidebarWidth = 256;
+  const sidebarWidth = 240;
   const { white, transparent } = palette;
   // `background.dark` is an Argon-only shade not modelled by MUI's TypeBackground.
   const background = palette.background as typeof palette.background & { dark: string };
@@ -70,8 +70,8 @@ export default styled(Drawer)<{ ownerState: SidenavRootOwnerState }>(({ theme, o
 
     [breakpoints.up("xl")]: {
       backgroundColor: bgColor,
-      boxShadow: darkSidenav ? "none" : xxl,
-      marginBottom: darkSidenav ? 0 : "inherit",
+      boxShadow: "none",
+      borderRight: `${borders.borderWidth[1]} solid ${borders.borderColor}`,
       left: "0",
       width: sidebarWidth,
       transform: "translateX(0)",
@@ -92,10 +92,10 @@ export default styled(Drawer)<{ ownerState: SidenavRootOwnerState }>(({ theme, o
 
     [breakpoints.up("xl")]: {
       backgroundColor: bgColor,
-      boxShadow: darkSidenav ? "none" : xxl,
-      marginBottom: darkSidenav ? 0 : "inherit",
+      boxShadow: "none",
+      borderRight: `${borders.borderWidth[1]} solid ${borders.borderColor}`,
       left: "0",
-      width: pxToRem(96),
+      width: pxToRem(72),
       overflowX: "hidden",
       transform: "translateX(0)",
       transition: transitions.create(["width", "background-color"], {

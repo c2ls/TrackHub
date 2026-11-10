@@ -14,8 +14,9 @@
 *  limitations under the License.
 */
 
-import Chip from '@mui/material/Chip';
+import Card from '@mui/material/Card';
 import ArgonBox from 'components/ArgonBox';
+import ArgonTypography from 'components/ArgonTypography';
 import CompactSelect from 'controls/Selects/CompactSelect';
 import type { CompactSelectOption } from 'controls/Selects/CompactSelect';
 import { useTranslation } from 'react-i18next';
@@ -31,37 +32,32 @@ export interface DashboardFilters {
   status: string;
 }
 
+/** One figure of the fleet summary; `share` is its percentage of the total, when it has one. */
+export interface FleetStat {
+  title: string;
+  count: number;
+  share?: string;
+}
+
 interface FilterBarProps {
+  stats: FleetStat[];
   typeOptions?: FilterOption[];
   groupOptions?: FilterOption[];
   operatorOptions?: FilterOption[];
   filters: DashboardFilters;
   onFilterChange: (name: string, value: string | number) => void;
-  showPois?: boolean;
-  onTogglePois?: () => void;
-  followMode?: boolean;
-  onToggleFollow?: () => void;
-  followDisabled?: boolean;
-  showTrail?: boolean;
-  onToggleTrail?: () => void;
 }
 
-// Client-side filter bar for the live map. Filters only narrow the
-// already-authorized set; stat cards and the table keep the full set.
+// Fleet summary plus the client-side filters of the live map. Filters only narrow the
+// already-authorized set shown on the map; the summary and the unit list keep the full set.
 // Unit search-by-plate lives in the page's top-right search box.
 function FilterBar({
+  stats,
   typeOptions = [],
   groupOptions = [],
   operatorOptions = [],
   filters,
   onFilterChange,
-  showPois,
-  onTogglePois,
-  followMode,
-  onToggleFollow,
-  followDisabled = false,
-  showTrail,
-  onToggleTrail
 }: FilterBarProps) {
   const { t } = useTranslation();
 
@@ -73,63 +69,61 @@ function FilterBar({
   ];
 
   return (
-    <ArgonBox mb={1} display="flex" flexWrap="wrap" alignItems="center" gap={1}>
-      <CompactSelect
-        name="groupId"
-        value={filters.groupId ?? 'all'}
-        options={[{ value: 'all', label: t('dashboard.allGroups') }, ...groupOptions]}
-        label={t('dashboard.filterGroup')}
-        onChange={onFilterChange}
-      />
-      <CompactSelect
-        name="transporterType"
-        value={filters.transporterType || 'all'}
-        options={[{ value: 'all', label: t('dashboard.allTypes') }, ...typeOptions]}
-        label={t('dashboard.filterType')}
-        onChange={onFilterChange}
-      />
-      <CompactSelect
-        name="operatorId"
-        value={filters.operatorId || 'all'}
-        options={[{ value: 'all', label: t('dashboard.allOperators') }, ...operatorOptions]}
-        label={t('dashboard.filterOperator')}
-        onChange={onFilterChange}
-      />
-      <CompactSelect
-        name="status"
-        value={filters.status || 'all'}
-        options={statusOptions}
-        label={t('dashboard.filterStatus')}
-        onChange={onFilterChange}
-      />
-      <ArgonBox display="flex" alignItems="center" gap={0.5} ml="auto">
-        <Chip
-          label={t('dashboard.poiLayer')}
-          size="small"
-          clickable
-          aria-pressed={showPois}
-          color={showPois ? 'primary' : 'default'}
-          variant="outlined"
-          onClick={onTogglePois}
+    <ArgonBox mb={1.5} display="flex" flexWrap="wrap" alignItems="center" gap={1.5}>
+      <Card sx={{ flexDirection: 'row', flexWrap: 'wrap', overflow: 'hidden' }}>
+        {stats.map(({ title, count, share }) => (
+          <ArgonBox
+            key={title}
+            px={2}
+            py={0.75}
+            sx={({ borders: { borderWidth, borderColor } }) => ({
+              '&:not(:last-of-type)': { borderRight: `${borderWidth[1]} solid ${borderColor}` },
+            })}
+          >
+            <ArgonTypography variant="caption" color="secondary" display="block" noWrap>
+              {title}
+            </ArgonTypography>
+            <ArgonBox display="flex" alignItems="baseline" gap={0.75}>
+              <ArgonTypography variant="h6" fontWeight="bold" lineHeight={1.3}>
+                {count}
+              </ArgonTypography>
+              {share !== undefined && (
+                <ArgonTypography variant="caption" color="secondary">
+                  {share}%
+                </ArgonTypography>
+              )}
+            </ArgonBox>
+          </ArgonBox>
+        ))}
+      </Card>
+      <ArgonBox display="flex" flexWrap="wrap" alignItems="center" gap={1} ml="auto">
+        <CompactSelect
+          name="groupId"
+          value={filters.groupId ?? 'all'}
+          options={[{ value: 'all', label: t('dashboard.allGroups') }, ...groupOptions]}
+          label={t('dashboard.filterGroup')}
+          onChange={onFilterChange}
         />
-        <Chip
-          label={t('dashboard.followMode')}
-          size="small"
-          clickable
-          disabled={followDisabled}
-          aria-pressed={followMode}
-          color={followMode ? 'primary' : 'default'}
-          variant="outlined"
-          onClick={onToggleFollow}
+        <CompactSelect
+          name="transporterType"
+          value={filters.transporterType || 'all'}
+          options={[{ value: 'all', label: t('dashboard.allTypes') }, ...typeOptions]}
+          label={t('dashboard.filterType')}
+          onChange={onFilterChange}
         />
-        <Chip
-          label={t('dashboard.trail')}
-          size="small"
-          clickable
-          aria-pressed={showTrail}
-          color={showTrail ? 'primary' : 'default'}
-          variant="outlined"
-          onClick={onToggleTrail}
+        <CompactSelect
+          name="operatorId"
+          value={filters.operatorId || 'all'}
+          options={[{ value: 'all', label: t('dashboard.allOperators') }, ...operatorOptions]}
+          label={t('dashboard.filterOperator')}
+          onChange={onFilterChange}
+        />
+        <CompactSelect
+          name="status"
+          value={filters.status || 'all'}
+          options={statusOptions}
+          label={t('dashboard.filterStatus')}
+          onChange={onFilterChange}
         />
       </ArgonBox>
     </ArgonBox>

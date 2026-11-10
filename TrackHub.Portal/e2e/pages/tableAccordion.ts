@@ -76,7 +76,7 @@ export class Section {
    * the toggle.
    */
   async expand(): Promise<this> {
-    await expect(this.root).toBeVisible({ timeout: 60_000 });
+    await expect(this.header).toBeVisible({ timeout: 60_000 });
     for (let attempt = 0; attempt < 3; attempt += 1) {
       if (await this.isExpanded()) return this;
       await this.header.click();

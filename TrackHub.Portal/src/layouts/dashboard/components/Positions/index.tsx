@@ -35,7 +35,7 @@ import SearchSelect from 'edition/SearchSelect';
 import { useUserTransporterOptions } from 'edition/pickerOptions';
 import { useFeatures } from 'context/features';
 import useForm from 'controls/Dialogs/useForm';
-import { usePlayback } from 'layouts/dashboard/utils/playback';
+import { buildTimeline, usePlayback } from 'layouts/dashboard/utils/playback';
 import type { TripPoint } from 'layouts/dashboard/utils/playback';
 import { downloadCsv, sanitizeFileNamePart } from 'utils/csvUtils';
 import { LoadingContext } from 'LoadingContext';
@@ -189,61 +189,58 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
   }, [selectedTrip, trips]);
 
   const playback = usePlayback(selectedTripPoints);
+  const timeline = useMemo(() => buildTimeline(selectedTripPoints), [selectedTripPoints]);
+  const showPlayback = !!selectedTrip && playback.hasTimeline;
+  // The playback card takes its height out of the map so the tab still fits the viewport.
+  const mapHeight = showPlayback ? 'calc(100vh - 424px)' : 'calc(100vh - 200px)';
 
   return (
-    <ArgonBox py={1}>
-      <Grid container spacing={3} sx={{ mb: 1 }}>
-        <Grid size={{xs:12, lg:12}}>
-          <FilterNavbar
-            picker={
-              <SearchSelect
-                id="selectedItem"
-                label={t('filters.transporter')}
-                value={values.selectedItem || null}
-                valueLabel={selectedLabel}
-                onChange={(option) => {
-                  setSelectedLabel(option?.label ?? null);
-                  handleChange({ target: { name: 'selectedItem', value: option?.value ?? '' } });
-                }}
-                useOptions={useUserTransporterOptions}
-                errorMsg={errors.selectedItem}
-              />
-            }
-            values={values}
-            handleChange={handleChange}
-            errors={errors}
-            handleSearch={handleSearch}
+    <ArgonBox>
+      <FilterNavbar
+        picker={
+          <SearchSelect
+            id="selectedItem"
+            label={t('filters.transporter')}
+            value={values.selectedItem || null}
+            valueLabel={selectedLabel}
+            onChange={(option) => {
+              setSelectedLabel(option?.label ?? null);
+              handleChange({ target: { name: 'selectedItem', value: option?.value ?? '' } });
+            }}
+            useOptions={useUserTransporterOptions}
+            errorMsg={errors.selectedItem}
           />
-          <ArgonBox display="flex" alignItems="center" gap={1} mb={1}>
-            {historyEnabled && (
-              <>
-                <ArgonTypography variant="caption" fontWeight="bold">
-                  {t('replay.source')}
-                </ArgonTypography>
-                <ToggleButtonGroup
-                  size="small"
-                  exclusive
-                  value={source}
-                  aria-label={t('replay.source')}
-                  onChange={(_event, value: PositionSourceType | null) => value && setSource(value)}>
-                  <ToggleButton value="PROVIDER">{t('replay.sourceProvider')}</ToggleButton>
-                  <ToggleButton value="STORED">{t('replay.sourceTrackHub')}</ToggleButton>
-                </ToggleButtonGroup>
-              </>
-            )}
-            <ArgonBox ml="auto">
-              <ArgonButton
-                variant="contained"
-                color="primary"
-                size="small"
-                disabled={trips.length === 0}
-                onClick={handleExport}>
-                <Icon>download</Icon>&nbsp;{t('replay.export')}
-              </ArgonButton>
-            </ArgonBox>
-          </ArgonBox>
-        </Grid>
-      </Grid>
+        }
+        values={values}
+        handleChange={handleChange}
+        errors={errors}
+        handleSearch={handleSearch}
+      >
+        {historyEnabled && (
+          <>
+            <ArgonTypography variant="caption" color="secondary">
+              {t('replay.source')}
+            </ArgonTypography>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={source}
+              aria-label={t('replay.source')}
+              onChange={(_event, value: PositionSourceType | null) => value && setSource(value)}
+              sx={{ '& .MuiToggleButton-root': { textTransform: 'none', py: 0.75 } }}>
+              <ToggleButton value="PROVIDER">{t('replay.sourceProvider')}</ToggleButton>
+              <ToggleButton value="STORED">{t('replay.sourceTrackHub')}</ToggleButton>
+            </ToggleButtonGroup>
+          </>
+        )}
+        <ArgonButton
+          variant="outlined"
+          color="dark"
+          disabled={trips.length === 0}
+          onClick={handleExport}>
+          <Icon>download</Icon>&nbsp;{t('replay.export')}
+        </ArgonButton>
+      </FilterNavbar>
       <Grid container spacing={3}>
         <Grid size={{xs: 12, lg:9}}>
           <TripsMap
@@ -256,8 +253,8 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
             handleSelected={handleSelected}
             playbackPosition={selectedTrip ? playback.position : null}
             darkMode={darkMode}
-            height="calc(100vh - 384px)"/>
-          {selectedTrip && playback.hasTimeline && (
+            height={mapHeight}/>
+          {showPlayback && (
             <PlaybackControls
               playing={playback.playing}
               toggle={playback.toggle}
@@ -265,6 +262,7 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
               setSpeed={playback.setSpeed}
               progress={playback.progress}
               seek={playback.seek}
+              timeline={timeline}
             />
           )}
         </Grid>
@@ -274,7 +272,7 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
             filters={values}
             selectedTrip={selectedTrip}
             handleSelected={handleSelected}
-            maxHeight="calc(100vh - 384px)"/>
+            maxHeight="calc(100vh - 200px)"/>
         </Grid>
       </Grid>
     </ArgonBox>

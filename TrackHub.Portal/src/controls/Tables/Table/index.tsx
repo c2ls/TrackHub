@@ -17,6 +17,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import type { ChangeEvent, MouseEvent } from "react";
 import { Table as MuiTable, TableContainer } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 import TableHeader from "./TableHeader";
 import TableBody from "./TableBody";
 import TablePagination from "./TablePagination";
@@ -205,16 +206,20 @@ function Table({
       }}
     >
       <MuiTable
-        sx={
-          horizontalScroll
+        sx={{
+          ...(horizontalScroll
             ? {
                 tableLayout: "auto",
                 width: "max-content",
                 minWidth: "100%",
                 "& th": { whiteSpace: "nowrap" },
               }
-            : { tableLayout: "fixed", width: "100%" }
-        }
+            : { tableLayout: "fixed", width: "100%", "& td": { overflow: "hidden", textOverflow: "ellipsis" } }),
+          "& tbody tr:not(:last-child) td": {
+            borderBottom: ({ borders: { borderWidth, borderColor } }: Theme) =>
+              `${borderWidth[1]} solid ${borderColor}`,
+          },
+        }}
       >
         <TableHeader
           columns={columns}

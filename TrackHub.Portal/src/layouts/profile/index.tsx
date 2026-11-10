@@ -33,7 +33,6 @@ import { useEffect, useContext } from "react";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
-import type { Theme } from "@mui/material/styles";
 
 // Argon Dashboard 2 MUI components
 import ArgonBox from "components/ArgonBox";
@@ -54,7 +53,6 @@ import type { CurrentUser } from "api/security/users";
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
 
-import bgImage from "assets/images/vr-bg.jpg";
 
 function Overview() {
   const { setLoading } = useContext(LoadingContext);
@@ -88,18 +86,9 @@ function Overview() {
   }, [currentUserQuery.isFetching, setLoading]);
 
   return (
-    <DashboardLayout
-      sx={{
-        backgroundImage: ({ functions: { rgba, linearGradient }, palette: { gradients } }: Theme) =>
-          `${linearGradient(
-            rgba(gradients.info.main, 0.6),
-            rgba(gradients.info.state, 0.6)
-          )}, url(${bgImage})`,
-        backgroundPositionY: "50%",
-      }}
-    >
+    <DashboardLayout>
       <Header user= {user}/>
-      <ArgonBox mt={5} mb={3}>
+      <ArgonBox mt={3} mb={3}>
         <Grid container spacing={3}>
           <Grid size={{xs: 12, md: 6, xl:4}}>
             <PlatformSettings />

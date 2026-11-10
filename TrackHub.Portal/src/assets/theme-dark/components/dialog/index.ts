@@ -41,7 +41,8 @@ const { background } = colors;
 const dialog = {
   styleOverrides: {
     paper: {
-      backgroundColor: background.default,
+      backgroundColor: background.dark,
+      backgroundImage: "none",
       borderRadius: borderRadius.lg,
       boxShadow: xxl,
     },

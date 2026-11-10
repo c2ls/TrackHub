@@ -47,38 +47,25 @@ import { item, itemIcon, itemText, itemIconBox } from "controls/Sidenav/styles/s
 import { useArgonController } from "context";
 
 export interface SidenavItemProps {
-  color?: "primary" | "secondary" | "info" | "success" | "warning" | "error" | "dark";
   icon: ReactNode;
   name: string;
   active?: boolean;
-  open?: boolean;
 }
 
 function SidenavItem({ icon, name, active = false }: SidenavItemProps) {
   const [controller] = useArgonController();
-  const { miniSidenav, darkSidenav } = controller;
+  const { miniSidenav } = controller;
 
   return (
-    <>
-      <ListItem component="li">
-        <ArgonBox
-          sx={(theme) => item(theme, { active, darkSidenav, miniSidenav })}
-        >
-          <ListItemIcon sx={(theme) => itemIconBox(theme, { active, darkSidenav })}>
-            {typeof icon === "string" ? (
-              <Icon sx={(theme) => itemIcon(theme, { active })}>{icon}</Icon>
-            ) : (
-              icon
-            )}
-          </ListItemIcon>
+    <ListItem component="li" title={miniSidenav ? name : undefined}>
+      <ArgonBox sx={(theme) => item(theme, { active, miniSidenav })}>
+        <ListItemIcon sx={itemIconBox}>
+          {typeof icon === "string" ? <Icon sx={itemIcon}>{icon}</Icon> : icon}
+        </ListItemIcon>
 
-          <ListItemText
-            primary={name}
-            sx={(theme) => itemText(theme, { miniSidenav, darkSidenav, active })}
-          />
-        </ArgonBox>
-      </ListItem>
-    </>
+        <ListItemText primary={name} sx={(theme) => itemText(theme, { miniSidenav, active })} />
+      </ArgonBox>
+    </ListItem>
   );
 }
 

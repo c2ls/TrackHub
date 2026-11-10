@@ -8,7 +8,7 @@
     var stored = window.localStorage.getItem("trackhub.ui-preferences");
     if (!stored) return;
     var dark = JSON.parse(stored).darkMode === true;
-    document.documentElement.style.backgroundColor = dark ? "#051139" : "#f8f9fa";
+    document.documentElement.style.backgroundColor = dark ? "#0A111C" : "#F3F5F8";
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
   } catch (e) {
     // Storage blocked or payload corrupt - fall through to the default shell.

@@ -30,14 +30,12 @@ Coded by www.creative-tim.com
 */
 
 // react-router components
-import { useLocation, Link } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "AuthContext";
-import { useState } from "react";
-import type { ChangeEventHandler, MouseEvent } from "react";
+import { useContext, useState } from "react";
+import type { ChangeEventHandler, MouseEvent, ReactNode } from "react";
 // @mui core components
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Icon from "@mui/material/Icon";
 import Badge from "@mui/material/Badge";
@@ -58,46 +56,40 @@ import { useMyNotifications, useMarkNotificationRead } from "queries/notificatio
 import { formatDateTime } from "utils/dateUtils";
 import { toCamelCase } from "utils/stringUtils";
 
-// Argon Dashboard 2 MUI example components
-import Breadcrumbs from "controls/Breadcrumbs";
-
 // Custom styles for DashboardNavbar
-import {
-  navbar,
-  navbarContainer,
-  navbarRow,
-  navbarIconButton,
-  navbarDesktopMenu,
-  navbarMobileMenu,
-} from "controls/Navbars/DashboardNavbar/styles";
+import { navbar, navbarIconButton } from "controls/Navbars/DashboardNavbar/styles";
 
 // Argon Dashboard 2 MUI context
-import { useArgonController, setMiniSidenav } from "context";
+import { useArgonController, setMiniSidenav, setOpenConfigurator } from "context";
+import { CurrentAccountContext } from "context/account";
+import routes from "routes";
 
 export interface DashboardNavbarProps {
-  absolute?: boolean;
-  light?: boolean;
-  isMini?: boolean;
   searchVisibility?: boolean;
   searchQuery?: string;
   handleSearch?: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  /** Screen-level tabs, rendered on the bar beside the title. */
+  tabs?: ReactNode;
 }
 
 function DashboardNavbar({
-  absolute = false,
-  light = true,
-  isMini = false,
   searchVisibility = false,
   searchQuery = "",
   handleSearch = () => {},
+  tabs,
 }: DashboardNavbarProps) {
   const [controller, dispatch] = useArgonController();
-  const { miniSidenav, transparentNavbar } = controller;
-  const route = useLocation().pathname.split("/").slice(1);
+  const { miniSidenav, openConfigurator } = controller;
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { logoff, isAuthenticated } = useAuth();
+  const { isManager } = useContext(CurrentAccountContext);
   const { t } = useTranslation();
   const { openHelp } = useHelp();
   const [bellAnchor, setBellAnchor] = useState<HTMLElement | null>(null);
+  const [userAnchor, setUserAnchor] = useState<HTMLElement | null>(null);
+
+  const screen = routes.find((route) => route.route === pathname);
 
   // A failed feed read (e.g. permissions) renders the bell with a zero badge
   // and an empty menu; the global query-cache handler owns the error toast.
@@ -128,154 +120,137 @@ function DashboardNavbar({
   };
 
   return (
-    <AppBar
-      position={absolute ? "absolute" : "static"}
-      color="inherit"
-      sx={(theme) => navbar(theme, { transparentNavbar, absolute, light })}
-    >
-      <Toolbar sx={(theme) => navbarContainer(theme, "static")}>
-        <ArgonBox
-          color={light && transparentNavbar ? "white" : "dark"}
-          mb={{ xs: 1, md: 0 }}
-          sx={(theme) => navbarRow(theme, { isMini })}
+    <ArgonBox component="header" sx={navbar}>
+      <Tooltip title={t("navbar.toggleMenu")}>
+        <IconButton
+          sx={navbarIconButton}
+          onClick={handleMiniSidenav}
+          aria-label={t("navbar.toggleMenu")}
         >
-          <Breadcrumbs
-            icon="home"
-            title={route[route.length - 1]}
-            route={route}
-            light={transparentNavbar ? light : false}
-          />
-          <Icon fontSize="medium" sx={navbarDesktopMenu} onClick={handleMiniSidenav}>
-            {miniSidenav ? "menu_open" : "menu"}
-          </Icon>
+          <Icon>{miniSidenav ? "menu" : "menu_open"}</Icon>
+        </IconButton>
+      </Tooltip>
+      <ArgonTypography component="h1" variant="h6" fontWeight="bold" noWrap data-testid="screen-title">
+        {screen?.name ? t(screen.name as never) : ""}
+      </ArgonTypography>
+      {tabs && (
+        <ArgonBox alignSelf="flex-end" ml={2}>
+          {tabs}
         </ArgonBox>
-        {isMini ? null : (
-          <ArgonBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <ArgonBox pr={1}>
-              {searchVisibility && (
-                <ArgonInput
-                  value={searchQuery}
-                  onChange={handleSearch}
-                  placeholder={t("navbar.searchText")}
-                  startAdornment={
-                    <Icon fontSize="small" style={{ marginRight: "6px" }}>
-                      search
-                    </Icon>
-                  }
-                />
-              )}
-            </ArgonBox>
-            <ArgonBox color={light ? "white" : "inherit"}>
-              <Tooltip title={t("help.open")}>
-                <IconButton
-                  sx={navbarIconButton}
-                  size="small"
-                  onClick={() => openHelp()}
-                  aria-label={t("help.open")}
-                >
-                  <Icon
-                    sx={({ palette: { dark, white } }) => ({
-                      color: light && transparentNavbar ? white.main : dark.main,
-                    })}
-                  >
-                    help_outline
-                  </Icon>
-                </IconButton>
-              </Tooltip>
-              <IconButton
-                sx={navbarIconButton}
-                size="small"
-                onClick={handleBellOpen}
-                aria-label={t("notificationBell.title")}
-              >
-                <Badge badgeContent={unreadCount} color="error">
-                  <Icon
-                    sx={({ palette: { dark, white } }) => ({
-                      color: light && transparentNavbar ? white.main : dark.main,
-                    })}
-                  >
-                    notifications
-                  </Icon>
-                </Badge>
-              </IconButton>
-              <Menu
-                anchorEl={bellAnchor}
-                open={Boolean(bellAnchor)}
-                onClose={handleBellClose}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                transformOrigin={{ vertical: "top", horizontal: "right" }}
-              >
-                {notifications.length === 0 ? (
-                  <MenuItem disabled>
-                    <ArgonTypography variant="caption" color="secondary">
-                      {t("notificationBell.empty")}
-                    </ArgonTypography>
-                  </MenuItem>
-                ) : (
-                  notifications.map((item) => (
-                    <MenuItem
-                      key={item.notificationDeliveryId}
-                      onClick={() =>
-                        handleNotificationClick(item.notificationDeliveryId, item.readAt)
-                      }
-                    >
-                      <ArgonBox display="flex" flexDirection="column" lineHeight={1.25}>
-                        <ArgonTypography
-                          variant="button"
-                          fontWeight={item.readAt ? "regular" : "bold"}
-                        >
-                          {item.eventType
-                            ? t(
-                                `alertEventTypes.${toCamelCase(item.eventType)}` as 'alertEventTypes.geofenceEntered',
-                                { defaultValue: item.eventType }
-                              )
-                            : t("notificationBell.title")}
-                        </ArgonTypography>
-                        <ArgonTypography variant="caption" color={severityColor(item.severity)}>
-                          {item.severity || "-"} &middot; {formatDateTime(item.createdAt)}
-                        </ArgonTypography>
-                      </ArgonBox>
-                    </MenuItem>
-                  ))
-                )}
-              </Menu>
-              <Link
-                to={undefined as never}
-                onClick={(e) => {
-                  e.preventDefault();
-                  logoff();
-                }}
-              >
-                <IconButton sx={navbarIconButton} size="small">
-                  <Icon
-                    sx={({ palette: { dark, white } }) => ({
-                      color: light && transparentNavbar ? white.main : dark.main,
-                    })}
-                  >
-                    account_circle
-                  </Icon>
-                  <ArgonTypography
-                    variant="button"
-                    fontWeight="medium"
-                    color={light && transparentNavbar ? "white" : "dark"}
-                  >
-                    {t("navbar.signOff")}
-                  </ArgonTypography>
-                </IconButton>
-              </Link>
-              <IconButton
-                size="small"
-                color={(light && transparentNavbar ? "white" : "dark") as never}
-                sx={navbarMobileMenu}
-                onClick={handleMiniSidenav}
-              >
-                <Icon>{miniSidenav ? "menu_open" : "menu"}</Icon>
-              </IconButton>
-            </ArgonBox>
+      )}
+      <ArgonBox display="flex" alignItems="center" gap={0.5} ml="auto" py={1}>
+        {searchVisibility && (
+          <ArgonBox width={{ xs: "9rem", md: "16rem" }} mr={1}>
+            <ArgonInput
+              value={searchQuery}
+              onChange={handleSearch}
+              placeholder={t("navbar.searchText")}
+              size="small"
+              startAdornment={
+                <Icon fontSize="small" style={{ marginRight: "6px" }}>
+                  search
+                </Icon>
+              }
+            />
           </ArgonBox>
         )}
-      </Toolbar>
-    </AppBar>
+        <Tooltip title={t("help.open")}>
+          <IconButton sx={navbarIconButton} onClick={() => openHelp()} aria-label={t("help.open")}>
+            <Icon>help_outline</Icon>
+          </IconButton>
+        </Tooltip>
+        <IconButton
+          sx={navbarIconButton}
+          onClick={handleBellOpen}
+          aria-label={t("notificationBell.title")}
+        >
+          <Badge badgeContent={unreadCount} color="error">
+            <Icon>notifications_none</Icon>
+          </Badge>
+        </IconButton>
+        <Menu
+          anchorEl={bellAnchor}
+          open={Boolean(bellAnchor)}
+          onClose={handleBellClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          {notifications.length === 0 ? (
+            <MenuItem disabled>
+              <ArgonTypography variant="caption" color="secondary">
+                {t("notificationBell.empty")}
+              </ArgonTypography>
+            </MenuItem>
+          ) : (
+            notifications.map((item) => (
+              <MenuItem
+                key={item.notificationDeliveryId}
+                onClick={() => handleNotificationClick(item.notificationDeliveryId, item.readAt)}
+              >
+                <ArgonBox display="flex" flexDirection="column" lineHeight={1.25}>
+                  <ArgonTypography variant="button" fontWeight={item.readAt ? "regular" : "bold"}>
+                    {item.eventType
+                      ? t(
+                          `alertEventTypes.${toCamelCase(item.eventType)}` as 'alertEventTypes.geofenceEntered',
+                          { defaultValue: item.eventType }
+                        )
+                      : t("notificationBell.title")}
+                  </ArgonTypography>
+                  <ArgonTypography variant="caption" color={severityColor(item.severity)}>
+                    {item.severity || "-"} &middot; {formatDateTime(item.createdAt)}
+                  </ArgonTypography>
+                </ArgonBox>
+              </MenuItem>
+            ))
+          )}
+        </Menu>
+        {isManager && (
+          <Tooltip title={t("settings.title")}>
+            <IconButton
+              sx={navbarIconButton}
+              onClick={() => setOpenConfigurator(dispatch, !openConfigurator)}
+              aria-label={t("settings.title")}
+              data-testid="configurator-toggle"
+            >
+              <Icon>settings</Icon>
+            </IconButton>
+          </Tooltip>
+        )}
+        <IconButton
+          sx={navbarIconButton}
+          onClick={(event) => setUserAnchor(event.currentTarget)}
+          aria-label={t("navbar.userMenu")}
+          aria-haspopup="menu"
+          data-testid="user-menu"
+        >
+          <Icon>account_circle</Icon>
+        </IconButton>
+        <Menu
+          anchorEl={userAnchor}
+          open={Boolean(userAnchor)}
+          onClose={() => setUserAnchor(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <MenuItem
+            onClick={() => {
+              setUserAnchor(null);
+              navigate("/profile");
+            }}
+          >
+            {t("screen.profile")}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setUserAnchor(null);
+              logoff();
+            }}
+          >
+            {t("navbar.signOff")}
+          </MenuItem>
+        </Menu>
+      </ArgonBox>
+    </ArgonBox>
   );
 }
 
