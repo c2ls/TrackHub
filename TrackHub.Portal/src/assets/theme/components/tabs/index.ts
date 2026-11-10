@@ -31,52 +31,20 @@ Coded by www.creative-tim.com
 
 // Argon Dashboard 2 MUI base styles
 import colors from "assets/theme/base/colors";
-import borders from "assets/theme/base/borders";
-import boxShadows from "assets/theme/base/boxShadows";
 
-// Argon Dashboard 2 MUI helper functions
-import pxToRem from "assets/theme/functions/pxToRem";
-
-const { grey, white } = colors;
-const { borderRadius } = borders;
-const { tabsBoxShadow } = boxShadows;
+const { info, transparent } = colors;
 
 const tabs = {
   styleOverrides: {
     root: {
       position: "relative",
-      backgroundColor: grey[100],
-      borderRadius: borderRadius.lg,
+      backgroundColor: transparent.main,
       minHeight: "unset",
-      padding: pxToRem(4),
-    },
-
-    // The indicator is a full-height opaque pill rendered AFTER the tabs in the DOM, so
-    // the tab list has to be lifted above it or it paints over the selected tab's label.
-    // Slot named `flexContainer` until Material UI renamed it to `list` — keep in sync.
-    list: {
-      height: "100%",
-      position: "relative",
-      zIndex: 10,
-    },
-
-    fixed: {
-      overflow: "unset !important",
-      overflowX: "unset !important",
-    },
-
-    vertical: {
-      "& .MuiTabs-indicator": {
-        width: "100%",
-      },
     },
 
     indicator: {
-      height: "100%",
-      borderRadius: borderRadius.md,
-      backgroundColor: white.main,
-      boxShadow: tabsBoxShadow.indicator,
-      transition: "all 500ms ease",
+      height: 2,
+      backgroundColor: info.main,
     },
   },
 };

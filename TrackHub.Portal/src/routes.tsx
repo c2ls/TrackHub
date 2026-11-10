@@ -69,9 +69,6 @@ import PrincipalTypes from "constants/principalTypes";
 import type { PrincipalType } from "constants/principalTypes";
 import { editionRoutes } from "edition/routes";
 
-// Argon Dashboard 2 MUI components
-import ArgonBox from "components/ArgonBox";
-
 /**
  * A single entry in the Sidenav route table. Consumed by `App` (route
  * rendering + role/feature-flag filtering) and `controls/Sidenav`.
@@ -115,48 +112,15 @@ export interface RouteDefinition {
 }
 
 const routes: RouteDefinition[] = [
+  { type: "title", title: "screen.groupOperations", key: "group-operations" },
   {
     type: "route",
     name: "screen.dashboard",
     key: "dashboard",
     route: "/dashboard",
     principalTypes: [PrincipalTypes.User],
-    icon: <ArgonBox component="i" color="primary" fontSize="14px" className="ni ni-tv-2" />,
+    icon: "map",
     component: <Dashboard />,
-  },
-  {
-    type: "route",
-    name: "screen.systemAdmin",
-    key: "systemAdmin",
-    route: "/systemAdmin",
-    principalTypes: [PrincipalTypes.User],
-    icon: (
-      <ArgonBox component="i" color="warning" fontSize="14px" className="ni ni-key-25" />
-    ),
-    component: <SystemAdmin />,
-  },
-  {
-    type: "route",
-    name: "screen.manageAdmin",
-    key: "manageAdmin",
-    route: "/manageAdmin",
-    principalTypes: [PrincipalTypes.User],
-    icon: (
-      <ArgonBox component="i" color="warning" fontSize="14px" className="ni ni-settings" />
-    ),
-    component: <ManageAdmin />,
-  },
-  {
-    type: "route",
-    name: "screen.geofence",
-    key: "geofenceManager",
-    route: "/geofenceManager",
-    principalTypes: [PrincipalTypes.User],
-    featureKey: "geofencing",
-    icon: (
-      <ArgonBox component="i" color="warning" fontSize="14px" className="ni ni-square-pin" />
-    ),
-    component: <GeofenceManager />,
   },
   {
     // Dispatcher-level: no hardcoded role branch in App.tsx. Visibility is the
@@ -168,10 +132,18 @@ const routes: RouteDefinition[] = [
     route: "/tripManager",
     principalTypes: [PrincipalTypes.User],
     featureKey: "trip-management",
-    icon: (
-      <ArgonBox component="i" color="info" fontSize="14px" className="ni ni-delivery-fast" />
-    ),
+    icon: "route",
     component: <TripManager />,
+  },
+  {
+    type: "route",
+    name: "screen.geofence",
+    key: "geofenceManager",
+    route: "/geofenceManager",
+    principalTypes: [PrincipalTypes.User],
+    featureKey: "geofencing",
+    icon: "share_location",
+    component: <GeofenceManager />,
   },
   {
     // Anonymous customer tracking. `public: true` bypasses the role and
@@ -184,19 +156,28 @@ const routes: RouteDefinition[] = [
     key: "tripTracking",
     route: "/track",
     public: true,
-    icon: (
-      <ArgonBox component="i" color="info" fontSize="14px" className="ni ni-world-2" />
-    ),
+    icon: "public",
     component: <TripTracking />,
   },
+  { type: "title", title: "screen.groupInsights", key: "group-insights" },
   {
     type: "route",
     name: "screen.reports",
     key: "reports",
     route: "/reports",
     principalTypes: [PrincipalTypes.User],
-    icon: <ArgonBox component="i" color="success" fontSize="14px" className="ni ni-credit-card" />,
+    icon: "bar_chart",
     component: <Reports />,
+  },
+  { type: "title", title: "screen.groupAdministration", key: "group-administration" },
+  {
+    type: "route",
+    name: "screen.manageAdmin",
+    key: "manageAdmin",
+    route: "/manageAdmin",
+    principalTypes: [PrincipalTypes.User],
+    icon: "business",
+    component: <ManageAdmin />,
   },
   {
     type: "route",
@@ -204,10 +185,17 @@ const routes: RouteDefinition[] = [
     key: "gpsIntegration",
     route: "/manage-admin/gps-integration",
     principalTypes: [PrincipalTypes.User],
-    icon: (
-      <ArgonBox component="i" color="info" fontSize="14px" className="ni ni-satisfied" />
-    ),
+    icon: "sensors",
     component: <GpsIntegration />,
+  },
+  {
+    type: "route",
+    name: "screen.systemAdmin",
+    key: "systemAdmin",
+    route: "/systemAdmin",
+    principalTypes: [PrincipalTypes.User],
+    icon: "tune",
+    component: <SystemAdmin />,
   },
   {
     // Public route: rendered without authentication (App skips the login redirect
@@ -218,9 +206,7 @@ const routes: RouteDefinition[] = [
     key: "platformStatus",
     route: "/status",
     public: true,
-    icon: (
-      <ArgonBox component="i" color="info" fontSize="14px" className="ni ni-atom" />
-    ),
+    icon: "monitor_heart",
     component: <PlatformStatus />,
   },
   { type: "title", title: "screen.account", key: "account-pages" },
@@ -230,7 +216,7 @@ const routes: RouteDefinition[] = [
     key: "profile",
     route: "/profile",
     principalTypes: [PrincipalTypes.User],
-    icon: <ArgonBox component="i" color="dark" fontSize="14px" className="ni ni-single-02" />,
+    icon: "person",
     component: <Profile />,
   },
   {

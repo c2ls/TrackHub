@@ -1,10 +1,25 @@
 .map-container {
-    border-radius: 15px;
+    border-radius: 12px;
     overflow: hidden;
 }
 
 .th-dark-tiles {
-    filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.7);
+    filter: saturate(0.25) invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.85);
+}
+
+.th-map .leaflet-bar {
+    border: 1px solid rgba(15, 27, 42, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(15, 27, 42, 0.2);
+    overflow: hidden;
+}
+
+/* The controls ship as dark glyphs on white; under the dark theme the whole control is flipped
+   rather than each vendor stylesheet being re-coloured. */
+.th-map-dark .leaflet-bar,
+.th-map-dark .leaflet-control-scale-line,
+.th-map-dark .leaflet-control-attribution {
+    filter: invert(1) hue-rotate(180deg) brightness(0.9);
 }
 
 .trips-stats-panel {

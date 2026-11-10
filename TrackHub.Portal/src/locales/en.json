@@ -127,6 +127,7 @@
     "testError": "An error occurred while testing the credential"
   },
   "dashboard": {
+    "live": "Live",
     "totalTitle": "Total Units",
     "activeTitle": "Active Units",
     "movementTitle": "Moving Units",
@@ -172,6 +173,7 @@
     "transporter": "Unit"
   },
   "generic": {
+    "selectSection": "Select a section from the list.",
     "modified": "Modified",
     "action": "Action",
     "add": "Add",
@@ -859,8 +861,10 @@
     }
   },
   "navbar": {
-    "searchText": "Type here...",
-    "signOff": "Sign off"
+    "searchText": "Search",
+    "signOff": "Sign off",
+    "toggleMenu": "Show or hide the menu",
+    "userMenu": "Your account"
   },
   "sidenav": {
     "brandAlt": "TrackHub logo"
@@ -1103,6 +1107,9 @@
   },
   "screen": {
     "account": "Account",
+    "groupOperations": "Operations",
+    "groupInsights": "Insights",
+    "groupAdministration": "Administration",
     "dashboard": "Dashboard",
     "geofence": "Geofences",
     "manageAdmin": "Account Management",
@@ -1128,6 +1135,8 @@
     "showRetired": "Show retired units"
   },
   "transporterMap": {
+    "heading": "Heading",
+    "speedTitle": "Speed",
     "name": "Name",
     "details": "Unit Details",
     "dateTime": "Date Time",

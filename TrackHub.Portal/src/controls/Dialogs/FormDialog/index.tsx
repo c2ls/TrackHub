@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, DialogActions, DialogContent, DialogTitle, Drawer, Icon, IconButton } from '@mui/material';
 import type { DialogProps } from '@mui/material';
 
 interface FormDialogProps {
@@ -28,8 +28,10 @@ interface FormDialogProps {
     setOpen: Dispatch<SetStateAction<boolean>>;
     handleCancel?: () => void | Promise<void>;
     maxWidth?: DialogProps['maxWidth'];
-    fullWidth?: boolean;
 }
+
+// Forms open as a panel on the right edge; `maxWidth` keeps its dialog meaning as a size hint.
+const DRAWER_WIDTH: Record<string, number> = { xs: 400, sm: 480, md: 720, lg: 960, xl: 1200 };
 
 const FormDialog = ({
         title,
@@ -39,7 +41,6 @@ const FormDialog = ({
         setOpen,
         handleCancel = () => {},
         maxWidth = 'sm',
-        fullWidth = true,
     }: FormDialogProps) => {
     const { t } = useTranslation();
     // A save in flight disables Save, so a double click cannot submit twice.
@@ -59,22 +60,47 @@ const FormDialog = ({
     };
 
     return (
-        <Dialog
+        <Drawer
+            anchor="right"
             open={open}
-            onClose={handleClose}
-            maxWidth={maxWidth}
-            fullWidth={fullWidth}
+            // A click on the dimmed page does not dismiss a form: the click that finishes drawing
+            // a shape lands there as the panel opens, and a stray one would discard typed input.
+            onClose={(_event, reason) => {
+                if (reason !== 'backdropClick') handleClose();
+            }}
             data-testid="dialog-form"
+            // Forms also open from inside dialogs, so the panel stacks with them, not below.
+            sx={{ zIndex: (theme) => theme.zIndex.modal }}
+            slotProps={{
+                paper: {
+                    role: 'dialog',
+                    'aria-modal': true,
+                    sx: {
+                        width: DRAWER_WIDTH[maxWidth || 'sm'] ?? DRAWER_WIDTH.sm,
+                        maxWidth: '100vw',
+                        height: '100vh',
+                        margin: 0,
+                        borderRadius: 0,
+                        backgroundColor: 'background.paper',
+                        backgroundImage: 'none',
+                    },
+                },
+            }}
         >
-            <DialogTitle>{title}</DialogTitle>
-            <DialogContent>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                {title}
+                <IconButton size="small" onClick={handleClose} aria-label={t('generic.close')}>
+                    <Icon fontSize="small">close</Icon>
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers sx={{ flex: 1, borderBottom: 0 }}>
                 {children}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose}>{t('generic.cancel')}</Button>
                 <Button onClick={save} disabled={saving} autoFocus>{t('generic.save')}</Button>
             </DialogActions>
-        </Dialog>
+        </Drawer>
     );
 };
 

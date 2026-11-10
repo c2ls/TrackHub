@@ -37,13 +37,14 @@ Coded by www.creative-tim.com
 
 const colors = {
   background: {
-    default: "#051139",
-    dark: "#111c44",
+    default: "#0A111C",
+    paper: "#111A28",
+    dark: "#111A28",
   },
 
   text: {
-    main: "#ffffffcc",
-    focus: "#ffffffcc",
+    main: "#C9D4E0",
+    focus: "#C9D4E0",
   },
 
   transparent: {
@@ -62,196 +63,136 @@ const colors = {
   },
 
   primary: {
-    main: "#5e72e4",
-    focus: "#5e72e4",
+    main: "#1489B3",
+    focus: "#1489B3",
   },
 
   secondary: {
-    main: "#8392ab",
-    focus: "#8392ab",
+    main: "#9AABBE",
+    focus: "#9AABBE",
   },
 
   info: {
-    main: "#11cdef",
-    focus: "#11cdef",
+    main: "#4CC3EE",
+    focus: "#4CC3EE",
   },
 
   success: {
-    main: "#2dce89",
-    focus: "#2dce89",
+    main: "#2E9E5E",
+    focus: "#2E9E5E",
   },
 
   warning: {
-    main: "#fb6340",
-    focus: "#fb6340",
+    main: "#C9862B",
+    focus: "#C9862B",
   },
 
   error: {
-    main: "#f5365c",
-    focus: "#f5365c",
+    main: "#D9584C",
+    focus: "#D9584C",
   },
 
   light: {
-    main: "#f0f2f566",
-    focus: "#f0f2f566",
+    main: "#243247",
+    focus: "#243247",
   },
 
   dark: {
-    main: "#dee2e7",
-    focus: "#aeb7c3",
+    main: "#E7EEF6",
+    focus: "#9AABBE",
   },
 
   grey: {
-    100: "#f8f9fa",
-    200: "#f0f2f566",
-    300: "#ffffff26",
-    400: "#ced4da",
-    500: "#adb5bd",
-    600: "#6c757d",
-    700: "#495057",
-    800: "#343a40",
-    900: "#212529",
+    100: "#17222F",
+    200: "#1C2838",
+    300: "#2A3A52",
+    400: "#3B4C66",
+    500: "#6B7C92",
+    600: "#9AABBE",
+    700: "#C9D4E0",
+    800: "#E1E7EE",
+    900: "#F3F5F8",
   },
 
   gradients: {
-    primary: {
-      main: "#5e72e4",
-      state: "#825ee4",
-    },
+    primary: { main: "#1489B3", state: "#1489B3" },
 
-    secondary: {
-      main: "#627594",
-      state: "#a8b8d8",
-    },
+    secondary: { main: "#3B4C66", state: "#3B4C66" },
 
-    info: {
-      main: "#1171ef",
-      state: "#11cdef",
-    },
+    info: { main: "#1489B3", state: "#1489B3" },
 
-    success: {
-      main: "#2dce89",
-      state: "#2dcecc",
-    },
+    success: { main: "#2E9E5E", state: "#2E9E5E" },
 
-    warning: {
-      main: "#fb6340",
-      state: "#fbb140",
-    },
+    warning: { main: "#C9862B", state: "#C9862B" },
 
-    error: {
-      main: "#f5365c",
-      state: "#f56036",
-    },
+    error: { main: "#D9584C", state: "#D9584C" },
 
-    light: {
-      main: "#ced4da",
-      state: "#ebeff4",
-    },
+    light: { main: "#243247", state: "#243247" },
 
-    dark: {
-      main: "#212229",
-      state: "#212529",
-    },
+    dark: { main: "#17222F", state: "#17222F" },
   },
 
   socialMediaColors: {
-    facebook: {
-      main: "#3b5998",
-      dark: "#344e86",
-    },
+    facebook: { main: "#3b5998", dark: "#344e86" },
 
-    twitter: {
-      main: "#55acee",
-      dark: "#3ea1ec",
-    },
+    twitter: { main: "#55acee", dark: "#3ea1ec" },
 
-    instagram: {
-      main: "#125688",
-      dark: "#0e456d",
-    },
+    instagram: { main: "#125688", dark: "#0e456d" },
 
-    linkedin: {
-      main: "#0077b5",
-      dark: "#00669c",
-    },
+    linkedin: { main: "#0077b5", dark: "#00669c" },
 
-    pinterest: {
-      main: "#cc2127",
-      dark: "#b21d22",
-    },
+    pinterest: { main: "#cc2127", dark: "#b21d22" },
 
-    youtube: {
-      main: "#e52d27",
-      dark: "#d41f1a",
-    },
+    youtube: { main: "#e52d27", dark: "#d41f1a" },
 
-    vimeo: {
-      main: "#1ab7ea",
-      dark: "#13a3d2",
-    },
+    vimeo: { main: "#1ab7ea", dark: "#13a3d2" },
 
-    slack: {
-      main: "#3aaf85",
-      dark: "#329874",
-    },
+    slack: { main: "#3aaf85", dark: "#329874" },
 
-    dribbble: {
-      main: "#ea4c89",
-      dark: "#e73177",
-    },
+    dribbble: { main: "#ea4c89", dark: "#e73177" },
 
-    github: {
-      main: "#24292e",
-      dark: "#171a1d",
-    },
+    github: { main: "#24292e", dark: "#171a1d" },
 
-    reddit: {
-      main: "#ff4500",
-      dark: "#e03d00",
-    },
+    reddit: { main: "#ff4500", dark: "#e03d00" },
 
-    tumblr: {
-      main: "#35465c",
-      dark: "#2a3749",
-    },
+    tumblr: { main: "#35465c", dark: "#2a3749" },
   },
 
   alertColors: {
     primary: {
-      main: "#5e72e4",
-      state: "#673bde",
-      border: "#cfd5f7",
+      main: "#0B7499",
+      state: "#0B7499",
+      border: "#B9DDEA",
     },
 
     secondary: {
-      main: "#627594",
-      state: "#8ca1cb",
-      border: "#dadee6",
+      main: "#64748B",
+      state: "#64748B",
+      border: "#CBD5E1",
     },
 
     info: {
-      main: "#1171ef",
-      state: "#0eadca",
-      border: "#b8f0fa",
+      main: "#0B7499",
+      state: "#0B7499",
+      border: "#B9DDEA",
     },
 
     success: {
-      main: "#2dce89",
-      state: "#26adab",
-      border: "#c0f0dc",
+      main: "#157F45",
+      state: "#157F45",
+      border: "#B5E0C4",
     },
 
     warning: {
-      main: "#fb6340",
-      state: "#faa118",
-      border: "#fed0c6",
+      main: "#B45309",
+      state: "#B45309",
+      border: "#F1D49B",
     },
 
     error: {
-      main: "#f5365c",
-      state: "#f3410f",
-      border: "#fcc3ce",
+      main: "#C0362C",
+      state: "#C0362C",
+      border: "#F2BDB7",
     },
 
     light: {
@@ -261,58 +202,35 @@ const colors = {
     },
 
     dark: {
-      main: "#212229",
-      state: "#0f1112",
-      border: "#c2c8d1",
+      main: "#0F1B2A",
+      state: "#0F1B2A",
+      border: "#CBD5E1",
     },
   },
 
   badgeColors: {
-    primary: {
-      background: "#eaecfb",
-      text: "#2643e9",
-    },
+    primary: { background: "#12364A", text: "#4CC3EE" },
 
-    secondary: {
-      background: "#e4e8ed",
-      text: "#5974a2",
-    },
+    secondary: { background: "#1C2838", text: "#9AABBE" },
 
-    info: {
-      background: "#aaedf9",
-      text: "#03acca",
-    },
+    info: { background: "#12364A", text: "#4CC3EE" },
 
-    success: {
-      background: "#b0eed3",
-      text: "#1aae6f",
-    },
+    success: { background: "#12321F", text: "#5BD08A" },
 
-    warning: {
-      background: "#fee6e0",
-      text: "#ff3709",
-    },
+    warning: { background: "#3A2C10", text: "#F2B84B" },
 
-    error: {
-      background: "#fdd1da",
-      text: "#f80031",
-    },
+    error: { background: "#3B1A17", text: "#F58B7E" },
 
-    light: {
-      background: "#ffffff",
-      text: "#c7d3de",
-    },
+    light: { background: "#17222F", text: "#9AABBE" },
 
-    dark: {
-      background: "#8097bf",
-      text: "#1e2e4a",
-    },
+    dark: { background: "#243247", text: "#E7EEF6" },
   },
 
   inputColors: {
-    borderColor: { main: "#f0f2f566", focus: "#11cdef" },
-    error: "#f5365c",
-    success: "#2dce89",
+    borderColor: { main: "#2A3A52", focus: "#4CC3EE" },
+
+    error: "#D9584C",
+    success: "#2E9E5E",
   },
 
   sliderColors: {
@@ -324,7 +242,7 @@ const colors = {
   },
 
   tabs: {
-    indicator: { boxShadow: "#ddd" },
+    indicator: { boxShadow: "#2A3A52" },
   },
 };
 

@@ -37,60 +37,39 @@ import { useLocation } from "react-router";
 
 // Argon Dashboard 2 MUI components
 import ArgonBox from "components/ArgonBox";
-import type { ArgonBoxProps } from "components/ArgonBox";
 
 // Argon Dashboard 2 MUI context
 import { useArgonController, setLayout } from "context";
 
 export interface DashboardLayoutProps {
-  bgColor?: string;
-  /**
-   * Styles for the page-background box (the 300px header band). Spread onto the
-   * inner background ArgonBox via `...rest`, so callers can set gradient/image
-   * backgrounds that `bgColor` cannot express (e.g. profile's cover photo).
-   */
-  sx?: ArgonBoxProps["sx"];
   children: ReactNode;
 }
 
-function DashboardLayout({ bgColor, children, ...rest }: DashboardLayoutProps) {
+function DashboardLayout({ children }: DashboardLayoutProps) {
   const [controller, dispatch] = useArgonController();
-  const { miniSidenav, darkMode } = controller;
+  const { miniSidenav } = controller;
   const { pathname } = useLocation();
 
   useEffect(() => {
     setLayout(dispatch, "dashboard");
   }, [pathname]);
 
-  const background = darkMode && !bgColor ? "transparent" : bgColor;
-
   return (
     <ArgonBox
       sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
-        p: 3,
+        minHeight: "100vh",
+        px: 3,
+        pb: 3,
 
         [breakpoints.up("xl")]: {
-          marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
-          transition: transitions.create(["margin-left", "margin-right"], {
+          marginLeft: miniSidenav ? pxToRem(72) : pxToRem(240),
+          transition: transitions.create("margin-left", {
             easing: transitions.easing.easeInOut,
-            duration: transitions.duration.standard,
+            duration: transitions.duration.shorter,
           }),
         },
       })}
     >
-      {/* Full-bleed header band. Anchored left/right instead of width:100vw — 100vw includes the
-          vertical scrollbar width and forced a browser-level horizontal scrollbar on every
-          vertically-scrolling page. */}
-      <ArgonBox
-        bgColor={background || "info"}
-        height="300px"
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        sx={darkMode ? { bgColor: (theme) => theme.palette.background.default } : undefined}
-        {...rest}
-      />
       {children}
     </ArgonBox>
   );

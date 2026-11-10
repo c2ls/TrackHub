@@ -416,6 +416,8 @@ test.describe('account management — fleet & tracking', () => {
     // an account with other expiring staff the row is not on the first page.
     await expect(await expirations.findRowAnyPage(staff)).toBeVisible({ timeout: 45_000 });
 
+    // One section is open at a time, so come back to the qualifications.
+    await section.expand();
     await (await section.findRow(number)).getByRole('button', { name: t('generic.delete') }).click();
     await new ConfirmDialog(page, t).confirm();
     await expect(section.root.getByText(number)).toHaveCount(0, { timeout: 45_000 });

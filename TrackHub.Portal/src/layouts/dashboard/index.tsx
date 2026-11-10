@@ -96,7 +96,6 @@ function Default() {
 
   return (
     <DashboardTabbar
-      stickyNavbar
       searchQuery={searchQuery}
       handleSearch={handleSearchChange}
       searchVisibility={searchVisibility}

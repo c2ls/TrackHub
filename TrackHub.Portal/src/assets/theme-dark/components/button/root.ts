@@ -55,10 +55,6 @@ const root = {
   backgroundPositionX: "25% !important",
   transition: `all 150ms ease-in`,
 
-  "&:hover": {
-    transform: "translateY(-1px)",
-  },
-
   "&:disabled": {
     pointerEvent: "none",
     opacity: 0.65,

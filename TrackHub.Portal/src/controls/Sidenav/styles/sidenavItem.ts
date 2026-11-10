@@ -34,123 +34,76 @@ import type { Theme } from "@mui/material/styles";
 
 interface SidenavItemOwnerState {
   active?: boolean;
-  darkSidenav?: boolean;
   miniSidenav?: boolean;
 }
 
 function item(theme: Theme, ownerState: SidenavItemOwnerState) {
-  const { palette, transitions, breakpoints, boxShadows, borders, functions } = theme;
-  const { active, darkSidenav, miniSidenav } = ownerState;
+  const { palette, borders, functions } = theme;
+  const { active, miniSidenav } = ownerState;
 
-  const { dark, transparent, white } = palette;
-  const { xxl } = boxShadows;
   const { borderRadius } = borders;
   const { pxToRem, rgba } = functions;
   // Surfaces Argon's `text.main` shade, which MUI's TypeText omits.
-  const paletteColors = palette as unknown as Record<string, { main: string }>;
-  const text = paletteColors.text;
+  const text = (palette as unknown as Record<string, { main: string }>).text;
 
   return {
-    background: active
-      ? rgba(palette.info.main, 0.1)
-      : transparent.main,
-    color: () => {
-      let result = text.main;
-
-      if (darkSidenav) {
-        result = white.main;
-      } else if (active) {
-        result = dark.main;
-      }
-
-      return result;
-    },
-    display: miniSidenav ? "block" : "flex",
+    background: active ? rgba(palette.info.main, 0.12) : palette.transparent.main,
+    color: active ? palette.info.main : text.main,
+    display: "flex",
     alignItems: "center",
+    justifyContent: miniSidenav ? "center" : "flex-start",
     width: "100%",
-    padding: `${pxToRem(10.8)} ${pxToRem(16)} ${pxToRem(10.8)} ${pxToRem(16)}`,
-    margin: `0 ${pxToRem(8)}`,
+    minHeight: pxToRem(38),
+    padding: `0 ${pxToRem(10)}`,
+    margin: `${pxToRem(1)} ${pxToRem(12)}`,
     borderRadius: borderRadius.md,
     cursor: "pointer",
     userSelect: "none",
     whiteSpace: "nowrap",
-    boxShadow: active && darkSidenav ? xxl : "none",
 
-    [breakpoints.up("xl")]: {
-      boxShadow: () => {
-        if (active) {
-          return darkSidenav ? xxl : "none";
-        }
-
-        return "none";
-      },
-      transition: transitions.create("box-shadow", {
-        easing: transitions.easing.easeInOut,
-        duration: transitions.duration.shorter,
-      }),
+    "&:hover": {
+      background: active ? rgba(palette.info.main, 0.12) : palette.grey[100],
+      color: active ? palette.info.main : palette.dark.main,
     },
   };
 }
 
-function itemIconBox(theme: Theme, ownerState: SidenavItemOwnerState) {
-  const { transitions, borders, functions } = theme;
-  const { darkSidenav, active } = ownerState;
-
-  const { borderRadius } = borders;
-  const { pxToRem } = functions;
+function itemIconBox(theme: Theme) {
+  const { pxToRem } = theme.functions;
 
   return {
     color: "inherit",
-    minWidth: pxToRem(32),
-    minHeight: pxToRem(32),
-    borderRadius: borderRadius.md,
+    minWidth: pxToRem(28),
     display: "grid",
     placeItems: "center",
-    transition: transitions.create("margin", {
-      easing: transitions.easing.easeInOut,
-      duration: transitions.duration.standard,
-    }),
-
-    "& svg, svg g": {
-      fill: "currentColor",
-    },
-
-    "& i": {
-      color: active && darkSidenav ? "inherit" : null,
-    },
   };
 }
 
-const itemIcon = ({ palette: { white, gradients } }: Theme, { active }: SidenavItemOwnerState) => ({
-  color: active ? white.main : gradients.dark.state,
+const itemIcon = ({ functions: { pxToRem } }: Theme) => ({
+  color: "inherit",
+  fontSize: `${pxToRem(20)} !important`,
 });
 
 function itemText(theme: Theme, ownerState: SidenavItemOwnerState) {
-  const { typography, transitions, breakpoints, functions } = theme;
+  const { typography, breakpoints, functions } = theme;
   const { miniSidenav, active } = ownerState;
 
-  const { fontWeightMedium, fontWeightRegular, size } = typography;
+  const { fontWeightBold, fontWeightMedium, size } = typography;
   const { pxToRem } = functions;
 
   return {
     color: "inherit",
-    marginLeft: pxToRem(4),
+    marginLeft: pxToRem(6),
 
     [breakpoints.up("xl")]: {
-      opacity: miniSidenav ? 0 : 1,
-      maxWidth: miniSidenav ? 0 : "100%",
-      marginLeft: miniSidenav ? 0 : pxToRem(4),
-      transition: transitions.create(["opacity", "margin"], {
-        easing: transitions.easing.easeInOut,
-        duration: transitions.duration.standard,
-      }),
+      display: miniSidenav ? "none" : "block",
     },
 
     "& span": {
       color: "inherit",
-      fontWeight: active ? fontWeightMedium : fontWeightRegular,
+      fontWeight: active ? fontWeightBold : fontWeightMedium,
       fontSize: size.sm,
-      lineHeight: 0,
+      lineHeight: 1.4,
     },
   };
 }

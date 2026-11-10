@@ -15,9 +15,6 @@
 */
 
 import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-// Must follow the vendor sheets above — it pins the cluster count colour they leave
-// inheriting from the page (invisible under the dark theme).
 import 'controls/Maps/css/markerCluster.css';
 import { formatDateTime } from "utils/dateUtils";
 import { escapeHtml } from 'utils/htmlUtils';
@@ -28,9 +25,8 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { createSvgIcon } from 'controls/Maps/utils/imageUtils';
-import { createEnhancedPopupContent, getRelativeTimeText } from 'controls/Maps/utils/popupUtils';
-import { reverseGeocode } from 'api/router/router';
+import { createUnitIcon } from 'controls/Maps/utils/imageUtils';
+import { getRelativeTimeText } from 'controls/Maps/utils/popupUtils';
 import type { MapMarker } from 'controls/Maps/core/mapTypes';
 
 const ANIMATION_DURATION_MS = 1000;
@@ -40,6 +36,7 @@ const MAX_ANIMATED_MARKERS = 500;
 interface MarkerEntry {
     marker: L.Marker;
     data: MapMarker;
+    selected: boolean;
     animationFrame: number | null;
 }
 
@@ -47,12 +44,17 @@ const markerId = (marker: MapMarker): string => marker.id ?? marker.name;
 
 const easeInOut = (x: number): number => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
 
-const buildIcon = (data: MapMarker): L.DivIcon => L.divIcon({
-    className: 'my-icon',
-    html: createSvgIcon(data.rotation, data.text, 'svg', data.color ? { color: data.color } : {}),
-    iconSize: [28, 30],
-    iconAnchor: [14, 30],
-    popupAnchor: [0, -30],
+const buildIcon = (data: MapMarker, selected: boolean): L.DivIcon => L.divIcon({
+    className: 'th-unit-icon',
+    html: `${createUnitIcon(data.status ?? 'offline', data.rotation, selected)}<span class="th-unit-label">${escapeHtml(data.name)}</span>`,
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
+});
+
+const buildClusterIcon = (cluster: L.MarkerCluster): L.DivIcon => L.divIcon({
+    className: 'th-cluster',
+    html: `<span>${cluster.getChildCount()}</span>`,
+    iconSize: L.point(42, 42),
 });
 
 const buildTooltipContent = (data: MapMarker, t: TFunction): string => `
@@ -64,7 +66,7 @@ const buildTooltipContent = (data: MapMarker, t: TFunction): string => `
     </div>`;
 
 const iconChanged = (prev: MapMarker, next: MapMarker): boolean =>
-    prev.rotation !== next.rotation || prev.text !== next.text || prev.color !== next.color;
+    prev.rotation !== next.rotation || prev.status !== next.status || prev.name !== next.name;
 
 export interface MarkerClusterProps {
     markers: MapMarker[];
@@ -77,17 +79,16 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
     const { t } = useTranslation();
     const map = useMap();
     const groupRef = useRef<L.MarkerClusterGroup | null>(null);
-    // id -> { marker: L.Marker, data, animationFrame }
     const entriesRef = useRef<Map<string, MarkerEntry>>(new Map());
 
     // Keeps clusters coherent after a marker moved: markers hidden inside a
     // cluster are re-added so cluster membership is recomputed; visible
-    // markers keep their instance (no flicker, popup stays open).
+    // markers keep their instance (no flicker).
     const refreshClusterMembership = useCallback((entry: MarkerEntry) => {
         const group = groupRef.current;
         if (!group || !group.hasLayer(entry.marker)) return;
         const visibleParent = group.getVisibleParent(entry.marker);
-        if (visibleParent && visibleParent !== entry.marker && !entry.marker.isPopupOpen()) {
+        if (visibleParent && visibleParent !== entry.marker) {
             group.removeLayer(entry.marker);
             group.addLayer(entry.marker);
         }
@@ -120,7 +121,11 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
 
     // Create the cluster group once per map instance.
     useEffect(() => {
-        const markerGroup = L.markerClusterGroup({ chunkedLoading: true });
+        const markerGroup = L.markerClusterGroup({
+            chunkedLoading: true,
+            showCoverageOnHover: false,
+            iconCreateFunction: buildClusterIcon,
+        });
         groupRef.current = markerGroup;
         map.addLayer(markerGroup);
         const entries = entriesRef.current;
@@ -136,7 +141,7 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
 
     // Delta-sync the rendered markers with the incoming data set:
     // existing marker instances are updated in place (position animated,
-    // icon/popup/tooltip content refreshed), new ones are added and stale
+    // icon/tooltip content refreshed), new ones are added and stale
     // ones removed. Never tears down the whole set on refresh.
     const syncMarkers = useCallback(() => {
         const group = groupRef.current;
@@ -163,32 +168,31 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
         const toAdd: L.Marker[] = [];
         list.forEach((data) => {
             const id = markerId(data);
+            const selected = data.name === selectedMarker;
             const existing = entriesRef.current.get(id);
             if (!existing) {
-                const leafletMarker = L.marker([data.lat, data.lng], { icon: buildIcon(data) });
-                const popup = leafletMarker.bindPopup(createEnhancedPopupContent(data, t), {
-                    maxWidth: 260,
-                    minWidth: 240
-                }).getPopup();
+                const leafletMarker = L.marker([data.lat, data.lng], {
+                    icon: buildIcon(data, selected),
+                    zIndexOffset: selected ? 1000 : 0,
+                });
                 leafletMarker.bindTooltip(buildTooltipContent(data, t), {
                     direction: 'top',
-                    offset: [0, -28]
+                    offset: [0, -18]
                 });
                 if (handleSelected) {
-                    popup?.on('remove', () => {
-                        handleSelected(null);
-                    });
                     leafletMarker.on('click', () => {
                         handleSelected(data.name);
                     });
                 }
-                entriesRef.current.set(id, { marker: leafletMarker, data, animationFrame: null });
+                entriesRef.current.set(id, { marker: leafletMarker, data, selected, animationFrame: null });
                 toAdd.push(leafletMarker);
             } else {
                 const previous = existing.data;
                 existing.data = data;
-                if (iconChanged(previous, data)) {
-                    existing.marker.setIcon(buildIcon(data));
+                if (iconChanged(previous, data) || existing.selected !== selected) {
+                    existing.selected = selected;
+                    existing.marker.setIcon(buildIcon(data, selected));
+                    existing.marker.setZIndexOffset(selected ? 1000 : 0);
                 }
                 if (previous.lat !== data.lat || previous.lng !== data.lng) {
                     if (animate) {
@@ -198,7 +202,6 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
                         refreshClusterMembership(existing);
                     }
                 }
-                existing.marker.setPopupContent(createEnhancedPopupContent(data, t));
                 existing.marker.setTooltipContent(buildTooltipContent(data, t));
             }
         });
@@ -221,58 +224,8 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
         };
     }, [map, markers.length, viewportThreshold, syncMarkers]);
 
-    // Delegated click handler for the "resolve address" popup action. The
-    // popup content is an HTML string, so a delegated listener on the map
-    // container survives popup content updates on refresh cycles.
-    useEffect(() => {
-        const container = map.getContainer();
-        const onClick = async (event: Event) => {
-            const target = event.target as Element | null;
-            const button = target && target.closest
-                ? target.closest<HTMLButtonElement>('.th-resolve-address')
-                : null;
-            if (!button || button.disabled) return;
-            event.preventDefault();
-            event.stopPropagation();
-            let entry: MarkerEntry | null = null;
-            entriesRef.current.forEach((candidate) => {
-                if (!entry && candidate.marker.isPopupOpen()) entry = candidate;
-            });
-            if (!entry) return;
-            const resolved: MarkerEntry = entry;
-            button.disabled = true;
-            button.textContent = t('transporterMap.resolvingAddress');
-            // Silent op: a failed reverse-geocode must not toast, so call the
-            // api function directly and swallow the error.
-            let result = null;
-            try {
-                result = await reverseGeocode(resolved.data.lat, resolved.data.lng, resolved.data.id ?? null);
-            } catch (error) {
-                if (process.env.NODE_ENV !== 'production') console.error(error);
-            }
-            if (!entriesRef.current.has(markerId(resolved.data))) return;
-            if (result && (result.address || result.city || result.state || result.country)) {
-                resolved.data = {
-                    ...resolved.data,
-                    address: result.address,
-                    city: result.city,
-                    state: result.state,
-                    country: result.country
-                };
-                resolved.marker.setPopupContent(createEnhancedPopupContent(resolved.data, t));
-            } else {
-                button.disabled = false;
-                button.textContent = t('transporterMap.addressUnavailable');
-            }
-        };
-        container.addEventListener('click', onClick);
-        return () => {
-            container.removeEventListener('click', onClick);
-        };
-    }, [map, t]);
-
-    // Center and open the popup of the selected unit (selection change only,
-    // so refresh cycles do not recenter the map).
+    // Bring the selected unit into view (selection change only, so refresh
+    // cycles do not recenter the map).
     useEffect(() => {
         if (!selectedMarker || !groupRef.current) return;
         const group = groupRef.current;
@@ -284,7 +237,6 @@ const MarkerCluster = ({ markers, selectedMarker, handleSelected, viewportThresh
             const found: MarkerEntry = entry;
             group.zoomToShowLayer(found.marker, () => {
                 map.setView(found.marker.getLatLng());
-                found.marker.openPopup();
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

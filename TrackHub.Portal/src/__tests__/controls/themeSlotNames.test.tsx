@@ -17,17 +17,13 @@
 /**
  * A `styleOverrides` key that no longer matches a Material UI slot is silently ignored —
  * no error, no warning, the styling just stops applying. The theme's `components` object
- * is cast to `ThemeOptions["components"]`, so the compiler does not catch it either. That
- * is how the Tabs indicator came to paint over the selected tab's label: MUI renamed
- * `flexContainer` to `list` and the z-index lift went dead.
+ * is cast to `ThemeOptions["components"]`, so the compiler does not catch it either.
  *
  * This pins every slot the theme targets against MUI's real class list. On a MUI upgrade,
  * a renamed slot fails here instead of quietly losing styling somewhere in the UI.
  */
 
-import { render } from '@testing-library/react';
-import { ThemeProvider } from '@mui/material/styles';
-import { Tabs, Tab } from '@mui/material';
+
 // The barrel re-exports every `<component>Classes` map; a per-component dynamic import
 // would be a template specifier Vite cannot statically resolve.
 import * as mui from '@mui/material';
@@ -101,20 +97,4 @@ describe('theme styleOverrides slot names', () => {
     expect(unexpected).toEqual([]);
   });
 
-  test('the tab list is lifted above the indicator that would otherwise cover it', () => {
-    const { container } = render(
-      <ThemeProvider theme={themeDark}>
-        <Tabs value={0} onChange={() => {}}>
-          <Tab label="Units" />
-          <Tab label="Positions" />
-        </Tabs>
-      </ThemeProvider>
-    );
-
-    const list = container.querySelector('.MuiTabs-list');
-    expect(list, 'MUI renamed the tab list slot again').not.toBeNull();
-    // Without these the full-height indicator paints over the selected label.
-    expect(getComputedStyle(list!).zIndex).toBe('10');
-    expect(getComputedStyle(list!).position).toBe('relative');
-  });
 });

@@ -127,6 +127,7 @@
     "testError": "Ocurrió un error al probar la credencial"
   },
   "dashboard": {
+    "live": "En vivo",
     "totalTitle": "Total de Unidades",
     "activeTitle": "Unidades Activas",
     "movementTitle": "En Movimiento",
@@ -172,6 +173,7 @@
     "transporter": "Unidad"
   },
   "generic": {
+    "selectSection": "Selecciona una sección de la lista.",
     "modified": "Modificado",
     "action": "Acción",
     "add": "Agregar",
@@ -859,8 +861,10 @@
     }
   },
   "navbar": {
-    "searchText": "Escribe aquí...",
-    "signOff": "Cerrar Sesión"
+    "searchText": "Buscar",
+    "signOff": "Cerrar Sesión",
+    "toggleMenu": "Mostrar u ocultar el menú",
+    "userMenu": "Tu cuenta"
   },
   "sidenav": {
     "brandAlt": "Logo de TrackHub"
@@ -1103,6 +1107,9 @@
   },
   "screen": {
     "account": "Cuenta",
+    "groupOperations": "Operación",
+    "groupInsights": "Análisis",
+    "groupAdministration": "Administración",
     "dashboard": "Tablero",
     "geofence": "Geocercas",
     "manageAdmin": "Administración de Cuentas",
@@ -1128,6 +1135,8 @@
     "showRetired": "Mostrar unidades retiradas"
   },
   "transporterMap": {
+    "heading": "Rumbo",
+    "speedTitle": "Velocidad",
     "name": "Nombre",
     "details": "Detalle de la Unidad",
     "dateTime": "Fecha Hora",

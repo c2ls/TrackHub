@@ -24,17 +24,17 @@ import ManagePolicies from "layouts/systemadmin/components/policies";
 import SystemAccountFeatures from "layouts/systemadmin/components/accountFeatures";
 import ManageAccountSupportGrants from "layouts/systemadmin/components/accountSupportGrants";
 import ManageServiceClientPermissions from "layouts/systemadmin/components/serviceClientPermissions";
-import ArgonBox from "components/ArgonBox";
 import DashboardLayout from "controls/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "controls/Navbars/DashboardNavbar";
 import Footer from "controls/Footer";
+import { SectionNavLayout } from "controls/Accordions/SectionNav";
 
 function SystemAdmin() {
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <ArgonBox py={3}>
+      <SectionNavLayout>
         <ManageAccounts/>
         <ManageClients/>
         <ManageServiceClientPermissions/>
@@ -45,7 +45,7 @@ function SystemAdmin() {
         <ManagePolicies/>
         <SystemAccountFeatures/>
         <ManageAccountSupportGrants/>
-      </ArgonBox>
+      </SectionNavLayout>
       <Footer />
     </DashboardLayout>
   );

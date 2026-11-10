@@ -29,13 +29,52 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
+// Argon Dashboard 2 MUI base styles
+import colors from "assets/theme/base/colors";
+import borders from "assets/theme/base/borders";
+
 // Argon Dashboard 2 MUI helper functions
 import pxToRem from "assets/theme/functions/pxToRem";
 
+const { primary, dark, white, transparent } = colors;
+const { borderWidth, borderColor } = borders;
+
+// Every dialog lists its buttons as plain text buttons with the confirming action last, so the
+// hierarchy is drawn here once: the last button is the primary action, the others are secondary.
 const dialogActions = {
   styleOverrides: {
     root: {
-      padding: pxToRem(16),
+      padding: `${pxToRem(12)} ${pxToRem(16)}`,
+      gap: pxToRem(8),
+      borderTop: `${borderWidth[1]} solid ${borderColor}`,
+
+      "& > :not(style) ~ :not(style)": {
+        marginLeft: 0,
+      },
+
+      "& > .MuiButton-text": {
+        minHeight: pxToRem(36),
+        padding: `${pxToRem(6)} ${pxToRem(16)}`,
+        border: `${borderWidth[1]} solid ${borderColor}`,
+        backgroundColor: transparent.main,
+        color: dark.main,
+
+        "&:hover, &:focus": {
+          backgroundColor: transparent.main,
+          color: dark.main,
+        },
+      },
+
+      "& > .MuiButton-text:last-of-type": {
+        borderColor: primary.main,
+        backgroundColor: primary.main,
+        color: white.main,
+
+        "&:hover, &:focus": {
+          backgroundColor: primary.main,
+          color: white.main,
+        },
+      },
     },
   },
 };

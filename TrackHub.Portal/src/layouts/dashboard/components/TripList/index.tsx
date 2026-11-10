@@ -68,10 +68,9 @@ function TripList({ filters, trips = [], selectedTrip, handleSelected, maxHeight
               onClick={() => handleSelected(trip.tripId)}
               sx={{
                 cursor: 'pointer',
+                borderRadius: theme.borders.borderRadius.md,
                 backgroundColor: selectedTrip === trip.tripId
-                  ? theme.palette.mode === 'dark'
-                    ? theme.palette.primary.dark
-                    : theme.palette.primary.light
+                  ? theme.functions.rgba(theme.palette.info.main, 0.14)
                   : 'inherit',
               }}>
               <SingleTrip

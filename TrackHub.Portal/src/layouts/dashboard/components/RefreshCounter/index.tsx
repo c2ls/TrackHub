@@ -16,6 +16,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import ArgonBox from 'components/ArgonBox';
+import ArgonTypography from 'components/ArgonTypography';
 import type { AccountSettings } from 'api/manager/settings';
 
 interface RefreshCounterProps {
@@ -26,6 +29,7 @@ interface RefreshCounterProps {
 }
 
 function RefreshCounter({ settings, fetchPositions, calculateReference, refreshing = false }: RefreshCounterProps): ReactNode {
+    const { t } = useTranslation();
     const [counter, setCounter] = useState(settings.refreshMapInterval || 60);
     // A hidden tab neither counts down nor refreshes; the countdown resumes where it stopped.
     const [visible, setVisible] = useState(() => !document.hidden);
@@ -62,7 +66,30 @@ function RefreshCounter({ settings, fetchPositions, calculateReference, refreshi
       return () => clearTimeout(timer);
     }, [counter, refreshMap, refreshMapInterval, visible]);
 
-    return refreshMap && <div className="mapcontrol">{refreshing ? '…' : `${counter} s.`}</div>;
+    return refreshMap && (
+      <ArgonBox
+        className="mapcontrol"
+        display="flex"
+        alignItems="center"
+        gap={0.75}
+        px={1.5}
+        height="2rem"
+        borderRadius="section"
+        shadow="md"
+        sx={({ palette, borders: { borderWidth, borderColor } }) => ({
+          backgroundColor: palette.background.paper,
+          border: `${borderWidth[1]} solid ${borderColor}`,
+        })}
+      >
+        <ArgonBox component="span" width="0.5rem" height="0.5rem" borderRadius="50%" bgColor="success" />
+        <ArgonTypography variant="caption" fontWeight="medium" color="dark">
+          {t('dashboard.live')}
+        </ArgonTypography>
+        <ArgonTypography variant="caption" color="secondary">
+          {refreshing ? '…' : `${counter} s`}
+        </ArgonTypography>
+      </ArgonBox>
+    );
   }
 
   export default RefreshCounter;

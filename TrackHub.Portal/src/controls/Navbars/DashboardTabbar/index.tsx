@@ -29,18 +29,14 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { ChangeEventHandler, ReactNode, SyntheticEvent } from "react";
 
-import { AppBar, Tabs, Tab, Grid } from "@mui/material";
-import ArgonBox from "components/ArgonBox";
-import breakpoints from "assets/theme/base/breakpoints";
+import { Tabs, Tab } from "@mui/material";
 import DashboardLayout from "controls/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "controls/Navbars/DashboardNavbar";
-import Footer from "controls/Footer";
 
 export interface DashboardTabbarProps {
-  stickyNavbar?: boolean;
   searchVisibility?: boolean;
   searchQuery?: string;
   handleSearch?: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
@@ -50,7 +46,6 @@ export interface DashboardTabbarProps {
 }
 
 function DashboardTabbar({
-  stickyNavbar = false,
   searchVisibility = false,
   searchQuery = "",
   handleSearch = () => {},
@@ -58,28 +53,7 @@ function DashboardTabbar({
   onTabChange = () => {},
   children,
 }: DashboardTabbarProps) {
-  const [tabsOrientation, setTabsOrientation] = useState<"horizontal" | "vertical">("horizontal");
   const [tabValue, setTabValue] = useState(0);
-
-  useEffect(() => {
-    // A function that sets the orientation state of the tabs.
-    function handleTabsOrientation() {
-      return window.innerWidth < breakpoints.values.sm
-        ? setTabsOrientation("vertical")
-        : setTabsOrientation("horizontal");
-    }
-
-    /**
-     The event listener that's calling the handleTabsOrientation function when resizing the window.
-    */
-    window.addEventListener("resize", handleTabsOrientation);
-
-    // Call the handleTabsOrientation function to set the state with the initial value.
-    handleTabsOrientation();
-
-    // Remove event listener on cleanup
-    return () => window.removeEventListener("resize", handleTabsOrientation);
-  }, [tabsOrientation]);
 
   const handleSetTabValue = (event: SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -89,26 +63,18 @@ function DashboardTabbar({
   return (
     <DashboardLayout>
       <DashboardNavbar
-        absolute={!stickyNavbar}
         searchQuery={searchQuery}
         handleSearch={handleSearch}
         searchVisibility={searchVisibility}
+        tabs={
+          <Tabs value={tabValue} onChange={handleSetTabValue}>
+            {tabs.map((tab, index) => (
+              <Tab key={index} label={tab} />
+            ))}
+          </Tabs>
+        }
       />
-      <ArgonBox mt={stickyNavbar ? 1 : 10}>
-        <Grid container>
-          <Grid size={{ xs: 12, sm: 8, lg: 4 }}>
-            <AppBar position="static">
-              <Tabs orientation={tabsOrientation} value={tabValue} onChange={handleSetTabValue}>
-                {tabs.map((tab, index) => (
-                  <Tab key={index} label={tab} />
-                ))}
-              </Tabs>
-            </AppBar>
-          </Grid>
-        </Grid>
-        {children}
-      </ArgonBox>
-      <Footer />
+      {children}
     </DashboardLayout>
   );
 }

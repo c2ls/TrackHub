@@ -15,7 +15,7 @@
 */
 
 import { useMemo } from 'react';
-import { calculateTotalDistance } from 'utils/distanceUtils';
+import { calculateTotalDistance, formatDistance } from 'utils/distanceUtils';
 import { formatISODuration } from 'utils/timeUtils';
 import { useTranslation } from 'react-i18next';
 import type { Trip } from 'api/router/router';
@@ -23,7 +23,7 @@ import type { Trip } from 'api/router/router';
 /** Aggregated (or single-trip) statistics rendered in the panel. */
 interface TripStats {
   title?: string;
-  distance: number | string;
+  distance: string;
   duration: number;
   durationIso: string;
   maxSpeed: number;
@@ -73,7 +73,7 @@ const TripStatsPanel = ({ trips = [], selectedTrip }: TripStatsPanelProps) => {
       const alarms = trip.points.filter(p => p.eventId).length;
       return {
         title: `${trip.from} → ${trip.to}`,
-        distance: trip.totalDistance || 0,
+        distance: formatDistance(trip.totalDistance || 0),
         duration: parseDurationToSeconds(trip.duration),
         durationIso: typeof trip.duration === 'string' ? trip.duration : secondsToISODuration(parseDurationToSeconds(trip.duration)),
         maxSpeed,
@@ -118,7 +118,7 @@ const TripStatsPanel = ({ trips = [], selectedTrip }: TripStatsPanelProps) => {
         <strong>{t("tripPanel.summaryLabel")}</strong>
       </div>
       <div className="trips-stats-body">
-        <div className="stats-row"><span>{t("tripPanel.totalDistance")}</span><span>{stats.distance} km</span></div>
+        <div className="stats-row"><span>{t("tripPanel.totalDistance")}</span><span>{stats.distance}</span></div>
         <div className="stats-row"><span>{t("tripPanel.duration")}</span><span>{formatDurationString(stats.duration, stats.durationIso)}</span></div>
         <div className="stats-row"><span>{t("tripPanel.maxSpeed")}</span><span>{Math.round(stats.maxSpeed)} km/h</span></div>
         <div className="stats-row"><span>{t("tripPanel.avgSpeed")}</span><span>{Math.round(stats.avgSpeed)} km/h</span></div>

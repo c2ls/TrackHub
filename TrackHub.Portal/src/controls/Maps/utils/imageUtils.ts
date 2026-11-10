@@ -81,31 +81,49 @@ function darkenColor(hexColor: string, factor: number): string {
     return darkenedHex;
 }
 
-/**
- * Get color based on speed and status
- */
-const getMarkerColor = (speed: number, isOnline = true): string => {
-    if (!isOnline) return '#808080'; // Gray for offline
-    if (speed > 0) return '#00FF00'; // Green for moving
-    return '#FF0000'; // Red for stopped
+type UnitIconStatus = 'moving' | 'stopped' | 'offline';
+
+const UNIT_STATUS_COLOR: Record<UnitIconStatus, string> = {
+    moving: '#157F45',
+    stopped: '#B45309',
+    offline: '#64748B',
 };
+const SELECTION_COLOR = '#0B7499';
 
 /**
- * Create marker icon with custom color based on status
+ * A unit marker: a solid status-coloured badge with a white outline, so it cannot be mistaken for
+ * the base map's own place pins. The status is carried by shape as well as colour — a teardrop
+ * pointing along the heading when moving, a rounded square when stopped, a barred disc when offline.
  */
-const createMarkerIconWithStatus = (
+const createUnitIcon = (
+    status: UnitIconStatus,
     rotation: number,
-    text: string,
-    speed: number,
-    isOnline = true,
+    selected = false,
     format: SvgIconFormat = 'svg'
 ): string => {
-    const color = getMarkerColor(speed, isOnline);
-    return createSvgIcon(rotation, text, format, { color });
+    const color = UNIT_STATUS_COLOR[status];
+    const outline = 'stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"';
+    const halo = selected
+        ? `<circle cx="24" cy="24" r="22" fill="${SELECTION_COLOR}" fill-opacity="0.28" stroke="${SELECTION_COLOR}" stroke-width="1.5"/>`
+        : '';
+    let badge = `<circle cx="24" cy="24" r="12" fill="${color}" ${outline}/><rect x="18" y="22.25" width="12" height="3.5" rx="1.75" fill="#FFFFFF"/>`;
+    if (status === 'moving') {
+        badge = `<g transform="rotate(${Number(rotation) || 0} 24 24)"><path d="M24 5 L33.4 17.6 A12 12 0 1 1 14.6 17.6 Z" fill="${color}" ${outline}/><path d="M24 15.5 L29.5 28 L24 25 L18.5 28 Z" fill="#FFFFFF"/></g>`;
+    } else if (status === 'stopped') {
+        badge = `<rect x="12.5" y="12.5" width="23" height="23" rx="6.5" fill="${color}" ${outline}/><rect x="19.5" y="19.5" width="9" height="9" rx="1.5" fill="#FFFFFF"/>`;
+    }
+    const svg = `<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">${halo}${badge}</svg>`;
+
+    return format === 'dataURL' ? `data:image/svg+xml;utf8,${encodeURIComponent(svg)}` : svg;
 };
+
+/** The cluster bubble both map providers draw, so a cluster looks the same on either. */
+const CLUSTER_ICON_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg"><circle cx="21" cy="21" r="18.5" fill="#FFFFFF" stroke="${SELECTION_COLOR}" stroke-width="3"/></svg>`
+)}`;
 
 export {
     createSvgIcon,
-    createMarkerIconWithStatus,
-    getMarkerColor
+    createUnitIcon,
+    CLUSTER_ICON_URL
 };

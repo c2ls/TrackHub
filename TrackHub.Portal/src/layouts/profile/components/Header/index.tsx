@@ -95,8 +95,7 @@ function Header({ user }: HeaderProps) {
 
   return (
     <ArgonBox position="relative">
-      <DashboardNavbar absolute light />
-      <ArgonBox height="220px" />
+      <DashboardNavbar />
       <Card
         sx={{
           py: 2,

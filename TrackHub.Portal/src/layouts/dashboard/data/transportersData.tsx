@@ -17,7 +17,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from 'react-i18next';
-import ArgonBox from "components/ArgonBox";
+import StatusGlyph from "layouts/dashboard/components/StatusGlyph";
 import ArgonTypography from "components/ArgonTypography";
 import { formatDateTime, formatShortDateTime } from "utils/dateUtils";
 import { getUnitStatus } from "layouts/dashboard/utils/dashboard";
@@ -45,7 +45,6 @@ export interface UseTransportersTableData {
 }
 
 const STATUS_RANK: Record<UnitStatus, number> = { moving: 2, stopped: 1, offline: 0 };
-const STATUS_COLOR: Record<UnitStatus, "success" | "error" | "secondary"> = { moving: "success", stopped: "error", offline: "secondary" };
 const STATUS_LABEL = {
   moving: "dashboard.statusMoving",
   stopped: "dashboard.statusStopped",
@@ -68,15 +67,7 @@ function useTransportersTableData(transporters: Position[], onlineInterval: numb
       const status = getUnitStatus(transporter, onlineInterval);
       return {
         status: (
-          <ArgonBox
-            component="span"
-            display="inline-block"
-            width="0.625rem"
-            height="0.625rem"
-            borderRadius="50%"
-            bgColor={STATUS_COLOR[status]}
-            title={t(STATUS_LABEL[status])}
-          />
+          <StatusGlyph status={status} title={t(STATUS_LABEL[status])} />
         ),
         name: (
           <ArgonTypography variant="button" fontWeight="medium" noWrap display="block" title={transporter.deviceName}>

@@ -38,11 +38,10 @@ import ManagePublicLinks from "layouts/manageadmin/components/publicLinks";
 import ManageDocuments from "layouts/manageadmin/components/documents";
 import ManageBackgroundJobs from "layouts/manageadmin/components/backgroundJobs";
 import ManageTollClasses from "layouts/manageadmin/components/tollClasses";
-import ArgonBox from "components/ArgonBox";
-import ArgonTypography from "components/ArgonTypography";
 import DashboardLayout from "controls/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "controls/Navbars/DashboardNavbar";
 import Footer from "controls/Footer";
+import { SectionGroup, SectionNavLayout } from "controls/Accordions/SectionNav";
 import { SECTION_GROUP_KEYS } from "layouts/manageadmin/data/sectionGroups";
 import type { SectionGroupKey } from "layouts/manageadmin/data/sectionGroups";
 import { useFeatures } from "context/features";
@@ -90,32 +89,21 @@ function ManageAdmin() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-        <ArgonBox py={3}>
+        <SectionNavLayout>
           {SECTION_GROUP_KEYS.map((groupKey) => {
             const sections = SECTION_GROUPS[groupKey].filter(
               ({ featureKey }) => isFeatureEnabled(featureKey)
             );
             if (sections.length === 0) return null;
             return (
-              <ArgonBox key={groupKey} mb={4}>
-                <ArgonTypography
-                  variant="button"
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  color="text"
-                  sx={{ letterSpacing: 1 }}
-                >
-                  {t(`manageAdmin.groups.${groupKey}` as 'manageAdmin.groups.account')}
-                </ArgonTypography>
-                <ArgonBox mt={1.5}>
-                  {sections.map(({ Section }) => (
-                    <Section key={Section.displayName ?? Section.name} />
-                  ))}
-                </ArgonBox>
-              </ArgonBox>
+              <SectionGroup key={groupKey} label={t(`manageAdmin.groups.${groupKey}` as 'manageAdmin.groups.account')}>
+                {sections.map(({ Section }) => (
+                  <Section key={Section.displayName ?? Section.name} />
+                ))}
+              </SectionGroup>
             );
           })}
-        </ArgonBox>
+        </SectionNavLayout>
       <Footer />
     </DashboardLayout>
   );

@@ -52,6 +52,7 @@ export interface MapPolygon {
   shape?: GeofenceShape;
   center?: [number, number];
   radiusMeters?: number;
+  color?: number;
 }
 
 export type AddGeofenceHandler = () => void;

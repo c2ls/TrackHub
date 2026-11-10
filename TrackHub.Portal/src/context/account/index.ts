@@ -21,6 +21,7 @@ import { accountCalendar, type AccountCalendar } from 'utils/accountCalendar';
 export interface CurrentAccountValue {
   /** IANA zone from the account-context bootstrap read; null until it resolves (UTC calendar). */
   timeZoneId: string | null;
+  isManager?: boolean;
 }
 
 export const CurrentAccountContext = createContext<CurrentAccountValue>({ timeZoneId: null });

@@ -77,19 +77,19 @@ describe('Table in serverPaged mode', () => {
 
   it('removes the sort affordance, which could only ever sort the page', () => {
     const { rerender } = renderInTheme(<Table columns={columns} rows={rows} />);
-    const sortableHeader = screen.getByText('NAME');
+    const sortableHeader = screen.getByText('Name');
     expect(sortableHeader).toHaveStyle({ cursor: 'pointer' });
 
     rerenderInTheme(rerender, <Table columns={columns} rows={rows} serverPaged />);
-    expect(screen.getByText('NAME')).toHaveStyle({ cursor: 'default' });
+    expect(screen.getByText('Name')).toHaveStyle({ cursor: 'default' });
   });
 
   it('leaves the row order exactly as the server returned it', () => {
     const { container } = renderInTheme(<Table columns={columns} rows={rows} serverPaged />);
     // Two clicks would be a descending sort if the header were live, putting
     // unit-9 first; the server's order must survive both.
-    fireEvent.click(screen.getByText('NAME'));
-    fireEvent.click(screen.getByText('NAME'));
+    fireEvent.click(screen.getByText('Name'));
+    fireEvent.click(screen.getByText('Name'));
 
     const firstCell = container.querySelectorAll('tbody tr td')[0];
     expect(firstCell).toHaveTextContent('unit-0');
