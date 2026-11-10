@@ -25,6 +25,7 @@ import { OSMMeasurementTool } from 'controls/Maps/shared/MeasurementTool';
 import { OSM_LIGHT_TILE, OSM_DARK_TILE } from 'controls/Maps/utils/darkMapStyles';
 import { MAP_CONTAINER_CLASS, DEFAULT_OSM_ZOOM, GEOFENCE_FIT_PADDING } from 'controls/Maps/core/mapConfig';
 import { circleBoundsCorners } from 'controls/Maps/utils/coordinateUtils';
+import { getColor } from 'data/colors';
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-editable";
@@ -55,7 +56,13 @@ interface EditorGeofence {
   latlngs: [number, number][];
   center?: [number, number];
   radiusMeters?: number;
+  color?: number;
 }
+
+const shapeStyle = (color?: number) => {
+  const value = color === undefined ? '#0B7499' : getColor(color);
+  return { color: value, weight: 2, fillColor: value, fillOpacity: 0.25 };
+};
 
 interface OSMGeofenceEditorProps {
     initialPolygons?: MapPolygon[];
@@ -163,10 +170,10 @@ const OSMGeofenceEditor = ({
       if (polygon.shape === 'circle' && polygon.center && polygon.radiusMeters) {
         return {
           id: polygon.id, name: polygon.name, shape: 'circle', latlngs: [],
-          center: polygon.center, radiusMeters: polygon.radiusMeters,
+          center: polygon.center, radiusMeters: polygon.radiusMeters, color: polygon.color,
         };
       }
-      return { id: polygon.id, name: polygon.name, shape: 'polygon', latlngs: polygon.latlngs };
+      return { id: polygon.id, name: polygon.name, shape: 'polygon', latlngs: polygon.latlngs, color: polygon.color };
     }));
   }, [initialPolygons, mapRef.current]);
 
@@ -375,6 +382,7 @@ const OSMGeofenceEditor = ({
               ref={(instance: L.Circle | null) => { registerLayer(geofence.id, instance); }}
               center={geofence.center}
               radius={geofence.radiusMeters}
+              pathOptions={shapeStyle(geofence.color)}
               eventHandlers={{ click: () => handlePolygonClick(geofence.id) }}
             />
           ) : (
@@ -382,6 +390,7 @@ const OSMGeofenceEditor = ({
               key={geofence.id}
               ref={(instance: L.Polygon | null) => { registerLayer(geofence.id, instance); }}
               positions={geofence.latlngs}
+              pathOptions={shapeStyle(geofence.color)}
               eventHandlers={{ click: () => handlePolygonClick(geofence.id) }}
             />
           )

@@ -44,7 +44,7 @@ import pxToRem from "assets/theme/functions/pxToRem";
 const { grey } = colors;
 
 const borders = {
-  borderColor: grey[300],
+  borderColor: grey[200],
 
   borderWidth: {
     0: 0,

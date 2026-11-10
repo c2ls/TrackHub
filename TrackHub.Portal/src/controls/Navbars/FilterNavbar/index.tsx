@@ -14,7 +14,6 @@
 *  limitations under the License.
 */
 
-import { Grid } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import ArgonBox from "components/ArgonBox";
 import ArgonButton from "components/ArgonButton";
@@ -28,49 +27,55 @@ export interface FilterNavbarProps {
   handleChange: FormChangeHandler;
   errors: Record<string, string | undefined>;
   handleSearch: () => void;
+  /** Extra controls placed after the Search button, on the same row. */
+  children?: ReactNode;
 }
 
-function FilterNavbar({ picker, values, handleChange, errors, handleSearch }: FilterNavbarProps) {
+// Buttons sit beside labelled fields, so they are pushed down by the label's height.
+const BESIDE_FIELDS = { mt: "1.375rem" };
+
+function FilterNavbar({ picker, values, handleChange, errors, handleSearch, children }: FilterNavbarProps) {
   const { t } = useTranslation();
 
   return (
-    <ArgonBox py={3}>
-      <Grid container spacing={3} sx={{ alignItems: "center" }}>
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <CustomTextField
-            label={t("filters.startDate")}
-            type="datetime-local"
-            name="startDate"
-            id="startDate"
-            value={values.startDate || ""}
-            onChange={handleChange}
-            slotProps={{ inputLabel: { shrink: true } }}
-            errorMsg={errors.startDate}
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <CustomTextField
-            label={t("filters.endDate")}
-            type="datetime-local"
-            name="endDate"
-            id="endDate"
-            value={values.endDate || ""}
-            onChange={handleChange}
-            slotProps={{ inputLabel: { shrink: true } }}
-            errorMsg={errors.endDate}
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 3 }}>
-          {picker}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <ArgonButton variant="contained" color="primary" onClick={handleSearch} fullWidth>
-            {t("filters.search")}
-          </ArgonButton>
-        </Grid>
-      </Grid>
+    <ArgonBox display="flex" flexWrap="wrap" alignItems="flex-start" columnGap={2} rowGap={1} mb={2}>
+      <ArgonBox width={{ xs: "100%", sm: "13.5rem" }}>
+        <CustomTextField
+          label={t("filters.startDate")}
+          type="datetime-local"
+          name="startDate"
+          id="startDate"
+          value={values.startDate || ""}
+          onChange={handleChange}
+          slotProps={{ inputLabel: { shrink: true } }}
+          errorMsg={errors.startDate}
+          fullWidth
+        />
+      </ArgonBox>
+      <ArgonBox width={{ xs: "100%", sm: "13.5rem" }}>
+        <CustomTextField
+          label={t("filters.endDate")}
+          type="datetime-local"
+          name="endDate"
+          id="endDate"
+          value={values.endDate || ""}
+          onChange={handleChange}
+          slotProps={{ inputLabel: { shrink: true } }}
+          errorMsg={errors.endDate}
+          fullWidth
+        />
+      </ArgonBox>
+      <ArgonBox width={{ xs: "100%", sm: "15rem" }}>{picker}</ArgonBox>
+      <ArgonBox sx={BESIDE_FIELDS}>
+        <ArgonButton variant="contained" color="primary" onClick={handleSearch}>
+          {t("filters.search")}
+        </ArgonButton>
+      </ArgonBox>
+      {children && (
+        <ArgonBox display="flex" alignItems="center" gap={1} ml="auto" sx={BESIDE_FIELDS}>
+          {children}
+        </ArgonBox>
+      )}
     </ArgonBox>
   );
 }

@@ -33,7 +33,7 @@ export interface TableHeaderProps {
 }
 
 const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: TableHeaderProps) => {
-  const { size, fontWeightBold } = typography;
+  const { size, fontWeightMedium } = typography;
   const { borderWidth } = borders;
 
   return (
@@ -66,18 +66,15 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
                 pl={compact ? 1 : align === "left" ? pl : 3}
                 pr={compact ? 1 : align === "right" ? pr : 3}
                 textAlign={align}
-                fontSize={size.xxs}
-                fontWeight={fontWeightBold}
+                fontSize={size.xs}
+                fontWeight={fontWeightMedium}
                 color="secondary"
-                opacity={0.7}
-                sx={({ palette: { light, background } }) => ({
-                  borderBottom: `${borderWidth[1]} solid ${light.main}`,
+                sx={({ palette: { grey }, borders: { borderColor } }) => ({
+                  borderBottom: `${borderWidth[1]} solid ${borderColor}`,
                   position: "sticky",
                   top: 0,
-                  backgroundColor:
-                    (background as typeof background & { card?: string }).card ||
-                    background.default ||
-                    "#fff",
+                  backgroundColor: grey[100],
+                  whiteSpace: "nowrap",
                   zIndex: 10,
                 })}
                 onClick={sortable ? () => handleSort(name) : undefined}
@@ -86,7 +83,7 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
                 {hideTitle ? (
                   <ArgonBox component="span" sx={visuallyHidden}>{title || name}</ArgonBox>
                 ) : (
-                  (title || name).toUpperCase()
+                  title || name
                 )}
               </ArgonBox>
             );

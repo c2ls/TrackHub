@@ -40,10 +40,12 @@ public static class RetentionDeleteExtensions
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Unordered: an ORDER BY pulls the planner onto the key index instead of the one serving
-            // the retention predicate. Every probed row is deleted before the next probe runs.
+            // Ordering by a constant (ORDER BY (SELECT 1)) satisfies EF's row-limit warning while the
+            // planner drops it: a real key ordering would pull it onto the key index instead of the one
+            // serving the retention predicate. Every probed row is deleted before the next probe runs.
             var keys = await source
                 .Select(keySelector)
+                .OrderBy(_ => 1)
                 .Take(chunkSize)
                 .ToListAsync(cancellationToken);
 

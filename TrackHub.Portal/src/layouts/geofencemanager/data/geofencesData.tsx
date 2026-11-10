@@ -155,9 +155,10 @@ function toMapPolygon(item: Geofence): MapPolygon {
       shape: 'circle',
       center: [item.circleCenter.latitude, item.circleCenter.longitude],
       radiusMeters: item.circleRadiusMeters,
+      color: item.color,
     };
   }
-  return { id: item.geofenceId, name: item.name, latlngs, shape: 'polygon' };
+  return { id: item.geofenceId, name: item.name, latlngs, shape: 'polygon', color: item.color };
 }
 
 // Builds a clean GeofenceDtoInput from the dialog values, dropping the UI-only

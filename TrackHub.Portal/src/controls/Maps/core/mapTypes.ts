@@ -38,8 +38,6 @@ export interface MapMarker {
   lng: number;
   speed: number;
   rotation: number;
-  text: string;
-  color?: string;
   dateTime?: string | number | Date | null;
   transporterType?: string;
   altitude?: number | null;

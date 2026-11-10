@@ -31,19 +31,18 @@ Coded by www.creative-tim.com
 
 // Argon Dashboard 2 MUI base styles
 import colors from "assets/theme/base/colors";
-import boxShadows from "assets/theme/base/boxShadows";
 import borders from "assets/theme/base/borders";
 
 const { white } = colors;
-const { cardBoxShadow } = boxShadows;
-const { borderRadius } = borders;
+const { borderRadius, borderWidth, borderColor } = borders;
 
 const tableContainer = {
   styleOverrides: {
     root: {
       backgroundColor: white.main,
-      boxShadow: cardBoxShadow,
-      borderRadius: borderRadius.xl,
+      border: `${borderWidth[1]} solid ${borderColor}`,
+      borderRadius: borderRadius.lg,
+      boxShadow: "none",
     },
   },
 };

@@ -31,15 +31,13 @@ Coded by www.creative-tim.com
 
 // Argon Dashboard 2 MUI base styles
 import typography from "assets/theme-dark/base/typography";
-import borders from "assets/theme-dark/base/borders";
 import colors from "assets/theme-dark/base/colors";
 
 // Argon Dashboard 2 MUI helper functions
 import pxToRem from "assets/theme-dark/functions/pxToRem";
 
-const { size, fontWeightRegular } = typography;
-const { borderRadius } = borders;
-const { white } = colors;
+const { size, fontWeightMedium, fontWeightBold } = typography;
+const { dark, secondary } = colors;
 
 const tab = {
   styleOverrides: {
@@ -47,19 +45,22 @@ const tab = {
       display: "flex",
       alignItems: "center",
       flexDirection: "row",
-      flex: "1 1 auto",
-      textAlign: "center",
       maxWidth: "unset !important",
       minWidth: "unset !important",
       minHeight: "unset !important",
-      fontSize: size.md,
-      fontWeight: fontWeightRegular,
+      fontSize: size.sm,
+      fontWeight: fontWeightMedium,
       textTransform: "none",
-      lineHeight: "inherit",
-      padding: pxToRem(4),
-      borderRadius: borderRadius.md,
-      color: `${white.main} !important`,
+      lineHeight: 1.4,
+      padding: `${pxToRem(12)} ${pxToRem(2)}`,
+      marginRight: pxToRem(24),
+      color: `${secondary.main} !important`,
       opacity: "1 !important",
+
+      "&.Mui-selected": {
+        color: `${dark.main} !important`,
+        fontWeight: fontWeightBold,
+      },
 
       "& .material-icons, .material-icons-round": {
         marginBottom: "0 !important",
@@ -70,10 +71,6 @@ const tab = {
         marginBottom: "0 !important",
         marginRight: pxToRem(6),
       },
-    },
-
-    labelIcon: {
-      paddingTop: pxToRem(4),
     },
   },
 };

@@ -1,5 +1,5 @@
 /**
- * The signed-in shell: sidenav, navbar (help, notification bell, sign off,
+ * The signed-in shell: sidenav, navbar (help, notification bell, account menu,
  * mini toggle), the configurator drawer and the announcement banner.
  */
 
@@ -137,8 +137,8 @@ export class Shell {
     await expect(this.nav('dashboard')).toBeVisible({ timeout: 60_000 });
   }
 
-  get breadcrumb(): Locator {
-    return this.page.locator('nav[aria-label="breadcrumb"]');
+  get screenTitle(): Locator {
+    return this.page.getByTestId('screen-title');
   }
 
   get helpButton(): Locator {
@@ -149,8 +149,12 @@ export class Shell {
     return this.page.getByRole('button', { name: this.t('notificationBell.title') });
   }
 
+  get userMenuButton(): Locator {
+    return this.page.getByTestId('user-menu');
+  }
+
   get signOffButton(): Locator {
-    return this.page.getByText(this.t('navbar.signOff'), { exact: true });
+    return this.page.getByRole('menuitem', { name: this.t('navbar.signOff'), exact: true });
   }
 
   /** The floating settings button — rendered for managers only (`App.tsx`). */
@@ -176,6 +180,7 @@ export class Shell {
   }
 
   async signOff(): Promise<void> {
+    await this.userMenuButton.click();
     await this.signOffButton.click();
   }
 }

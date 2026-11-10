@@ -16,7 +16,7 @@
 
 import { MAP_DEFAULTS } from 'api/core/endpoints';
 import { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, ZoomControl, useMap } from 'react-leaflet';
 import GeofencePolygon from 'controls/Maps/OSM/GeofencePolygon';
 import MarkerCluster from 'controls/Maps/OSM/MarkerCluster';
 import UserLocation from "controls/Maps/UserLocation";
@@ -110,12 +110,16 @@ const OSMClusteredMap = ({
         lng: MAP_DEFAULTS.lng
     });
     const mapRef = useRef<L.Map | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const boundsSetRef = useRef(false);
 
-    // Leaflet does not watch its container: re-measure whenever the reactive height changes.
+    // Leaflet does not watch its container: re-measure whenever its box changes.
     useEffect(() => {
-        mapRef.current?.invalidateSize();
-    }, [height]);
+        if (!containerRef.current) return undefined;
+        const observer = new ResizeObserver(() => mapRef.current?.invalidateSize());
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         if (markers.length > 0) {
@@ -154,14 +158,19 @@ const OSMClusteredMap = ({
     const tile = darkMode ? OSM_DARK_TILE : OSM_LIGHT_TILE;
 
     return (
-        <div data-selected-marker={selectedMarker ?? ""} style={{ height, width: "100%" }}>
+        <div
+            ref={containerRef}
+            className={darkMode ? "th-map th-map-dark" : "th-map"}
+            data-selected-marker={selectedMarker ?? ""}
+            style={{ height, width: "100%" }}>
             <UserLocation setUserLocation={setUserLocation} />
             <MapProviderContext.Provider value={OSM_PROVIDER}>
-                {/* MapContainer props are immutable after mount, so the reactive height lives on
-                    the wrapper div and the map fills it (invalidateSize re-measures on change). */}
+                {/* MapContainer props are immutable after mount, so the height lives on
+                    the wrapper div and the map fills it. */}
                 <MapContainer
                     center={userLocation}
                     zoom={DEFAULT_OSM_ZOOM}
+                    zoomControl={false}
                     preferCanvas={true}
                     style={{ height: "100%", width: "100%" }}
                     ref={mapRef}>
@@ -186,9 +195,10 @@ const OSMClusteredMap = ({
                         followUnit={followUnit}
                         markers={markers}
                         onFollowDisengage={onFollowDisengage} />
+                    <ZoomControl position="topright" />
                     {enableScale && <OSMScaleControl position="bottomleft" imperial={false} />}
-                    {enableFullscreen && <OSMFullscreenControl position="topleft" />}
-                    {enableMeasurement && <OSMMeasurementTool position="topleft" unit="metric" enabled={true} />}
+                    {enableFullscreen && <OSMFullscreenControl position="topright" />}
+                    {enableMeasurement && <OSMMeasurementTool position="topright" unit="metric" enabled={true} />}
                 </MapContainer>
             </MapProviderContext.Provider>
         </div>

@@ -14,7 +14,10 @@
 *  limitations under the License.
 */
 
+import { useContext, useEffect } from "react";
 import type { MouseEvent, ReactNode } from "react";
+import Card from "@mui/material/Card";
+import { SectionNavContext, SectionGroupContext } from "controls/Accordions/SectionNav";
 import type { Theme } from "@mui/material/styles";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -26,6 +29,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useTranslation } from "react-i18next";
 import ArgonTypography from "components/ArgonTypography";
 import ArgonBox from "components/ArgonBox";
+import ArgonButton from "components/ArgonButton";
 
 const accordionSx = {
   boxShadow: "none",
@@ -84,6 +88,54 @@ const TableAccordion = ({
     handleAddClick();
     setOpen?.(true);
   };
+
+  const nav = useContext(SectionNavContext);
+  const group = useContext(SectionGroupContext);
+  const navKey = sectionKey ?? title;
+  const register = nav?.register;
+  const selected = nav?.active === navKey;
+
+  useEffect(() => register?.({ key: navKey, title, group }), [register, navKey, title, group]);
+
+  // The section loads its data when expanded, so being selected in the navigation expands it.
+  useEffect(() => {
+    if (nav && selected !== expanded) setExpanded(selected);
+  }, [nav, selected, expanded, setExpanded]);
+
+  if (nav) {
+    if (!selected) return null;
+    return (
+      <Card data-testid={`section-${navKey}`}>
+        <ArgonBox
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          px={2.5}
+          minHeight={64}
+          sx={({ borders: { borderWidth, borderColor } }: Theme) => ({
+            borderBottom: `${borderWidth[1]} solid ${borderColor}`,
+          })}
+        >
+          <ArgonTypography variant="h5" fontWeight="bold">
+            {title}
+          </ArgonTypography>
+          {showAddIcon && (
+            <ArgonButton
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={handleOpen}
+              data-testid={`section-${navKey}-add`}
+            >
+              <AddIcon fontSize="small" sx={{ mr: 0.5 }} />
+              {t("generic.add", { defaultValue: "Add" })}
+            </ArgonButton>
+          )}
+        </ArgonBox>
+        <ArgonBox p={2.5}>{children}</ArgonBox>
+      </Card>
+    );
+  }
 
   return (
     <Accordion

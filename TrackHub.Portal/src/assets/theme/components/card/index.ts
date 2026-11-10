@@ -32,14 +32,9 @@ Coded by www.creative-tim.com
 // Argon Dashboard 2 MUI Base Styles
 import colors from "assets/theme/base/colors";
 import borders from "assets/theme/base/borders";
-import boxShadows from "assets/theme/base/boxShadows";
 
-// Argon Dashboard 2 MUI Helper Function
-import rgba from "assets/theme/functions/rgba";
-
-const { black, white } = colors;
-const { borderWidth, borderRadius } = borders;
-const { cardBoxShadow } = boxShadows;
+const { white } = colors;
+const { borderWidth, borderRadius, borderColor } = borders;
 
 const card = {
   styleOverrides: {
@@ -51,9 +46,9 @@ const card = {
       wordWrap: "break-word",
       backgroundColor: white.main,
       backgroundClip: "border-box",
-      border: `${borderWidth[0]} solid ${rgba(black.main, 0.125)}`,
-      borderRadius: borderRadius.xl,
-      boxShadow: cardBoxShadow,
+      border: `${borderWidth[1]} solid ${borderColor}`,
+      borderRadius: borderRadius.lg,
+      boxShadow: "none",
     },
   },
 };

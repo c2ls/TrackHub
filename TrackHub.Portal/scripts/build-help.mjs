@@ -41,14 +41,16 @@ const REQUIRED_FIELDS = ["id", "title", "description", "category", "screens", "o
 
 /**
  * Extract route keys from routes.tsx without executing it. Each entry lists
- * `type` before `key`, so a pairwise non-greedy match is sufficient. Returns
+ * `type` before `key`, so a pairwise non-greedy match is sufficient; it never
+ * crosses a brace, so the `type:` of the RouteDefinition interface cannot pair
+ * with the first entry's key. Returns
  * the keys of user-visible screens (type: "route") only — hidden/title/divider
  * entries need no help topic.
  */
 export function extractRouteKeys(routesSource) {
   const keys = [];
   const entryPattern =
-    /type:\s*["'](route|hidden|title|divider|collapse)["'][\s\S]*?key:\s*["']([^"']+)["']/g;
+    /type:\s*["'](route|hidden|title|divider|collapse)["'][^{}]*?key:\s*["']([^"']+)["']/g;
   let match;
   while ((match = entryPattern.exec(routesSource)) !== null) {
     if (match[1] === "route") {
