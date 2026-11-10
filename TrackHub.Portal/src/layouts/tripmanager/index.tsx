@@ -28,6 +28,7 @@ import CompactSelect from 'controls/Selects/CompactSelect';
 import ConfirmDialog from 'controls/Dialogs/ConfirmDialog';
 import FormDialog from 'controls/Dialogs/FormDialog';
 import CustomTextField from 'controls/Dialogs/CustomTextField';
+import { filterRowSx } from 'controls/Dialogs/fieldStyles';
 import CustomCheckbox from 'controls/Dialogs/CustomCheckbox';
 import useForm from 'controls/Dialogs/useForm';
 import { Name, Description } from 'controls/Tables/components/tableComponents';
@@ -931,7 +932,7 @@ function TripManager() {
       <ArgonBox py={2}>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }}>
-            <ArgonBox display="flex" alignItems="center" gap={1} flexWrap="wrap">
+            <ArgonBox display="flex" gap={1} flexWrap="wrap" sx={filterRowSx}>
               <CompactSelect
                 name="status"
                 value={status}
