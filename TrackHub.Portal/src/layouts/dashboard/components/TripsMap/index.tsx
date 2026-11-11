@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import OSMTripsMap from 'controls/Maps/OSM/OSMTripsMap';
 import GoogleTripsMap from 'controls/Maps/Google/GoogleTripsMap';
 import TripStatsPanel from './TripStatsPanel';
-import { getRandomColor } from "utils/colorUtils";
+import { getTripColor } from "utils/colorUtils";
 import type { Trip } from 'api/router/router';
 import type { Geofence } from 'api/geofencing/geofencing';
 import type { PlaybackPosition } from 'layouts/dashboard/utils/playback';
@@ -59,10 +59,10 @@ function TripsMap({
     const [polygons, setPolygons] = useState<TripPolygon[]>([]);
     useEffect(() => {
         const fetchTrips = async () => {
-            const transformedTrips: TripPolygon[] = trips.map(trip => ({
+            const transformedTrips: TripPolygon[] = trips.map((trip, index) => ({
                 id: trip.tripId,
                 type: trip.type,
-                color: getRandomColor(),
+                color: getTripColor(index),
                 coordinates: trip.points.map((point): [number, number] => [point.latitude, point.longitude])
             }));
             setPolygons(transformedTrips);

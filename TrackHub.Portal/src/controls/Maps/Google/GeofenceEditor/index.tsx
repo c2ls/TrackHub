@@ -114,6 +114,18 @@ const GoogleGeofenceEditor = ({
   const [draftPath, setDraftPath] = useState<MapPoint[]>([]);
   const [draftCenter, setDraftCenter] = useState<MapPoint | null>(null);
   const [cursor, setCursor] = useState<MapPoint | null>(null);
+  const draftPathRef = useRef<MapPoint[]>([]);
+
+  // Escape abandons a shape that is being drawn.
+  useEffect(() => {
+    if (!drawMode) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') stopDrawing();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawMode]);
   // `shapes` lives in a ref (edited imperatively), so bumping this forces the
   // canvas to re-render after a re-sync reflects freshly persisted changes.
   const [, setSyncVersion] = useState(0);
@@ -190,6 +202,7 @@ const GoogleGeofenceEditor = ({
 
   const stopDrawing = () => {
     setDrawMode(null);
+    draftPathRef.current = [];
     setDraftPath([]);
     setDraftCenter(null);
     setCursor(null);
@@ -216,7 +229,8 @@ const GoogleGeofenceEditor = ({
     if (!drawMode || !event.latLng) return;
     const point = { lat: event.latLng.lat(), lng: event.latLng.lng() };
     if (drawMode === 'polygon') {
-      setDraftPath((path) => [...path, point]);
+      draftPathRef.current = [...draftPathRef.current, point];
+      setDraftPath(draftPathRef.current);
     } else if (!draftCenter) {
       setDraftCenter(point);
     } else {
@@ -231,9 +245,21 @@ const GoogleGeofenceEditor = ({
     }
   };
 
-  // A double-click arrives after its two clicks, so the last vertex is a duplicate.
+  // A double-click arrives after its own clicks, which each added a vertex at (nearly) the same
+  // spot; those are folded into one. The path is read from the ref because this handler can run
+  // before the render that follows the last click.
   const handleMapDoubleClick = () => {
-    if (drawMode === 'polygon') finishPolygon(draftPath.slice(0, -1));
+    if (drawMode !== 'polygon') return;
+    const zoom = mapRef.current?.getZoom() ?? DEFAULT_GOOGLE_ZOOM;
+    const path = [...draftPathRef.current];
+    while (path.length > 1) {
+      const last = path[path.length - 1];
+      const previous = path[path.length - 2];
+      const metersPerPixel = (156543.03392 * Math.cos((last.lat * Math.PI) / 180)) / 2 ** zoom;
+      if (calculateDistance(last.lat, last.lng, previous.lat, previous.lng) > metersPerPixel * 6) break;
+      path.pop();
+    }
+    finishPolygon(path);
   };
 
   const handleMapMouseMove = (event: google.maps.MapMouseEvent) => {

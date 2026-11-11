@@ -90,13 +90,13 @@ function ManageAdmin() {
     <DashboardLayout>
       <DashboardNavbar />
         <SectionNavLayout>
-          {SECTION_GROUP_KEYS.map((groupKey) => {
+          {SECTION_GROUP_KEYS.map((groupKey, groupIndex) => {
             const sections = SECTION_GROUPS[groupKey].filter(
               ({ featureKey }) => isFeatureEnabled(featureKey)
             );
             if (sections.length === 0) return null;
             return (
-              <SectionGroup key={groupKey} label={t(`manageAdmin.groups.${groupKey}` as 'manageAdmin.groups.account')}>
+              <SectionGroup key={groupKey} order={groupIndex} label={t(`manageAdmin.groups.${groupKey}` as 'manageAdmin.groups.account')}>
                 {sections.map(({ Section }) => (
                   <Section key={Section.displayName ?? Section.name} />
                 ))}

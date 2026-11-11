@@ -32,7 +32,7 @@ Su nueva contraseña debe tener al menos **8 caracteres** e incluir **una letra 
 
 ## 2. Conozca Administrador del Sistema
 
-**Administrador del Sistema** es la pantalla de toda la plataforma y solo los Administradores pueden abrirla. Es una única página larga de secciones plegables; haga clic en un encabezado para expandirla. En orden, las secciones son:
+**Administrador del Sistema** es la pantalla de toda la plataforma y solo los Administradores pueden abrirla. Una lista de secciones a la izquierda nombra cada sección; haga clic en una para abrirla a la derecha. En orden, las secciones son:
 
 | Sección | Para qué sirve | Con qué frecuencia la usa |
 |---|---|---|

@@ -1,5 +1,5 @@
 import { MAP_DEFAULTS } from 'api/core/endpoints';
-import { useRef, useEffect, useState } from 'react';
+import { Fragment, useRef, useEffect, useState } from 'react';
 import UserLocation from "controls/Maps/UserLocation";
 import GeofencePolygon from 'controls/Maps/Google/GeofencePolygon';
 import { GoogleMap, LoadScript, Polyline, Marker } from '@react-google-maps/api';
@@ -10,6 +10,7 @@ import { GoogleStatsToggle } from 'controls/Maps/shared/StatsToggle';
 import MapProviderContext, { GOOGLE_PROVIDER } from 'controls/Maps/core/MapProviderContext';
 import PlaybackMarker from 'controls/Maps/core/PlaybackMarker';
 import { GOOGLE_NIGHT_STYLES } from 'controls/Maps/utils/darkMapStyles';
+import { TRIP_TYPE } from 'controls/Maps/core/mapTypes';
 import type { MapTrip, MapGeofence, PlaybackPosition } from 'controls/Maps/core/mapTypes';
 import startMarker from 'assets/images/markers/start_marker.svg';
 import endMarker from 'assets/images/markers/end_marker.svg';
@@ -68,6 +69,19 @@ const GoogleTripsMap = ({
     };
   };
 
+  // Stretches with no driven track: where a stop drifted to, or a hole in the device's reports.
+  const getDashedOptions = (trip: MapTrip): google.maps.PolylineOptions => ({
+    strokeColor: selectedTrip === trip.id ? 'red' : '#7f7f7f',
+    strokeOpacity: 0,
+    icons: [{
+      icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: selectedTrip === trip.id ? 4 : 3 },
+      offset: '0',
+      repeat: '12px'
+    }]
+  });
+
+  const toPath = (trip: MapTrip) => trip.coordinates.map(coord => ({ lat: coord[0], lng: coord[1] }));
+
     // Center in selected polyline
   useEffect(() => {
     if (mapRef.current && selectedTrip) {
@@ -122,17 +136,25 @@ const GoogleTripsMap = ({
         onLoad={map => { mapRef.current = map; }}
         options={{ gestureHandling: "greedy", styles: darkMode ? GOOGLE_NIGHT_STYLES : null }}>
         {trips.map((trip, index) => (
-          trip.type === 1 ? (
-            <Marker
+          trip.type === TRIP_TYPE.stop ? (
+            <Fragment key={index}>
+              <Polyline path={toPath(trip)} options={getDashedOptions(trip)} />
+              <Marker
+                position={{ lat: trip.coordinates[0][0], lng: trip.coordinates[0][1] }}
+                icon={getIcon('single', trip.id)}
+                onClick={() => handleClick(trip)}
+              />
+            </Fragment>
+          ) : trip.type === TRIP_TYPE.noData ? (
+            <Polyline
               key={index}
-              position={{ lat: trip.coordinates[0][0], lng: trip.coordinates[0][1] }}
-              icon={getIcon('single', trip.id)}
-              onClick={() => handleClick(trip)}
-            />
+              path={toPath(trip)}
+              options={getDashedOptions(trip)}
+              onClick={() => handleClick(trip)}/>
           ) : (
             <Polyline
               key={index}
-              path={trip.coordinates.map(coord => ({ lat: coord[0], lng: coord[1] }))}
+              path={toPath(trip)}
               options={getPolylineOptions(trip)}
               onClick={() => handleClick(trip)}/>
           )

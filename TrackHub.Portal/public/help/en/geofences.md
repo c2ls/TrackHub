@@ -69,4 +69,4 @@ The footer under the list shows "Showing *from*–*to* of *total*" with arrows t
 
 ## How geofences appear on the live map
 
-On the live map, geofences are drawn only when you turn the geofence overlay on there (via the **In Geofence** card). With the overlay on, each geofence is drawn in the colour you chose, and the **In Geofence** card tells you how many units are inside a zone at that moment. See [Live map](topic:dashboard-live-map).
+On the live map, geofences are drawn only when you turn the geofence overlay on there (with the **Geofences** chip on the map). With the overlay on, each geofence is drawn in the colour you chose, and the **In Geofence** figure tells you how many units are inside a zone at that moment. See [Live map](topic:dashboard-live-map).

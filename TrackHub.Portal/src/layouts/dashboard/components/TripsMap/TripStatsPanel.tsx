@@ -18,6 +18,7 @@ import { useMemo } from 'react';
 import { calculateTotalDistance, formatDistance } from 'utils/distanceUtils';
 import { formatISODuration } from 'utils/timeUtils';
 import { useTranslation } from 'react-i18next';
+import { TRIP_TYPE } from 'controls/Maps/core/mapTypes';
 import type { Trip } from 'api/router/router';
 
 /** Aggregated (or single-trip) statistics rendered in the panel. */
@@ -28,7 +29,7 @@ interface TripStats {
   durationIso: string;
   maxSpeed: number;
   avgSpeed: number;
-  stops: number;
+  stops?: number;
   alarms: number;
 }
 
@@ -67,9 +68,10 @@ const TripStatsPanel = ({ trips = [], selectedTrip }: TripStatsPanelProps) => {
     if (selectedTrip) {
       const trip = findTrip(selectedTrip);
       if (!trip) return null;
-      const maxSpeed = Math.max(...(trip.points.map(p => p.speed || 0)), 0);
-      const avgSpeed = trip.averageSpeed || (trip.points.reduce((s, p) => s + (p.speed || 0), 0) / Math.max(1, trip.points.length));
-      const stops = trip.points.filter(p => (p.speed || 0) === 0).length;
+      // A stop or a no-data stretch ends on the first point of the next trip, whose speed is not its own.
+      const isMoving = trip.type === TRIP_TYPE.moving;
+      const maxSpeed = isMoving ? Math.max(...(trip.points.map(p => p.speed || 0)), 0) : 0;
+      const avgSpeed = isMoving ? trip.averageSpeed : 0;
       const alarms = trip.points.filter(p => p.eventId).length;
       return {
         title: `${trip.from} → ${trip.to}`,
@@ -78,7 +80,6 @@ const TripStatsPanel = ({ trips = [], selectedTrip }: TripStatsPanelProps) => {
         durationIso: typeof trip.duration === 'string' ? trip.duration : secondsToISODuration(parseDurationToSeconds(trip.duration)),
         maxSpeed,
         avgSpeed,
-        stops,
         alarms
       };
     }
@@ -87,9 +88,11 @@ const TripStatsPanel = ({ trips = [], selectedTrip }: TripStatsPanelProps) => {
     const totalDistance = calculateTotalDistance(trips, 'totalDistance');
     const totalDuration = trips.reduce((s, t) => s + parseDurationToSeconds(t.duration), 0);
     const maxSpeed = Math.max(...trips.flatMap(t => t.points.map(p => p.speed || 0)), 0);
-    const avgSpeed = trips.reduce((s, t) => s + (t.averageSpeed || 0), 0) / Math.max(1, trips.length);
-    const stops = trips.reduce((s, t) => s + t.points.filter(p => (p.speed || 0) === 0).length, 0);
-    const alarms = trips.reduce((s, t) => s + t.points.filter(p => p.eventId).length, 0);
+    const moving = trips.filter(t => t.type === TRIP_TYPE.moving);
+    const avgSpeed = moving.reduce((s, t) => s + (t.averageSpeed || 0), 0) / Math.max(1, moving.length);
+    const stops = trips.filter(t => t.type === TRIP_TYPE.stop).length;
+    // Consecutive segments share their boundary point; count it once.
+    const alarms = trips.reduce((s, t, i) => s + t.points.slice(i > 0 ? 1 : 0).filter(p => p.eventId).length, 0);
 
     return {
       distance: totalDistance,
@@ -122,7 +125,7 @@ const TripStatsPanel = ({ trips = [], selectedTrip }: TripStatsPanelProps) => {
         <div className="stats-row"><span>{t("tripPanel.duration")}</span><span>{formatDurationString(stats.duration, stats.durationIso)}</span></div>
         <div className="stats-row"><span>{t("tripPanel.maxSpeed")}</span><span>{Math.round(stats.maxSpeed)} km/h</span></div>
         <div className="stats-row"><span>{t("tripPanel.avgSpeed")}</span><span>{Math.round(stats.avgSpeed)} km/h</span></div>
-        <div className="stats-row"><span>{t("tripPanel.stops")}</span><span>{stats.stops}</span></div>
+        {stats.stops !== undefined && <div className="stats-row"><span>{t("tripPanel.stops")}</span><span>{stats.stops}</span></div>}
         <div className="stats-row"><span>{t("tripPanel.alarms")}</span><span>{stats.alarms}</span></div>
       </div>
     </div>

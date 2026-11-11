@@ -450,9 +450,9 @@ function Transporters({ searchQuery, settings, setShowGeofence, showGeofence, ge
             <Card
               sx={({ breakpoints }) => ({
                 overflow: 'hidden',
-                maxHeight: '60vh',
+                height: '60vh',
                 '& .MuiTableContainer-root': { border: 0, borderRadius: 0 },
-                [breakpoints.up('lg')]: { flex: 'none', width: 332, maxHeight: 'none' },
+                [breakpoints.up('lg')]: { flex: 'none', width: 332, height: 'auto' },
               })}
             >
                 <ArgonBox

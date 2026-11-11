@@ -64,10 +64,10 @@ Fine-grained rules that say which client may perform which action on which resou
 
 The categories of tracked units and the movement thresholds used to interpret their data. The catalogue of unit types is fixed — you cannot add or delete types here, only **Edit** the thresholds of an existing one. Click **Edit** on a row to open the **Unit Type Details** dialog, which collects:
 
-- **Stopped Gap (Minutes)** (required) — how long without movement counts as stopped.
-- **Max Time Gap (Minutes)** (required).
-- **Max Distance (Km)** (required).
-- **ACC Based** — whether stop/move is decided from the ignition (ACC) signal.
+- **Stopped Gap (Minutes)** (required) — how long a unit must stand still, or stay within about 100 m of the same spot, before the halt counts as a stop. Shorter halts (a traffic light) stay inside the trip.
+- **Max Time Gap (Minutes)** (required) — how long a moving unit may go without reporting before the stretch is shown as **No data**. Silence while parked is simply a longer stop.
+- **Max Distance (Km)** (required) — a jump between two consecutive positions larger than this is shown as **No data**.
+- **ACC Based** — whether stop/move is decided from the ignition (ACC) signal. A device that reports no ignition is grouped by speed instead.
 
 ## Geocoding Providers
 

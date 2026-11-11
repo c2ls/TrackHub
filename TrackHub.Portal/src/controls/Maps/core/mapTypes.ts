@@ -62,6 +62,9 @@ export interface MapGeofence {
 }
 
 /** A trip rendered as a polyline (or single marker when `type === 1`). */
+/** Segment kinds of a replayed position history (Router `TripTypeEnum`). */
+export const TRIP_TYPE = { stop: 1, moving: 2, noData: 3 } as const;
+
 export interface MapTrip {
   id: string;
   /** Ordered `[lat, lng]` coordinate pairs. */

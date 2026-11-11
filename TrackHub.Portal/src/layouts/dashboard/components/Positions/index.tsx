@@ -37,6 +37,7 @@ import { useFeatures } from 'context/features';
 import useForm from 'controls/Dialogs/useForm';
 import { buildTimeline, usePlayback } from 'layouts/dashboard/utils/playback';
 import type { TripPoint } from 'layouts/dashboard/utils/playback';
+import { TRIP_TYPE } from 'controls/Maps/core/mapTypes';
 import { downloadCsv, sanitizeFileNamePart } from 'utils/csvUtils';
 import { LoadingContext } from 'LoadingContext';
 import { useTranslation } from 'react-i18next';
@@ -164,7 +165,9 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
     // No Address column: the backend's TripPointVm carries no address (only live
     // positions do), so the old column was always empty. Restore it if/when the
     // Router service adds address to trip points.
-    const rows = trips.flatMap(trip => (trip.points || []).map(point => [
+    // Every segment starts on the point the previous one ended with, and a no-data
+    // segment has no points of its own, so both are left out to list each position once.
+    const rows = trips.flatMap((trip, index) => (trip.type === TRIP_TYPE.noData ? [] : (trip.points || []).slice(index > 0 && trips[index - 1].type !== TRIP_TYPE.noData ? 1 : 0)).map(point => [
       transporterName,
       trip.tripId,
       point.deviceDateTime,
@@ -185,14 +188,14 @@ function Positions({ settings, showGeofence, geofences }: PositionsProps) {
   const selectedTripPoints = useMemo<TripPoint[] | null>(() => {
     if (!selectedTrip) return null;
     const trip = trips.find(item => item.tripId === selectedTrip);
-    return trip ? trip.points : null;
+    return trip?.type === TRIP_TYPE.moving ? trip.points : null;
   }, [selectedTrip, trips]);
 
   const playback = usePlayback(selectedTripPoints);
   const timeline = useMemo(() => buildTimeline(selectedTripPoints), [selectedTripPoints]);
   const showPlayback = !!selectedTrip && playback.hasTimeline;
   // The playback card takes its height out of the map so the tab still fits the viewport.
-  const mapHeight = showPlayback ? 'calc(100vh - 424px)' : 'calc(100vh - 200px)';
+  const mapHeight = showPlayback ? 'max(280px, calc(100vh - 424px))' : 'max(360px, calc(100vh - 200px))';
 
   return (
     <ArgonBox>

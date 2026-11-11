@@ -32,7 +32,7 @@ Your new password must be at least **8 characters** and contain **an uppercase l
 
 ## 2. Get to know System Admin
 
-**System Admin** is the platform-wide screen and only Administrators can open it. It is one long page of collapsible sections; click a heading to expand it. In order, the sections are:
+**System Admin** is the platform-wide screen and only Administrators can open it. A section list on the left names every section; click one to open it on the right. In order, the sections are:
 
 | Section | What it is for | How often you touch it |
 |---|---|---|

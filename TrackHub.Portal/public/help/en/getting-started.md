@@ -31,7 +31,7 @@ You do not need to type a web address for the sign-in page or copy anything betw
 Once you are signed in, every screen shares the same frame:
 
 - A **left menu** (the sidenav) down the left side, for moving between screens.
-- A **top bar** across the top, showing where you are, a notification bell, and a **Sign off** link.
+- A **top bar** across the top, showing the name of the screen you are on, a notification bell, and your **account menu**.
 - The **main area** in the centre, which changes depending on the screen you pick.
 
 ## The left menu
@@ -47,7 +47,7 @@ The left menu lists the screens you are allowed to open. Depending on your role 
 - **Account** — a section heading, followed by:
   - **Profile** — your personal settings.
 
-To open a screen, **click its name in the left menu**. The item you are currently viewing is highlighted. Which items appear for which role is covered in [Roles and permissions](topic:roles-and-permissions).
+The menu is arranged in groups — **Operations**, **Insights**, **Administration** and **Account** — and a group only appears when it has a screen you can open. To open a screen, **click its name in the left menu**. The item you are currently viewing is highlighted. Which items appear for which role is covered in [Roles and permissions](topic:roles-and-permissions).
 
 **Compact vs. full menu.** On narrow windows the menu collapses to a slim strip of icons to save space. When it is collapsed, **move your mouse over it** to expand it temporarily, and move away to collapse it again. You can also set your preference permanently with the **Sidenav Mini** switch — see [Profile and settings](topic:profile-and-settings#appearance-language-and-the-compact-menu).
 
@@ -55,22 +55,20 @@ To open a screen, **click its name in the left menu**. The item you are currentl
 
 The top bar shows, from left to right:
 
-- **Breadcrumbs** telling you where you are (see below).
 - A **menu icon** you can click to collapse or expand the left menu.
+- The **name of the screen** you are on. On the Dashboard, the **Units** and **Positions** tabs sit beside it.
+- A **help** icon that opens this help.
 - A **notification bell** with a red count of unread notifications.
-- A **Sign off** link (with a small round person icon) for leaving the app.
+- A **settings** icon (managers only) that opens the account map settings.
+- Your **account menu** (the round person icon), with **Profile** and **Sign off**.
 
 ### The notification bell
 
-The bell (labelled **Notifications**) sits next to **Sign off**. A red badge shows how many notifications you have not read yet. Click the bell to open the list of your recent notifications; each one shows its event type, its severity, and when it arrived. Clicking a notification marks it as read. When there is nothing to show, the list reads **No notifications**.
-
-## Breadcrumbs
-
-At the top left, next to a small **home** icon, TrackHub shows a trail of where you are (the current screen). Click the **home icon** to return to the start, or click an earlier step in the trail to go back to it. The current screen's name is also shown in bold just beneath the trail.
+The bell (labelled **Notifications**) sits near the right end of the top bar. A red badge shows how many notifications you have not read yet. Click the bell to open the list of your recent notifications; each one shows its event type, its severity, and when it arrived. Clicking a notification marks it as read. When there is nothing to show, the list reads **No notifications**.
 
 ## Signing out
 
-1. Click **Sign off** in the top-right corner of the top bar (next to the round person icon).
+1. Click the **round person icon** at the right end of the top bar, then choose **Sign off**.
 2. TrackHub securely ends your session and returns you to the **sign-in page**.
 
 Always sign off when you finish, especially on a shared or public computer.

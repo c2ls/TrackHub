@@ -93,9 +93,14 @@ const TableAccordion = ({
   const group = useContext(SectionGroupContext);
   const navKey = sectionKey ?? title;
   const register = nav?.register;
+  const unregister = nav?.unregister;
   const selected = nav?.active === navKey;
 
-  useEffect(() => register?.({ key: navKey, title, group }), [register, navKey, title, group]);
+  // Registering again only updates the entry, so a retitled section (language switch) keeps its place.
+  useEffect(() => {
+    register?.({ key: navKey, title, group: group?.label, groupOrder: group?.order });
+  }, [register, navKey, title, group]);
+  useEffect(() => () => unregister?.(navKey), [unregister, navKey]);
 
   // The section loads its data when expanded, so being selected in the navigation expands it.
   useEffect(() => {

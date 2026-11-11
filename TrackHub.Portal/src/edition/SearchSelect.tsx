@@ -14,7 +14,7 @@
 *  limitations under the License.
 */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import ArgonBox from 'components/ArgonBox';
@@ -48,9 +48,9 @@ function SearchSelect({ id, label, value, valueLabel, onChange, useOptions, plac
   const search = useDebouncedValue(input);
   const { options, loading } = useOptions(search);
 
-  const selected = value
-    ? { value, label: valueLabel ?? options.find((option) => option.value === value)?.label ?? '' }
-    : null;
+  // Autocomplete resets the typed text whenever the value object changes identity.
+  const selectedLabel = valueLabel ?? options.find((option) => option.value === value)?.label ?? '';
+  const selected = useMemo(() => (value ? { value, label: selectedLabel } : null), [value, selectedLabel]);
 
   return (
     <ArgonBox mt={1} mb={1}>
