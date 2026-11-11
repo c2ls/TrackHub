@@ -21,8 +21,6 @@ using Common.Domain.Constants;
 using Microsoft.Extensions.Configuration;
 using TrackHub.Router.Application.Positions.Mappers;
 using TrackHub.Router.Domain.Enumerators;
-using TrackHub.Router.Domain.Interfaces;
-using TrackHub.Router.Domain.Interfaces.Manager;
 using TrackHub.Router.Domain.Models;
 
 namespace TrackHub.Router.Application.Positions.Queries.GetTrips;
@@ -40,7 +38,7 @@ public class GetPositionTripsQueryHandler(
         IPositionRegistry positionRegistry,
         IDeviceTransporterReader deviceReader,
         ITransporterTypeReader transporterTypeReader,
-        Application.Gating.IAccountModeResolver modeResolver,
+        Gating.IAccountModeResolver modeResolver,
         IPositionHistoryReader positionHistoryReader,
         IGroupVisibilityReader groupVisibilityReader,
         ICurrentPrincipal principal)

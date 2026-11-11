@@ -14,20 +14,19 @@
 *  limitations under the License.
 */
 
+const TRIP_COLORS = [
+    '#1f77b4', // Blue
+    '#ff7f0e', // Orange
+    '#2ca02c', // Green
+    '#9467bd', // Purple
+    '#8c564b', // Brown
+    '#e377c2', // Pink
+    '#17becf'  // Cyan
+];
+
 /**
- * Returns a random color from a predefined list.
+ * Color of the trip at a position in the replay list; neighbouring trips never share one.
  */
-export function getRandomColor(): string {
-    const colors = [
-        '#1f77b4', // Blue
-        '#ff7f0e', // Orange
-        '#2ca02c', // Green
-        '#9467bd', // Purple
-        '#8c564b', // Brown
-        '#e377c2', // Pink
-        '#7f7f7f', // Gray
-        '#bcbd22', // Yellow
-        '#17becf'  // Cyan
-      ];
-      return colors[Math.floor(Math.random() * colors.length)];
+export function getTripColor(index: number): string {
+    return TRIP_COLORS[index % TRIP_COLORS.length];
 }

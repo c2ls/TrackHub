@@ -42,8 +42,11 @@ On the right is the list of trips for your query, with the chosen date range sho
 
 - **Transit** — the unit was travelling. Shows the distance covered.
 - **Stopped** — the unit was parked or idle.
+- **No data** — the device sent nothing for a long stretch while travelling, or jumped to a distant position. The map joins the two ends with a grey dashed line; it is not a driven route.
 
-Each entry also shows its **From** and **To** times and its duration. Transit legs are marked in green with a forward arrow; stops are marked in red with a stop icon. Click any entry to select that trip — it highlights on the map and enables [replay](#replaying-a-trip).
+Each entry starts exactly where the previous one ends, so the list accounts for the whole period between the first and last recorded position.
+
+Each entry also shows its **From** and **To** times and its duration. Transit legs are marked in green with a forward arrow; stops are marked in red with a stop icon; no-data stretches are grey. Click any entry to select that trip — it highlights on the map and enables [replay](#replaying-a-trip).
 
 ## Trip statistics
 

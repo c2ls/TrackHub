@@ -15,6 +15,7 @@ import startIconUrl from 'assets/images/markers/start_marker.svg';
 import endIconUrl from 'assets/images/markers/end_marker.svg';
 import singleIconUrl from 'assets/images/markers/single_marker.svg';
 import L from 'leaflet';
+import { TRIP_TYPE } from 'controls/Maps/core/mapTypes';
 import type { MapTrip, MapGeofence, PlaybackPosition } from 'controls/Maps/core/mapTypes';
 
 const startIcon = new L.Icon({ iconUrl: startIconUrl, iconSize: [20, 20] });
@@ -70,6 +71,13 @@ const OSMTripsMap = ({
     };
   };
 
+  // Stretches with no driven track: where a stop drifted to, or a hole in the device's reports.
+  const getDashedStyle = (tripId: string): L.PathOptions => ({
+    color: tripId === selectedTrip ? 'red' : '#7f7f7f',
+    weight: tripId === selectedTrip ? 4 : 3,
+    dashArray: '4 8',
+  });
+
   const getMarkerStyle = (tripId: string): L.Icon => {
     const size = tripId === selectedTrip ? 30 : 20;
     return new L.Icon({ iconUrl: singleIconUrl, iconSize: [size, size] });
@@ -105,7 +113,7 @@ const OSMTripsMap = ({
       const selectedTripData = trips.find(trip => trip.id === selectedTrip);
       if (selectedTripData) {
         const bounds = calculateTripBounds(selectedTripData);
-        map.fitBounds(bounds);
+        map.fitBounds(bounds, { maxZoom: 17 });
       }
     }
   }, [selectedTrip, trips]);
@@ -135,14 +143,22 @@ const OSMTripsMap = ({
         {trips.map((trip, index) => {
           return (
             <Fragment key={index}>
-              {trip.type === 1
-                ? (<Marker
+              {trip.type === TRIP_TYPE.stop
+                ? (<>
+                  <Polyline positions={trip.coordinates} pathOptions={getDashedStyle(trip.id)} />
+                  <Marker
                     position={trip.coordinates[0]}
                     icon={getMarkerStyle(trip.id)}
                     eventHandlers={{ click: () => {
                       handleClick(trip.id);
                       mapRef.current!.setView(trip.coordinates[0], 13);
-                    }}}/>)
+                    }}}/>
+                </>)
+                : trip.type === TRIP_TYPE.noData
+                ? (<Polyline
+                    positions={trip.coordinates}
+                    pathOptions={getDashedStyle(trip.id)}
+                    eventHandlers={{ click: () => handleClick(trip.id) }}/>)
                 : (
                   <Polyline
                     key={trip.id}

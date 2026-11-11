@@ -20,104 +20,104 @@ namespace TrackHub.Router.Application.Positions.Mappers;
 
 public static class TripMapper
 {
+    private const double DwellRadiusKm = 0.1;
+
     /// <summary>
-    /// Groups positions into trips based on maximum distance and time gap.
+    /// Splits a position history into a continuous sequence of moving, stop and no-data segments.
     /// </summary>
-    /// <param name="positions">The positions to group.</param>
-    /// <param name="maxDistance">The maximum distance between points in a trip.</param>
-    /// <param name="maxTimeGap">The maximum time gap between points in a trip.</param>
-    /// <param name="minSpeedThreshold">The minimum speed threshold to consider a trip as moving.</param>
-    /// <returns>A collection of trips.</returns>
+    /// <param name="accBased">Ignition decides movement; falls back to speed when the device reports none.</param>
+    /// <param name="stoppedGap">Minutes standing still, or without leaving the spot, before a halt counts as a stop.</param>
+    /// <param name="maxDistance">Kilometers between consecutive points beyond which the leg is a reporting gap.</param>
+    /// <param name="maxTimeGap">Silence while moving beyond which the leg is a reporting gap.</param>
     public static IEnumerable<TripVm> GroupPositionsIntoTrips(
-        this IEnumerable<PositionVm> positions, 
-        bool accBased, 
+        this IEnumerable<PositionVm> positions,
+        bool accBased,
         double stoppedGap,
-        double maxDistance, 
+        double maxDistance,
         TimeSpan maxTimeGap)
     {
-        if (!positions.Any())
+        var points = positions.CalculatePoints(accBased, stoppedGap);
+        if (points.Count == 0)
         {
             return [];
         }
-        var points = positions.CalculatePoints(accBased, stoppedGap);
+
         var trips = new List<TripVm>();
-        var currentTrip = CreateNewTrip();
-        TripPointVm? previousPoint = null;
+        var current = CreateTrip(TypeOf(points[0]), points[0]);
 
-        foreach (var point in points)
+        for (var i = 1; i < points.Count; i++)
         {
-            if (previousPoint != null && !IsDuplicate(previousPoint.Value, point))
-            {
-                var distance = CalculateDistance(previousPoint.Value, point);
-                var timeDiff = point.DeviceDateTime - previousPoint.Value.DeviceDateTime;
+            var previous = points[i - 1];
+            var point = points[i];
+            var distance = CalculateDistance(previous, point);
+            var silence = point.DeviceDateTime - previous.DeviceDateTime;
 
-                if (previousPoint.Value.Movement != point.Movement || distance > maxDistance || timeDiff > maxTimeGap)
-                {
-                    // End the current trip and start a new one
-                    FinalizeTrip(currentTrip, trips, previousPoint.Value.Movement);
-                    currentTrip = CreateNewTrip(point);
-                }
-                else
-                {
-                    currentTrip.Points.Add(point);
-                    currentTrip.TotalDistance += distance;
-                }
+            // A parked device may legitimately stay silent for hours, so silence only
+            // breaks the track while moving; a position jump always does.
+            if (distance > maxDistance || (previous.Movement && silence > maxTimeGap))
+            {
+                trips.Add(FinalizeTrip(current));
+                trips.Add(FinalizeTrip(CreateTrip(TripTypeEnum.NO_DATA, previous, point)));
+                current = CreateTrip(TypeOf(point), point);
+                continue;
             }
-            if (previousPoint == null) currentTrip.Points.Add(point);
-            previousPoint = point;
+
+            // Consecutive segments share their boundary point, so the track has no holes:
+            // a trip ends on the first stopped point and a stop ends on the first moving one.
+            current.Points.Add(point);
+            if (current.Type == (short)TripTypeEnum.MOVING)
+            {
+                current.TotalDistance += distance;
+            }
+            if (previous.Movement != point.Movement)
+            {
+                trips.Add(FinalizeTrip(current));
+                current = CreateTrip(TypeOf(point), point);
+            }
         }
-        // Add the last trip if it has more than one position
-        FinalizeTrip(currentTrip, trips, points.Last().Movement);
+
+        // A trailing single point already closes the previous segment, unless it stands alone.
+        if (current.Points.Count > 1 || trips.Count == 0 || trips[^1].Type == (short)TripTypeEnum.NO_DATA)
+        {
+            trips.Add(FinalizeTrip(current));
+        }
 
         return trips;
     }
 
-    /// <summary>
-    /// Creates a new trip with an optional initial point.
-    /// </summary>
-    /// <param name="initialPosition">The initial point of the trip.</param>
-    /// <returns>A new trip.</returns>
-    private static TripVm CreateNewTrip(TripPointVm? initialPoint = null)
+    private static TripTypeEnum TypeOf(TripPointVm point)
+        => point.Movement ? TripTypeEnum.MOVING : TripTypeEnum.STOP;
+
+    private static TripVm CreateTrip(TripTypeEnum type, params TripPointVm[] points)
         => new()
         {
             TripId = Guid.NewGuid(),
-            Points = initialPoint != null ? [initialPoint.Value] : [],
-            TotalDistance = 0,
-            Type = (short)TripTypeEnum.MOVING
+            Points = [.. points],
+            Type = (short)type
         };
 
-    /// <summary>
-    /// Finalizes the trip by calculating its duration and average speed, and determining its type.
-    /// </summary>
-    /// <param name="trip">The trip to finalize.</param>
-    /// <param name="trips">The list of trips to add the finalized trip to.</param>
-    /// <param name="minSpeedThreshold">The minimum speed threshold to consider a trip as moving.</param>
-    private static void FinalizeTrip(TripVm trip, List<TripVm> trips, bool movement)
+    private static TripVm FinalizeTrip(TripVm trip)
     {
-        trip.Duration = trip.Points.Last().DeviceDateTime - trip.Points.First().DeviceDateTime;
-        trip.From = trip.Points.First().DeviceDateTime;
-        trip.To = trip.Points.Last().DeviceDateTime;
-        trip.AverageSpeed = trip.Points.Average(p => p.Speed);
-        if (!movement)
+        trip.From = trip.Points[0].DeviceDateTime;
+        trip.To = trip.Points[^1].DeviceDateTime;
+        trip.Duration = trip.To - trip.From;
+        if (trip.Type == (short)TripTypeEnum.MOVING)
         {
-            trip.Type = (short)TripTypeEnum.STOP;
-            if (trip.Points.Count > 1)
-            {
-                trip.Points = [trip.Points.First(), trip.Points.Last()];
-            }
+            trip.AverageSpeed = trip.Points.Average(p => p.Speed);
         }
-        trips.Add(trip);
+        else if (trip.Points.Count > 2)
+        {
+            trip.Points = [trip.Points[0], trip.Points[^1]];
+        }
+        return trip;
     }
 
     /// <summary>
-    /// Calculates the distance between two points using the Haversine formula.
+    /// Haversine distance between two points, in kilometers.
     /// </summary>
-    /// <param name="p1">The first point.</param>
-    /// <param name="p2">The second point.</param>
-    /// <returns>The distance between the two points in kilometers.</returns>
     private static double CalculateDistance(TripPointVm p1, TripPointVm p2)
     {
-        const double r = 6371e3; // Earth's radius in meters
+        const double r = 6371e3;
         var lat1 = p1.Latitude * Math.PI / 180;
         var lat2 = p2.Latitude * Math.PI / 180;
         var deltaLat = (p2.Latitude - p1.Latitude) * Math.PI / 180;
@@ -128,82 +128,123 @@ public static class TripMapper
                 Math.Sin(deltaLon / 2) * Math.Sin(deltaLon / 2);
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
-        return r * c / 1000; // Convert to kilometers
+        return r * c / 1000;
     }
 
-    /// <summary>
-    /// Checks if two points are duplicates.
-    /// </summary>
-    /// <param name="p1">The first point.</param>
-    /// <param name="p2">The second point.</param>
-    /// <returns>True if the points are duplicates, otherwise false.</returns>
     private static bool IsDuplicate(TripPointVm p1, TripPointVm p2)
         => p1.Latitude == p2.Latitude &&
            p1.Longitude == p2.Longitude &&
            p1.DeviceDateTime == p2.DeviceDateTime;
 
-    /// <summary>
-    /// Calculates the points of a trip based on the acc status or speed.
-    /// </summary>
-    /// <param name="positions"></param>
-    /// <param name="accBased"></param>
-    /// <param name="stoppedGap"></param>
-    /// <returns></returns>
     private static List<TripPointVm> CalculatePoints(this IEnumerable<PositionVm> positions, bool accBased, double stoppedGap)
     {
-        var points = new List<TripPointVm>();
-        var stoppedTime = TimeSpan.Zero;
-        PositionVm? previousPosition = null;
-        var prevStatus = false;
-        var currentStatus = false;
+        var ordered = positions.OrderBy(p => p.DeviceDateTime).ToList();
+        var useIgnition = accBased && ordered.Any(p => p.Attributes?.Ignition is not null);
+        var points = new List<TripPointVm>(ordered.Count);
 
-        foreach (var position in positions.OrderBy(p => p.DeviceDateTime))
+        foreach (var position in ordered)
         {
-            if (accBased)
+            var moving = useIgnition
+                ? position.Attributes?.Ignition ?? position.Speed > 0
+                : position.Speed > 0;
+            var point = position.CastPoint(moving);
+            if (points.Count == 0 || !IsDuplicate(points[^1], point))
             {
-                // Add point based on ignition status
-                points.Add(position.CastPoint(position.Attributes?.Ignition ?? false));
-                continue;
+                points.Add(point);
             }
-
-            if (previousPosition != null)
-            {
-                // Update stopped time if the vehicle is not moving
-                stoppedTime = UpdateStoppedTime(position, previousPosition.Value, stoppedTime);
-                // Add point based on whether the vehicle should be considered moving
-                currentStatus = ShouldConsiderMoving(position, prevStatus, stoppedTime, stoppedGap);
-                points.Add(position.CastPoint(currentStatus));
-            }
-            else
-            {
-                // Add the first point based on speed. The status is carried through
-                // currentStatus so the assignment below does not reset it to false.
-                currentStatus = position.Speed > 0;
-                points.Add(position.CastPoint(currentStatus));
-            }
-            prevStatus = currentStatus;
-            previousPosition = position;
         }
 
+        if (!useIgnition)
+        {
+            AbsorbBriefHalts(points, stoppedGap);
+        }
+        MarkDwells(points, stoppedGap);
         return points;
     }
 
-    private static TimeSpan UpdateStoppedTime(PositionVm current, PositionVm previous, TimeSpan stoppedTime)
-        => current.Speed > 0
-            ? TimeSpan.Zero
-            : stoppedTime + (current.DeviceDateTime - previous.DeviceDateTime);
+    // Ignition, or a noisy speed reading, can claim movement while the unit never leaves the spot
+    // (an excavator at work, GPS drift on an idle tracker): that is a stop, not a trip.
+    private static void MarkDwells(List<TripPointVm> points, double stoppedGap)
+    {
+        for (var start = 0; start < points.Count; start++)
+        {
+            if (!points[start].Movement)
+            {
+                continue;
+            }
 
-    private static bool ShouldConsiderMoving(PositionVm position, bool prevStatus, TimeSpan stoppedTime, double stoppedGap)
-        => position.Speed > 0 || (stoppedTime.TotalMinutes < stoppedGap && prevStatus);
+            var end = start;
+            while (end + 1 < points.Count && CalculateDistance(points[start], points[end + 1]) <= DwellRadiusKm)
+            {
+                end++;
+            }
+
+            if ((points[end].DeviceDateTime - points[start].DeviceDateTime).TotalMinutes < stoppedGap)
+            {
+                continue;
+            }
+
+            // The window also catches the last meters of the approach and the first of the
+            // departure; those belong to the trips on either side.
+            var spot = points[start] with
+            {
+                Latitude = points.Skip(start).Take(end - start + 1).Average(p => p.Latitude),
+                Longitude = points.Skip(start).Take(end - start + 1).Average(p => p.Longitude)
+            };
+            while (start < end && CalculateDistance(points[start], spot) > DwellRadiusKm / 2)
+            {
+                start++;
+            }
+            while (end > start && CalculateDistance(points[end], spot) > DwellRadiusKm / 2)
+            {
+                end--;
+            }
+            for (var i = start; i <= end; i++)
+            {
+                points[i] = points[i] with { Movement = false };
+            }
+            start = end;
+        }
+    }
+
+    // A halt shorter than stoppedGap (a traffic light) stays part of the trip. A longer one is a
+    // stop from its first standing point, measured up to the point where movement resumes. A halt
+    // cut by the edge of the range is kept: its real length is unknown.
+    private static void AbsorbBriefHalts(List<TripPointVm> points, double stoppedGap)
+    {
+        for (var start = 0; start < points.Count; start++)
+        {
+            if (points[start].Movement)
+            {
+                continue;
+            }
+
+            var end = start;
+            while (end + 1 < points.Count && !points[end + 1].Movement)
+            {
+                end++;
+            }
+
+            var bounded = start > 0 && end + 1 < points.Count;
+            if (bounded && (points[end + 1].DeviceDateTime - points[start].DeviceDateTime).TotalMinutes < stoppedGap)
+            {
+                for (var i = start; i <= end; i++)
+                {
+                    points[i] = points[i] with { Movement = true };
+                }
+            }
+            start = end;
+        }
+    }
 
     public static TripPointVm CastPoint(this PositionVm position, bool movement)
         => new (
-            position.Latitude, 
-            position.Longitude, 
-            position.DeviceDateTime, 
-            position.Speed, 
-            position.Course, 
-            position.EventId, 
+            position.Latitude,
+            position.Longitude,
+            position.DeviceDateTime,
+            position.Speed,
+            position.Course,
+            position.EventId,
             movement);
 
 }

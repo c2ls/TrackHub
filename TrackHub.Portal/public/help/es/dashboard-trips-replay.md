@@ -42,8 +42,11 @@ A la derecha está la lista de viajes de su consulta, con el rango de fechas ele
 
 - **En Tránsito** — la unidad estaba desplazándose. Muestra la distancia recorrida.
 - **Detenido** — la unidad estaba estacionada o inactiva.
+- **Sin datos** — el dispositivo no envió nada durante un tramo largo mientras viajaba, o saltó a una posición lejana. El mapa une los dos extremos con una línea gris punteada; no es una ruta recorrida.
 
-Cada entrada también muestra sus horas **Desde** y **Hasta** y su duración. Los tramos en tránsito se marcan en verde con una flecha hacia adelante; las paradas se marcan en rojo con un ícono de detención. Haga clic en cualquier entrada para seleccionar ese viaje: se resalta en el mapa y habilita la [reproducción](#reproducir-un-viaje).
+Cada entrada comienza exactamente donde termina la anterior, de modo que la lista cubre todo el periodo entre la primera y la última posición registrada.
+
+Cada entrada también muestra sus horas **Desde** y **Hasta** y su duración. Los tramos en tránsito se marcan en verde con una flecha hacia adelante; las paradas se marcan en rojo con un ícono de detención; los tramos sin datos son grises. Haga clic en cualquier entrada para seleccionar ese viaje: se resalta en el mapa y habilita la [reproducción](#reproducir-un-viaje).
 
 ## Estadísticas del viaje
 

@@ -1211,6 +1211,7 @@
     "fromLabel": "From",
     "toLabel": "To",
     "stopLabel": "Stopped",
+    "noDataLabel": "No data",
     "transitLabel": "Transit",
     "totalDistance": "Total Distance",
     "duration": "Duration",

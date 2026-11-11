@@ -14,34 +14,21 @@
  *  limitations under the License.
  */
 
-import { getRandomColor } from 'utils/colorUtils';
+import { getTripColor } from 'utils/colorUtils';
 
-const VALID_COLORS = [
-  '#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#8c564b',
-  '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
-];
-
-describe('getRandomColor', () => {
-  test('returns a color from the predefined list', () => {
-    const color = getRandomColor();
-    expect(VALID_COLORS).toContain(color);
-  });
-
-  test('returns a string', () => {
-    expect(typeof getRandomColor()).toBe('string');
-  });
-
+describe('getTripColor', () => {
   test('returns a valid hex color format', () => {
-    const color = getRandomColor();
-    expect(color).toMatch(/^#[0-9a-f]{6}$/);
+    expect(getTripColor(0)).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  test('returns colors from the full range over many calls', () => {
-    const seen = new Set();
-    for (let i = 0; i < 200; i++) {
-      seen.add(getRandomColor());
+  test('is stable for an index', () => {
+    expect(getTripColor(3)).toBe(getTripColor(3));
+  });
+
+  test('never repeats between neighbouring trips, which sit a stop apart in the list', () => {
+    for (let i = 0; i < 50; i++) {
+      expect(getTripColor(i)).not.toBe(getTripColor(i + 1));
+      expect(getTripColor(i)).not.toBe(getTripColor(i + 2));
     }
-    // With 200 random picks from 9 colors, we should see at least 5
-    expect(seen.size).toBeGreaterThanOrEqual(5);
   });
 });

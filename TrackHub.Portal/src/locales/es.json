@@ -1211,6 +1211,7 @@
     "fromLabel": "Desde",
     "toLabel": "Hasta",
     "stopLabel": "Detenido",
+    "noDataLabel": "Sin datos",
     "transitLabel": "En Tránsito",
     "totalDistance": "Distancia Total",
     "duration": "Duración",

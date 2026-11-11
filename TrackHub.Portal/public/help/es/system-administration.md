@@ -64,10 +64,10 @@ Reglas detalladas que indican qué cliente puede realizar qué acción sobre qu�
 
 Las categorías de unidades rastreadas y los umbrales de movimiento usados para interpretar sus datos. El catálogo de tipos de unidad es fijo — aquí no puede agregar ni eliminar tipos, solo **Editar** los umbrales de uno existente. Haga clic en **Editar** en una fila para abrir el diálogo **Detalle del Tipo de Unidad**, que recopila:
 
-- **Detenido (Minutos)** (obligatorio) — cuánto tiempo sin movimiento cuenta como detenido.
-- **Tiempo Máximo (Minutos)** (obligatorio).
-- **Máxima Distancia (Km)** (obligatorio).
-- **Basado en Ignición** — si el estado detenido/en movimiento se decide a partir de la señal de ignición (ACC).
+- **Detenido (Minutos)** (obligatorio) — cuánto tiempo debe permanecer quieta la unidad, o dentro de unos 100 m del mismo punto, para que la pausa cuente como parada. Las pausas más cortas (un semáforo) quedan dentro del viaje.
+- **Tiempo Máximo (Minutos)** (obligatorio) — cuánto tiempo puede pasar una unidad en movimiento sin reportar antes de que el tramo se muestre como **Sin datos**. El silencio mientras está estacionada es simplemente una parada más larga.
+- **Máxima Distancia (Km)** (obligatorio) — un salto entre dos posiciones consecutivas mayor que este valor se muestra como **Sin datos**.
+- **Basado en Ignición** — si el estado detenido/en movimiento se decide a partir de la señal de ignición (ACC). Un dispositivo que no reporta ignición se agrupa por velocidad.
 
 ## Proveedores de Geocodificación
 
