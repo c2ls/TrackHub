@@ -65,6 +65,21 @@ internal class ApplicationDbContextInitializer(ILogger<ApplicationDbContextIniti
         }
     }
 
+    // Engine-driven carriers report ignition, so it delimits their trips. Battery trackers on
+    // cargo report hours apart, so only a much longer silence or jump means a lost signal.
+    private static (bool AccBased, double StoppedGap, double MaxDistance, double MaxTimeGap) TripGroupingDefaults(TransporterType type)
+        => type switch
+        {
+            TransporterType.Aircraft => (true, 10, 200, 120),
+            TransporterType.Boat or TransporterType.Car or TransporterType.ConstructionVehicle
+                or TransporterType.DeliveryVan or TransporterType.FleetVehicle or TransporterType.HeavyEquipment
+                or TransporterType.Motorcycle or TransporterType.SchoolBus or TransporterType.Scooter
+                or TransporterType.Taxi or TransporterType.Truck or TransporterType.Tractor => (true, 10, 10, 120),
+            TransporterType.Asset or TransporterType.CargoContainer or TransporterType.Package
+                or TransporterType.Tool => (false, 30, 500, 1440),
+            _ => (false, 10, 10, 120)
+        };
+
     public async Task TrySeedAsync()
     {
         // Default data
@@ -106,14 +121,11 @@ internal class ApplicationDbContextInitializer(ILogger<ApplicationDbContextIniti
         await context.SaveChangesAsync();
         if (!context.TransporterTypes.Any())
         {
-            // Seed every TransporterType enum value with identical defaults
-            // (not custom, small icon 10x10, 120s expiration). HeavyEquipment is the only
-            // type flagged custom (second ctor arg true).
             foreach (var transporterType in Enum.GetValues<TransporterType>())
             {
-                var isCustom = transporterType == TransporterType.HeavyEquipment;
+                var (accBased, stoppedGap, maxDistance, maxTimeGap) = TripGroupingDefaults(transporterType);
                 context.TransporterTypes.Add(new TrackHub.Manager.Infrastructure.Entities.TransporterType(
-                    (short)transporterType, isCustom, 10, 10, 120));
+                    (short)transporterType, accBased, stoppedGap, maxDistance, maxTimeGap));
             }
             await context.SaveChangesAsync();
         }

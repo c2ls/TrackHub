@@ -24,6 +24,7 @@ namespace TrackHub.Router.Infrastructure.TelemetryApi;
 public class PositionHistoryReader(IGraphQLClientFactory graphQLClient)
     : GraphQLService(graphQLClient.CreateClient(Clients.Telemetry)), IPositionHistoryReader
 {
+    private static readonly JsonSerializerOptions AttributeOptions = new() { PropertyNameCaseInsensitive = true };
     internal const int MaxPoints = 100_000;
     private const int PageSize = 500;
     public const string LimitExceededCode = "POSITION_HISTORY_LIMIT_EXCEEDED";
@@ -109,7 +110,7 @@ public class PositionHistoryReader(IGraphQLClientFactory graphQLClient)
 
         try
         {
-            return JsonSerializer.Deserialize<AttributesVm>(json);
+            return JsonSerializer.Deserialize<AttributesVm>(json, AttributeOptions);
         }
         catch (JsonException)
         {

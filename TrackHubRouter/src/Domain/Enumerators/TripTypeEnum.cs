@@ -18,5 +18,6 @@ namespace TrackHub.Router.Domain.Enumerators;
 public enum TripTypeEnum
 {
     STOP = 1,
-    MOVING = 2
+    MOVING = 2,
+    NO_DATA = 3
 }
