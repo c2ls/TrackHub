@@ -19,4 +19,5 @@ public interface IExecutionIntervalManager
 {
     bool ShouldExecuteTask(AccountSettingsVm account);
     void UpdateLastExecutionTime(Guid accountId);
+    bool TryBeginOperatorRun(Guid operatorId, TimeSpan minimumInterval);
 }

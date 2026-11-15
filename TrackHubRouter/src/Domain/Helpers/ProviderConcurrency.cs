@@ -32,6 +32,10 @@ public static class ProviderConcurrency
 {
     public const int MaxConcurrentDeviceReads = 6;
 
+    // Failures before anything has been read mean the provider is down: the rest is not attempted,
+    // so an outage costs a few timeouts instead of one per device.
+    public const int FailuresThatMeanTheProviderIsDown = 3;
+
     public static async Task<IReadOnlyCollection<PositionVm>> ReadEachDeviceAsync(
         IEnumerable<DeviceTransporterVm> devices,
         Func<DeviceTransporterVm, CancellationToken, Task<PositionVm>> read,
@@ -39,29 +43,43 @@ public static class ProviderConcurrency
     {
         var batch = devices.ToArray();
         var positions = new ConcurrentBag<PositionVm>();
-        var failures = new ConcurrentQueue<Exception>();
-        await Parallel.ForEachAsync(
-            batch,
-            new ParallelOptions { MaxDegreeOfParallelism = MaxConcurrentDeviceReads, CancellationToken = cancellationToken },
-            async (device, token) =>
-            {
-                try
+        Exception? firstFailure = null;
+        var succeeded = 0;
+        var failed = 0;
+        using var giveUp = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        try
+        {
+            await Parallel.ForEachAsync(
+                batch,
+                new ParallelOptions { MaxDegreeOfParallelism = MaxConcurrentDeviceReads, CancellationToken = giveUp.Token },
+                async (device, token) =>
                 {
-                    var position = await read(device, token);
-                    if (position.TransporterId != Guid.Empty)
+                    try
                     {
-                        positions.Add(position);
+                        var position = await read(device, token);
+                        if (position.TransporterId != Guid.Empty)
+                        {
+                            positions.Add(position);
+                        }
+                        Interlocked.Increment(ref succeeded);
                     }
-                }
-                catch (Exception ex) when (!token.IsCancellationRequested)
-                {
-                    failures.Enqueue(ex);
-                }
-            });
+                    catch (Exception ex) when (!token.IsCancellationRequested)
+                    {
+                        Interlocked.CompareExchange(ref firstFailure, ex, null);
+                        if (Interlocked.Increment(ref failed) >= FailuresThatMeanTheProviderIsDown && Volatile.Read(ref succeeded) == 0)
+                        {
+                            giveUp.Cancel();
+                        }
+                    }
+                });
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+        }
 
         IReadOnlyCollection<PositionVm> distinct = [.. positions.Distinct()];
-        return failures.TryPeek(out var first)
-            ? throw new PartialPositionReadException(distinct, failures.Count, batch.Length, first)
-            : distinct;
+        return firstFailure is null
+            ? distinct
+            : throw new PartialPositionReadException(distinct, batch.Length - succeeded, batch.Length, firstFailure);
     }
 }

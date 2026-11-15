@@ -27,4 +27,11 @@ public enum ProtocolType
     Wialon = 8,
     Protrack = 9,
     Mettax = 10,
+    Tracksolid = 11,
+    Motive = 12,
+    Cartrack = 13,
+    Pegasus = 14,
+    Webfleet = 15,
+    RedGps = 16,
+    Plaspy = 17,
 }

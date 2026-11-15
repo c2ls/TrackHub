@@ -21,6 +21,7 @@ namespace TrackHub.Router.Infrastructure.Common;
 public class ExecutionIntervalManager : IExecutionIntervalManager
 {
     private readonly ConcurrentDictionary<Guid, DateTimeOffset> _lastExecutionTimes = new();
+    private readonly ConcurrentDictionary<Guid, DateTimeOffset> _lastOperatorRuns = new();
 
     public bool ShouldExecuteTask(AccountSettingsVm account)
     {
@@ -36,5 +37,18 @@ public class ExecutionIntervalManager : IExecutionIntervalManager
     public void UpdateLastExecutionTime(Guid accountId)
     {
         _lastExecutionTimes[accountId] = DateTimeOffset.UtcNow;
+    }
+
+    // Stamped when the run starts: a poll that fails still spent the provider's allowance.
+    public bool TryBeginOperatorRun(Guid operatorId, TimeSpan minimumInterval)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (_lastOperatorRuns.TryGetValue(operatorId, out var lastRun) && now - lastRun < minimumInterval)
+        {
+            return false;
+        }
+
+        _lastOperatorRuns[operatorId] = now;
+        return true;
     }
 }

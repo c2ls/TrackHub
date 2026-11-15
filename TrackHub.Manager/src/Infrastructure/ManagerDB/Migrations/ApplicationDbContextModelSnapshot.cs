@@ -1720,7 +1720,7 @@ namespace TrackHub.Manager.Infrastructure.Migrations
                     b.Property<int>("ProtocolType")
                         .HasColumnType("integer")
                         .HasColumnName("protocoltype")
-                        .HasComment("Telematics protocol this operator speaks; selects the Router provider client. Values: 1=CommandTrack, 2=Traccar, 3=Flespi, 4=GeoTab, 5=GpsGate, 6=Navixy, 7=Samsara, 8=Wialon, 9=Protrack, 10=Mettax.");
+                        .HasComment("Telematics protocol this operator speaks; selects the Router provider client. Values: 1=CommandTrack, 2=Traccar, 3=Flespi, 4=GeoTab, 5=GpsGate, 6=Navixy, 7=Samsara, 8=Wialon, 9=Protrack, 10=Mettax, 11=Tracksolid, 12=Motive, 13=Cartrack, 14=Pegasus, 15=Webfleet, 16=RedGps, 17=Plaspy.");
 
                     b.Property<int>("SyncIntervalMinutes")
                         .ValueGeneratedOnAdd()
@@ -1739,7 +1739,7 @@ namespace TrackHub.Manager.Infrastructure.Migrations
 
                     b.ToTable("operators", "app", t =>
                         {
-                            t.HasCheckConstraint("ck_operators_protocoltype", "protocoltype in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)");
+                            t.HasCheckConstraint("ck_operators_protocoltype", "protocoltype in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17)");
                         });
                 });
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -34,12 +34,22 @@ public static class TestProviderDescriptors
         | ProviderCapability.DeviceCatalog
         | ProviderCapability.ConnectivityPing;
 
-    public sealed record TestDescriptor(ProtocolType Protocol, string DisplayName, ProviderCapability Capabilities) : IProviderDescriptor;
+    public const int TraccarMinPositionIntervalSeconds = 120;
+
+    public sealed record TestDescriptor(
+        ProtocolType Protocol,
+        string DisplayName,
+        ProviderCapability Capabilities,
+        int MinPositionIntervalSeconds = 0,
+        ProviderCredentialField CredentialFields = ProviderCredentialField.All,
+        string? DefaultUri = null) : IProviderDescriptor;
 
     public static ProviderCapabilityCatalog DefaultCatalog { get; } = new(
     [
         new TestDescriptor(ProtocolType.CommandTrack, "CommandTrack", Full),
-        new TestDescriptor(ProtocolType.Traccar, "Traccar", Full),
-        new TestDescriptor(ProtocolType.GpsGate, "GpsGate", Full & ~ProviderCapability.PositionHistory),
+        new TestDescriptor(ProtocolType.Traccar, "Traccar", Full, TraccarMinPositionIntervalSeconds),
+        new TestDescriptor(ProtocolType.GpsGate, "GpsGate", Full & ~ProviderCapability.PositionHistory,
+            CredentialFields: ProviderCredentialField.Password | ProviderCredentialField.Key,
+            DefaultUri: "https://provider.example"),
     ]);
 }

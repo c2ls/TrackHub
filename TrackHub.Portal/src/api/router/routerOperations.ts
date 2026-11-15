@@ -127,6 +127,9 @@ export const GetProviderCapabilitiesDocument = graphql(`
       positionHistory
       deviceCatalog
       connectivityPing
+      minPositionIntervalSeconds
+      credentialFields
+      defaultUri
     }
   }
 `);

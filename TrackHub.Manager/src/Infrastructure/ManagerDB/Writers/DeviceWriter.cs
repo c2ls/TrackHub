@@ -43,6 +43,12 @@ public sealed class DeviceWriter(IApplicationDbContext context, ICurrentPrincipa
             .Where(d => d.AccountId == accountId && d.OperatorId == operatorId)
             .ToListAsync(cancellationToken);
         var existingByIdentifier = existing.ToDictionary(d => d.Identifier);
+        // Providers that identify devices only by a string send no numeric identifier: those devices
+        // are matched by serial and take the operator's next free identifier when first seen.
+        var identifierBySerial = existing
+            .GroupBy(d => d.Serial)
+            .ToDictionary(g => g.Key, g => g.First().Identifier);
+        var nextIdentifier = existing.Select(d => d.Identifier).Concat(devices.Select(d => d.Identifier)).Append(0).Max();
 
         if (devices.Count == 0 && existing.Exists(d => d.DetectedStatus != (int)DetectedStatus.Removed))
         {
@@ -54,8 +60,20 @@ public sealed class DeviceWriter(IApplicationDbContext context, ICurrentPrincipa
         var added = new List<DeviceVm>();
         var incoming = new HashSet<int>();
 
-        foreach (var deviceDto in devices)
+        foreach (var providerDevice in devices)
         {
+            var deviceDto = providerDevice;
+            if (deviceDto.Identifier <= 0)
+            {
+                if (!identifierBySerial.TryGetValue(deviceDto.Serial, out var identifier))
+                {
+                    identifier = ++nextIdentifier;
+                    identifierBySerial[deviceDto.Serial] = identifier;
+                }
+
+                deviceDto = deviceDto with { Identifier = identifier };
+            }
+
             incoming.Add(deviceDto.Identifier);
             Entities.Device device;
             if (existingByIdentifier.TryGetValue(deviceDto.Identifier, out var known))

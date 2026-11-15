@@ -34,4 +34,6 @@ public sealed class ProviderDescriptor : IProviderDescriptor
         | ProviderCapability.PositionHistory
         | ProviderCapability.DeviceCatalog
         | ProviderCapability.ConnectivityPing;
+
+    public int MinPositionIntervalSeconds => 10;
 }

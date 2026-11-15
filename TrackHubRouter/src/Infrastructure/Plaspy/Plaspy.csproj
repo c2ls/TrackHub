@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Router.Infrastructure.Plaspy</RootNamespace>
+    <AssemblyName>TrackHub.Router.Infrastructure.Plaspy</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\Domain.csproj" />
+  </ItemGroup>
+</Project>

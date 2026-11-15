@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TrackHub.Router.Infrastructure.Cartrack</RootNamespace>
+    <AssemblyName>TrackHub.Router.Infrastructure.Cartrack</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\Domain.csproj" />
+  </ItemGroup>
+</Project>

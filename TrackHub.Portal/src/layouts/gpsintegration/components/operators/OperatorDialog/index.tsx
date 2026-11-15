@@ -16,6 +16,7 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
+import Alert from '@mui/material/Alert';
 import FormDialog from "controls/Dialogs/FormDialog";
 import CustomTextField from 'controls/Dialogs/CustomTextField';
 import CustomSelect from 'controls/Dialogs/CustomSelect';
@@ -41,6 +42,8 @@ function OperatorFormDialog({ open, setOpen, handleSubmit, values, handleChange,
   const protocolOptions = (providerCapabilities ?? [])
     .filter((p) => p.realTimePositions || p.positionHistory || p.deviceCatalog || p.connectivityPing)
     .map((p) => ({ value: p.protocolTypeId, label: p.displayName }));
+  const minPositionIntervalSeconds = providerCapabilities
+    ?.find((p) => p.protocolTypeId === Number(values.protocolTypeId))?.minPositionIntervalSeconds ?? 0;
   return (
     <FormDialog
           title={t('operator.details')}
@@ -139,6 +142,11 @@ function OperatorFormDialog({ open, setOpen, handleSubmit, values, handleChange,
             errorMsg={errors.protocolTypeId}
           />
           {errors.protocolTypeId && <p>{errors.protocolTypeId}</p>}
+          {minPositionIntervalSeconds > 0 && (
+            <Alert severity="info" sx={{ mt: 1 }}>
+              {t('operator.providerPositionLimit', { seconds: minPositionIntervalSeconds })}
+            </Alert>
+          )}
         </form>
       </FormDialog>
   );
