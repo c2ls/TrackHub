@@ -154,12 +154,16 @@ public class PositionReaderTests : PositionReaderTestsBase<PositionReader>
     {
         var calls = 0;
         HttpClientServiceMock.Setup(x => x.GetAsync<LastLocationResponse>(It.IsAny<string>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>()))
-            .Returns(() =>
-            {
-                Interlocked.Increment(ref calls);
-                return Task.FromException<LastLocationResponse?>(new HttpRequestException("provider down"));
-            });
+            .Returns(FailLikeARequestAsync);
         var devices = Enumerable.Range(1, 60).Select(i => CreateDeviceTransporterVm(serial: $"dev-{i}")).ToArray();
+
+        // A real request fails after a round-trip, not instantly: that pause is what lets the give-up take effect.
+        async Task<LastLocationResponse?> FailLikeARequestAsync()
+        {
+            Interlocked.Increment(ref calls);
+            await Task.Delay(50);
+            throw new HttpRequestException("provider down");
+        }
 
         var exception = await Assert.ThrowsAsync<PartialPositionReadException>(() => PositionReader.GetDevicePositionAsync(devices, TestCancellationToken));
 
