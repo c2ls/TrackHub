@@ -131,4 +131,50 @@ public class DeviceReconciliationTests
             Assert.That(stored.IgnoredAt, Is.Null);
         });
     }
+
+    private static DeviceDto Unnumbered(Guid accountId, Guid operatorId, string serial)
+        => new(accountId, operatorId, serial, serial, 0, null, 4, null, "hash", "ACTIVE");
+
+    [Test]
+    public async Task DevicesWithoutAProviderIdentifier_EachKeepTheirOwnRow_AcrossSyncs()
+    {
+        await using var context = NewContext(nameof(DevicesWithoutAProviderIdentifier_EachKeepTheirOwnRow_AcrossSyncs));
+        var (accountId, op, seeded, _, _) = await SeedAsync(context);
+        var writer = Writer(context);
+        DeviceDto[] catalog = [Dto(accountId, op.OperatorId, 1), Unnumbered(accountId, op.OperatorId, "IMEI-A"), Unnumbered(accountId, op.OperatorId, "IMEI-B")];
+
+        var first = await writer.ReconcileSynchronizedDevicesAsync(op.OperatorId, catalog, false, CancellationToken.None);
+        var second = await writer.ReconcileSynchronizedDevicesAsync(op.OperatorId, catalog.Reverse().ToArray(), false, CancellationToken.None);
+
+        var stored = await context.Devices.AsNoTracking().Where(d => d.OperatorId == op.OperatorId).ToListAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.Added.Select(d => d.Serial), Is.EquivalentTo(new[] { "IMEI-A", "IMEI-B" }));
+            Assert.That(second.Added, Is.Empty);
+            Assert.That(second.Retired, Is.Empty);
+            Assert.That(stored.Select(d => d.Serial), Is.EquivalentTo(new[] { seeded.Serial, "IMEI-A", "IMEI-B" }));
+            Assert.That(stored.Select(d => d.Identifier), Is.Unique);
+            Assert.That(stored.Select(d => d.Identifier), Has.All.GreaterThan(0));
+        });
+    }
+
+    [Test]
+    public async Task AnAllocatedIdentifier_NeverTakesOneTheProviderSentInTheSameCatalog()
+    {
+        await using var context = NewContext(nameof(AnAllocatedIdentifier_NeverTakesOneTheProviderSentInTheSameCatalog));
+        var (accountId, op, _, _, _) = await SeedAsync(context);
+
+        await Writer(context).ReconcileSynchronizedDevicesAsync(
+            op.OperatorId,
+            [Dto(accountId, op.OperatorId, 1), Unnumbered(accountId, op.OperatorId, "IMEI-A"), Dto(accountId, op.OperatorId, 2)],
+            false,
+            CancellationToken.None);
+
+        var stored = await context.Devices.AsNoTracking().Where(d => d.OperatorId == op.OperatorId).ToListAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored, Has.Count.EqualTo(3));
+            Assert.That(stored.Single(d => d.Serial == "IMEI-A").Identifier, Is.EqualTo(3));
+        });
+    }
 }

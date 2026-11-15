@@ -28,6 +28,7 @@ public readonly record struct SyncPositionCommand() : IRequest<bool>;
 public class UpdateTransporterCommandHandler(IAccountReader reader,
     IOperatorReader operatorReader,
     IExecutionIntervalManager intervalManager,
+    IProviderCapabilityCatalog capabilityCatalog,
     IPublisher publisher,
     IConfiguration configuration,
     ILogger<UpdateTransporterCommandHandler> logger) : IRequestHandler<SyncPositionCommand, bool>
@@ -77,6 +78,13 @@ public class UpdateTransporterCommandHandler(IAccountReader reader,
             .Where(o => o.Enabled && o.Credential is not null)
             .Select(async @operator =>
             {
+                // The provider's own polling limit outranks the account's storing interval.
+                var providerInterval = capabilityCatalog.MinPositionInterval((ProtocolType)@operator.ProtocolTypeId);
+                if (!intervalManager.TryBeginOperatorRun(@operator.OperatorId, providerInterval))
+                {
+                    return;
+                }
+
                 await gate.WaitAsync(cancellationToken);
                 try
                 {

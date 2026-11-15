@@ -33,6 +33,13 @@
     <ProjectReference Include="..\..\src\Infrastructure\Navixy\Navixy.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Samsara\Samsara.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Wialon\Wialon.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Tracksolid\Tracksolid.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Motive\Motive.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Cartrack\Cartrack.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Pegasus\Pegasus.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Webfleet\Webfleet.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\RedGps\RedGps.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Plaspy\Plaspy.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="NUnit.Framework" />

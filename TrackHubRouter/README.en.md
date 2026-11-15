@@ -12,7 +12,7 @@ Built on .NET 10 with a HotChocolate GraphQL endpoint plus a REST surface for th
 
 ## What it does
 
-- **Multi-provider integration** — nine GPS providers implemented (CommandTrack, Traccar, Flespi, GeoTab, GpsGate, Navixy, Samsara, Wialon, Protrack)
+- **Multi-provider integration** — sixteen GPS providers implemented (CommandTrack, Traccar, Flespi, GeoTab, GpsGate, Navixy, Samsara, Wialon, Protrack, Tracksolid Pro, Motive, Cartrack, Pegasus Gateway, Webfleet, RedGPS, Plaspy)
 - **Data normalization** — provider payloads become one `PositionVm` shape: speed in km/h, decimal degrees, UTC timestamps
 - **Real-time and historical position retrieval** across every connected operator
 - **Background synchronization** — the SyncWorker's position, device and health loops
@@ -80,7 +80,7 @@ Full detail: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** i
 
 | Provider | Documentation | Status | Tested |
 |---|---|---|---|
-| CommandTrack | [Docs](https://www.c2ls.co/home/documentacion-de-la-api/) | ✅ Implemented | ✅ |
+| CommandTrack | [Docs](https://home.c2ls.co/desarrollador/) | ✅ Implemented | ✅ |
 | Traccar | [Docs](https://www.traccar.org/api-reference/) | ✅ Implemented | ✅ |
 | Flespi | [Docs](https://flespi.io/docs/) | ✅ Implemented | ❌ |
 | GeoTab | [Docs](https://developers.geotab.com/myGeotab/guides/codeBase/usingInDotnet) | ✅ Implemented | ❌ |
@@ -89,6 +89,25 @@ Full detail: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** i
 | Samsara | [Docs](https://developers.samsara.com/docs/tms-integration) | ✅ Implemented | ❌ |
 | Wialon | [Docs](https://help.wialon.com/en/api/user-guide) | ✅ Implemented | ❌ |
 | Protrack | — | ✅ Implemented | ❌ |
+| Tracksolid Pro | [Docs](https://tracksolidprodocs.jimicloud.com/) | ✅ Implemented | ❌ |
+| Motive | [Docs](https://developer-docs.gomotive.com) | ✅ Implemented | ❌ |
+| Cartrack | [Docs](https://developer.cartrack.com) | ✅ Implemented | ❌ |
+| Pegasus Gateway | [Docs](https://pegasus.digitalcomtech.com/docs/) | ✅ Implemented | ❌ |
+| Webfleet | [Docs](https://www.webfleet.com/en_ie/fleet-management/integration/resources/) | ✅ Implemented | ❌ |
+| RedGPS | [Docs](https://docs.redgps.com/books/webservice/es) | ✅ Implemented | ❌ |
+| Plaspy | [Docs](https://docs.plaspy.com/docs/developers/) | ✅ Implemented | ❌ |
+
+The portal's credential form asks only for the fields a provider uses, under the provider's own names, and pre-fills the URL where the provider has a single endpoint (declared in each `ProviderDescriptor` as `CredentialFields` and `DefaultUri`). For the providers that need more than a URL, a user and a password:
+
+| Provider | URL | User / Password | Key | Key 2 |
+|---|---|---|---|---|
+| Tracksolid Pro | Regional node, e.g. `https://us-open.tracksolidpro.com` | Tracksolid account | appKey | appSecret |
+| Motive | `https://api.gomotive.com` | — | API key | — |
+| Cartrack | Regional base, e.g. `https://fleetapi-za.cartrack.com/rest` | Account user / API password | — | — |
+| Pegasus Gateway | The site's API base, e.g. `https://{site}/api` | Site user | — | — |
+| Webfleet | `https://csv.webfleet.com/extern` | WEBFLEET.connect user | API key | Account name |
+| RedGPS | `https://api.service24gps.com/api/v1` | Platform user | apikey | — |
+| Plaspy | `https://api.plaspy.com` | User name / — | API key | — |
 
 `Mettax` is reserved in the `ProtocolType` enum with no provider assembly — configuring it throws at startup.
 
@@ -100,6 +119,7 @@ Full detail: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router)** i
 
 - **A misconfigured provider fails at startup, on purpose.** A configured protocol that resolves no assembly, no reader types, or a capability declaration mismatching its readers throws during startup rather than being silently skipped.
 - **Three things must align when adding a provider**: the `ProtocolType` enum value (in TrackHubCommon), the provider assembly (namespace `TrackHub.Router.Infrastructure.{Protocol}`, readers with matching `Protocol` properties, and a `ProviderDescriptor` declaring display name and capabilities), and the `AppSettings:Protocols` entry (**in both Web and SyncWorker**). The capability matrix and client-facing provider list build themselves from the discovered descriptors.
+- **A provider's polling limit outranks the account's storing interval.** A `ProviderDescriptor` may declare `MinPositionIntervalSeconds`; the position loop skips an operator polled more recently than that, and the portal shows the limit when the provider is picked. Declared today: flespi 10 s, Webfleet 15 s, RedGPS 60 s, Plaspy 120 s.
 - **`Ping` must always perform a real provider round-trip.** Sessions are cached in `IProviderSessionStore`, so an `Init`-only ping would be a pure in-memory hit — turning the health monitor into a no-op that reports HEALTHY while the provider is down.
 - **Provider errors must throw, never degrade to empty results.** A swallowed error becomes a "successful" sync of 0 positions, which silently stops position flow while Health stays green. Wialon and Navixy report failures as HTTP 200 with an error payload — both are detected and thrown.
 - **The SyncWorker is single-instance by design.** `IOperatorSyncLock`, `ExecutionIntervalManager` and `IProviderSessionStore` are all in-process. Scaling it out needs a cross-instance claim (a PostgreSQL advisory lock or `SKIP LOCKED`).

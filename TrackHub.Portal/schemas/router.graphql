@@ -81,6 +81,9 @@ type ProviderCapabilitiesVm {
   positionHistory: Boolean!
   deviceCatalog: Boolean!
   connectivityPing: Boolean!
+  minPositionIntervalSeconds: Int!
+  credentialFields: [ProviderCredentialField!]!
+  defaultUri: String
 }
 
 type TripPointVm {
@@ -159,6 +162,15 @@ enum ApplyPolicy {
 enum PositionSourceType {
   PROVIDER
   STORED
+}
+
+enum ProviderCredentialField {
+  NONE
+  USERNAME
+  PASSWORD
+  KEY
+  KEY2
+  ALL
 }
 
 "The `DateTime` scalar type represents a date and time with time zone offset information."

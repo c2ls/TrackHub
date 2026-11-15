@@ -45,5 +45,10 @@ public sealed class ProviderCapabilityCatalog(IEnumerable<IProviderDescriptor> d
         }
     }
 
+    public TimeSpan MinPositionInterval(ProtocolType protocol)
+        => _catalog.TryGetValue(protocol, out var descriptor)
+            ? TimeSpan.FromSeconds(descriptor.MinPositionIntervalSeconds)
+            : TimeSpan.Zero;
+
     public IReadOnlyCollection<IProviderDescriptor> All => [.. _catalog.Values];
 }

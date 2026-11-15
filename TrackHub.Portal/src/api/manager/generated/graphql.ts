@@ -259,15 +259,22 @@ export type PrincipalType =
   | 'USER';
 
 export type ProtocolType =
+  | 'CARTRACK'
   | 'COMMAND_TRACK'
   | 'FLESPI'
   | 'GEO_TAB'
   | 'GPS_GATE'
   | 'METTAX'
+  | 'MOTIVE'
   | 'NAVIXY'
+  | 'PEGASUS'
+  | 'PLASPY'
   | 'PROTRACK'
+  | 'RED_GPS'
   | 'SAMSARA'
   | 'TRACCAR'
+  | 'TRACKSOLID'
+  | 'WEBFLEET'
   | 'WIALON';
 
 export type PublicLinkGrantDtoInput = {

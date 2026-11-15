@@ -14,7 +14,14 @@
     <ProjectReference Include="..\Geotab\Geotab.csproj" />
     <ProjectReference Include="..\GpsGate\GpsGate.csproj" />
     <ProjectReference Include="..\Navixy\Navixy.csproj" />
+    <ProjectReference Include="..\Cartrack\Cartrack.csproj" />
+    <ProjectReference Include="..\Motive\Motive.csproj" />
+    <ProjectReference Include="..\Pegasus\Pegasus.csproj" />
+    <ProjectReference Include="..\Plaspy\Plaspy.csproj" />
     <ProjectReference Include="..\Protrack\Protrack.csproj" />
+    <ProjectReference Include="..\RedGps\RedGps.csproj" />
+    <ProjectReference Include="..\Tracksolid\Tracksolid.csproj" />
+    <ProjectReference Include="..\Webfleet\Webfleet.csproj" />
     <ProjectReference Include="..\Samsara\Samsara.csproj" />
     <ProjectReference Include="..\Traccar\Traccar.csproj" />
     <ProjectReference Include="..\Wialon\Wialon.csproj" />
