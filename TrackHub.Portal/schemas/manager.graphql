@@ -2620,6 +2620,13 @@ enum ProtocolType {
   WIALON
   PROTRACK
   METTAX
+  TRACKSOLID
+  MOTIVE
+  CARTRACK
+  PEGASUS
+  WEBFLEET
+  RED_GPS
+  PLASPY
 }
 
 enum PublicLinkResolution {

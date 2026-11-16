@@ -13,6 +13,8 @@
 //  limitations under the License.
 //
 
+using TrackHub.Router.Domain.Enumerators;
+
 namespace TrackHub.Router.Domain.Models;
 
 // One row of the provider capability matrix (IProviderCapabilityCatalog) as exposed to clients.
@@ -26,4 +28,7 @@ public record struct ProviderCapabilitiesVm(
     bool RealTimePositions,
     bool PositionHistory,
     bool DeviceCatalog,
-    bool ConnectivityPing);
+    bool ConnectivityPing,
+    int MinPositionIntervalSeconds,
+    IReadOnlyList<ProviderCredentialField> CredentialFields,
+    string? DefaultUri);

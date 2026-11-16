@@ -121,6 +121,18 @@
     "password": "Password",
     "key": "Secret Key",
     "key2": "Secret Key 2",
+    "providers": {
+      "CommandTrack": { "key": "Client ID" },
+      "GeoTab": { "key": "Database" },
+      "GpsGate": { "password": "Authorization token", "key": "Application ID", "key2": "User ID" },
+      "Tracksolid": { "username": "Tracksolid account", "key": "App key", "key2": "App secret", "uriHelp": "Your regional node, for example https://us-open.tracksolidpro.com" },
+      "Motive": { "key": "API key" },
+      "Cartrack": { "password": "API password", "uriHelp": "Your regional base, for example https://fleetapi-za.cartrack.com/rest" },
+      "Pegasus": { "uriHelp": "The API base of your site, for example https://your-site/api" },
+      "Webfleet": { "key": "API key", "key2": "Account name" },
+      "RedGps": { "key": "API key" },
+      "Plaspy": { "key": "API key" }
+    },
     "connectivityTest": "Connectivity Test",
     "testCredential": "Test Credential",
     "testSuccess": "The credential was successfully tested",
@@ -876,6 +888,7 @@
     "name": "Name",
     "description": "Description",
     "type": "Protocol",
+    "providerPositionLimit": "This provider allows one position update every {{seconds}} seconds at most. If the account's interval is shorter, the provider's limit applies.",
     "contactName": "Contact Name",
     "deleteTitle": "Delete Operator",
     "deleteMessage": "Are you sure you want to delete this operator?"

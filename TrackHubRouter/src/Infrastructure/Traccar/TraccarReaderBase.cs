@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.Net.Http.Headers;
-using System.Text;
 using Common.Domain.Enums;
+using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 namespace TrackHub.Router.Infrastructure.Traccar;
 
@@ -28,20 +27,13 @@ public abstract class TraccarReaderBase(
 
     public ProtocolType Protocol => ProtocolType.Traccar;
 
-    // Converts the credential to a base64-encoded string.
-    private static string GetCredentialString(CredentialTokenDto credential)
-    {
-        var credentials = $"{credential.Username}:{credential.Password}";
-        return Convert.ToBase64String(Encoding.ASCII.GetBytes(credentials));
-    }
-
     // Initializes the Traccar reader with the provided credential. Traccar auth is header-only
     // (no login round-trip), so this completes synchronously and returns a completed task — the
     // reader implements the async port directly, no thread-pool-hopping adapter needed.
     public virtual Task Init(CredentialTokenDto credential, CancellationToken cancellationToken = default)
     {
         var httpClient = httpClientFactory.CreateClientAsync(credential, cancellationToken);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", GetCredentialString(credential));
+        httpClient.DefaultRequestHeaders.Authorization = BasicAuthentication.Header(credential.Username, credential.Password);
         HttpClientService.Init(httpClient, $"{ProtocolType.Traccar}");
         return Task.CompletedTask;
     }

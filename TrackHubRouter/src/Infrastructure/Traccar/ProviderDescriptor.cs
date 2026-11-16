@@ -34,4 +34,8 @@ public sealed class ProviderDescriptor : IProviderDescriptor
         | ProviderCapability.PositionHistory
         | ProviderCapability.DeviceCatalog
         | ProviderCapability.ConnectivityPing;
+
+    public ProviderCredentialField CredentialFields =>
+        ProviderCredentialField.Username
+        | ProviderCredentialField.Password;
 }

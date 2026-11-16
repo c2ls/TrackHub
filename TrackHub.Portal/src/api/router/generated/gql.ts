@@ -21,7 +21,7 @@ type Documents = {
     "\n  query GetDevicePositionsByUser($groupId: Long, $operatorId: UUID) {\n    devicePositionsByUser(groupId: $groupId, operatorId: $operatorId) {\n      ...PositionFields\n    }\n  }\n": typeof types.GetDevicePositionsByUserDocument,
     "\n  query GetTripsByTransporter(\n    $transporterId: UUID!\n    $from: DateTime!\n    $to: DateTime!\n    $source: PositionSourceType!\n  ) {\n    tripsByTransporter(\n      query: { transporterId: $transporterId, from: $from, to: $to, source: $source }\n    ) {\n      ...TripFields\n    }\n  }\n": typeof types.GetTripsByTransporterDocument,
     "\n  query ReverseGeocode($latitude: Float!, $longitude: Float!, $transporterId: UUID) {\n    reverseGeocode(\n      query: { latitude: $latitude, longitude: $longitude, transporterId: $transporterId }\n    ) {\n      ...AddressFields\n    }\n  }\n": typeof types.ReverseGeocodeDocument,
-    "\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n    }\n  }\n": typeof types.GetProviderCapabilitiesDocument,
+    "\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n      minPositionIntervalSeconds\n      credentialFields\n      defaultUri\n    }\n  }\n": typeof types.GetProviderCapabilitiesDocument,
 };
 const documents: Documents = {
     "\n  fragment PositionFields on PositionVm {\n    transporterId\n    deviceName\n    transporterType\n    latitude\n    longitude\n    altitude\n    speed\n    course\n    deviceDateTime\n    serverDateTime\n    eventId\n    address\n    city\n    state\n    country\n    attributes {\n      ignition\n      satellites\n      mileage\n      hourmeter\n      temperature\n    }\n  }\n": types.PositionFieldsFragmentDoc,
@@ -31,7 +31,7 @@ const documents: Documents = {
     "\n  query GetDevicePositionsByUser($groupId: Long, $operatorId: UUID) {\n    devicePositionsByUser(groupId: $groupId, operatorId: $operatorId) {\n      ...PositionFields\n    }\n  }\n": types.GetDevicePositionsByUserDocument,
     "\n  query GetTripsByTransporter(\n    $transporterId: UUID!\n    $from: DateTime!\n    $to: DateTime!\n    $source: PositionSourceType!\n  ) {\n    tripsByTransporter(\n      query: { transporterId: $transporterId, from: $from, to: $to, source: $source }\n    ) {\n      ...TripFields\n    }\n  }\n": types.GetTripsByTransporterDocument,
     "\n  query ReverseGeocode($latitude: Float!, $longitude: Float!, $transporterId: UUID) {\n    reverseGeocode(\n      query: { latitude: $latitude, longitude: $longitude, transporterId: $transporterId }\n    ) {\n      ...AddressFields\n    }\n  }\n": types.ReverseGeocodeDocument,
-    "\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n    }\n  }\n": types.GetProviderCapabilitiesDocument,
+    "\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n      minPositionIntervalSeconds\n      credentialFields\n      defaultUri\n    }\n  }\n": types.GetProviderCapabilitiesDocument,
 };
 
 /**
@@ -79,7 +79,7 @@ export function graphql(source: "\n  query ReverseGeocode($latitude: Float!, $lo
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n    }\n  }\n"): (typeof documents)["\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n    }\n  }\n"];
+export function graphql(source: "\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n      minPositionIntervalSeconds\n      credentialFields\n      defaultUri\n    }\n  }\n"): (typeof documents)["\n  query GetProviderCapabilities {\n    providerCapabilities {\n      protocolTypeId\n      protocol\n      displayName\n      realTimePositions\n      positionHistory\n      deviceCatalog\n      connectivityPing\n      minPositionIntervalSeconds\n      credentialFields\n      defaultUri\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

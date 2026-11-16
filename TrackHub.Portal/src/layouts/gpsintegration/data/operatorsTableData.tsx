@@ -81,6 +81,8 @@ export interface CredentialFormValues {
   password?: string | null;
   key?: string | null;
   key2?: string | null;
+  /** Form-only: the operator's provider, which decides the fields the dialog asks for. */
+  protocolTypeId?: number;
 }
 
 /** A column descriptor / rendered row for the vendored operators `Table`. */
@@ -207,7 +209,7 @@ function useOperatorTableData(
     setOpen(true);
   };
 
-  const handleOpenCredential = async (operatorId: string) => {
+  const handleOpenCredential = async (operatorId: string, protocolTypeId?: number) => {
     // Silent read: an operator without a stored credential opens an empty form.
     let credential: Credential | undefined;
     try {
@@ -215,7 +217,7 @@ function useOperatorTableData(
     } catch (error) {
       if (process.env.NODE_ENV !== 'production') console.error(error);
     }
-    handleEditCredentialClick(credential || { operatorId });
+    handleEditCredentialClick({ ...(credential ?? { operatorId }), protocolTypeId });
     setOpenCredential(true);
   };
 
@@ -417,7 +419,7 @@ function useOperatorTableData(
           <ArgonButton variant="text" color="info" onClick={() => handleSync(operator)} disabled={!!syncingMap[operator.operatorId]}>
             <Icon>sync</Icon>&nbsp;{t('gpsIntegration.actions.sync')}
           </ArgonButton>
-          <ArgonButton variant="text" color="warning" onClick={async() => await handleOpenCredential(operator.operatorId)}>
+          <ArgonButton variant="text" color="warning" onClick={async() => await handleOpenCredential(operator.operatorId, operator.protocolTypeId)}>
             <Icon>vpn_key</Icon>&nbsp;{t('credential.title')}
           </ArgonButton>
           <ArgonButton variant="text" color="warning" onClick={() => handleResetSync(operator)} disabled={!!syncingMap[operator.operatorId]}>

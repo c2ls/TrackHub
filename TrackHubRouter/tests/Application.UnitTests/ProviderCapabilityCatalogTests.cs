@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -85,6 +85,12 @@ public class ProviderCapabilityCatalogTests
             Assert.That(gpsGate.PositionHistory, Is.False);
             Assert.That(gpsGate.RealTimePositions, Is.True);
             Assert.That(traccar.PositionHistory, Is.True);
+            Assert.That(traccar.MinPositionIntervalSeconds, Is.EqualTo(TestProviderDescriptors.TraccarMinPositionIntervalSeconds));
+            Assert.That(gpsGate.MinPositionIntervalSeconds, Is.Zero);
+            Assert.That(gpsGate.CredentialFields, Is.EqualTo(new[] { ProviderCredentialField.Password, ProviderCredentialField.Key }));
+            Assert.That(gpsGate.DefaultUri, Is.EqualTo("https://provider.example"));
+            Assert.That(traccar.CredentialFields, Has.Count.EqualTo(4));
+            Assert.That(traccar.DefaultUri, Is.Null);
         });
     }
 }

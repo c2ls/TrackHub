@@ -51,6 +51,13 @@ public class EnumTests
     [InlineData(ProtocolType.Wialon, 8)]
     [InlineData(ProtocolType.Protrack, 9)]
     [InlineData(ProtocolType.Mettax, 10)]
+    [InlineData(ProtocolType.Tracksolid, 11)]
+    [InlineData(ProtocolType.Motive, 12)]
+    [InlineData(ProtocolType.Cartrack, 13)]
+    [InlineData(ProtocolType.Pegasus, 14)]
+    [InlineData(ProtocolType.Webfleet, 15)]
+    [InlineData(ProtocolType.RedGps, 16)]
+    [InlineData(ProtocolType.Plaspy, 17)]
     public void ProtocolType_HasExpectedValues(ProtocolType type, int expected) =>
         ((int)type).Should().Be(expected);
 

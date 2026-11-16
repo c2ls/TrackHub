@@ -31,4 +31,12 @@ public interface IProviderDescriptor
     ProtocolType Protocol { get; }
     string DisplayName { get; }
     ProviderCapability Capabilities { get; }
+
+    // Shortest gap the provider's API allows between position polls of one account; 0 = no limit.
+    int MinPositionIntervalSeconds => 0;
+
+    ProviderCredentialField CredentialFields => ProviderCredentialField.All;
+
+    // The provider's single public endpoint, when it has one; null when the URL is per customer or region.
+    string? DefaultUri => null;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
+﻿// Copyright (c) 2026 Sergio Hernandez. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 //
 
 using Application.UnitTests;
+using Common.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Common.Mediator;
@@ -41,12 +42,14 @@ public class SyncPositionCommandHandlerTests : TestsContext
         _accountReaderMock = new Mock<IAccountReader>();
         _operatorReaderMock = new Mock<IOperatorReader>();
         _intervalManagerMock = new Mock<IExecutionIntervalManager>();
+        _intervalManagerMock.Setup(x => x.TryBeginOperatorRun(It.IsAny<Guid>(), It.IsAny<TimeSpan>())).Returns(true);
         _publisherMock = new Mock<IPublisher>();
 
         _handler = new UpdateTransporterCommandHandler(
             _accountReaderMock.Object,
             _operatorReaderMock.Object,
             _intervalManagerMock.Object,
+            TestProviderDescriptors.DefaultCatalog,
             _publisherMock.Object,
             Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
             Mock.Of<ILogger<UpdateTransporterCommandHandler>>());
@@ -136,6 +139,36 @@ public class SyncPositionCommandHandlerTests : TestsContext
         // Assert
         Assert.That(result, Is.True);
         _publisherMock.Verify(x => x.Publish(It.Is<OperatorRetrieved.Notification>(n => n.Operator.OperatorId == goodOperatorId), It.IsAny<CancellationToken>()), Times.Once);
+        _intervalManagerMock.Verify(x => x.UpdateLastExecutionTime(accountId), Times.Once);
+    }
+
+    [Test]
+    public async Task Handle_OperatorInsideProviderLimit_IsSkippedWhileTheOthersRun()
+    {
+        var accountId = Guid.NewGuid();
+        var account = new AccountSettingsVm(accountId, 10, false, false, GpsIntegrationEnabled: true);
+        var limitedId = Guid.NewGuid();
+        var freeId = Guid.NewGuid();
+        var operators = new[]
+        {
+            new OperatorVm(limitedId, (int)ProtocolType.Traccar, accountId, TestCredentialTokenVm),
+            new OperatorVm(freeId, (int)ProtocolType.CommandTrack, accountId, TestCredentialTokenVm)
+        };
+
+        _accountReaderMock.Setup(x => x.GetAccountsToSyncAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([account]);
+        _intervalManagerMock.Setup(x => x.ShouldExecuteTask(account)).Returns(true);
+        _operatorReaderMock.Setup(x => x.GetOperatorsByAccountsAsync(accountId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(operators);
+        _intervalManagerMock
+            .Setup(x => x.TryBeginOperatorRun(limitedId, TimeSpan.FromSeconds(TestProviderDescriptors.TraccarMinPositionIntervalSeconds)))
+            .Returns(false);
+
+        await _handler.Handle(new SyncPositionCommand(), CancellationToken.None);
+
+        _publisherMock.Verify(x => x.Publish(It.Is<OperatorRetrieved.Notification>(n => n.Operator.OperatorId == limitedId), It.IsAny<CancellationToken>()), Times.Never);
+        _publisherMock.Verify(x => x.Publish(It.Is<OperatorRetrieved.Notification>(n => n.Operator.OperatorId == freeId), It.IsAny<CancellationToken>()), Times.Once);
+        _intervalManagerMock.Verify(x => x.TryBeginOperatorRun(freeId, TimeSpan.Zero), Times.Once);
         _intervalManagerMock.Verify(x => x.UpdateLastExecutionTime(accountId), Times.Once);
     }
 

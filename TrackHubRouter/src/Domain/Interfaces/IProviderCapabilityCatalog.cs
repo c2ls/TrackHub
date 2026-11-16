@@ -36,6 +36,8 @@ public interface IProviderCapabilityCatalog
     /// <summary>Throws the client-facing provider-limitation error when the capability is missing.</summary>
     void EnsureSupports(ProtocolType protocol, ProviderCapability capability);
 
+    TimeSpan MinPositionInterval(ProtocolType protocol);
+
     /// <summary>Every registered provider's declaration, for the capability-matrix query.</summary>
     IReadOnlyCollection<IProviderDescriptor> All { get; }
 }

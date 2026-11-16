@@ -34,6 +34,14 @@ public readonly record struct GetProviderCapabilitiesQuery : IRequest<IEnumerabl
 public class GetProviderCapabilitiesQueryHandler(IProviderCapabilityCatalog capabilityCatalog)
     : IRequestHandler<GetProviderCapabilitiesQuery, IEnumerable<ProviderCapabilitiesVm>>
 {
+    private static readonly ProviderCredentialField[] SingleFields =
+    [
+        ProviderCredentialField.Username,
+        ProviderCredentialField.Password,
+        ProviderCredentialField.Key,
+        ProviderCredentialField.Key2,
+    ];
+
     public Task<IEnumerable<ProviderCapabilitiesVm>> Handle(GetProviderCapabilitiesQuery request, CancellationToken cancellationToken)
         => Task.FromResult(capabilityCatalog.All
             .OrderBy(descriptor => (int)descriptor.Protocol)
@@ -44,5 +52,8 @@ public class GetProviderCapabilitiesQueryHandler(IProviderCapabilityCatalog capa
                 descriptor.Capabilities.HasFlag(ProviderCapability.RealTimePositions),
                 descriptor.Capabilities.HasFlag(ProviderCapability.PositionHistory),
                 descriptor.Capabilities.HasFlag(ProviderCapability.DeviceCatalog),
-                descriptor.Capabilities.HasFlag(ProviderCapability.ConnectivityPing))));
+                descriptor.Capabilities.HasFlag(ProviderCapability.ConnectivityPing),
+                descriptor.MinPositionIntervalSeconds,
+                [.. SingleFields.Where(field => descriptor.CredentialFields.HasFlag(field))],
+                descriptor.DefaultUri)));
 }

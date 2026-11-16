@@ -121,6 +121,18 @@
     "password": "Contraseña",
     "key": "Clave Secreta",
     "key2": "Clave Secreta 2",
+    "providers": {
+      "CommandTrack": { "key": "ID de cliente" },
+      "GeoTab": { "key": "Base de datos" },
+      "GpsGate": { "password": "Token de autorización", "key": "ID de aplicación", "key2": "ID de usuario" },
+      "Tracksolid": { "username": "Cuenta de Tracksolid", "key": "App key", "key2": "App secret", "uriHelp": "Su nodo regional, por ejemplo https://us-open.tracksolidpro.com" },
+      "Motive": { "key": "Clave de API" },
+      "Cartrack": { "password": "Contraseña de API", "uriHelp": "Su base regional, por ejemplo https://fleetapi-za.cartrack.com/rest" },
+      "Pegasus": { "uriHelp": "La base de la API de su sitio, por ejemplo https://su-sitio/api" },
+      "Webfleet": { "key": "Clave de API", "key2": "Nombre de la cuenta" },
+      "RedGps": { "key": "Clave de API" },
+      "Plaspy": { "key": "Clave de API" }
+    },
     "connectivityTest": "Prueba de Conectividad",
     "testCredential": "Probar Credencial",
     "testSuccess": "La credencial fue probada con éxito",
@@ -876,6 +888,7 @@
     "name": "Nombre",
     "description": "Descripción",
     "type": "Protocolo",
+    "providerPositionLimit": "Este proveedor permite como máximo una actualización de posición cada {{seconds}} segundos. Si el intervalo de la cuenta es menor, se aplica el límite del proveedor.",
     "contactName": "Nombre de Contacto",
     "deleteTitle": "Eliminar Operador",
     "deleteMessage": "¿Está seguro de que desea eliminar este operador?"
