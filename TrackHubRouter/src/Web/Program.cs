@@ -92,7 +92,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHealthChecks("/health");
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Explicit: WebApplication would auto-insert these, but authentication must not depend on
