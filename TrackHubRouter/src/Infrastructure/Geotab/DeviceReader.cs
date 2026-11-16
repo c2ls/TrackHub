@@ -31,7 +31,7 @@ public sealed class DeviceReader(IProviderSessionStore sessionStore)
         var deviceSearch = new DeviceSearch(Id.Create(deviceDto.Identifier));
         var device = await Api.CallAsync<Device>("Get", typeof(Device), new { search = deviceSearch }, cancellationToken);
         PersistSession();
-        return device!.MapToDeviceVm(deviceDto);
+        return DeviceMapper.Instance.Map(device!, deviceDto);
     }
 
     // Retrieves a single device asynchronously
@@ -48,7 +48,7 @@ public sealed class DeviceReader(IProviderSessionStore sessionStore)
             return [];
         }
         var devicesDictionary = devices.ToDeviceLookup(device => device.Identifier);
-        return result.MapToDeviceVm(devicesDictionary);
+        return DeviceMapper.Instance.Map(result, devicesDictionary);
     }
 
     // Retrieves multiple devices asynchronously
@@ -56,6 +56,6 @@ public sealed class DeviceReader(IProviderSessionStore sessionStore)
     {
         var devices = await Api.CallAsync<IEnumerable<Device>>("Get", typeof(Device), cancellationToken);
         PersistSession();
-        return devices is null ? ([]) : devices.MapToDeviceVm().Distinct();
+        return devices is null ? ([]) : DeviceMapper.Instance.Map(devices).Distinct();
     }
 }

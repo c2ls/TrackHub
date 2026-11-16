@@ -14,44 +14,21 @@
 //
 
 using System.Globalization;
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.Pegasus.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<Vehicle>
 {
-    private const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    private const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
     public static string ToSerial(long imei) => imei.ToString(CultureInfo.InvariantCulture);
 
-    public static int ToIdentifier(long vehicleId) => vehicleId is > 0 and <= int.MaxValue ? (int)vehicleId : 0;
+    protected override bool IsCatalogued(Vehicle vehicle) => vehicle.HasDevice;
 
-    public static bool HasDevice(this Vehicle vehicle) => vehicle.Device is > 0;
+    protected override string Serial(Vehicle vehicle) => ToSerial(vehicle.Device!.Value);
 
-    public static DeviceVm MapToDeviceVm(this Vehicle vehicle, Guid? deviceId = null)
-    {
-        var serial = ToSerial(vehicle.Device!.Value);
-        return new(
-            deviceId,
-            ToIdentifier(vehicle.Id),
-            serial,
-            vehicle.Name ?? serial,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType);
-    }
+    protected override string Name(Vehicle vehicle) => vehicle.Name ?? Serial(vehicle);
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Vehicle> vehicles)
-        => vehicles.Where(HasDevice).Select(vehicle => vehicle.MapToDeviceVm());
-
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Vehicle> vehicles, IDictionary<string, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var vehicle in vehicles.Where(HasDevice))
-        {
-            if (devicesDictionary.TryGetValue(ToSerial(vehicle.Device!.Value), out var device))
-            {
-                yield return vehicle.MapToDeviceVm(device.TransporterId);
-            }
-        }
-    }
+    protected override int Identifier(Vehicle vehicle, DeviceTransporterVm? assignment) => ToIdentifier(vehicle.Id);
 }

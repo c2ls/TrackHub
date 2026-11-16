@@ -19,7 +19,6 @@ using Common.Domain.Extensions;
 using TrackHub.Router.Domain.Interfaces.Manager;
 using TrackHub.Router.Domain.Records;
 using TrackHub.Router.Infrastructure.Common;
-using TrackHub.Router.Infrastructure.RedGps.Helpers;
 
 namespace TrackHub.Router.Infrastructure.RedGps.Tests;
 
@@ -79,13 +78,13 @@ public class RedGpsPositionReaderTests
     [SetUp]
     public void SetUp()
     {
-        RequestPacer.MinInterval = TimeSpan.Zero;
+        RedGpsReaderBase.MinRequestInterval = TimeSpan.Zero;
         _credentialWriter = new Mock<ICredentialWriter>();
         _sessionStore = new ProviderSessionStore();
     }
 
     [TearDown]
-    public void TearDown() => RequestPacer.MinInterval = TimeSpan.FromSeconds(30);
+    public void TearDown() => RedGpsReaderBase.MinRequestInterval = TimeSpan.FromSeconds(30);
 
     private PositionReader CreateReader(RedGpsFakeHttpClientService http)
         => new(RedGpsTestData.ClientFactory(), http, _credentialWriter.Object, _sessionStore);
@@ -359,7 +358,7 @@ public class RedGpsPositionReaderTests
     [Test]
     public async Task Pacer_SpacesRequestsOfOneCredential()
     {
-        RequestPacer.MinInterval = TimeSpan.FromMilliseconds(300);
+        RedGpsReaderBase.MinRequestInterval = TimeSpan.FromMilliseconds(300);
         var http = new RedGpsFakeHttpClientService((action, _) => RedGpsTestData.Respond(action, """{"status":200,"data":[]}"""));
         var tester = new ConnectivityTester(RedGpsTestData.ClientFactory(), http, _credentialWriter.Object, _sessionStore);
         var credential = RedGpsTestData.Credential("persisted", DateTimeOffset.UtcNow.AddHours(3));
@@ -374,7 +373,7 @@ public class RedGpsPositionReaderTests
     [Test]
     public async Task Pacer_DoesNotDelayOtherCredentials()
     {
-        RequestPacer.MinInterval = TimeSpan.FromSeconds(30);
+        RedGpsReaderBase.MinRequestInterval = TimeSpan.FromSeconds(30);
         var http = new RedGpsFakeHttpClientService((action, _) => RedGpsTestData.Respond(action, """{"status":200,"data":[]}"""));
         var tester = new ConnectivityTester(RedGpsTestData.ClientFactory(), http, _credentialWriter.Object, _sessionStore);
 
@@ -388,7 +387,7 @@ public class RedGpsPositionReaderTests
     [Test]
     public async Task Pacer_WaitHonoursCancellation()
     {
-        RequestPacer.MinInterval = TimeSpan.FromSeconds(30);
+        RedGpsReaderBase.MinRequestInterval = TimeSpan.FromSeconds(30);
         var http = new RedGpsFakeHttpClientService((action, _) => RedGpsTestData.Respond(action, """{"status":200,"data":[]}"""));
         var tester = new ConnectivityTester(RedGpsTestData.ClientFactory(), http, _credentialWriter.Object, _sessionStore);
         var credential = RedGpsTestData.Credential("persisted", DateTimeOffset.UtcNow.AddHours(3));

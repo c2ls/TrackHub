@@ -53,7 +53,7 @@ public class PegasusReaderBase
         var httpClient = _httpClientFactory.CreateClientAsync(credential, cancellationToken);
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         HttpClientService.Init(httpClient, $"{ProtocolType.Pegasus}");
-        _token = await _sessionHelper.GetTokenAsync(HttpClientService, credential, cancellationToken);
+        _token = await _sessionHelper.GetTokenAsync(HttpClientService, credential, null, cancellationToken);
     }
 
     // Only a 401 is retried. A 429 must surface: Pegasus bans the IP of clients that keep calling after one.
@@ -65,7 +65,7 @@ public class PegasusReaderBase
         }
         catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.Unauthorized)
         {
-            _token = await _sessionHelper.ForceLoginAsync(HttpClientService, _credential, cancellationToken);
+            _token = await _sessionHelper.GetTokenAsync(HttpClientService, _credential, _token, cancellationToken);
             return await HttpClientService.GetAsync<T>(url, AuthenticationHeader(), cancellationToken);
         }
     }

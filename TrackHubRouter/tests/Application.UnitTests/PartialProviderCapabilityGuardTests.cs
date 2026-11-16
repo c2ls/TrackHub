@@ -72,7 +72,7 @@ public class PartialProviderCapabilityGuardTests : TestsContext
 
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.False);
+            Assert.That(result, Is.EqualTo(OperatorRunOutcome.Skipped));
             deviceRegistry.Verify(r => r.GetReader(It.IsAny<ProtocolType>()), Times.Never);
             syncRunWriter.Verify(w => w.RecordAsync(It.IsAny<OperatorSyncRunDto>(), It.IsAny<CancellationToken>()), Times.Never);
             healthWriter.Verify(w => w.RecordAsync(It.IsAny<OperatorHealthCheckDto>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -119,7 +119,7 @@ public class PartialProviderCapabilityGuardTests : TestsContext
 
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.False);
+            Assert.That(result, Is.EqualTo(OperatorRunOutcome.Skipped));
             connectivityRegistry.Verify(r => r.GetTester(It.IsAny<ProtocolType>()), Times.Never);
             healthWriter.Verify(w => w.RecordAsync(It.IsAny<OperatorHealthCheckDto>(), It.IsAny<CancellationToken>()), Times.Never);
             alertWriter.Verify(w => w.RecordAsync(It.IsAny<AlertEventDto>(), It.IsAny<CancellationToken>()), Times.Never);

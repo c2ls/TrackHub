@@ -1,3 +1,4 @@
+using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
@@ -32,8 +33,8 @@ public sealed class EmailNotificationProvider(IOptions<SmtpOptions> options) : I
             await client.AuthenticateAsync(smtp.Username, smtp.Password ?? string.Empty, cancellationToken);
         }
 
-        var response = await client.SendAsync(mime, cancellationToken);
+        var result = await client.SendAsync(new SendRequest(mime), cancellationToken);
         await client.DisconnectAsync(true, cancellationToken);
-        return new NotificationSendResult(true, response, null);
+        return new NotificationSendResult(true, result.ResponseText, null);
     }
 }

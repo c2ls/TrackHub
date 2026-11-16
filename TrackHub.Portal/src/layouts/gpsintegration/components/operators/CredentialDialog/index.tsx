@@ -53,6 +53,14 @@ const PROVIDER_FIELD_NAMES: Record<string, Partial<Record<CredentialField | 'uri
     key2: 'credential.providers.Tracksolid.key2',
     uriHelp: 'credential.providers.Tracksolid.uriHelp',
   },
+  Mettax: {
+    key: 'credential.providers.Mettax.key',
+    key2: 'credential.providers.Mettax.key2',
+    uriHelp: 'credential.providers.Mettax.uriHelp',
+  },
+  TrustTrack: { key: 'credential.providers.TrustTrack.key' },
+  Mapon: { key: 'credential.providers.Mapon.key' },
+  GpsTrackit: { key: 'credential.providers.GpsTrackit.key' },
   Motive: { key: 'credential.providers.Motive.key' },
   Cartrack: {
     password: 'credential.providers.Cartrack.password',

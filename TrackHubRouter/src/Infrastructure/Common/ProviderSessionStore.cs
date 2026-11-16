@@ -21,9 +21,9 @@ namespace TrackHub.Router.Infrastructure.Common;
 // In-process TTL cache of provider session artifacts, singleton like the
 // other single-instance sync state (DeviceCatalogCache, OperatorSyncBackoff). The full decrypted
 // credential is kept as the entry fingerprint — value equality on the record struct — so any
-// rotation of URI/username/password/keys/token invalidates the session implicitly. Concurrent
-// same-credential logins (position loop vs. ping loop) both Set; last-writer-wins is harmless
-// because providers allow parallel sessions and the loser's session simply idles out remotely.
+// rotation of URI/username/password/keys/token invalidates the session implicitly. Providers log in
+// through ProviderSessions, which serialises same-credential logins; a provider that writes here
+// directly (Geotab) may race, and last-writer-wins is harmless because the loser's session idles out.
 public sealed class ProviderSessionStore : IProviderSessionStore
 {
     private readonly ConcurrentDictionary<Guid, Entry> _entries = new();

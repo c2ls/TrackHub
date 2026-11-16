@@ -6,8 +6,7 @@
     Prepares everything docker-compose.local.yml needs. Safe to re-run: every step is
     idempotent and skips work that is already done.
 
-    Touches NOTHING production uses. IIS keeps ports 80 and 443 throughout - the
-    TrackHub proxy takes 8080/8443.
+    Touches NOTHING production uses. The TrackHub proxy serves 8080/8443.
 
     Steps that do NOT need elevation (the default):
       1. Verify Docker Desktop is running.

@@ -40,7 +40,7 @@ public sealed class DeviceReader(
         var tracker = result?.List?.FirstOrDefault(t => t.Tracker_id == deviceDto.Identifier);
         return tracker is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Identifier}")
-            : tracker.Value.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(tracker.Value, deviceDto);
     }
 
     /// <summary>
@@ -57,9 +57,7 @@ public sealed class DeviceReader(
         }
 
         var devicesDictionary = devices.ToDeviceLookup(device => device.Identifier);
-        return result.List
-            .Where(t => devicesDictionary.ContainsKey((int)t.Tracker_id))
-            .MapToDeviceVm(devicesDictionary);
+        return DeviceMapper.Instance.Map(result.List, devicesDictionary);
     }
 
     /// <summary>
@@ -70,6 +68,6 @@ public sealed class DeviceReader(
         var result = await PostNavixyAsync<TrackerListResponse>(
             "/v2/tracker/list", hash => new { hash }, cancellationToken);
 
-        return result?.List is null ? [] : result.List.MapToDeviceVm().Distinct();
+        return result?.List is null ? [] : DeviceMapper.Instance.Map(result.List).Distinct();
     }
 }

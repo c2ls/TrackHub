@@ -17,6 +17,7 @@ using System.Text;
 using System.Text.Json;
 using Ardalis.GuardClauses;
 using Common.Domain.Extensions;
+using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Interfaces.Manager;
 
@@ -26,38 +27,13 @@ namespace TrackHub.Router.Infrastructure.CommandTrack.Helpers;
 // while the Manager write-back is still propagating through cached operator reads.
 internal class TokenHelper(ICredentialWriter credentialWriter, IProviderSessionStore sessionStore)
 {
-    // Do not hand out a token that dies mid-sync.
-    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(1);
+    private const string TokenScope = "commandtrack-token";
 
-    // Retrieves a token asynchronously
-    public async Task<string> GetTokenAsync(HttpClient httpClient,
-        CredentialTokenDto credential,
-        CancellationToken token)
-    {
-        if (sessionStore.TryGet(credential, out var cachedToken))
-        {
-            return cachedToken;
-        }
+    public Task<string> GetTokenAsync(HttpClient httpClient, CredentialTokenDto credential, string? rejectedToken, CancellationToken token)
+        => sessionStore.AcquireReusingStoredTokenAsync(TokenScope, credential, rejectedToken,
+            cancellationToken => AuthenticateAsync(httpClient, credential, cancellationToken), token);
 
-        if (!string.IsNullOrEmpty(credential.Token) && !IsTokenExpired(credential))
-        {
-            CacheToken(credential, credential.Token, credential.TokenExpiration);
-            return credential.Token;
-        }
-
-        return await RefreshTokenAsync(httpClient, credential, token);
-    }
-
-    // Drops both caches and authenticates again. Used when the provider rejects the stored token
-    // with 401 before its recorded expiry — a server-side revocation the expiry cannot predict.
-    public async Task<string> ForceRefreshTokenAsync(HttpClient httpClient, CredentialTokenDto credential, CancellationToken token)
-    {
-        sessionStore.Invalidate(credential.CredentialId);
-        return await RefreshTokenAsync(httpClient, credential, token);
-    }
-
-    // Refreshes the token asynchronously
-    private async Task<string> RefreshTokenAsync(HttpClient httpClient, CredentialTokenDto credential, CancellationToken token)
+    private async Task<ProviderSessionGrant> AuthenticateAsync(HttpClient httpClient, CredentialTokenDto credential, CancellationToken token)
     {
         Guard.Against.Null(credential.Key, message: "Credential key not found.");
 
@@ -90,24 +66,6 @@ internal class TokenHelper(ICredentialWriter credentialWriter, IProviderSessionS
                 null
             ), token);
 
-        CacheToken(credential, newToken.Token, newToken.Expires);
-        return newToken.Token;
+        return ProviderSessions.ExpiringAt(newToken.Token, newToken.Expires);
     }
-
-    // Non-sliding: a bearer token has an absolute expiry regardless of use. Tokens without an
-    // expiry are not cached (no TTL basis) — the durable credential copy covers them.
-    private void CacheToken(CredentialTokenDto credential, string tokenValue, DateTimeOffset? expiration)
-    {
-        if (expiration is { } expiresAt)
-        {
-            sessionStore.Set(credential, tokenValue, expiresAt - DateTimeOffset.UtcNow - ExpiryMargin, sliding: false);
-        }
-    }
-
-    // Checks if the token has expired
-    // A null expiry means the provider never said when the token dies. Treat that as expired: the
-    // lifted comparison would otherwise be false forever and pin a token the provider may already
-    // have dropped, leaving the operator failing 401 until someone rotates the credential by hand.
-    private static bool IsTokenExpired(CredentialTokenDto token)
-        => token.TokenExpiration is not { } expiration || DateTimeOffset.UtcNow >= expiration;
 }

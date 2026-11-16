@@ -80,7 +80,7 @@ try {
 
             Write-Host ""
             Write-Host "TrackHub local stack is up." -ForegroundColor Green
-            Write-Host "  API gateway   https://trackhub.local:8443/   (IIS keeps 443)" -ForegroundColor White
+            Write-Host "  API gateway   https://trackhub.local:8443/" -ForegroundColor White
             Write-Host "  Portal        https://localhost:3000/        (npm start in TrackHub.Portal)" -ForegroundColor White
             Write-Host ""
             Write-Host "Direct host ports, for a service you are debugging in Visual Studio:" -ForegroundColor Cyan

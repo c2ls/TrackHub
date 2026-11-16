@@ -33,17 +33,17 @@ public sealed class DeviceReader(
         var device = (await ListDevicesAsync(cancellationToken)).FirstOrDefault(d => d.Imei == deviceDto.Serial);
         return device is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Serial}")
-            : device.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(device, deviceDto);
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(IEnumerable<DeviceTransporterVm> devices, CancellationToken cancellationToken)
     {
         var devicesDictionary = devices.ToDeviceLookup(device => device.Serial);
-        return (await ListDevicesAsync(cancellationToken)).MapToDeviceVm(devicesDictionary).ToList();
+        return DeviceMapper.Instance.Map(await ListDevicesAsync(cancellationToken), devicesDictionary).ToList();
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
-        => (await ListDevicesAsync(cancellationToken)).Select(d => d.MapToDeviceVm()).Distinct().ToList();
+        => DeviceMapper.Instance.Map(await ListDevicesAsync(cancellationToken)).Distinct().ToList();
 
     private async Task<IEnumerable<DeviceRecord>> ListDevicesAsync(CancellationToken cancellationToken)
         => await CallAsync<List<DeviceRecord>>("jimi.user.device.list", [new("target", Account)], cancellationToken) ?? [];

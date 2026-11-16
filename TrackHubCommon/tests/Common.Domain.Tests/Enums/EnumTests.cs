@@ -58,6 +58,9 @@ public class EnumTests
     [InlineData(ProtocolType.Webfleet, 15)]
     [InlineData(ProtocolType.RedGps, 16)]
     [InlineData(ProtocolType.Plaspy, 17)]
+    [InlineData(ProtocolType.TrustTrack, 18)]
+    [InlineData(ProtocolType.Mapon, 19)]
+    [InlineData(ProtocolType.GpsTrackit, 20)]
     public void ProtocolType_HasExpectedValues(ProtocolType type, int expected) =>
         ((int)type).Should().Be(expected);
 

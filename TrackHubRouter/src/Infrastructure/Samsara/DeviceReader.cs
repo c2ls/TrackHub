@@ -40,7 +40,7 @@ public sealed class DeviceReader(
         var vehicle = result?.Data?.FirstOrDefault();
         return vehicle is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Serial}")
-            : vehicle.Value.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(vehicle.Value, deviceDto);
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public sealed class DeviceReader(
         {
             var url = $"fleet/vehicles/stats?vehicleIds={string.Join(",", chunk)}";
             var vehicles = await GetAllPagesAsync<VehicleStatsResponse, VehicleStats>(url, cancellationToken);
-            results.AddRange(vehicles.MapToDeviceVm(devicesDictionary));
+            results.AddRange(DeviceMapper.Instance.Map(vehicles, devicesDictionary));
         }
         return results;
     }
@@ -65,6 +65,6 @@ public sealed class DeviceReader(
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
     {
         var vehicles = await GetAllPagesAsync<VehicleStatsResponse, VehicleStats>("fleet/vehicles/stats", cancellationToken);
-        return vehicles.MapToDeviceVm().Distinct();
+        return DeviceMapper.Instance.Map(vehicles).Distinct();
     }
 }

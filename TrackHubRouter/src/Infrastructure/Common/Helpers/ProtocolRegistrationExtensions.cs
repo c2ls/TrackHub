@@ -30,13 +30,6 @@ namespace TrackHub.Router.Infrastructure.Common.Helpers;
 // protocol, display name and capabilities, so adding a provider touches no central registry here.
 public static class ProtocolRegistrationExtensions
 {
-    /// <summary>
-    /// Enum values reserved without a provider assembly. They surface in the capability
-    /// matrix with no capabilities so clients can name them without a registered provider.
-    /// </summary>
-    public static IReadOnlyList<IProviderDescriptor> ReservedDescriptors { get; } =
-        [new ReservedProviderDescriptor(ProtocolType.Mettax)];
-
     public static IProviderDescriptor RegisterProtocol(
         this IServiceCollection services,
         string protocolName)
@@ -152,14 +145,6 @@ public static class ProtocolRegistrationExtensions
                 + $"readers (ProviderDescriptor: '{declared}', assembly supports: "
                 + $"'{expected}'). Align the descriptor with the provider's reader classes.");
         }
-    }
-
-    // Placeholder declaration for reserved enum values: named, but with no capabilities.
-    private sealed class ReservedProviderDescriptor(ProtocolType protocol) : IProviderDescriptor
-    {
-        public ProtocolType Protocol => protocol;
-        public string DisplayName => protocol.ToString();
-        public ProviderCapability Capabilities => ProviderCapability.None;
     }
 
     private static Type? GetProtocolType(Assembly assembly, string protocolNamespace, string typeName)

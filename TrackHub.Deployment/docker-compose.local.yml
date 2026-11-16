@@ -14,10 +14,9 @@
 #
 # WHY EACH OVERRIDE EXISTS
 #
-#  1. IIS owns :80 and :443 on this machine and keeps them - it serves non-TrackHub
-#     sites. Compose merges "ports" by APPENDING, so the base nginx cannot be moved
-#     off 80/443 by an override; it is disabled by profile instead and replaced by
-#     nginx-local on 8080/8443.
+#  1. The base nginx hard-binds :80 and :443. Compose merges "ports" by APPENDING,
+#     so it cannot be moved off them by an override; it is disabled by profile
+#     instead and replaced by nginx-local on 8080/8443.
 #
 #  2. Every API publishes its container port on 600x so a service running under the
 #     Visual Studio debugger can call its Docker peers. 600x and not 500x because
@@ -65,7 +64,7 @@ x-local-service: &local-service
 services:
 
   # ---------------------------------------------------------------------------
-  # Production nginx: disabled locally (it hard-binds 80/443, which IIS owns).
+  # Production nginx: disabled locally (it hard-binds 80/443; nginx-local serves 8080/8443).
   # A profile nobody enables is the only way to stop a base service from starting.
   # ---------------------------------------------------------------------------
   nginx:

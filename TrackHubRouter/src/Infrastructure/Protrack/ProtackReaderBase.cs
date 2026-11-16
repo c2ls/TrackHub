@@ -71,12 +71,11 @@ public class ProtrackReaderBase
 
         HttpClientService.Init(httpClient, $"{ProtocolType.Protrack}");
 
-        AccessToken = await _tokenHelper.GetTokenAsync(
-            HttpClientService, BaseUrl, credential, cancellationToken);
+        AccessToken = await _tokenHelper.GetTokenAsync(HttpClientService, BaseUrl, credential, null, cancellationToken);
     }
 
     /// <summary>
-    /// Runs a provider read and, if the provider rejects the token with 401, authenticates again and
+    /// Runs a provider read and, if the provider rejects the token with 401, renews the token and
     /// retries once. The read is a factory because Protrack carries the token in the query string,
     /// so the retry has to rebuild the URL around the new one.
     /// </summary>
@@ -93,8 +92,7 @@ public class ProtrackReaderBase
                 throw new InvalidOperationException("Protrack reader was not initialized.");
             }
 
-            AccessToken = await _tokenHelper.ForceRefreshTokenAsync(
-                HttpClientService, BaseUrl, credential, cancellationToken);
+            AccessToken = await _tokenHelper.GetTokenAsync(HttpClientService, BaseUrl, credential, AccessToken, cancellationToken);
             return await read();
         }
     }

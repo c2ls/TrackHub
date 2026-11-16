@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Common.Domain.Json;
 
@@ -27,7 +28,10 @@ internal readonly record struct VehicleEntry(Vehicle Vehicle);
 internal readonly record struct Vehicle(
     long Id,
     string? Number,
-    [property: JsonPropertyName("current_location")] VehicleLocation? CurrentLocation);
+    [property: JsonPropertyName("current_location")] VehicleLocation? CurrentLocation)
+{
+    public string Serial => Id.ToString(CultureInfo.InvariantCulture);
+}
 
 internal readonly record struct VehicleLocation(
     [property: JsonPropertyName("located_at"), JsonConverter(typeof(UtcDateTimeOffsetJsonConverter))] DateTimeOffset LocatedAt,

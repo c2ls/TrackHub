@@ -40,15 +40,11 @@ public static class DependencyInjection
 
         // Uniform registration for every provider (no adapter special-casing — router-audit A-18);
         // each provider's readers are registered keyed by ProtocolType (router-audit A-07). Each
-        // registration yields the assembly's own descriptor; together with the reserved
-        // placeholders they form the runtime capability catalog.
+        // registration yields the assembly's own descriptor; together they form the runtime capability catalog.
         var descriptors = protocols
             .Select(protocol => services.RegisterProtocol(protocol))
             .DistinctBy(descriptor => descriptor.Protocol)
             .ToList();
-        var registered = descriptors.Select(d => d.Protocol).ToHashSet();
-        descriptors.AddRange(ProtocolRegistrationExtensions.ReservedDescriptors
-            .Where(reserved => !registered.Contains(reserved.Protocol)));
         services.AddSingleton<IProviderCapabilityCatalog>(new ProviderCapabilityCatalog(descriptors));
 
         services.AddHttpClient(NominatimReverseGeocoder.HttpClientName);

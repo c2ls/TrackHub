@@ -17,6 +17,7 @@ using Common.Mediator;
 using TrackHub.Router.Application.Sync;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Interfaces.Manager;
+using TrackHub.Router.Domain.Enumerators;
 using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Models;
 
@@ -39,7 +40,7 @@ public sealed class OperatorFanOut(
         string loopName,
         DateTimeOffset now,
         Func<OperatorVm, DateTimeOffset, bool> isDue,
-        Func<ISender, OperatorVm, CancellationToken, Task<bool>> dispatch,
+        Func<ISender, OperatorVm, CancellationToken, Task<OperatorRunOutcome>> dispatch,
         CancellationToken cancellationToken)
     {
         var accounts = await accountReader.GetAccountsToSyncAsync(cancellationToken);
@@ -56,7 +57,7 @@ public sealed class OperatorFanOut(
         SemaphoreSlim gate,
         DateTimeOffset now,
         Func<OperatorVm, DateTimeOffset, bool> isDue,
-        Func<ISender, OperatorVm, CancellationToken, Task<bool>> dispatch,
+        Func<ISender, OperatorVm, CancellationToken, Task<OperatorRunOutcome>> dispatch,
         CancellationToken cancellationToken)
     {
         IEnumerable<OperatorVm> operators;
@@ -85,7 +86,7 @@ public sealed class OperatorFanOut(
         Guid accountId,
         OperatorVm @operator,
         SemaphoreSlim gate,
-        Func<ISender, OperatorVm, CancellationToken, Task<bool>> dispatch,
+        Func<ISender, OperatorVm, CancellationToken, Task<OperatorRunOutcome>> dispatch,
         CancellationToken cancellationToken)
     {
         await gate.WaitAsync(cancellationToken);
@@ -97,23 +98,23 @@ public sealed class OperatorFanOut(
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             var backoff = scope.ServiceProvider.GetRequiredService<IOperatorSyncBackoff>();
 
-            bool succeeded;
+            OperatorRunOutcome outcome;
             try
             {
-                succeeded = await dispatch(sender, @operator, cancellationToken);
+                outcome = await dispatch(sender, @operator, cancellationToken);
             }
             catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
-                succeeded = false;
+                outcome = OperatorRunOutcome.Failed;
                 logger.LogError(ex, "Loop {Loop} failed for operator {OperatorId} (account {AccountId}).",
                     loopName, @operator.OperatorId, accountId);
             }
 
-            if (succeeded)
+            if (outcome == OperatorRunOutcome.Succeeded)
             {
                 await backoff.RecordSuccessAsync(@operator, cancellationToken);
             }
-            else
+            else if (outcome == OperatorRunOutcome.Failed)
             {
                 await backoff.RecordFailureAsync(@operator, DateTimeOffset.UtcNow, cancellationToken);
             }

@@ -42,7 +42,7 @@ public sealed class DeviceReader(
         var devices = await HttpClientService.GetAsync<IEnumerable<Device>>(url, cancellationToken: cancellationToken);
         var device = devices?.FirstOrDefault()
             ?? throw new InvalidOperationException($"Traccar returned no device for id {deviceDto.Identifier}.");
-        return device.MapToDeviceVm(deviceDto);
+        return DeviceMapper.Instance.Map(device, deviceDto);
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public sealed class DeviceReader(
             var result = await HttpClientService.GetAsync<IEnumerable<Device>>(url, cancellationToken: cancellationToken);
             if (result is not null)
             {
-                results.AddRange(result.MapToDeviceVm(devicesDictionary));
+                results.AddRange(DeviceMapper.Instance.Map(result, devicesDictionary));
             }
         }
         return results;
@@ -76,6 +76,6 @@ public sealed class DeviceReader(
     {
         var url = "api/devices?all=true";
         var devices = await HttpClientService.GetAsync<IEnumerable<Device>>(url, cancellationToken: cancellationToken);
-        return devices is null ? ([]) : devices.MapToDeviceVm().Distinct();
+        return devices is null ? ([]) : DeviceMapper.Instance.Map(devices).Distinct();
     }
 }

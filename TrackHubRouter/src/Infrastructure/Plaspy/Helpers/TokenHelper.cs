@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Interfaces.Manager;
 using TrackHub.Router.Infrastructure.Plaspy.Mappers;
@@ -21,31 +22,13 @@ namespace TrackHub.Router.Infrastructure.Plaspy.Helpers;
 
 internal sealed class TokenHelper(ICredentialWriter credentialWriter, IProviderSessionStore sessionStore)
 {
-    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(1);
+    private const string TokenScope = "plaspy-token";
 
-    public async Task<string> GetTokenAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
-    {
-        if (sessionStore.TryGet(credential, out var cached))
-        {
-            return cached;
-        }
+    public Task<string> GetTokenAsync(IHttpClientService httpClientService, CredentialTokenDto credential, string? rejectedToken, CancellationToken cancellationToken)
+        => sessionStore.AcquireReusingStoredTokenAsync(TokenScope, credential, rejectedToken,
+            token => AuthenticateAsync(httpClientService, credential, token), cancellationToken);
 
-        if (credential is { Token.Length: > 0, TokenExpiration: { } expiration } && expiration - ExpiryMargin > DateTimeOffset.UtcNow)
-        {
-            CacheToken(credential, credential.Token, expiration);
-            return credential.Token;
-        }
-
-        return await RefreshTokenAsync(httpClientService, credential, cancellationToken);
-    }
-
-    public Task<string> ForceRefreshTokenAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
-    {
-        sessionStore.Invalidate(credential.CredentialId);
-        return RefreshTokenAsync(httpClientService, credential, cancellationToken);
-    }
-
-    private async Task<string> RefreshTokenAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
+    private async Task<ProviderSessionGrant> AuthenticateAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
     {
         var result = await httpClientService.PostAsync<AuthResult>(
             "api/Auth/Token", new { userName = credential.Username, apiKey = credential.Key }, cancellationToken);
@@ -59,16 +42,6 @@ internal sealed class TokenHelper(ICredentialWriter credentialWriter, IProviderS
         await credentialWriter.UpdateTokenAsync(credential.CredentialId,
             new UpdateTokenDto(credential.CredentialId, result.Token, expiration, null, null),
             cancellationToken);
-        CacheToken(credential, result.Token, expiration);
-        return result.Token;
-    }
-
-    // Without an expiry there is no TTL basis, so the token is not cached in-process.
-    private void CacheToken(CredentialTokenDto credential, string token, DateTimeOffset? expiration)
-    {
-        if (expiration - ExpiryMargin - DateTimeOffset.UtcNow is { } timeToLive && timeToLive > TimeSpan.Zero)
-        {
-            sessionStore.Set(credential, token, timeToLive, sliding: false);
-        }
+        return ProviderSessions.ExpiringAt(result.Token, expiration);
     }
 }

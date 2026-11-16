@@ -26,7 +26,6 @@ public class PlaspyReaderBase
 {
     private readonly ICredentialHttpClientFactory _httpClientFactory;
     private readonly TokenHelper _tokenHelper;
-    private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private CredentialTokenDto _credential;
     private HttpClient _httpClient = null!;
     private string _token = string.Empty;
@@ -52,7 +51,7 @@ public class PlaspyReaderBase
         _httpClient = _httpClientFactory.CreateClientAsync(credential, cancellationToken);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         HttpClientService.Init(_httpClient, $"{ProtocolType.Plaspy}");
-        _token = await _tokenHelper.GetTokenAsync(HttpClientService, credential, cancellationToken);
+        _token = await _tokenHelper.GetTokenAsync(HttpClientService, credential, null, cancellationToken);
     }
 
     private protected Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
@@ -79,30 +78,14 @@ public class PlaspyReaderBase
         }
         catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.Unauthorized)
         {
-            result = await send(await RefreshTokenAsync(token, cancellationToken));
+            var renewed = await _tokenHelper.GetTokenAsync(HttpClientService, _credential, token, cancellationToken);
+            Interlocked.CompareExchange(ref _token, renewed, token);
+            result = await send(renewed);
         }
 
         return result is null or { Success: false }
             ? throw new InvalidOperationException($"Plaspy API error calling '{url}': {result?.Error ?? "empty response"}")
             : result;
-    }
-
-    // Position reads run concurrently: the token travels per request, and readers rejected together refresh it once.
-    private async Task<string> RefreshTokenAsync(string rejectedToken, CancellationToken cancellationToken)
-    {
-        await _refreshLock.WaitAsync(cancellationToken);
-        try
-        {
-            if (_token == rejectedToken)
-            {
-                _token = await _tokenHelper.ForceRefreshTokenAsync(HttpClientService, _credential, cancellationToken);
-            }
-            return _token;
-        }
-        finally
-        {
-            _refreshLock.Release();
-        }
     }
 
     private static Dictionary<string, string> Bearer(string token) => new() { ["Authorization"] = $"Bearer {token}" };

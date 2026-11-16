@@ -130,11 +130,11 @@ public class PositionMapperTests
     }
 
     [Test]
-    public void MapToDeviceVm_UsesVehicleIdAsSerialAndIdentifier()
+    public void Map_UsesVehicleIdAsSerialAndIdentifier()
     {
         var transporterId = Guid.NewGuid();
 
-        var result = new Vehicle(6620, "Unit 6620", null).MapToDeviceVm(transporterId);
+        var result = DeviceMapper.Instance.Map(new Vehicle(6620, "Unit 6620", null), new DeviceTransporterVm { TransporterId = transporterId });
 
         Assert.Multiple(() =>
         {
@@ -146,9 +146,9 @@ public class PositionMapperTests
     }
 
     [Test]
-    public void MapToDeviceVm_IdBeyondInt_KeepsSerialAndZeroIdentifier()
+    public void Map_IdBeyondInt_KeepsSerialAndZeroIdentifier()
     {
-        var result = new Vehicle(5_000_000_000, null, null).MapToDeviceVm();
+        var result = DeviceMapper.Instance.Map(new Vehicle(5_000_000_000, null, null));
 
         Assert.Multiple(() =>
         {

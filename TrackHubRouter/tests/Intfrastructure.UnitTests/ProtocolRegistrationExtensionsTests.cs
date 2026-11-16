@@ -92,18 +92,40 @@ public class ProtocolRegistrationExtensionsTests
         });
     }
 
-    [Test]
-    public void EveryProtocolTypeValue_IsEitherRegistrableOrReserved()
+    [TestCase(ProtocolType.Mettax)]
+    [TestCase(ProtocolType.TrustTrack)]
+    [TestCase(ProtocolType.Mapon)]
+    [TestCase(ProtocolType.GpsTrackit)]
+    public void RegisterProtocol_RestProvider_RegistersAllReadersWithFullCapabilities(ProtocolType protocol)
     {
-        // Replaces the old central-catalog completeness guard: every value the enum can name must
-        // either resolve a self-describing provider assembly (descriptor discovered and validated
-        // by RegisterProtocol) or appear in the reserved placeholder list — a new enum value with
-        // neither would silently report ProviderCapability.None to clients.
-        var reserved = ProtocolRegistrationExtensions.ReservedDescriptors
-            .Select(d => d.Protocol)
-            .ToHashSet();
+        var services = new ServiceCollection();
 
-        foreach (var protocol in Enum.GetValues<ProtocolType>().Where(p => !reserved.Contains(p)))
+        var descriptor = services.RegisterProtocol(protocol.ToString());
+
+        var expectedNamespace = $"TrackHub.Router.Infrastructure.{protocol}";
+        Assert.Multiple(() =>
+        {
+            foreach (var readerType in new[] { typeof(IPositionReader), typeof(IExternalDeviceReader), typeof(IConnectivityTester) })
+            {
+                var registration = services.Single(d => d.ServiceType == readerType && d.IsKeyedService);
+                Assert.That(registration.ServiceKey, Is.EqualTo(protocol));
+                Assert.That(registration.KeyedImplementationType?.Namespace, Is.EqualTo(expectedNamespace));
+            }
+            Assert.That(descriptor.Protocol, Is.EqualTo(protocol));
+            Assert.That(descriptor.Capabilities, Is.EqualTo(
+                ProviderCapability.RealTimePositions
+                | ProviderCapability.PositionHistory
+                | ProviderCapability.DeviceCatalog
+                | ProviderCapability.ConnectivityPing));
+        });
+    }
+
+    [Test]
+    public void EveryProtocolTypeValue_IsRegistrable()
+    {
+        // Every value the enum can name must resolve a self-describing provider assembly; a new
+        // enum value without one would fail at startup once configured.
+        foreach (var protocol in Enum.GetValues<ProtocolType>())
         {
             var services = new ServiceCollection();
 

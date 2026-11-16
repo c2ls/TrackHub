@@ -29,10 +29,10 @@ public sealed class DeviceReader(
     public async Task<DeviceVm> GetDeviceAsync(DeviceTransporterVm deviceDto, CancellationToken cancellationToken)
     {
         var vehicles = await GetAllVehiclesAsync($"v1/vehicle_locations?{VehicleIdsQuery([deviceDto.Serial])}", cancellationToken);
-        var vehicle = vehicles.Where(v => v.Serial() == deviceDto.Serial).Cast<Vehicle?>().FirstOrDefault();
+        var vehicle = vehicles.Where(v => v.Serial == deviceDto.Serial).Cast<Vehicle?>().FirstOrDefault();
         return vehicle is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Serial}")
-            : vehicle.Value.MapToDeviceVm(deviceDto.TransporterId);
+            : DeviceMapper.Instance.Map(vehicle.Value, deviceDto);
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(IEnumerable<DeviceTransporterVm> devices, CancellationToken cancellationToken)
@@ -42,7 +42,7 @@ public sealed class DeviceReader(
         foreach (var chunk in devicesDictionary.Keys.Chunk(ProviderBatching.MaxIdsPerRequest))
         {
             var vehicles = await GetAllVehiclesAsync($"v1/vehicle_locations?{VehicleIdsQuery(chunk)}", cancellationToken);
-            results.AddRange(vehicles.MapToDeviceVm(devicesDictionary));
+            results.AddRange(DeviceMapper.Instance.Map(vehicles, devicesDictionary));
         }
         return results.Distinct();
     }
@@ -50,6 +50,6 @@ public sealed class DeviceReader(
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
     {
         var vehicles = await GetAllVehiclesAsync("v1/vehicles", cancellationToken);
-        return vehicles.Select(vehicle => vehicle.MapToDeviceVm()).Distinct();
+        return DeviceMapper.Instance.Map(vehicles).Distinct();
     }
 }

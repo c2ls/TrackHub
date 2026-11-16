@@ -12,7 +12,7 @@ Construido sobre .NET 10 con un endpoint GraphQL de HotChocolate más una superf
 
 ## Qué hace
 
-- **Integración multiproveedor** — dieciséis proveedores GPS implementados (CommandTrack, Traccar, Flespi, GeoTab, GpsGate, Navixy, Samsara, Wialon, Protrack, Tracksolid Pro, Motive, Cartrack, Pegasus Gateway, Webfleet, RedGPS, Plaspy)
+- **Integración multiproveedor** — veinte proveedores GPS implementados (CommandTrack, Traccar, Flespi, GeoTab, GpsGate, Navixy, Samsara, Wialon, Protrack, Tracksolid Pro, Motive, Cartrack, Pegasus Gateway, Webfleet, RedGPS, Plaspy, MettaX IoT, Ruptela TrustTrack, Mapon, GPS Trackit)
 - **Normalización de datos** — las cargas útiles de los proveedores se convierten en una única forma `PositionVm`: velocidad en km/h, grados decimales, marcas de tiempo UTC
 - **Obtención de posiciones en tiempo real e histórica** en todos los operadores conectados
 - **Sincronización en segundo plano** — los ciclos de posición, dispositivo y salud del SyncWorker
@@ -96,6 +96,10 @@ Detalle completo: **[Router](https://github.com/shernandezp/TrackHub/wiki/Router
 | Webfleet | [Docs](https://www.webfleet.com/en_ie/fleet-management/integration/resources/) | ✅ Implementado | ❌ |
 | RedGPS | [Docs](https://docs.redgps.com/books/webservice/es) | ✅ Implementado | ❌ |
 | Plaspy | [Docs](https://docs.plaspy.com/docs/developers/) | ✅ Implementado | ❌ |
+| MettaX IoT | [Docs](https://mettahub-api.imettax.com/) | ✅ Implementado | ❌ |
+| Ruptela TrustTrack | [Docs](https://www.fmsdocumentation.com/apis/) | ✅ Implementado | ❌ |
+| Mapon | [Docs](https://mapon.com/api/) | ✅ Implementado | ❌ |
+| GPS Trackit (Zonar) | [Docs](https://api-docs.gpstrackit.com) | ✅ Implementado | ❌ |
 
 El formulario de credenciales del portal pide solo los campos que usa cada proveedor, con los nombres del propio proveedor, y precarga la URL cuando el proveedor tiene un único endpoint (declarado en cada `ProviderDescriptor` como `CredentialFields` y `DefaultUri`). Para los proveedores que necesitan algo más que URL, usuario y contraseña:
 
@@ -108,8 +112,10 @@ El formulario de credenciales del portal pide solo los campos que usa cada prove
 | Webfleet | `https://csv.webfleet.com/extern` | Usuario de WEBFLEET.connect | API key | Nombre de la cuenta |
 | RedGPS | `https://api.service24gps.com/api/v1` | Usuario de la plataforma | apikey | — |
 | Plaspy | `https://api.plaspy.com` | Nombre de usuario / — | API key | — |
-
-`Mettax` está reservado en el enum `ProtocolType` sin un ensamblado de proveedor — configurarlo lanza una excepción al iniciar.
+| MettaX IoT | Nodo regional, p. ej. `https://mettahub.mettaxiot.com/gps` | — | API key | API secret |
+| Ruptela TrustTrack | `https://api.fm-track.com` | — | API key | — |
+| Mapon | `https://mapon.com/api/v1/` | — | API key | — |
+| GPS Trackit (Zonar) | `https://cloud-api.gpstrackit.com/` | — | API key | — |
 
 **Agregar un proveedor**: el recorrido completo está en [Adding a Provider](https://github.com/shernandezp/TrackHub/wiki/Adding-a-Provider) en la wiki.
 
@@ -119,7 +125,7 @@ El formulario de credenciales del portal pide solo los campos que usa cada prove
 
 - **Un proveedor mal configurado falla al iniciar, a propósito.** Un protocolo configurado que no resuelve ningún ensamblado, ningún tipo de lector, o cuya declaración de capacidades no coincide con sus lectores, lanza una excepción durante el arranque en lugar de omitirse silenciosamente.
 - **Tres cosas deben alinearse al agregar un proveedor**: el valor del enum `ProtocolType` (en TrackHubCommon), el ensamblado del proveedor (espacio de nombres `TrackHub.Router.Infrastructure.{Protocol}`, lectores con propiedades `Protocol` coincidentes y un `ProviderDescriptor` que declara nombre visible y capacidades), y la entrada `AppSettings:Protocols` (**tanto en Web como en SyncWorker**). La matriz de capacidades y la lista de proveedores expuesta a los clientes se construyen solas a partir de los descriptores descubiertos.
-- **El límite de consulta del proveedor prevalece sobre el intervalo de almacenamiento de la cuenta.** Un `ProviderDescriptor` puede declarar `MinPositionIntervalSeconds`; el ciclo de posiciones omite al operador consultado más recientemente que ese valor, y el portal muestra el límite al elegir el proveedor. Declarados hoy: flespi 10 s, Webfleet 15 s, RedGPS 60 s, Plaspy 120 s.
+- **El límite de consulta del proveedor prevalece sobre el intervalo de almacenamiento de la cuenta.** Un `ProviderDescriptor` puede declarar `MinPositionIntervalSeconds`; el ciclo de posiciones omite al operador consultado más recientemente que ese valor, y el portal muestra el límite al elegir el proveedor. Declarados hoy: flespi 10 s, Webfleet 15 s, MettaX IoT 60 s, RedGPS 60 s, Plaspy 120 s, GPS Trackit 300 s.
 - **`Ping` siempre debe realizar un round-trip real al proveedor.** Las sesiones se almacenan en caché en `IProviderSessionStore`, por lo que un ping que solo hiciera `Init` sería un simple acierto en memoria — convirtiendo el monitor de salud en un no-operativo que reporta HEALTHY mientras el proveedor está caído.
 - **Los errores del proveedor deben lanzar una excepción, nunca degradar a resultados vacíos.** Un error silenciado se convierte en una sincronización "exitosa" de 0 posiciones, lo que detiene silenciosamente el flujo de posiciones mientras Health permanece en verde. Wialon y Navixy reportan fallas como HTTP 200 con una carga útil de error — ambos casos se detectan y lanzan la excepción.
 - **El SyncWorker está diseñado para una sola instancia.** `IOperatorSyncLock`, `ExecutionIntervalManager` e `IProviderSessionStore` son todos en proceso. Escalarlo horizontalmente requiere una reivindicación entre instancias (un bloqueo consultivo de PostgreSQL o `SKIP LOCKED`).

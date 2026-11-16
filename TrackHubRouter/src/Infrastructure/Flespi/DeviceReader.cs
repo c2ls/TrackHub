@@ -38,7 +38,7 @@ public sealed class DeviceReader(
         var device = result?.Result?.FirstOrDefault();
         return device is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Identifier}")
-            : device.Value.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(device.Value, deviceDto);
     }
 
     /// <summary>
@@ -55,9 +55,7 @@ public sealed class DeviceReader(
         }
 
         var devicesDictionary = devices.ToDeviceLookup(device => device.Identifier);
-        return result.Result
-            .Where(d => devicesDictionary.ContainsKey((int)d.Id))
-            .MapToDeviceVm(devicesDictionary);
+        return DeviceMapper.Instance.Map(result.Result, devicesDictionary);
     }
 
     /// <summary>
@@ -68,6 +66,6 @@ public sealed class DeviceReader(
         var url = "gw/devices/all";
         var result = await HttpClientService.GetAsync<DeviceListResponse>(url, cancellationToken: cancellationToken);
 
-        return result?.Result is null ? [] : result.Result.MapToDeviceVm().Distinct();
+        return result?.Result is null ? [] : DeviceMapper.Instance.Map(result.Result).Distinct();
     }
 }

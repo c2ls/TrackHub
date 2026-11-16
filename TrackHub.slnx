@@ -94,7 +94,10 @@
     <Project Path="TrackHubRouter/src/Infrastructure/GeofenceApi/GeofenceApi.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Geotab/Geotab.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/GpsGate/GpsGate.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/GpsTrackit/GpsTrackit.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/ManagerApi/ManagerApi.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Mapon/Mapon.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/Mettax/Mettax.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Motive/Motive.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Navixy/Navixy.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Pegasus/Pegasus.csproj" />
@@ -105,6 +108,7 @@
     <Project Path="TrackHubRouter/src/Infrastructure/TelemetryApi/TelemetryApi.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Traccar/Traccar.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Tracksolid/Tracksolid.csproj" />
+    <Project Path="TrackHubRouter/src/Infrastructure/TrustTrack/TrustTrack.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/TripApi/TripApi.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Webfleet/Webfleet.csproj" />
     <Project Path="TrackHubRouter/src/Infrastructure/Wialon/Wialon.csproj" />

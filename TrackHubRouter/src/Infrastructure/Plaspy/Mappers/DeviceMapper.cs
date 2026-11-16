@@ -13,35 +13,17 @@
 //  limitations under the License.
 //
 
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.Plaspy.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<Device>
 {
-    private const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    private const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
-    public static DeviceVm MapToDeviceVm(this Device device, Guid? deviceId = null)
-        => new(
-            deviceId,
-            0,
-            device.Id!,
-            device.Name ?? device.Id!,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType);
+    protected override bool IsCatalogued(Device device) => !string.IsNullOrEmpty(device.Id);
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Device> devices)
-        => devices.Where(device => !string.IsNullOrEmpty(device.Id)).Select(device => device.MapToDeviceVm());
+    protected override string Serial(Device device) => device.Id!;
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Device> devices, IDictionary<string, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var device in devices)
-        {
-            if (device.Id is not null && devicesDictionary.TryGetValue(device.Id, out var selected))
-            {
-                yield return device.MapToDeviceVm(selected.TransporterId);
-            }
-        }
-    }
+    protected override string Name(Device device) => device.Name ?? device.Id!;
 }
