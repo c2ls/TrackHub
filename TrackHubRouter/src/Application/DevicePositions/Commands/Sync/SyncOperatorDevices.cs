@@ -36,7 +36,7 @@ public readonly record struct SyncOperatorDevicesCommand(
     string TriggerType,
     string? CorrelationId = null,
     bool ResetDeviceCatalog = false,
-    bool AutoAssignNewDevices = true) : IRequest<bool>;
+    bool AutoAssignNewDevices = true) : IRequest<OperatorRunOutcome>;
 
 public class SyncOperatorDevicesCommandHandler(
     IConfiguration configuration,
@@ -47,11 +47,11 @@ public class SyncOperatorDevicesCommandHandler(
     IAlertEventWriter alertWriter,
     IOperatorSyncLock syncLock,
     IProviderCapabilityCatalog capabilityCatalog,
-    ILogger<SyncOperatorDevicesCommandHandler> logger) : IRequestHandler<SyncOperatorDevicesCommand, bool>
+    ILogger<SyncOperatorDevicesCommandHandler> logger) : IRequestHandler<SyncOperatorDevicesCommand, OperatorRunOutcome>
 {
     private string? EncryptionKey { get; } = configuration["AppSettings:EncryptionKey"];
 
-    public async Task<bool> Handle(SyncOperatorDevicesCommand request, CancellationToken cancellationToken)
+    public async Task<OperatorRunOutcome> Handle(SyncOperatorDevicesCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(EncryptionKey, message: "Credential key not found.");
         if (request.Operator.Credential is null)
@@ -59,7 +59,7 @@ public class SyncOperatorDevicesCommandHandler(
             logger.LogWarning(
                 "Device sync skipped for operator {OperatorId} (account {AccountId}): no stored credential. Correlation {CorrelationId}.",
                 request.Operator.OperatorId, request.Operator.AccountId, request.CorrelationId);
-            return false;
+            return OperatorRunOutcome.Skipped;
         }
 
         // A provider that declares no DeviceCatalog is a DECLARED capability gap, not a failure —
@@ -77,7 +77,7 @@ public class SyncOperatorDevicesCommandHandler(
             logger.LogDebug(
                 "Device sync skipped for operator {OperatorId} (account {AccountId}): provider {Protocol} declares no device catalog.",
                 request.Operator.OperatorId, request.Operator.AccountId, protocol);
-            return false;
+            return OperatorRunOutcome.Skipped;
         }
 
         // Serialize per operator: a manual "sync now" and the background sync loop (or two manual
@@ -210,6 +210,6 @@ public class SyncOperatorDevicesCommandHandler(
                 request.Operator.OperatorId);
         }
 
-        return succeeded;
+        return succeeded ? OperatorRunOutcome.Succeeded : OperatorRunOutcome.Failed;
     }
 }

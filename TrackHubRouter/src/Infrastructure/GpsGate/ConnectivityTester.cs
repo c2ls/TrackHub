@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using System.Text.Json;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Records;
 
@@ -27,7 +28,6 @@ public sealed class ConnectivityTester(ICredentialHttpClientFactory httpClientFa
     {
         await Init(credential, cancellationToken);
         var url = $"api/v.1/applications";
-        await HttpClientService.GetAsync<Pong>(url, cancellationToken: cancellationToken);
+        await HttpClientService.GetAsync<JsonElement>(url, cancellationToken: cancellationToken);
     }
-    private class Pong { }
 }

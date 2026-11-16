@@ -2627,6 +2627,9 @@ enum ProtocolType {
   WEBFLEET
   RED_GPS
   PLASPY
+  TRUST_TRACK
+  MAPON
+  GPS_TRACKIT
 }
 
 enum PublicLinkResolution {

@@ -188,7 +188,7 @@ public static class DependencyInjection
 
     // Registers the IDocumentStorage implementation chosen by DocumentStorage:Provider
     // (LocalFileSystem | S3 | AzureBlob). The client is a singleton; the local FS default is a writable
-    // OS-temp path (the app directory is read-only under IIS).
+    // OS-temp path (the app directory is not assumed writable).
     private static void AddDocumentStorage(IServiceCollection services, IConfiguration configuration)
     {
         var provider = (configuration.GetValue<string>("DocumentStorage:Provider") ?? LocalFileSystemDocumentStorage.ProviderName).Trim();

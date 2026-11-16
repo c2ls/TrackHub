@@ -43,6 +43,17 @@ public class PositionReaderTests : PositionReaderTestsBase<PositionReader>
     }
 
     [Test]
+    public async Task GetDevicePositionAsync_DeviceWithoutMessages_HasNoPosition()
+    {
+        var deviceDto = CreateDeviceTransporterVm(1, "TestDevice");
+        HttpClientServiceMock.Setup(x => x.GetAsync<MessageListResponse>(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MessageListResponse(new List<Message>()));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => PositionReader.GetDevicePositionAsync(deviceDto, TestCancellationToken));
+        Assert.That(await PositionReader.GetDevicePositionAsync([deviceDto], TestCancellationToken), Is.Empty);
+    }
+
+    [Test]
     public async Task GetDevicePositionAsync_WithMultipleDevices_ReturnsPositionVmList()
     {
         // Arrange

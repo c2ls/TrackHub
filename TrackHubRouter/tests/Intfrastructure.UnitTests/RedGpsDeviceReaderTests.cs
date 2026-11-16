@@ -15,7 +15,6 @@
 
 using TrackHub.Router.Domain.Interfaces.Manager;
 using TrackHub.Router.Infrastructure.Common;
-using TrackHub.Router.Infrastructure.RedGps.Helpers;
 
 namespace TrackHub.Router.Infrastructure.RedGps.Tests;
 
@@ -36,14 +35,14 @@ public class RedGpsDeviceReaderTests
     [SetUp]
     public async Task SetUp()
     {
-        RequestPacer.MinInterval = TimeSpan.Zero;
+        RedGpsReaderBase.MinRequestInterval = TimeSpan.Zero;
         _http = new RedGpsFakeHttpClientService((action, _) => RedGpsTestData.Respond(action, Vehicles));
         _reader = new DeviceReader(RedGpsTestData.ClientFactory(), _http, new Mock<ICredentialWriter>().Object, new ProviderSessionStore());
         await _reader.Init(RedGpsTestData.Credential());
     }
 
     [TearDown]
-    public void TearDown() => RequestPacer.MinInterval = TimeSpan.FromSeconds(30);
+    public void TearDown() => RedGpsReaderBase.MinRequestInterval = TimeSpan.FromSeconds(30);
 
     [Test]
     public async Task GetDevicesAsync_All_MapsIdgpsAsSerialAndIdAsIdentifier()

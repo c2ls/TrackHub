@@ -64,9 +64,9 @@ public class PositionMapperTests
         => Assert.That(PositionMapper.FormatUtc(new DateTimeOffset(2026, 3, 1, 5, 15, 30, TimeSpan.FromHours(-5))), Is.EqualTo("2026-03-01T10:15:30Z"));
 
     [Test]
-    public void MapToDeviceVm_UsesIdAsSerial_IdentifierZero_AndSkipsDevicesWithoutId()
+    public void Map_UsesIdAsSerial_IdentifierZero_AndSkipsDevicesWithoutId()
     {
-        var devices = new[] { new Device("dev-1", "Van"), new Device(null, "Ghost"), new Device("dev-2", null) }.MapToDeviceVm().ToList();
+        var devices = DeviceMapper.Instance.Map(new[] { new Device("dev-1", "Van"), new Device(null, "Ghost"), new Device("dev-2", null) }).ToList();
 
         Assert.That(devices.Select(d => (d.Identifier, d.Serial, d.Name)), Is.EqualTo(new[] { (0, "dev-1", "Van"), (0, "dev-2", "dev-2") }));
     }

@@ -13,46 +13,19 @@
 //  limitations under the License.
 //
 
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.RedGps.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<Vehicle>
 {
-    private const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    private const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
-    private static int Identifier(Vehicle vehicle)
-        => vehicle.Id is { } id && id is >= 0 and <= int.MaxValue ? (int)id : 0;
+    protected override string? Key(Vehicle vehicle) => vehicle.Idgps;
 
-    public static DeviceVm MapToDeviceVm(this Vehicle vehicle, DeviceTransporterVm deviceDto)
-        => new(
-            deviceDto.TransporterId,
-            Identifier(vehicle),
-            vehicle.Idgps!,
-            vehicle.Nombre ?? vehicle.Idgps!,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType
-        );
+    protected override string Serial(Vehicle vehicle) => vehicle.Idgps!;
 
-    public static DeviceVm MapToDeviceVm(this Vehicle vehicle)
-        => new(
-            null,
-            Identifier(vehicle),
-            vehicle.Idgps!,
-            vehicle.Nombre ?? vehicle.Idgps!,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType
-        );
+    protected override string Name(Vehicle vehicle) => vehicle.Nombre ?? vehicle.Idgps!;
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Vehicle> vehicles, IDictionary<string, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var vehicle in vehicles)
-        {
-            if (vehicle.Idgps is not null && devicesDictionary.TryGetValue(vehicle.Idgps, out var selectedDevice))
-            {
-                yield return vehicle.MapToDeviceVm(selectedDevice);
-            }
-        }
-    }
+    protected override int Identifier(Vehicle vehicle, DeviceTransporterVm? assignment) => ToIdentifier(vehicle.Id);
 }

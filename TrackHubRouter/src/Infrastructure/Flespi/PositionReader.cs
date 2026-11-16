@@ -50,8 +50,7 @@ public sealed class PositionReader(
         var url = $"gw/devices/{deviceDto.Identifier}/messages?data=%7B%22reverse%22%3Atrue%2C%22count%22%3A1%7D";
         var result = await HttpClientService.GetAsync<MessageListResponse>(url, cancellationToken: cancellationToken);
 
-        var message = result?.Result?.FirstOrDefault();
-        return message is null ? default : message.Value.MapToPositionVm(deviceDto);
+        return result?.Result?.Take(1).ToArray() is [var latest] ? latest.MapToPositionVm(deviceDto) : default;
     }
 
 

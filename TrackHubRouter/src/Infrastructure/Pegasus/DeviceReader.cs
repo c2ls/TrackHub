@@ -31,8 +31,8 @@ public sealed class DeviceReader(
     public async Task<DeviceVm> GetDeviceAsync(DeviceTransporterVm deviceDto, CancellationToken cancellationToken)
     {
         var vehicle = await GetAsync<Vehicle>($"vehicles/{deviceDto.Identifier}", cancellationToken);
-        return vehicle is not null && vehicle.HasDevice()
-            ? vehicle.MapToDeviceVm(deviceDto.TransporterId)
+        return vehicle is not null && vehicle.HasDevice
+            ? DeviceMapper.Instance.Map(vehicle, deviceDto)
             : throw new InvalidOperationException($"Pegasus vehicle {deviceDto.Identifier} not found or has no device assigned.");
     }
 
@@ -40,12 +40,12 @@ public sealed class DeviceReader(
     {
         var devicesDictionary = devices.ToDeviceLookup(device => device.Serial);
         var vehicles = await GetAllVehiclesAsync<Vehicle>(null, cancellationToken);
-        return vehicles.MapToDeviceVm(devicesDictionary).Distinct();
+        return DeviceMapper.Instance.Map(vehicles, devicesDictionary).Distinct();
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
     {
         var vehicles = await GetAllVehiclesAsync<Vehicle>(null, cancellationToken);
-        return vehicles.MapToDeviceVm().Distinct();
+        return DeviceMapper.Instance.Map(vehicles).Distinct();
     }
 }

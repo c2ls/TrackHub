@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using TrackHub.Router.Domain.Enumerators;
 using Common.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -90,7 +91,7 @@ public class SyncOperatorDevicesCommandHandlerTests : TestsContext
         new(accountId, 0, false, false, GpsIntegrationEnabled: true);
 
     [Test]
-    public async Task Handle_NoCredential_ReturnsFalseAndRecordsNothing()
+    public async Task Handle_NoCredential_IsSkippedAndRecordsNothing()
     {
         var op = OperatorWith(null);
         var account = EnabledAccount(op.AccountId);
@@ -98,7 +99,7 @@ public class SyncOperatorDevicesCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new SyncOperatorDevicesCommand(op, "MANUAL"), CancellationToken.None);
 
-        Assert.That(result, Is.False);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Skipped));
         _syncRunWriterMock.Verify(w => w.RecordAsync(It.IsAny<OperatorSyncRunDto>(), It.IsAny<CancellationToken>()), Times.Never);
         _healthWriterMock.Verify(w => w.RecordAsync(It.IsAny<OperatorHealthCheckDto>(), It.IsAny<CancellationToken>()), Times.Never);
         _alertWriterMock.Verify(w => w.RecordAsync(It.IsAny<AlertEventDto>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -124,7 +125,7 @@ public class SyncOperatorDevicesCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new SyncOperatorDevicesCommand(op, "AUTOMATIC", "corr-1"), CancellationToken.None);
 
-        Assert.That(result, Is.True);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Succeeded));
         _deviceSyncWriterMock.Verify(w => w.SynchronizeAsync(
             account.AccountId,
             op.OperatorId,
@@ -171,7 +172,7 @@ public class SyncOperatorDevicesCommandHandlerTests : TestsContext
             new SyncOperatorDevicesCommand(op, "MANUAL", "corr-reset", ResetDeviceCatalog: true),
             CancellationToken.None);
 
-        Assert.That(result, Is.True);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Succeeded));
         _deviceSyncWriterMock.Verify(w => w.SynchronizeAsync(
             account.AccountId,
             op.OperatorId,
@@ -194,7 +195,7 @@ public class SyncOperatorDevicesCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new SyncOperatorDevicesCommand(op, "MANUAL"), CancellationToken.None);
 
-        Assert.That(result, Is.False);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Failed));
         _deviceSyncWriterMock.Verify(w => w.SynchronizeAsync(
             It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<IEnumerable<SynchronizedDeviceDto>>(),
             It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -228,7 +229,7 @@ public class SyncOperatorDevicesCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new SyncOperatorDevicesCommand(op, "AUTOMATIC"), CancellationToken.None);
 
-        Assert.That(result, Is.True);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Succeeded));
         _deviceSyncWriterMock.Verify(w => w.SynchronizeAsync(
             account.AccountId,
             op.OperatorId,

@@ -46,7 +46,7 @@ public sealed class DeviceReader(
         var result = await PostAsync<SingleItemResponse>("core/search_item", parameters, cancellationToken);
         return result?.Item is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Identifier}")
-            : result.Item.Value.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(result.Item.Value, deviceDto);
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public sealed class DeviceReader(
         }
 
         var devicesDictionary = devices.ToDeviceLookup(device => device.Identifier);
-        return result.Items.MapToDeviceVm(devicesDictionary);
+        return DeviceMapper.Instance.Map(result.Items, devicesDictionary);
     }
 
     /// <summary>
@@ -100,6 +100,6 @@ public sealed class DeviceReader(
         };
 
         var result = await PostAsync<SearchResponse>("core/search_items", parameters, cancellationToken);
-        return result?.Items is null ? [] : result.Items.MapToDeviceVm().Distinct();
+        return result?.Items is null ? [] : DeviceMapper.Instance.Map(result.Items).Distinct();
     }
 }

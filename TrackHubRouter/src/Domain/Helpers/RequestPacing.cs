@@ -14,23 +14,17 @@
 //
 
 using System.Collections.Concurrent;
-using TrackHub.Router.Domain.Helpers;
 
-namespace TrackHub.Router.Infrastructure.RedGps.Helpers;
+namespace TrackHub.Router.Domain.Helpers;
 
-// RedGPS: "Entre cada petición debe existir una diferencia mínima de treinta segundos."
-internal static class RequestPacer
+public static class RequestPacing
 {
-    private const string RequestGate = "redgps-request";
+    private static readonly ConcurrentDictionary<(string Scope, Guid CredentialId), DateTimeOffset> LastRequestEnd = new();
 
-    internal static TimeSpan MinInterval { get; set; } = TimeSpan.FromSeconds(30);
-
-    private static readonly ConcurrentDictionary<Guid, DateTimeOffset> LastRequestEnd = new();
-
-    public static Task<T> RunAsync<T>(Guid credentialId, Func<Task<T>> request, CancellationToken cancellationToken)
-        => CredentialGate.RunAsync(RequestGate, credentialId, async () =>
+    public static Task<T> RunAsync<T>(string scope, Guid credentialId, TimeSpan minInterval, Func<Task<T>> request, CancellationToken cancellationToken)
+        => CredentialGate.RunAsync(scope, credentialId, async () =>
         {
-            var wait = LastRequestEnd.GetValueOrDefault(credentialId) + MinInterval - DateTimeOffset.UtcNow;
+            var wait = LastRequestEnd.GetValueOrDefault((scope, credentialId)) + minInterval - DateTimeOffset.UtcNow;
             if (wait > TimeSpan.Zero)
             {
                 await Task.Delay(wait, cancellationToken);
@@ -42,7 +36,7 @@ internal static class RequestPacer
             }
             finally
             {
-                LastRequestEnd[credentialId] = DateTimeOffset.UtcNow;
+                LastRequestEnd[(scope, credentialId)] = DateTimeOffset.UtcNow;
             }
         }, cancellationToken);
 }

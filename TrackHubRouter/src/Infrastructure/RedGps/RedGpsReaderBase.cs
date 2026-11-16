@@ -20,7 +20,6 @@ using Common.Domain.Enums;
 using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Interfaces.Manager;
-using TrackHub.Router.Infrastructure.RedGps.Helpers;
 
 namespace TrackHub.Router.Infrastructure.RedGps;
 
@@ -39,6 +38,10 @@ public class RedGpsReaderBase(
 
     // Every request costs a 30-second slot, so concurrent readers of one credential must share one gettoken.
     private const string TokenGate = "redgps-token";
+    private const string RequestScope = "redgps-request";
+
+    // RedGPS: "Entre cada petición debe existir una diferencia mínima de treinta segundos."
+    internal static TimeSpan MinRequestInterval { get; set; } = TimeSpan.FromSeconds(30);
 
     private CredentialTokenDto _credential;
     private string _baseUrl = string.Empty;
@@ -98,7 +101,7 @@ public class RedGpsReaderBase(
         string action,
         IEnumerable<KeyValuePair<string, string>> form,
         CancellationToken cancellationToken)
-        => RequestPacer.RunAsync(_credential.CredentialId, async () =>
+        => RequestPacing.RunAsync(RequestScope, _credential.CredentialId, MinRequestInterval, async () =>
         {
             using var content = new FormUrlEncodedContent(form);
             return await httpClientService.PostAsync<RedGpsResponse>($"{_baseUrl}/{action}", content, cancellationToken)
@@ -114,26 +117,9 @@ public class RedGpsReaderBase(
         };
 
     private Task<string> AcquireTokenAsync(string? rejectedToken, CancellationToken cancellationToken)
-        => CredentialGate.RunAsync(TokenGate, _credential.CredentialId, async () =>
-        {
-            if (sessionStore.TryGet(_credential, out var cached) && cached != rejectedToken)
-            {
-                return cached;
-            }
+        => sessionStore.AcquireReusingStoredTokenAsync(TokenGate, _credential, rejectedToken, RequestTokenAsync, cancellationToken, ExpiryMargin);
 
-            if (rejectedToken is null
-                && _credential is { Token.Length: > 0, TokenExpiration: { } expiresAt }
-                && DateTimeOffset.UtcNow < expiresAt - ExpiryMargin)
-            {
-                CacheToken(_credential.Token, expiresAt);
-                return _credential.Token;
-            }
-
-            sessionStore.Invalidate(_credential.CredentialId);
-            return await RequestTokenAsync(cancellationToken);
-        }, cancellationToken);
-
-    private async Task<string> RequestTokenAsync(CancellationToken cancellationToken)
+    private async Task<ProviderSessionGrant> RequestTokenAsync(CancellationToken cancellationToken)
     {
         var response = await SendAsync("gettoken",
         [
@@ -152,10 +138,6 @@ public class RedGpsReaderBase(
         var expiresAt = DateTimeOffset.UtcNow + TokenLifetime;
         await credentialWriter.UpdateTokenAsync(_credential.CredentialId,
             new UpdateTokenDto(_credential.CredentialId, token, expiresAt, null, null), cancellationToken);
-        CacheToken(token, expiresAt);
-        return token;
+        return ProviderSessions.ExpiringAt(token, expiresAt, ExpiryMargin);
     }
-
-    private void CacheToken(string token, DateTimeOffset expiresAt)
-        => sessionStore.Set(_credential, token, expiresAt - DateTimeOffset.UtcNow - ExpiryMargin, sliding: false);
 }

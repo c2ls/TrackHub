@@ -3,8 +3,7 @@
 Runs the backend services in Docker, while the portal keeps running on the
 Vite dev server and any single service can be pulled out into the Visual Studio debugger.
 
-**IIS is not touched.** It keeps ports 80 and 443 for its other sites; the TrackHub proxy
-takes 8080/8443.
+The TrackHub proxy (`nginx-local`) serves 8080/8443.
 
 Nothing production uses is modified. `docker-compose.backend.yml`,
 `nginx.backend.conf`, `.env`, `deploy.sh` and
@@ -30,8 +29,6 @@ Nothing production uses is modified. `docker-compose.backend.yml`,
    container ──── http://manager:8080/graphql/ ────> container   (Docker network)
                                  │
                                  └──── host.docker.internal:5432 ──> Postgres 14 (host service)
-
-  IIS ──── https://localhost/ ────────────────────>  your other sites, untouched
 ```
 
 ### Why `trackhub.local` and not `localhost`
@@ -57,7 +54,6 @@ cannot do that: inside a container `localhost` is the container itself.
 
 | | Port | Note |
 | --- | --- | --- |
-| IIS | 80, 443 | untouched |
 | nginx-local | 8080, 8443 | TrackHub entry point |
 | Vite dev server | 3000 | portal, on the host |
 | Postgres | 5432 | native Windows service, not a container |

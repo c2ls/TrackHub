@@ -32,7 +32,7 @@ public sealed class DeviceReader(
     {
         var result = await GetAsync<DeviceResponse>($"api/devices/{Uri.EscapeDataString(deviceDto.Serial)}", cancellationToken);
         return result.Device is { Id.Length: > 0 } device
-            ? device.MapToDeviceVm(deviceDto.TransporterId)
+            ? DeviceMapper.Instance.Map(device, deviceDto)
             : throw new InvalidOperationException($"Plaspy device not found: {deviceDto.Serial}");
     }
 
@@ -40,12 +40,12 @@ public sealed class DeviceReader(
     {
         var devicesDictionary = devices.ToDeviceLookup(device => device.Serial);
         var result = await GetAsync<DevicesResponse>("api/devices", cancellationToken);
-        return (result.Devices ?? []).MapToDeviceVm(devicesDictionary).Distinct();
+        return DeviceMapper.Instance.Map(result.Devices ?? [], devicesDictionary).Distinct();
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
     {
         var result = await GetAsync<DevicesResponse>("api/devices", cancellationToken);
-        return (result.Devices ?? []).MapToDeviceVm().Distinct();
+        return DeviceMapper.Instance.Map(result.Devices ?? []).Distinct();
     }
 }

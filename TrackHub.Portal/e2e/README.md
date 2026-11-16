@@ -267,8 +267,7 @@ test that seeds data:
 - **§7.5 "protocol types must match `protocolTypes.ts`".** That file no longer
   exists — the portal carries no local protocol list. The picker is fed by the
   Router's `ProviderCapabilityCatalog`, so the test compares the offered options
-  against that catalog instead, and asserts a reserved (capability-less) entry is
-  never offered.
+  against that catalog instead.
 - **§7.12 "revoke the token via the API mid-test".** The refresh grant is failed
   at the network boundary instead. Revoking the shared administrator's refresh
   token would invalidate the session every other test in the worker signs in

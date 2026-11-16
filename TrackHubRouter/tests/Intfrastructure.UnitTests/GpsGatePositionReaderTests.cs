@@ -33,7 +33,7 @@ public class PositionReaderTests : PositionReaderTestsBase<PositionReader>
     {
         // Arrange
         var deviceDto = CreateDeviceTransporterVm(1, "TestDevice");
-        var device = new Device(1, "TestDevice", "IMEI123", 0, 0, null, null);
+        var device = new Device(1, "TestDevice", "IMEI123", 4.710989, -74.072092, null, null);
 
         HttpClientServiceMock.Setup(x => x.GetAsync<Device>(It.IsAny<string>(), null, TestCancellationToken))
             .ReturnsAsync(device);
@@ -50,10 +50,10 @@ public class PositionReaderTests : PositionReaderTestsBase<PositionReader>
     {
         // Arrange
         var devices = CreateDeviceTransporterVmList(1, 2);
-        var device1 = new Device(1, "TestDevice1", "IMEI123", 0, 0, null, null);
-        var device2 = new Device(2, "TestDevice2", "IMEI456", 0, 0, null, null);
+        var device1 = new Device(1, "TestDevice1", "IMEI123", 4.710989, -74.072092, null, null);
+        var device2 = new Device(2, "TestDevice2", "IMEI456", 4.710989, -74.072092, null, null);
 
-        HttpClientServiceMock.SetupSequence(x => x.GetAsync<Device>(It.IsAny<string>(), null, TestCancellationToken))
+        HttpClientServiceMock.SetupSequence(x => x.GetAsync<Device>(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(device1)
             .ReturnsAsync(device2);
 
@@ -61,7 +61,7 @@ public class PositionReaderTests : PositionReaderTestsBase<PositionReader>
         var result = await PositionReader.GetDevicePositionAsync(devices, TestCancellationToken);
 
         // Assert
-        AssertIsNotEmpty(result);
+        Assert.That(result.Select(p => p.TransporterId), Is.EquivalentTo(devices.Select(d => d.TransporterId)));
     }
 
     [Test]

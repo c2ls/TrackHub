@@ -36,12 +36,9 @@ interface OperatorFormDialogProps {
 function OperatorFormDialog({ open, setOpen, handleSubmit, values, handleChange, errors }: OperatorFormDialogProps) {
   const { t } = useTranslation();
   // The deployment's registered providers, straight from the Router — the portal
-  // carries no local protocol list. Placeholder-only entries (no capabilities at
-  // all) are reserved values, not selectable providers.
+  // carries no local protocol list.
   const { data: providerCapabilities } = useProviderCapabilities({ enabled: open });
-  const protocolOptions = (providerCapabilities ?? [])
-    .filter((p) => p.realTimePositions || p.positionHistory || p.deviceCatalog || p.connectivityPing)
-    .map((p) => ({ value: p.protocolTypeId, label: p.displayName }));
+  const protocolOptions = (providerCapabilities ?? []).map((p) => ({ value: p.protocolTypeId, label: p.displayName }));
   const minPositionIntervalSeconds = providerCapabilities
     ?.find((p) => p.protocolTypeId === Number(values.protocolTypeId))?.minPositionIntervalSeconds ?? 0;
   return (

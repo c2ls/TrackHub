@@ -24,12 +24,17 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application\Application.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Common\Common.csproj" />
+    <ProjectReference Include="..\..\src\SyncWorker\SyncWorker.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\CommandTrack\CommandTrack.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Protrack\Protrack.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Traccar\Traccar.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Flespi\Flespi.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Geotab\Geotab.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\GpsGate\GpsGate.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\GpsTrackit\GpsTrackit.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Mapon\Mapon.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Mettax\Mettax.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\TrustTrack\TrustTrack.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Navixy\Navixy.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Samsara\Samsara.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Wialon\Wialon.csproj" />

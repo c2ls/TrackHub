@@ -48,7 +48,7 @@ public sealed class DeviceReader(
         var device = result?.Record?.FirstOrDefault(d => d.Imei == deviceDto.Serial);
         return device is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Serial}")
-            : device.Value.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(device.Value, deviceDto);
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public sealed class DeviceReader(
 
             if (result?.Record is not null)
             {
-                results.AddRange(result.Record.MapToDeviceVm(devicesDictionary));
+                results.AddRange(DeviceMapper.Instance.Map(result.Record, devicesDictionary));
             }
         }
         return results;
@@ -87,6 +87,6 @@ public sealed class DeviceReader(
                 cancellationToken: cancellationToken),
             cancellationToken);
 
-        return result?.Record is null ? [] : result.Record.MapToDeviceVm().Distinct();
+        return result?.Record is null ? [] : DeviceMapper.Instance.Map(result.Record).Distinct();
     }
 }

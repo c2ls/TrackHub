@@ -32,7 +32,6 @@ public class TracksolidReaderBase(
     internal const string TimestampFormat = "yyyy-MM-dd HH:mm:ss";
     private const int InvalidTokenCode = 1004;
     private const string TokenLifetimeSeconds = "7200";
-    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(1);
 
     // jimi.oauth.token.get is limited to one call per minute, so token acquisition is serialised per credential.
     private const string TokenGate = "tracksolid-token";
@@ -99,47 +98,31 @@ public class TracksolidReaderBase(
             : throw new InvalidOperationException($"Tracksolid API error {response.Code} calling '{method}': {response.Message}");
 
     private Task<string> AcquireTokenAsync(string? rejectedToken, CancellationToken cancellationToken)
-        => CredentialGate.RunAsync(TokenGate, _credential.CredentialId, async () =>
+        => sessionStore.AcquireAsync(TokenGate, _credential, rejectedToken, async (renewing, token) =>
         {
-            if (rejectedToken is not null)
+            if (!renewing && ProviderSessions.HasLiveStoredToken(_credential))
             {
-                if (sessionStore.TryGet(_credential, out var fresher) && fresher != rejectedToken)
-                {
-                    return fresher;
-                }
-                sessionStore.Invalidate(_credential.CredentialId);
-                return await RequestTokenAsync(cancellationToken);
+                return ProviderSessions.ExpiringAt(_credential.Token!, _credential.TokenExpiration);
             }
 
-            if (sessionStore.TryGet(_credential, out var cached))
-            {
-                return cached;
-            }
-
-            if (_credential is { Token.Length: > 0, TokenExpiration: { } expiresAt } && DateTimeOffset.UtcNow < expiresAt - ExpiryMargin)
-            {
-                CacheToken(_credential.Token, expiresAt);
-                return _credential.Token;
-            }
-
-            if (_credential is { Token.Length: > 0, RefreshToken.Length: > 0 })
+            if (!renewing && _credential is { Token.Length: > 0, RefreshToken.Length: > 0 })
             {
                 var refreshed = await SendAsync<TokenResult>("jimi.oauth.token.refresh",
                 [
                     new("access_token", _credential.Token),
                     new("refresh_token", _credential.RefreshToken),
                     new("expires_in", TokenLifetimeSeconds)
-                ], cancellationToken);
+                ], token);
                 if (refreshed is { Code: 0, Result: { } refreshedToken })
                 {
-                    return await StoreTokenAsync(refreshedToken, "jimi.oauth.token.refresh", cancellationToken);
+                    return await StoreTokenAsync(refreshedToken, "jimi.oauth.token.refresh", token);
                 }
             }
 
-            return await RequestTokenAsync(cancellationToken);
+            return await RequestTokenAsync(token);
         }, cancellationToken);
 
-    private async Task<string> RequestTokenAsync(CancellationToken cancellationToken)
+    private async Task<ProviderSessionGrant> RequestTokenAsync(CancellationToken cancellationToken)
     {
         const string method = "jimi.oauth.token.get";
         var response = await SendAsync<TokenResult>(method,
@@ -154,7 +137,7 @@ public class TracksolidReaderBase(
             cancellationToken);
     }
 
-    private async Task<string> StoreTokenAsync(TokenResult token, string method, CancellationToken cancellationToken)
+    private async Task<ProviderSessionGrant> StoreTokenAsync(TokenResult token, string method, CancellationToken cancellationToken)
     {
         if (token is not { AccessToken.Length: > 0, ExpiresIn: > 0 })
         {
@@ -165,10 +148,6 @@ public class TracksolidReaderBase(
         await credentialWriter.UpdateTokenAsync(_credential.CredentialId, new UpdateTokenDto(
             _credential.CredentialId, token.AccessToken, expiresAt, token.RefreshToken, null), cancellationToken);
 
-        CacheToken(token.AccessToken, expiresAt);
-        return token.AccessToken;
+        return ProviderSessions.ExpiringAt(token.AccessToken, expiresAt);
     }
-
-    private void CacheToken(string token, DateTimeOffset expiresAt)
-        => sessionStore.Set(_credential, token, expiresAt - DateTimeOffset.UtcNow - ExpiryMargin, sliding: false);
 }

@@ -161,12 +161,12 @@ public class PositionMapperTests
     }
 
     [Test]
-    public void MapToDeviceVm_UsesRegistrationAsSerialAndVehicleIdAsIdentifier()
+    public void Map_UsesRegistrationAsSerialAndVehicleIdAsIdentifier()
     {
         var transporterId = Guid.NewGuid();
 
-        var named = new Vehicle(654321, "ABX123", "Big car").MapToDeviceVm(transporterId);
-        var unnamed = new Vehicle(5_000_000_000, "ABX124", null).MapToDeviceVm();
+        var named = DeviceMapper.Instance.Map(new Vehicle(654321, "ABX123", "Big car"), new DeviceTransporterVm { TransporterId = transporterId });
+        var unnamed = DeviceMapper.Instance.Map(new Vehicle(5_000_000_000, "ABX124", null));
 
         Assert.Multiple(() =>
         {

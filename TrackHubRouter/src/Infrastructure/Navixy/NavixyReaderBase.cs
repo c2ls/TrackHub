@@ -16,6 +16,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Common.Domain.Enums;
+using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 
 namespace TrackHub.Router.Infrastructure.Navixy;
@@ -31,6 +32,7 @@ public class NavixyReaderBase
     // Navixy status codes that mean the session hash is invalid or expired.
     private const int WrongUserHashError = 3;
     private const int SessionNotFoundError = 4;
+    private const string SessionScope = "navixy-session";
 
     // Sliding reuse window for the session hash; a stale hash self-heals via re-auth + retry.
     private static readonly TimeSpan SessionTtl = TimeSpan.FromMinutes(30);
@@ -38,6 +40,7 @@ public class NavixyReaderBase
     private readonly ICredentialHttpClientFactory _httpClientFactory;
     private readonly IProviderSessionStore _sessionStore;
     private CredentialTokenDto _credential;
+    private string _session = string.Empty;
 
     protected IHttpClientService HttpClientService { get; }
 
@@ -78,18 +81,28 @@ public class NavixyReaderBase
 
         HttpClientService.Init(httpClient, $"{ProtocolType.Navixy}");
 
-        if (_sessionStore.TryGet(credential, out var cached) && TryRestoreSession(cached))
+        await AcquireSessionAsync(null, cancellationToken);
+    }
+
+    private async Task AcquireSessionAsync(string? rejectedSession, CancellationToken cancellationToken)
+    {
+        _session = await _sessionStore.AcquireAsync(SessionScope, _credential, rejectedSession, AuthenticateAsync, cancellationToken);
+        if (TryRestoreSession(_session))
         {
             return;
         }
 
-        await AuthenticateAsync(cancellationToken);
+        _session = await _sessionStore.AcquireAsync(SessionScope, _credential, _session, AuthenticateAsync, cancellationToken);
+        if (!TryRestoreSession(_session))
+        {
+            throw new InvalidOperationException("Navixy returned a session that cannot be restored.");
+        }
     }
 
     /// <summary>
-    /// Authenticates via user/auth, stores the fresh session hash in the session store.
+    /// Authenticates via user/auth and reads the user time zone the session carries.
     /// </summary>
-    private async Task AuthenticateAsync(CancellationToken cancellationToken)
+    private async Task<ProviderSessionGrant> AuthenticateAsync(CancellationToken cancellationToken)
     {
         var authUrl = $"{BaseUrl}/v2/user/auth";
         var authResponse = await HttpClientService.PostAsync<AuthResponse>(authUrl,
@@ -106,7 +119,7 @@ public class NavixyReaderBase
             : authResponse.Hash;
 
         UserTimeZone = await ReadUserTimeZoneAsync(cancellationToken);
-        _sessionStore.Set(_credential, JsonSerializer.Serialize(new NavixySession(Hash, UserTimeZone.Id)), SessionTtl);
+        return new ProviderSessionGrant(JsonSerializer.Serialize(new NavixySession(Hash, UserTimeZone.Id)), SessionTtl, Sliding: true);
     }
 
     private async Task<TimeZoneInfo> ReadUserTimeZoneAsync(CancellationToken cancellationToken)
@@ -151,7 +164,7 @@ public class NavixyReaderBase
     /// <summary>
     /// Makes a POST request to the Navixy API. <paramref name="parameterFactory"/> receives the
     /// current session hash so the request can be rebuilt after a re-auth. An invalid-session
-    /// status (3/4) re-authenticates and retries ONCE; any other <c>success: false</c> throws —
+    /// status (3/4) renews the session and retries ONCE; any other <c>success: false</c> throws —
     /// it must never be mistaken for an empty result (Navixy errors arrive as HTTP 200).
     /// </summary>
     private protected async Task<T?> PostNavixyAsync<T>(
@@ -173,8 +186,7 @@ public class NavixyReaderBase
                 $"Navixy API error {result.Status?.Code} calling '{path}': {result.Status?.Description}");
         }
 
-        _sessionStore.Invalidate(_credential.CredentialId);
-        await AuthenticateAsync(cancellationToken);
+        await AcquireSessionAsync(_session, cancellationToken);
 
         result = await HttpClientService.PostAsync<T>(
             $"{BaseUrl}{path}", parameterFactory(Hash), cancellationToken);

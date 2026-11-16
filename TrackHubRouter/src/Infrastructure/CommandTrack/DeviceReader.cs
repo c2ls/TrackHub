@@ -34,7 +34,7 @@ public sealed class DeviceReader(ICredentialHttpClientFactory httpClientFactory,
         var device = await WithReauthenticationAsync(
             () => HttpClientService.GetAsync<DevicePosition>($"DataConnectAPI/api/Device?id={deviceDto.Identifier}", Header, cancellationToken),
             cancellationToken);
-        return device.MapToDeviceVm(deviceDto);
+        return DeviceMapper.Instance.Map(device, deviceDto);
     }
 
     // Retrieves a single device asynchronously
@@ -50,7 +50,7 @@ public sealed class DeviceReader(ICredentialHttpClientFactory httpClientFactory,
                 cancellationToken);
             if (result is not null)
             {
-                results.AddRange(result.MapToDeviceVm(devicesDictionary));
+                results.AddRange(DeviceMapper.Instance.Map(result, devicesDictionary));
             }
         }
         return results;
@@ -62,6 +62,6 @@ public sealed class DeviceReader(ICredentialHttpClientFactory httpClientFactory,
         var devices = await WithReauthenticationAsync(
             () => HttpClientService.GetAsync<IEnumerable<DevicePosition>>("DataConnectAPI/api/AllDevices", Header, cancellationToken),
             cancellationToken);
-        return devices is null ? [] : devices.MapToDeviceVm().Distinct();
+        return devices is null ? [] : DeviceMapper.Instance.Map(devices).Distinct();
     }
 }

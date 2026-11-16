@@ -119,7 +119,7 @@ public class PositionMapperTests
     }
 
     [Test]
-    public void MapToDeviceVm_SkipsVehiclesWithoutADevice_AndMapsIdAndImei()
+    public void Map_SkipsVehiclesWithoutADevice_AndMapsIdAndImei()
     {
         var vehicles = new[]
         {
@@ -128,7 +128,7 @@ public class PositionMapperTests
             new Vehicle(3303, "Zero", 0)
         };
 
-        var devices = vehicles.MapToDeviceVm().ToList();
+        var devices = DeviceMapper.Instance.Map(vehicles).ToList();
 
         Assert.That(devices, Has.Count.EqualTo(1));
         using (Assert.EnterMultipleScope())

@@ -50,7 +50,7 @@ internal static class PositionMapper
     {
         foreach (var vehicle in vehicles)
         {
-            if (vehicle.CurrentLocation is { } location && devicesDictionary.TryGetValue(vehicle.Serial(), out var device))
+            if (vehicle.CurrentLocation is { } location && devicesDictionary.TryGetValue(vehicle.Serial, out var device))
             {
                 yield return location.MapToPositionVm(device);
             }

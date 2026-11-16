@@ -31,6 +31,8 @@ public sealed class LenientBoolConverter : JsonConverter<bool?>
             {
                 "true" or "1" => true,
                 "false" or "0" => false,
+                "on" => true,
+                "off" => false,
                 _ => null
             },
             _ => null

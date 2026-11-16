@@ -13,13 +13,15 @@
 //  limitations under the License.
 //
 
+using TrackHub.Router.Domain.Helpers;
+
 namespace TrackHub.Router.Infrastructure.GpsGate.Mappers;
 
 internal static class PositionMapper
 {
 
-    public static PositionVm MapToPositionVm(this Device device, DeviceTransporterVm deviceDto)
-        => new(
+    public static PositionVm? MapToPositionVm(this Device device, DeviceTransporterVm deviceDto)
+        => !GpsFix.IsValid(device.Latitude, device.Longitude) ? null : new PositionVm(
             deviceDto.TransporterId,
             deviceDto.Name,
             deviceDto.TransporterType,

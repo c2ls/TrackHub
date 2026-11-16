@@ -47,7 +47,7 @@ public class PositionMapperTests
             TimeStamp: Timestamp);
 
         var before = DateTimeOffset.UtcNow;
-        var result = device.MapToPositionVm(Device);
+        var result = device.MapToPositionVm(Device)!.Value;
         var after = DateTimeOffset.UtcNow;
 
         using (Assert.EnterMultipleScope())
@@ -80,9 +80,17 @@ public class PositionMapperTests
             TimeStamp: null);
 
         var before = DateTimeOffset.UtcNow;
-        var result = device.MapToPositionVm(Device);
+        var result = device.MapToPositionVm(Device)!.Value;
         var after = DateTimeOffset.UtcNow;
 
         Assert.That(result.DeviceDateTime, Is.InRange(before, after));
+    }
+
+    [Test]
+    public void MapToPositionVm_DeviceWithoutAFix_ReturnsNoPosition()
+    {
+        var device = new Device(Id: 8, Name: "Bus-9", IMEI: "356938035643809", Latitude: 0, Longitude: 0, Altitude: null, TimeStamp: null);
+
+        Assert.That(device.MapToPositionVm(Device), Is.Null);
     }
 }

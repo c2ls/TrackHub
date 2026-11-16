@@ -1427,7 +1427,7 @@ The Docker deployment is configured to use file-based certificate loading:
 | Platform | Method | Configuration |
 |----------|--------|---------------|
 | **Linux/Docker** | File-based (PFX) | `LoadCertFromFile=true`, `Path=/app/certificates/certificate.pfx` |
-| **Windows (IIS)** | Certificate Store | `LoadCertFromFile=false`, `Thumbprint=<cert-thumbprint>` |
+| **Windows host** | Certificate Store | `LoadCertFromFile=false`, `Thumbprint=<cert-thumbprint>` |
 
 The services support both methods. For Docker deployments, file-based loading is used automatically.
 
