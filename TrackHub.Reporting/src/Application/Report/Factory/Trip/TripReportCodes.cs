@@ -15,7 +15,6 @@
 
 namespace TrackHub.Reporting.Application.Report.Factory.Trip;
 
-// Report codes for the trip reports (spec 11 §13). Local literals (no TrackHubCommon repack).
 internal static class TripReportCodes
 {
     public const string Summary = "trip-summary";

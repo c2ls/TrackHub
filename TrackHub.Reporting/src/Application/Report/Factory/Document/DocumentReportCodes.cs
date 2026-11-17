@@ -15,7 +15,6 @@
 
 namespace TrackHub.Reporting.Application.Report.Factory.Document;
 
-// Report codes for the document reports. Local literals (no TrackHubCommon repack).
 internal static class DocumentReportCodes
 {
     public const string ExpiringDocuments = "documents-expiring";
