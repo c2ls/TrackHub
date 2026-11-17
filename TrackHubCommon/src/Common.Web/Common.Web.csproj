@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <PackageId>TrackHubCommon.Web</PackageId>
     <Authors>Sergio Hernandez</Authors>
     <Company>TBD</Company>
   </PropertyGroup>

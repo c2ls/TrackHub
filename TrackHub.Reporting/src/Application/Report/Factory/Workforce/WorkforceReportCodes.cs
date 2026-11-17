@@ -15,7 +15,6 @@
 
 namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 
-// Report codes for the workforce reports (spec 09 §13). Local literals (no TrackHubCommon repack).
 internal static class WorkforceReportCodes
 {
     public const string StaffRegistry = "workforce-staff-registry";

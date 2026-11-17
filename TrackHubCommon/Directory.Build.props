@@ -2,10 +2,6 @@
   <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
   <PropertyGroup>
     <Authors>Sergio Hernandez</Authors>
-    <RepositoryUrl>https://github.com/shernandezp/TrackHubCommon.git</RepositoryUrl>
     <Copyright>Copyright © 2026, Sergio Hernandez. All rights reserved.</Copyright>
   </PropertyGroup>
-  <!-- Local override point: builds pick up property overrides (e.g. Version) from an
-       optional sibling file that is not part of this repository. -->
-  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.Edition.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.Edition.props')" />
 </Project>
