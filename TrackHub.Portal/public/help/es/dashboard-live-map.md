@@ -22,7 +22,7 @@ Se encuentra en la pestaña **Unidades** de forma predeterminada.
 
 El mapa que ve (Google u OpenStreetMap) depende de su cuenta. TrackHub puede configurarse para usar cualquiera de los dos proveedores; si su cuenta usa Google, se le asigna una Clave de Mapas. Este es un ajuste a nivel de cuenta que administra su administrador, por lo que el mapa puede verse distinto al de otra empresa que use TrackHub. Todo lo descrito a continuación funciona igual en ambos.
 
-En la parte superior derecha de la pantalla se encuentra el cuadro **Buscar unidades**. Escriba el nombre o la placa de una unidad para filtrar al instante la [lista lateral de unidades](#la-lista-lateral-de-unidades). Este cuadro aparece solo en la pestaña **Unidades**.
+En la parte superior derecha de la pantalla se encuentra el cuadro **Buscar**. Escriba el nombre o la placa de una unidad para filtrar al instante la [lista lateral de unidades](#la-lista-lateral-de-unidades). Este cuadro aparece solo en la pestaña **Unidades**.
 
 ## El resumen de la flota
 
@@ -33,7 +33,7 @@ Una franja de resumen se ubica en la parte superior y siempre refleja **toda** s
 | **Total de Unidades** | Cada unidad que reporta una posición. |
 | **Unidades Activas** | Unidades que han reportado recientemente (dentro del intervalo en línea de su cuenta). |
 | **Unidades en Movimiento** | Unidades actualmente en movimiento (velocidad mayor que cero). |
-| **En Geocerca** | Unidades ubicadas actualmente dentro de una de sus geocercas. |
+| **En Geocerca** | Unidades ubicadas actualmente dentro de una de sus geocercas (solo se muestra cuando el geocercado está activado para su cuenta). |
 | **Alertas Críticas** | Alertas abiertas de severidad crítica que aún no han sido reconocidas ni resueltas. |
 
 **Unidades Activas**, **Unidades en Movimiento** y **En Geocerca** también muestran ese conteo como porcentaje de su total.
@@ -47,11 +47,13 @@ Junto al resumen hay una fila de filtros que acotan **lo que muestra el mapa**. 
 - **Operador** — muestra solo las unidades atendidas por un operador GPS elegido (*Todos los operadores* de forma predeterminada).
 - **Estado** — *Todos los estados*, **En Movimiento**, **Detenida** o **Sin Conexión**.
 
-Los chips de capas — **Geocercas**, **Puntos de Interés**, **Seguir** y **Recorrido** — se ubican sobre el propio mapa, en su esquina superior izquierda (explicados en [Capas del mapa](#capas-del-mapa) y [Modo Seguir](#modo-seguir)).
+Los chips de capas — **Geocercas** (cuando el geocercado está activado), **Puntos de Interés**, **Seguir** y **Recorrido** — se ubican sobre el propio mapa, en su esquina superior izquierda (explicados en [Capas del mapa](#capas-del-mapa) y [Modo Seguir](#modo-seguir)).
 
 ## El mapa en vivo
 
 Cada unidad aparece como una insignia de color con su nombre debajo. La forma y el color indican el estado de la unidad: una gota verde que apunta en la dirección de desplazamiento para en movimiento, un cuadrado redondeado ámbar para detenida y un disco gris con una barra para sin conexión. Una unidad se considera sin conexión cuando no ha reportado dentro del intervalo en línea de su cuenta; de lo contrario está en movimiento cuando su velocidad es mayor que cero o su ignición está encendida, y detenida el resto del tiempo.
+
+![Pestaña Unidades con el resumen de la flota, la barra de filtros, el mapa en vivo y la lista de unidades](assets/es/dashboard-live-map.png)
 
 Cuando muchas unidades están cerca entre sí, se agrupan en un **clúster** que muestra un conteo; acerque el zoom o haga clic en el clúster para separarlo en marcadores individuales. El mapa se centra en su flota la primera vez que se carga.
 
@@ -67,6 +69,8 @@ Al seleccionar una unidad se abre un panel en la parte inferior del mapa con sus
 - **Kilometraje**, **Temperatura**, **Horómetro**, **Ignición** (encendido/apagado) y **Satélites** — solo cuando el dispositivo los envía.
 - **Dirección** — la dirección de calle de la posición. Si aún no hay una dirección almacenada, el panel muestra en su lugar la **Ubicación** (ciudad, estado, país) o las coordenadas en crudo con un botón **Obtener dirección**; haga clic en él para consultar la dirección de calle bajo demanda.
 - Dos botones de acción rápida: **Compartir por WhatsApp** (envía un enlace de Google Maps a la ubicación) y **Street View** (abre Google Street View en ese punto).
+
+![Tarjeta de detalles de la unidad abierta en la parte inferior del mapa](assets/es/dashboard-unit-detail.png)
 
 ## Capas del mapa
 
@@ -106,7 +110,7 @@ A la derecha hay una lista desplazable de todas sus unidades, con columnas:
 - **Fecha Hora** — hora de su último reporte.
 - **Velocidad (Km/Hr)**.
 
-Haga clic en una fila para seleccionar esa unidad, resaltarla y centrar el mapa en ella. El cuadro **Buscar unidades** de la parte superior derecha filtra esta lista. Encima de la lista, chips de color resumen cuántas unidades de cada tipo están reportando actualmente.
+Haga clic en una fila para seleccionar esa unidad, resaltarla y centrar el mapa en ella. El cuadro **Buscar** de la parte superior derecha filtra esta lista. El encabezado de la lista muestra cuántas unidades tiene, con un conteo por tipo de unidad debajo (por ejemplo *Camión 12 · Automóvil 4*).
 
 ## Por qué falta una unidad en el mapa
 

@@ -13,43 +13,17 @@
 //  limitations under the License.
 //
 
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.Webfleet.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<ObjectReport>
 {
-    private const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    private const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
-    public static DeviceVm MapToDeviceVm(this ObjectReport report, DeviceTransporterVm deviceDto)
-        => new(
-            deviceDto.TransporterId,
-            deviceDto.Identifier,
-            report.Objectno,
-            report.Objectname ?? report.Objectno,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType
-        );
+    protected override string Serial(ObjectReport report) => report.Objectno;
 
-    public static DeviceVm MapToDeviceVm(this ObjectReport report)
-        => new(
-            null,
-            0,
-            report.Objectno,
-            report.Objectname ?? report.Objectno,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType
-        );
+    protected override string Name(ObjectReport report) => report.Objectname ?? report.Objectno;
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<ObjectReport> reports, IDictionary<string, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var report in reports)
-        {
-            if (devicesDictionary.TryGetValue(report.Objectno, out var device))
-            {
-                yield return report.MapToDeviceVm(device);
-            }
-        }
-    }
+    protected override int Identifier(ObjectReport report, DeviceTransporterVm? assignment) => assignment?.Identifier ?? 0;
 }

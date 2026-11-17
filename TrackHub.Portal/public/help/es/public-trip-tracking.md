@@ -20,6 +20,8 @@ Este tema describe lo que ve su cliente, para que usted pueda responderle sin te
 
 En la parte superior: el **código del viaje**, su **estado** actual y la salida planeada. El cliente puede presionar **Actualizar** en cualquier momento para traer el estado más reciente.
 
+![Página de seguimiento del cliente con el estado del viaje, las paradas y la posición en vivo](assets/es/public-trip-tracking.png)
+
 Debajo, la lista de paradas en orden de visita. Por cada parada:
 
 - su **número** y **nombre**, y la **ciudad** si se conoce;

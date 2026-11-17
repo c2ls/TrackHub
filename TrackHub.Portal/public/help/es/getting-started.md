@@ -34,20 +34,27 @@ Una vez que ha iniciado sesión, todas las pantallas comparten el mismo marco:
 - Una **barra superior** en la parte de arriba, que muestra el nombre de la pantalla en la que se encuentra, una campana de notificaciones y su **menú de cuenta**.
 - El **área principal** en el centro, que cambia según la pantalla que elija.
 
+![La disposición principal de TrackHub con el menú lateral y la barra superior](assets/es/dashboard-live-map.png)
+
 ## El menú lateral izquierdo
 
-El menú lateral izquierdo enumera las pantallas que tiene permitido abrir. Según su rol y las funcionalidades que tenga su cuenta, es posible que vea algunas o todas las siguientes opciones:
+El menú lateral izquierdo enumera las pantallas que tiene permitido abrir, en cuatro grupos. Según su rol y las funcionalidades que tenga su cuenta, es posible que vea algunas o todas:
 
-- **Tablero** — el mapa en vivo y el resumen de unidades.
-- **Administrador del Sistema** — administración a nivel de plataforma (solo la ven los administradores).
-- **Administración de Cuentas** — administre las unidades, usuarios, dispositivos y más de su cuenta (solo la ven los gestores y administradores).
-- **Geocercas** — dibuje y administre zonas en el mapa (solo aparece cuando el geocercado está activado para su cuenta).
-- **Reportes** — genere y exporte reportes.
-- **Integración GPS** — supervise los proveedores de GPS y la sincronización de dispositivos (solo la ven los gestores y administradores).
-- **Cuenta** — un encabezado de sección, seguido de:
+- **Operación**
+  - **Tablero** — el mapa en vivo y el historial de cada unidad.
+  - **Viajes** — planifique y siga viajes (solo cuando la gestión de viajes está activada para su cuenta).
+  - **Geocercas** — dibuje y administre zonas en el mapa (solo cuando el geocercado está activado para su cuenta).
+- **Análisis**
+  - **Reportes** — genere y exporte reportes.
+- **Administración**
+  - **Administración de Cuentas** — las unidades, el personal, los grupos, los usuarios, las alertas y más de su cuenta (gestores y administradores).
+  - **Integración GPS** — proveedores GPS y sincronización de dispositivos (gestores y administradores).
+  - **Administrador del Sistema** — administración a nivel de plataforma (solo administradores).
+  - **Estado de la Plataforma** — si TrackHub mismo está funcionando (todos).
+- **Cuenta**
   - **Perfil** — su configuración personal.
 
-Para abrir una pantalla, **haga clic en su nombre en el menú lateral izquierdo**. El elemento que está viendo actualmente queda resaltado. Qué elementos aparecen para cada rol se trata en [Roles y permisos](topic:roles-and-permissions).
+Un grupo solo aparece cuando tiene alguna pantalla que usted puede abrir. Para abrir una pantalla, **haga clic en su nombre en el menú lateral izquierdo**. El elemento que está viendo actualmente queda resaltado. Qué elementos aparecen para cada rol se trata en [Roles y permisos](topic:roles-and-permissions).
 
 **Menú compacto vs. completo.** En ventanas angostas el menú se contrae a una franja delgada de íconos para ahorrar espacio. Cuando está contraído, **pase el mouse sobre él** para expandirlo temporalmente, y aléjelo para contraerlo de nuevo. También puede fijar su preferencia de forma permanente con el interruptor **Contraer Barra Lateral** — vea [Perfil y configuración](topic:profile-and-settings#apariencia-idioma-y-el-menú-compacto).
 
@@ -57,9 +64,10 @@ La barra superior muestra, de izquierda a derecha:
 
 - Un **ícono de menú** en el que puede hacer clic para contraer o expandir el menú lateral izquierdo.
 - El **nombre de la pantalla** en la que se encuentra. En el Tablero, las pestañas **Unidades** y **Posiciones** aparecen a su lado.
+- En algunas pantallas, un cuadro **Buscar** que filtra la lista de esa pantalla.
 - Un ícono de **ayuda** que abre esta ayuda.
 - Una **campana de notificaciones** con un contador rojo de notificaciones sin leer.
-- Un ícono de **configuración** (solo para gerentes) que abre los ajustes de mapa de la cuenta.
+- Un ícono de **Configuración** (solo gestores) que abre los ajustes de mapa de la cuenta — vea [Perfil y configuración](topic:profile-and-settings#configuración-de-la-cuenta).
 - Su **menú de cuenta** (el ícono redondo de persona), con **Perfil** y **Cerrar Sesión**.
 
 ### La campana de notificaciones

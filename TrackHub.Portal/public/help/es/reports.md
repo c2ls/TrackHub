@@ -21,6 +21,8 @@ Abra **Reportes** desde el menú de la izquierda. La pantalla tiene el catálogo
 
 El catálogo agrupa los reportes en categorías plegables — **Operaciones**, **GPS**, **Documentos**, **Personal**, **Viajes** y **Administración**. La primera categoría aparece expandida; haga clic en el encabezado de una categoría para expandirla o contraerla.
 
+![Catálogo de reportes con la categoría Viajes abierta y el panel de filtros](assets/es/report-filters.png)
+
 Cada reporte es una tarjeta que muestra su nombre, una descripción de una línea y distintivos de formato: todos los reportes ofrecen **XLSX** (Excel), y los reportes que además admiten PDF muestran un distintivo **PDF**. Haga clic en la tarjeta de un reporte para seleccionarlo; su panel de filtros se abre a la derecha. Nada queda seleccionado hasta que hace clic en un reporte.
 
 ## El catálogo de reportes
@@ -83,16 +85,15 @@ Toda la categoría **Viajes** requiere la funcionalidad de gestión de viajes; s
 
 El panel de filtros solo muestra los campos que un reporte realmente necesita; un reporte que no necesita nada muestra solo los botones de acción. Los campos posibles son:
 
-- **Unidad** – restringe el reporte a una sola unidad (un selector).
-- **Operador** – restringe el reporte a un operador GPS (un selector).
+- **Unidad** – restringe el reporte a una sola unidad. Escriba para buscar; déjelo en **Todos** para todas las unidades.
+- **Operador** – restringe el reporte a un operador GPS, o **Todos**.
+- **Geocerca** – restringe el reporte a una geocerca, o **Todos** (lo usa Eventos de Geocerca).
 - **ID de Dispositivo** – un identificador de dispositivo, ingresado como texto libre.
 - **Estado** – un estado de ciclo de vida de cuenta (usado por el reporte Cuentas por Estado).
 - **Desde** / **Hasta** – la fecha y hora de inicio y de fin del período del reporte.
 - **Máximo de Filas** – un tope de cuántas filas devolver.
 - **Dentro de (días)** – una ventana móvil en días (para reportes de "recientes" o "por vencer").
 - **Horas hacia Atrás** – cuántas horas hacia atrás resumir.
-
-Los reportes sin un conjunto de filtros definido usan por defecto un rango de fechas **Desde** / **Hasta**.
 
 ## Vista Previa, Excel y PDF
 
@@ -102,4 +103,4 @@ El panel de filtros tiene hasta tres botones de acción:
 - **Exportar Excel** – descarga el reporte como un archivo de Excel (`.xlsx`) nombrado según el reporte.
 - **Exportar PDF** – descarga un PDF con formato. Este botón aparece solo para los reportes que admiten PDF (los que tienen un distintivo **PDF** en el catálogo).
 
-Abra los archivos de Excel en Excel, Google Sheets o cualquier aplicación de hojas de cálculo. Si una exportación fuera muy grande, ajuste el rango de fechas o la selección de unidad y ejecútela de nuevo — las exportaciones están sujetas a un límite de filas del servidor según su plan.
+Abra los archivos de Excel en Excel, Google Sheets o cualquier aplicación de hojas de cálculo. Si una exportación fuera muy grande, ajuste el rango de fechas o la selección de unidad y ejecútela de nuevo — las exportaciones muy grandes se rechazan con un mensaje que le pide refinar los filtros.

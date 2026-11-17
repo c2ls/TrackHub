@@ -31,6 +31,7 @@ public abstract class CommandTrackReaderBase(ICredentialHttpClientFactory httpCl
 {
     private HttpClient? _httpClient;
     private CredentialTokenDto? _credential;
+    private string? _token;
 
     public ProtocolType Protocol => ProtocolType.CommandTrack;
 
@@ -45,16 +46,14 @@ public abstract class CommandTrackReaderBase(ICredentialHttpClientFactory httpCl
         Guard.Against.Null(credential.Key, message: $"No Credential key found for {credential.CredentialId}");
 
         _credential = credential;
-        var tokenHelper = new TokenHelper(credentialWriter, sessionStore);
         _httpClient = httpClientFactory.CreateClientAsync(credential, cancellationToken);
-        var token = await tokenHelper.GetTokenAsync(_httpClient, credential, cancellationToken);
-        SetBearer(token);
+        SetBearer(await new TokenHelper(credentialWriter, sessionStore).GetTokenAsync(_httpClient, credential, null, cancellationToken));
         Header = new Dictionary<string, string> { { "Client-ID", credential.Key } };
         HttpClientService.Init(_httpClient, $"{ProtocolType.CommandTrack}");
     }
 
     /// <summary>
-    /// Runs a provider read and, if the provider rejects the token with 401, authenticates again and
+    /// Runs a provider read and, if the provider rejects the token with 401, renews the token and
     /// retries once. Without this a token revoked server-side before its recorded expiry fails every
     /// sync for the operator until the credential is rotated by hand.
     /// </summary>
@@ -71,14 +70,14 @@ public abstract class CommandTrackReaderBase(ICredentialHttpClientFactory httpCl
                 throw new InvalidOperationException("CommandTrack reader was not initialized.");
             }
 
-            var tokenHelper = new TokenHelper(credentialWriter, sessionStore);
-            SetBearer(await tokenHelper.ForceRefreshTokenAsync(_httpClient, credential, cancellationToken));
+            SetBearer(await new TokenHelper(credentialWriter, sessionStore).GetTokenAsync(_httpClient, credential, _token, cancellationToken));
             return await read();
         }
     }
 
     private void SetBearer(string token)
     {
+        _token = token;
         _httpClient!.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
     }

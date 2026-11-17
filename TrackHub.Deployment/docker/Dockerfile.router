@@ -30,7 +30,10 @@ COPY TrackHubRouter/src/Infrastructure/Flespi/Flespi.csproj TrackHubRouter/src/I
 COPY TrackHubRouter/src/Infrastructure/GeofenceApi/GeofenceApi.csproj TrackHubRouter/src/Infrastructure/GeofenceApi/
 COPY TrackHubRouter/src/Infrastructure/Geotab/Geotab.csproj TrackHubRouter/src/Infrastructure/Geotab/
 COPY TrackHubRouter/src/Infrastructure/GpsGate/GpsGate.csproj TrackHubRouter/src/Infrastructure/GpsGate/
+COPY TrackHubRouter/src/Infrastructure/GpsTrackit/GpsTrackit.csproj TrackHubRouter/src/Infrastructure/GpsTrackit/
 COPY TrackHubRouter/src/Infrastructure/ManagerApi/ManagerApi.csproj TrackHubRouter/src/Infrastructure/ManagerApi/
+COPY TrackHubRouter/src/Infrastructure/Mapon/Mapon.csproj TrackHubRouter/src/Infrastructure/Mapon/
+COPY TrackHubRouter/src/Infrastructure/Mettax/Mettax.csproj TrackHubRouter/src/Infrastructure/Mettax/
 COPY TrackHubRouter/src/Infrastructure/Motive/Motive.csproj TrackHubRouter/src/Infrastructure/Motive/
 COPY TrackHubRouter/src/Infrastructure/Navixy/Navixy.csproj TrackHubRouter/src/Infrastructure/Navixy/
 COPY TrackHubRouter/src/Infrastructure/Pegasus/Pegasus.csproj TrackHubRouter/src/Infrastructure/Pegasus/
@@ -41,6 +44,7 @@ COPY TrackHubRouter/src/Infrastructure/Samsara/Samsara.csproj TrackHubRouter/src
 COPY TrackHubRouter/src/Infrastructure/TelemetryApi/TelemetryApi.csproj TrackHubRouter/src/Infrastructure/TelemetryApi/
 COPY TrackHubRouter/src/Infrastructure/Traccar/Traccar.csproj TrackHubRouter/src/Infrastructure/Traccar/
 COPY TrackHubRouter/src/Infrastructure/Tracksolid/Tracksolid.csproj TrackHubRouter/src/Infrastructure/Tracksolid/
+COPY TrackHubRouter/src/Infrastructure/TrustTrack/TrustTrack.csproj TrackHubRouter/src/Infrastructure/TrustTrack/
 COPY TrackHubRouter/src/Infrastructure/TripApi/TripApi.csproj TrackHubRouter/src/Infrastructure/TripApi/
 COPY TrackHubRouter/src/Infrastructure/Webfleet/Webfleet.csproj TrackHubRouter/src/Infrastructure/Webfleet/
 COPY TrackHubRouter/src/Infrastructure/Wialon/Wialon.csproj TrackHubRouter/src/Infrastructure/Wialon/

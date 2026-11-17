@@ -36,7 +36,7 @@ public sealed class DeviceReader(
     {
         var url = $"api/v.1/{ApplicationId}/users/{UserId}/devices/{deviceDto.Identifier}";
         var device = await HttpClientService.GetAsync<Device>(url, cancellationToken: cancellationToken);
-        return device.MapToDeviceVm(deviceDto);
+        return DeviceMapper.Instance.Map(device, deviceDto);
     }
 
     /// <summary>
@@ -54,9 +54,7 @@ public sealed class DeviceReader(
             return [];
         }
         var devicesDictionary = devices.ToDeviceLookup(device => device.Identifier);
-        return result
-            .Where(d => devicesDictionary.ContainsKey(d.Id))
-            .MapToDeviceVm(devicesDictionary);
+        return DeviceMapper.Instance.Map(result, devicesDictionary);
     }
 
     /// <summary>
@@ -68,6 +66,6 @@ public sealed class DeviceReader(
     {
         var url = $"api/v.1/{ApplicationId}/users/{UserId}/devices";
         var positions = await HttpClientService.GetAsync<IEnumerable<Device>>(url, cancellationToken: cancellationToken);
-        return positions is null ? ([]) : positions.MapToDeviceVm().Distinct();
+        return positions is null ? ([]) : DeviceMapper.Instance.Map(positions).Distinct();
     }
 }

@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using TrackHub.Router.Domain.Enumerators;
 using Common.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -78,7 +79,7 @@ public class RecordOperatorHealthCommandHandlerTests : TestsContext
         new(accountId, 0, false, false, GpsIntegrationEnabled: true);
 
     [Test]
-    public async Task Handle_NoCredential_ReturnsFalseAndRecordsNothing()
+    public async Task Handle_NoCredential_IsSkippedAndRecordsNothing()
     {
         var op = OperatorWith(null);
         var account = EnabledAccount(op.AccountId);
@@ -86,7 +87,7 @@ public class RecordOperatorHealthCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new RecordOperatorHealthCommand(op), CancellationToken.None);
 
-        Assert.That(result, Is.False);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Skipped));
         _healthWriterMock.Verify(w => w.RecordAsync(It.IsAny<OperatorHealthCheckDto>(), It.IsAny<CancellationToken>()), Times.Never);
         _alertWriterMock.Verify(w => w.RecordAsync(It.IsAny<AlertEventDto>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -102,7 +103,7 @@ public class RecordOperatorHealthCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new RecordOperatorHealthCommand(op), CancellationToken.None);
 
-        Assert.That(result, Is.True);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Succeeded));
         _healthWriterMock.Verify(w => w.RecordAsync(
             It.Is<OperatorHealthCheckDto>(c => c.Status == "HEALTHY" && c.ErrorCode == null),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -120,7 +121,7 @@ public class RecordOperatorHealthCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new RecordOperatorHealthCommand(op), CancellationToken.None);
 
-        Assert.That(result, Is.False);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Failed));
         _healthWriterMock.Verify(w => w.RecordAsync(
             It.Is<OperatorHealthCheckDto>(c => c.Status == "OFFLINE"
                                                  && c.ErrorCode == "HttpRequestException"
@@ -144,7 +145,7 @@ public class RecordOperatorHealthCommandHandlerTests : TestsContext
         var result = await CreateHandler().Handle(
             new RecordOperatorHealthCommand(op), CancellationToken.None);
 
-        Assert.That(result, Is.True);
+        Assert.That(result, Is.EqualTo(OperatorRunOutcome.Succeeded));
         _healthWriterMock.Verify(w => w.RecordAsync(
             It.Is<OperatorHealthCheckDto>(c => c.Status == "HEALTHY"), It.IsAny<CancellationToken>()), Times.Once);
         _alertWriterMock.Verify(w => w.RecordAsync(

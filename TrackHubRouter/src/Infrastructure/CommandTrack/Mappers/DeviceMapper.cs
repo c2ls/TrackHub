@@ -13,60 +13,19 @@
 //  limitations under the License.
 //
 
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.CommandTrack.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<DevicePosition, int>
 {
-    // Default device type and transporter type if not provided
-    const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
-    // Maps a DevicePosition and a DeviceVm to an DeviceVm
-    public static DeviceVm MapToDeviceVm(this DevicePosition device, DeviceTransporterVm deviceDto)
-        => new(
-            deviceDto.TransporterId,
-            device.Id,
-            device.Serial,
-            device.Plate,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType
-    );
+    protected override int Key(DevicePosition device) => device.Id;
 
-    // Maps a DevicePosition to an DeviceVm with null DeviceId
-    public static DeviceVm MapToDeviceVm(this DevicePosition device)
-        => new(
-            null,
-            device.Id,
-            device.Serial,
-            device.Plate,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType
-    );
+    protected override string Serial(DevicePosition device) => device.Serial;
 
-    // Maps a collection of DeviceVm objects to a collection of DevicePosition objects using a dictionary of DeviceTransporterVm objects
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<DevicePosition> devices, IDictionary<int, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var device in devices)
-        {
-            if (devicesDictionary.TryGetValue(device.Id, out var selectedDevice))
-            {
-                yield return device.MapToDeviceVm(selectedDevice);
-            }
-            else
-            {
-                continue;
-            }
-        }
-    }
+    protected override string Name(DevicePosition device) => device.Plate;
 
-    // Maps a collection of DevicePosition objects to a collection of DeviceVm objects
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<DevicePosition> devices)
-    {
-        foreach (var device in devices)
-        {
-            yield return device.MapToDeviceVm();
-        }
-    }
+    protected override int Identifier(DevicePosition device, DeviceTransporterVm? assignment) => device.Id;
 }

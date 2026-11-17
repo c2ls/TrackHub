@@ -36,6 +36,7 @@ import {
   useSetOperatorEnabled,
   useTriggerOperatorDeviceSync,
 } from "queries/operators";
+import { useProviderCapabilities } from "queries/router";
 import type { Operator, OperatorDtoInput, UpdateOperatorDtoInput } from "api/manager/operators";
 import type { ListParams } from 'api/core/paging';
 import { formatDateTime } from "utils/dateUtils";
@@ -110,6 +111,7 @@ function useOperatorTableData(
   listParams: ListParams
 ) {
   const { t } = useTranslation();
+  const { data: providers } = useProviderCapabilities({ enabled: fetchData });
   const [open, setOpen] = useState(false);
   const [openCredential, setOpenCredential] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -352,7 +354,7 @@ function useOperatorTableData(
       description: <Description description={operator.description} />,
       contactname: <Description description={operator.contactName} />,
       protocoltype: (
-        <ArgonBadge variant="gradient" badgeContent={operator.protocolType} color="success" size="xs" container />
+        <ArgonBadge variant="gradient" badgeContent={providers?.find((p) => p.protocolTypeId === operator.protocolTypeId)?.displayName ?? operator.protocolType} color="success" size="xs" container />
       ),
       syncInterval: (
         <ArgonTypography variant="caption" color="secondary" fontWeight="medium">
@@ -410,6 +412,8 @@ function useOperatorTableData(
         <ArgonButton
             variant="text"
             color="dark"
+            iconOnly
+            title={t('credential.testCredential')}
             onClick={async() => await onTestCredential(operator.operatorId)}>
           <Icon>check</Icon>
         </ArgonButton>

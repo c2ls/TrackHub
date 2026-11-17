@@ -13,35 +13,17 @@
 //  limitations under the License.
 //
 
-using System.Globalization;
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.Motive.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<Vehicle>
 {
-    private const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    private const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
-    public static string Serial(this Vehicle vehicle) => vehicle.Id.ToString(CultureInfo.InvariantCulture);
+    protected override string Serial(Vehicle vehicle) => vehicle.Serial;
 
-    public static DeviceVm MapToDeviceVm(this Vehicle vehicle, Guid? transporterId = null)
-        => new(
-            transporterId,
-            vehicle.Id is >= 0 and <= int.MaxValue ? (int)vehicle.Id : 0,
-            vehicle.Serial(),
-            vehicle.Number ?? vehicle.Serial(),
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType);
+    protected override string Name(Vehicle vehicle) => vehicle.Number ?? vehicle.Serial;
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Vehicle> vehicles, IDictionary<string, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var vehicle in vehicles)
-        {
-            if (devicesDictionary.TryGetValue(vehicle.Serial(), out var device))
-            {
-                yield return vehicle.MapToDeviceVm(device.TransporterId);
-            }
-        }
-    }
+    protected override int Identifier(Vehicle vehicle, DeviceTransporterVm? assignment) => ToIdentifier(vehicle.Id);
 }

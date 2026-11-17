@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IRouterReader, RouterReader>();
         services.AddScoped<IGeofenceReader, GeofenceReader>();
         services.AddScoped<IGpsManagerReader, GpsManagerReader>();
+        services.AddScoped<IReportNameReader, ReportNameReader>();
         services.AddScoped<IGpsTelemetryReader, GpsTelemetryReader>();
         services.AddScoped<IAccountFeatureReader, AccountFeatureReader>();
         services.AddScoped<IReportAuditWriter, ReportAuditWriter>();

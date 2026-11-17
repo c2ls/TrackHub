@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Interfaces.Manager;
 
@@ -23,29 +24,16 @@ internal sealed class SessionHelper(ICredentialWriter credentialWriter, IProvide
     // Pegasus drops a session after 60 minutes without use; stay inside that window.
     internal static readonly TimeSpan SessionTtl = TimeSpan.FromMinutes(50);
 
-    public async Task<string> GetTokenAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
-    {
-        if (sessionStore.TryGet(credential, out var cached))
-        {
-            return cached;
-        }
+    private const string SessionScope = "pegasus-session";
 
-        if (credential is { Token.Length: > 0, TokenExpiration: { } expiration } && expiration > DateTimeOffset.UtcNow)
-        {
-            sessionStore.Set(credential, credential.Token, SessionTtl);
-            return credential.Token;
-        }
+    public Task<string> GetTokenAsync(IHttpClientService httpClientService, CredentialTokenDto credential, string? rejectedToken, CancellationToken cancellationToken)
+        => sessionStore.AcquireAsync(SessionScope, credential, rejectedToken, async (renewing, token)
+            => !renewing && ProviderSessions.HasLiveStoredToken(credential, TimeSpan.Zero)
+                ? new ProviderSessionGrant(credential.Token!, SessionTtl, Sliding: true)
+                : await LoginAsync(httpClientService, credential, token),
+            cancellationToken);
 
-        return await LoginAsync(httpClientService, credential, cancellationToken);
-    }
-
-    public Task<string> ForceLoginAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
-    {
-        sessionStore.Invalidate(credential.CredentialId);
-        return LoginAsync(httpClientService, credential, cancellationToken);
-    }
-
-    private async Task<string> LoginAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
+    private async Task<ProviderSessionGrant> LoginAsync(IHttpClientService httpClientService, CredentialTokenDto credential, CancellationToken cancellationToken)
     {
         var response = await httpClientService.PostAsync<LoginResponse>(
             "login", new { username = credential.Username, password = credential.Password }, cancellationToken);
@@ -56,7 +44,6 @@ internal sealed class SessionHelper(ICredentialWriter credentialWriter, IProvide
         await credentialWriter.UpdateTokenAsync(credential.CredentialId,
             new UpdateTokenDto(credential.CredentialId, token, DateTimeOffset.UtcNow + SessionTtl, null, null),
             cancellationToken);
-        sessionStore.Set(credential, token, SessionTtl);
-        return token;
+        return new ProviderSessionGrant(token, SessionTtl, Sliding: true);
     }
 }

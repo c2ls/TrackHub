@@ -22,7 +22,7 @@ namespace TrackHub.Reporting.Domain.Interfaces.Trip;
 // feature gate. All four feeds page transparently up to the 100k defensive row cap.
 public interface ITripReportReader
 {
-    // Pre-checks the `trip-management` billing feature so a disabled account fails with
+    // Pre-checks the `trip-management` feature so a disabled account fails with
     // FEATURE_DISABLED (403) rather than a raw GraphQL error — the workforce readers' contract.
     Task EnsureTripManagementFeatureAsync(CancellationToken cancellationToken);
 

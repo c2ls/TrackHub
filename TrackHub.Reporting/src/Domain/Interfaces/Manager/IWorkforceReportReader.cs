@@ -22,7 +22,7 @@ namespace TrackHub.Reporting.Domain.Interfaces.Manager;
 // page transparently up to the 100k report row limit.
 public interface IWorkforceReportReader
 {
-    // Pre-checks the `workforce` billing feature so a disabled account fails with FEATURE_DISABLED (403)
+    // Pre-checks the `workforce` feature so a disabled account fails with FEATURE_DISABLED (403)
     // rather than a raw GraphQL error.
     Task EnsureWorkforceFeatureAsync(CancellationToken cancellationToken);
 

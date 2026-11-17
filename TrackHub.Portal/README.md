@@ -1,55 +1,69 @@
-# TrackHub Web
+# TrackHub Portal
 
-[English](README.en.md) | [Español](README.es.md)
+The web portal: a React 19 + TypeScript 7 single-page application built with Vite 8, served in
+production as static files by nginx. It is also where the **user documentation** lives — the
+in-app help topics under `public/help/{en,es}/` ship with every build.
 
-TrackHub is an innovative open-source application designed to unify multiple monitoring platforms into a cohesive system. Imagine having all your monitoring needs met in one place—this is the vision behind TrackHub.
+Wiki: [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend).
 
-Currently in development, our project aims to foster collaboration among diverse companies and developers, promoting continuous improvement and growth. TrackHub empowers organizations to centralize information about their assets and personnel, regardless of their vendors.
+## Build, run, test
 
-We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
+Requires Node.js 22. From this folder:
 
-![Image](../TrackHub.AuthorityServer/src/Web/wwwroot/images/logo.png)
+```bash
+npm ci
+npm start              # https://localhost:3000 (npm run dev is the same)
+npm run typecheck && npm test && npm run build     # the CI gate
+npm run lint
+npm run codegen        # regenerate typed GraphQL documents from schemas/*.graphql
+npm run help:check     # validate the help topics without building
+npm run e2e            # Playwright suite against a running stack, see e2e/README.md
+```
 
----
+`.env` points every endpoint at the local Docker stack (`https://trackhub.local:8443`, see
+[LOCAL-DOCKER.md](../TrackHub.Deployment/LOCAL-DOCKER.md)); put machine-specific overrides in
+`.env.local`. `.env.production.template` lists the keys a deployment sets.
 
-## Overview
+**HTTPS is required** — the OAuth callback is `https://localhost:3000/authentication/callback`.
+Vite serves HTTPS only when `cert.crt` and `cert.key` exist in this folder; without them it falls
+back to HTTP silently and sign-in fails. `TrackHub.Deployment/scripts/local/Setup-TrackHubLocal.ps1`
+installs a certificate that covers both `localhost` and `trackhub.local`. Both files are
+gitignored.
 
-TrackHub Web is the React portal — the operator-facing user interface for the platform. It talks to the Security, Management, Router, Telemetry, Geofencing, Trip Management and Reporting APIs, and renders the live map and replay, GPS integration and device management, geofencing, trip planning and tracking, documents and workforce, reporting, account administration, and the public status page.
+## Gotchas
 
-It is also where **user documentation lives**: the contextual help topics under `public/help/` ship with every portal build.
-
----
-
-## Documentation
-
-| | |
-|---|---|
-| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology) and [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview) |
-| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
-
----
-
-## Modules in this repository
-
-| Module | Purpose |
-|---|---|
-| [TrackHubCommon](../TrackHubCommon) | Shared library, consumed as a ProjectReference |
-| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
-| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) — this module |
-| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
-| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application (separate repository) |
-
----
-
-## License
-
-Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+- **Components never touch the network.** Calls go `src/api/<backend>/<domain>Operations.ts`
+  (documents via the generated `graphql()` tag) → `src/api/<backend>/<domain>.ts` (typed functions
+  that throw `ApiError`) → `src/queries/<domain>.ts` (TanStack Query hooks owning cache keys and
+  invalidation). Endpoint URLs live only in `src/api/core/endpoints.ts`.
+- **Values travel as GraphQL variables**, never interpolated into documents.
+- **Backend drift is a compile error.** The contract suite exports each producer's SDL to
+  `schemas/<service>.graphql`; after a backend GraphQL change run
+  `dotnet test ../TrackHub.IntegrationTests`, then `npm run codegen`.
+- **`src/` is TypeScript only.** `allowJs` is off and ESLint errors on any new `.js`/`.jsx` there.
+  `typescript-eslint` is installed but disabled until it supports TypeScript 7; `tsc` is the gate.
+- **Use the controls' exported prop types.** Never add local prop-slice interfaces or
+  `as unknown as` casts at call sites; widen the control's own type instead. Theme extensions live
+  in `src/types/mui-theme.d.ts`.
+- **`process.env.REACT_APP_*` is a permanent build-time define** in `vite.config.ts`, read only by
+  `src/api/core/endpoints.ts`. It is off in test mode, where suites assign env at runtime.
+  `REACT_APP_*` values are baked into the bundle, so changing one means rebuilding.
+- **i18n keys are compile-checked.** Add every key to both `src/locales/en.json` and `src/locales/es.json`.
+- **Escape everything interpolated into a map popup** with `escapeHtml` (`src/utils/htmlUtils.ts`):
+  Leaflet popups and the Google InfoWindow assign via `innerHTML`.
+- **`datetime-local` ⇄ UTC goes through `toDateTimeLocalInput` / `fromDateTimeLocalInput`**
+  (`src/utils/dateUtils.ts`). A helper that skips the offset shift passes under `TZ=UTC`, which is
+  what CI runs, so assert the round-trip property, never a literal.
+- **Calendar defaults and day filters come from `useAccountCalendar()`**, computed in the
+  account's IANA zone, never from the browser's `new Date()` parts.
+- **Help content is validated on every `start`/`dev`/`build`** by `scripts/build-help.mjs`:
+  language parity, id equals filename, `screens:` ↔ `routes.tsx` in both directions, `topic:`
+  links, no raw HTML, assets present. Adding or renaming a screen without updating a topic's
+  frontmatter fails the build.
+- **`/status` must work without a token.** Its anonymous fetches (`api/core/healthProbe.ts` and the
+  visible-announcements call) are the only exceptions to the API layering, reached only through
+  `src/queries/platformStatus.ts`.
+- **`RouteDefinition.principalTypes` defaults to `[User]`.** A route for staff or public-link
+  principals must set `public: true`, or they bounce between it and `/dashboard`.
+- Reporting is REST (`api/BasicReports`); Manager's document REST base is `documents`, with no
+  `api/` prefix.

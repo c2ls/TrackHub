@@ -13,7 +13,9 @@ order: 40
 
 The **Documents** area of the **Account Management** screen lets you store files, keep them classified and versioned, watch for expiry, and share them safely. You find it under the **Documents & Sharing** group of the page.
 
-The area has three collapsible sections — **Document Library**, **Expiring Documents** and **Document Types** — plus an embedded documents panel that appears on the detail of the thing a document belongs to (for example a unit or a staff member).
+The area has three sections — **Document Library**, **Expiring Documents** and **Document Types**. They appear only when the documents feature is switched on for your account.
+
+Files are uploaded where they belong: a staff member's papers from **Staff Documents** in [Staff Qualifications](topic:staff-workforce#staff-documents), and proof-of-delivery attachments from the [Trips](topic:trip-management#capturing-proof-of-delivery) screen.
 
 ## Document Library
 
@@ -25,7 +27,7 @@ An account-wide search across your documents.
 | Column | Meaning |
 |---|---|
 | **File Name** | The document title, or the original file name. |
-| **Owner** | The record the document belongs to (entity type and id). |
+| **Owner** | The record the document belongs to: its type and name (for example the unit or staff member). |
 | **Type** | The document category. |
 | **Classification** | Public, Internal, Confidential or Legal. |
 | **Status** | Active, Pending, Uploaded, Expired, Replaced, Voided or Deleted. |
@@ -43,7 +45,7 @@ A dashboard of documents nearing expiry. Columns: **Type**, **Owner**, **Expires
 Configure the categories your account uses.
 
 - Columns: **Type**, **Required**, **Tracks Expiration**, **Default Validity (days)**, **Status** and an action.
-- The **+** (add) icon opens the **Document Types** dialog, where you set:
+- **Add** opens the **Document Types** dialog, where you set:
   - **Type** (the category identifier, required)
   - **Title** (the display name)
   - **Default Validity (days)**
@@ -52,11 +54,11 @@ Configure the categories your account uses.
 - Press **Save**.
 - The block action on a row disables that type (you are asked to confirm first).
 
-> The **+** icon on **Document Types** appears only when the documents feature is enabled for your account. If it is missing, the feature is not provisioned — the platform team manages that in [System administration](topic:system-administration).
+Set up your document types before anyone uploads: the upload dialog asks for a **Type**, and an account with no types cannot upload.
 
 ## Uploading, versions and sharing
 
-Documents are normally added from the detail panel of the record they belong to, using an embedded documents panel. That panel lists the record's documents with **File Name**, **Type**, **Classification**, **Status**, **Scan Status**, **Expires At** and **Version** columns, and offers these actions:
+The documents panel (for example **Staff Documents**) lists the record's documents with **File Name**, **Type**, **Classification**, **Status**, **Scan Status**, **Expires At** and **Version** columns, and offers these actions:
 
 - **Upload Document** — press the button, then drag a file onto the drop area (**"Drag and drop a file here, or click to select"**) or click to browse. Choose a **Type** (category, required), a **Classification** (Public, Internal, Confidential or Legal — Internal by default), an optional **Title** and an optional **Expires At** date. Press **Save**.
 - **New Version** — upload a replacement file for an existing document. You can add a **Reason**; the **Version** column then tracks the current version number.

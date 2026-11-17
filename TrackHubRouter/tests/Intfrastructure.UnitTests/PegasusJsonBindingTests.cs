@@ -75,7 +75,7 @@ public class JsonBindingTests
             """;
 
         var response = json.Deserialize<PagedResponse<Vehicle>>()!;
-        var device = response.Data!.MapToDeviceVm().Single();
+        var device = DeviceMapper.Instance.Map(response.Data!).Single();
 
         using (Assert.EnterMultipleScope())
         {

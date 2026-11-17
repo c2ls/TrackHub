@@ -34,4 +34,7 @@ public enum ProtocolType
     Webfleet = 15,
     RedGps = 16,
     Plaspy = 17,
+    TrustTrack = 18,
+    Mapon = 19,
+    GpsTrackit = 20,
 }

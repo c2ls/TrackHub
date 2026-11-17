@@ -32,7 +32,7 @@ namespace TrackHub.Router.Application.DevicePositions.Commands.Health;
 [AllowCrossAccount("SyncWorker operator-health loop: one global syncworker_client identity enumerates every account's operators and probes them in turn, so the OperatorVm's AccountId is by definition not the worker's own (it has none).")]
 public readonly record struct RecordOperatorHealthCommand(
     OperatorVm Operator,
-    string CheckType = OperatorHealthCheckTypes.Ping) : IRequest<bool>;
+    string CheckType = OperatorHealthCheckTypes.Ping) : IRequest<OperatorRunOutcome>;
 
 public class RecordOperatorHealthCommandHandler(
     IConfiguration configuration,
@@ -40,16 +40,16 @@ public class RecordOperatorHealthCommandHandler(
     IOperatorHealthCheckWriter healthWriter,
     IAlertEventWriter alertWriter,
     IProviderCapabilityCatalog capabilityCatalog,
-    ILogger<RecordOperatorHealthCommandHandler> logger) : IRequestHandler<RecordOperatorHealthCommand, bool>
+    ILogger<RecordOperatorHealthCommandHandler> logger) : IRequestHandler<RecordOperatorHealthCommand, OperatorRunOutcome>
 {
     private string? EncryptionKey { get; } = configuration["AppSettings:EncryptionKey"];
 
-    public async Task<bool> Handle(RecordOperatorHealthCommand request, CancellationToken cancellationToken)
+    public async Task<OperatorRunOutcome> Handle(RecordOperatorHealthCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(EncryptionKey, message: "Credential key not found.");
         if (request.Operator.Credential is null)
         {
-            return false;
+            return OperatorRunOutcome.Skipped;
         }
 
         // A provider that declares no ConnectivityPing is a DECLARED capability gap, not an
@@ -61,7 +61,7 @@ public class RecordOperatorHealthCommandHandler(
             logger.LogDebug(
                 "Health probe skipped for operator {OperatorId} (account {AccountId}): provider {Protocol} declares no connectivity ping.",
                 request.Operator.OperatorId, request.Operator.AccountId, protocol);
-            return false;
+            return OperatorRunOutcome.Skipped;
         }
 
         var startedAt = DateTimeOffset.UtcNow;
@@ -140,7 +140,7 @@ public class RecordOperatorHealthCommandHandler(
             logger.LogError(ex, "Failed to record health check for operator {OperatorId}.", request.Operator.OperatorId);
         }
 
-        return status == "HEALTHY";
+        return status == "HEALTHY" ? OperatorRunOutcome.Succeeded : OperatorRunOutcome.Failed;
     }
 
     private static string BuildAlertPayload(string? errorCode, string? message)

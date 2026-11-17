@@ -39,6 +39,8 @@ import { notifyApiError } from "api/core/errors";
 import { searchDocuments, getExpiringDocuments, getDocumentTypes, downloadDocument, configureDocumentType, disableDocumentType } from "api/manager/documents";
 import type { DocumentVm, DocumentTypeVm, DocumentTypeDtoInput } from "api/manager/documents";
 import { useDocumentTypes } from "queries/documents";
+import { useEntityNames } from "queries/entityNames";
+import { entityLabel } from "utils/entityLabel";
 import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from "utils/dateUtils";
 
@@ -77,6 +79,8 @@ function ManageDocuments() {
   useClampPage(library.page, PAGE_SIZE, docsTotal, library.setPage);
   useClampPage(expiringList.page, PAGE_SIZE, expiringTotal, expiringList.setPage);
   const { data: typeCatalog = [] } = useDocumentTypes(account?.accountId, { includeDisabled: true });
+  const ownerNames = useEntityNames([...docs, ...expiring].map(d => ({ type: d.ownerEntityType, id: d.ownerEntityId })));
+  const ownerLabel = (d: DocumentVm) => entityLabel(t, ownerNames, d.ownerEntityType, d.ownerEntityId);
   const categoryName = (category: string) => typeCatalog.find(type => type.category === category)?.displayName || category;
 
   const ensureAccount = async (): Promise<Account | null> => {
@@ -194,7 +198,7 @@ function ManageDocuments() {
           ]}
           rows={docs.map(d => ({
             fileName: <ArgonTypography variant="caption" fontWeight="medium">{d.title || d.fileName}</ArgonTypography>,
-            owner: cap(`${d.ownerEntityType}:${(d.ownerEntityId || '').substring(0, 8)}`),
+            owner: cap(ownerLabel(d)),
             category: cap(categoryName(d.category)),
             classification: cap(t(`documentManagement.values.classification.${(d.classification || '').toLowerCase()}` as 'documentManagement.values.classification.public', { defaultValue: d.classification })),
             status: cap(t(`documentManagement.values.status.${(d.status || '').toLowerCase()}` as 'documentManagement.values.status.active', { defaultValue: d.status })),
@@ -222,7 +226,7 @@ function ManageDocuments() {
           ]}
           rows={expiring.map(d => ({
             category: <ArgonTypography variant="caption" fontWeight="medium">{categoryName(d.category)}</ArgonTypography>,
-            owner: cap(`${d.ownerEntityType}:${(d.ownerEntityId || '').substring(0, 8)}`),
+            owner: cap(ownerLabel(d)),
             expires: cap(d.expiresAt ? formatDateTime(d.expiresAt) : '-'),
             status: cap(t(`documentManagement.values.status.${(d.status || '').toLowerCase()}` as 'documentManagement.values.status.active', { defaultValue: d.status })),
             id: d.documentId,

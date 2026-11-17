@@ -74,7 +74,7 @@ export interface GeofenceFormValues {
 }
 
 /** A column descriptor consumed by the `Table` control. */
-export interface GeofenceColumn { name: string; title?: string; align?: "left" | "right" | "center"; width?: string; }
+export interface GeofenceColumn { name: string; title?: string; align?: "left" | "right" | "center"; width?: string; hideTitle?: boolean; }
 
 /**
  * Name cell for the geofence list: regular weight (only the header is bold) and
@@ -280,15 +280,14 @@ function useGeofencesTableData(
   const buildTableData = (mapSource: Geofence[], rowSource: Geofence[]): GeofenceTableData => ({
     geofences: mapSource.map(toMapPolygon),
     columns: [
-      // This is the only table in the portal with explicit widths — it lives in the
-      // narrow `lg:3` side panel next to the map, where the default even split leaves
-      // the name unreadable. The action share has to fit the delete button (see below)
-      // at the narrowest lg layout, or the button overflows and the scroll container
-      // (overflowX: hidden) clips it.
-      { name: "name", title:t('geofence.name'), align: "left", width: "42%" },
-      { name: "type", title:t('geofence.type'), align: "left", width: "28%" },
-      { name: "color", title:t('geofence.color'), align: "left", width: "14%" },
-      { name: "action", title:t('generic.action'), align: "center", width: "16%" },
+      // The table lives in the narrow `lg:3` side panel next to the map, where the default
+      // even split leaves the name unreadable. The action share has to fit the delete button
+      // (see below) at the narrowest lg layout, or the button overflows and the scroll
+      // container (overflowX: hidden) clips it.
+      { name: "name", title:t('geofence.name'), align: "left", width: "31%" },
+      { name: "type", title:t('geofence.type'), align: "left", width: "25%" },
+      { name: "color", title:t('geofence.color'), align: "left", width: "28%" },
+      { name: "action", title:t('generic.action'), align: "center", width: "16%", hideTitle: true },
       { name: "id" }
     ],
     rows: rowSource.map(geofence => ({

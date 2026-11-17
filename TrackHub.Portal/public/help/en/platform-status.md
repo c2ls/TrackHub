@@ -38,6 +38,9 @@ Each tile is one part of the platform, named for what it does rather than by its
 | **Position data** | Vehicle positions and their history. |
 | **Geofences** | Entries, exits and stops inside your zones. |
 | **Reports** | Building the reports you download or preview. |
+| **Trips** | Route planning, trip tracking and customer tracking links. |
+
+![Platform Status page with the overall banner and service tiles](assets/en/platform-status-public.png)
 
 Each tile shows one of three states:
 
@@ -73,7 +76,7 @@ Announcements appear in two places:
 
 Colour follows importance: blue for information, amber for a warning, red for critical. You can dismiss the in-portal bar with its **×**; it stays dismissed until you close the browser, and a still-active announcement comes back the next time you sign in.
 
-If the announcement bar is missing while the *Fleet management* tile is red, that is expected — announcements are stored there, so an outage hides them. The tiles keep working regardless.
+If the announcement bar is missing while the *Fleet management* tile is red, that is expected — an outage there also hides announcements. The tiles keep working regardless.
 
 ## Which version am I using?
 
@@ -85,7 +88,7 @@ The version shown is the one for the screens themselves. The services behind the
 
 ## For managers and administrators
 
-**GPS synchronisation** — signed-in **managers and platform administrators** see an extra tile for the background synchroniser. It is the companion to the GPS Integration screen: that screen shows your account's operators, this tile shows whether the synchroniser itself is running at all. It has no health endpoint of its own, so its state comes from how recently it did work: green when it recorded activity in the last five minutes. If no account has GPS integration enabled it shows **Unknown** with *"there is nothing to synchronise"* — that is normal, not a fault.
+**GPS synchronisation** — signed-in **managers and platform administrators** see an extra tile for the background synchroniser. It is the companion to the GPS Integration screen: that screen shows your account's operators, this tile shows whether the synchroniser itself is running at all. It is green when it recorded activity in the last five minutes. If no account has GPS integration enabled it shows **Unknown** with *"there is nothing to synchronise"* — that is normal, not a fault.
 
 **Background tasks** (platform administrators only) — the scheduled work that runs on its own: alert evaluation, notification delivery and digests, document scanning and expiry, trial expiry, geofence stop detection, and clean-up jobs. For each one you see its state, when it last did something, and the outcome. Hover a failed outcome to see the error code.
 
@@ -101,4 +104,4 @@ For each announcement you provide:
 - **Starts at** / **Ends at** — optional. Leave the start empty to publish immediately, and the end empty to keep it visible until you deactivate it. An announcement disappears on its own at the end time.
 - **Active** — clear this to save a draft, or to retire an announcement without deleting it. Inactive announcements are invisible everywhere.
 
-Publish a maintenance announcement **before** the maintenance starts. Once the fleet-management service is stopped, announcements can no longer be loaded — so a banner scheduled in advance is what people will see during the window.
+Publish a maintenance announcement **before** the maintenance starts. While *Fleet management* is down, announcements cannot be loaded — so a banner scheduled in advance is what people will see during the window.

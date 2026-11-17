@@ -43,8 +43,8 @@ Edit the fields you want to change, then click **Save**. If a required field (**
 1. Open **Profile** from the left menu.
 2. In the **Profile Information** card, click the small **lock** icon in the top-right corner of the card.
 3. The **Update Password** window opens.
-4. Type your new password in the **Password** field.
-5. Type the same password again in the **Confirm Password** field.
+4. Type your existing password in the **Current Password** field.
+5. Type your new password in the **Password** field, and again in the **Confirm Password** field.
 6. Click **Save**.
 
 **Password requirements.** Your new password must be at least **8 characters** and include **an uppercase letter, a lowercase letter and a number**, and the **Password** and **Confirm Password** fields must **match exactly**. If any rule is not met, TrackHub shows a message and does not save until it is corrected. Adding a symbol makes it stronger still.
@@ -58,9 +58,9 @@ The third card is read-only. It has two sections:
 
 This tells you what you are allowed to do; you cannot change it here. For what each role unlocks, see [Roles and permissions](topic:roles-and-permissions).
 
-## Account settings (the gear button)
+## Account settings
 
-If you manage your account, a round **gear (settings)** button appears in the **bottom-right corner** of the screen on any page. Clicking it slides open a panel titled **Settings** (with **Account Settings** shown beneath), where you adjust map-related options for everyone in your account:
+If you manage your account, a **Settings** icon (a gear) appears in the top bar on every screen. Clicking it slides open a panel titled **Settings** (with **Account Settings** shown beneath), where you adjust map-related options for everyone in your account:
 
 - **Maps** — choose the map provider: **OSM** (OpenStreetMap) or **Google**.
 - **Maps Key** — only appears when you pick a provider other than OSM; enter the provider key here.
@@ -68,6 +68,8 @@ If you manage your account, a round **gear (settings)** button appears in the **
 - **Refresh Map** — turn automatic map refreshing on or off.
 - **Refresh Map Interval (Seconds)** — how often the map refreshes when the switch above is on.
 
+![Account Settings panel open beside the live map](assets/en/account-settings-drawer.png)
+
 Click **Save** to apply. A message reminds you that **some settings may require a page refresh to take effect**.
 
-This gear button and its settings panel are only available to Managers and Administrators. If you do not manage the account, you will not see the gear button.
+Only Managers and Administrators see the **Settings** icon.

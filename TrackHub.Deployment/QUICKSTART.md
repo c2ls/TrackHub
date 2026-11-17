@@ -1,21 +1,20 @@
-# TrackHub Quick Start Guide
+# TrackHub Quick Start
 
-A simplified guide for first-time TrackHub installation. For advanced options, see [INSTALL.md](INSTALL.md).
+A first installation, end to end, on one Linux server. The steps depend on each other — follow them
+in order. Everything else (configuration reference, split servers, upgrades, backups, rollback,
+troubleshooting) is in [INSTALL.md](INSTALL.md).
 
----
+## What you need
 
-## What You Need Before Starting
+| | |
+|---|---|
+| **Server** | Ubuntu 24.04 LTS, 4+ CPU cores, 8 GB RAM plus 4 GB swap, 50 GB SSD |
+| **Database** | PostgreSQL 14+ reachable from the server, with the PostGIS extension available |
+| **Domain** | A DNS name pointing at the server, ports 80 and 443 open |
+| **Route planning** | An OpenRouteService API key — free, same day, at <https://openrouteservice.org/dev/#/signup> |
+| **Migration host** | The .NET 10 SDK and `dotnet-ef`, on any machine that can reach PostgreSQL (this server is fine) |
 
-| Requirement | Details |
-|-------------|---------|
-| **Server** | Ubuntu 24.04.4 LTS, 4+ CPU cores, 8 GB RAM, 50 GB SSD |
-| **Database** | PostgreSQL 14+ already installed (local or remote) |
-| **Domain** | A registered domain name pointing to your server |
-| **Ports** | 80 (HTTP) and 443 (HTTPS) open |
-
----
-
-## Step 1: Install Docker
+## 1. Install Docker
 
 ```bash
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -23,379 +22,151 @@ sudo sh get-docker.sh
 sudo usermod -aG docker $USER
 ```
 
-Log out and log back in, then verify:
+Log out and back in, then check `docker --version` and `docker compose version`. On a small host,
+add swap before the first build (image builds spike above 4 GB):
 
 ```bash
-docker --version
-docker compose version
+sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
 ```
 
----
-
-## Step 2: Clone the Repository
-
-The whole product is one repository. Clone it and you have every service, the
-portal and this deployment folder in one go.
+## 2. Clone the repository
 
 ```bash
 sudo mkdir -p /opt/trackhub && sudo chown $USER:$USER /opt/trackhub
-
 git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub
-
 cd /opt/trackhub/TrackHub.Deployment
-cp .env.example .env
 ```
 
-The checkout root (`/opt/trackhub`) is the docker build context, so it must hold
-`TrackHub.Deployment/` alongside `TrackHubCommon/`, `TrackHub.Manager/` and the
-other service directories — which is exactly what the clone gives you.
+The checkout root is the Docker build context: every image builds from the service directories
+beside `TrackHub.Deployment/`. The SyncWorker builds from `TrackHubRouter/`.
 
-> Deploying from a private repository? Set `GITHUB_OWNER`, `GITHUB_REPO`,
-> `GITHUB_USER` and `GITHUB_PASSWORD` in `.env`. `GITHUB_PASSWORD` must be a Personal
-> Access Token — GitHub does not accept account passwords over HTTPS. See
-> [INSTALL.md](INSTALL.md) for the full table.
+## 3. Prepare the databases
 
-> Later, `./scripts/clone-repos.sh` fast-forwards this checkout and verifies no source
-> directory is missing. It is no longer needed for the first checkout.
-
-> The **SyncWorker** background service is built from the `TrackHubRouter` directory —
-> there is nothing extra to check out for it.
-
----
-
-## Step 3: Prepare the Database
-
-Connect to PostgreSQL **as a superuser** and create the two databases. The `postgis`
-extension is required by Geofencing and TripManagement (they share the `TrackHub` database,
-so one `CREATE EXTENSION` covers both) and must be created by a superuser — a plain owner
-role cannot run `CREATE EXTENSION`.
+As a PostgreSQL **superuser** (`CREATE EXTENSION` needs one):
 
 ```sql
 CREATE DATABASE "TrackHubSecurity";
 CREATE DATABASE "TrackHub";
-
--- Create a user (adjust password)
 CREATE USER trackhub WITH PASSWORD 'YourStrongPassword';
 GRANT ALL PRIVILEGES ON DATABASE "TrackHubSecurity" TO trackhub;
 GRANT ALL PRIVILEGES ON DATABASE "TrackHub" TO trackhub;
-```
 
-On **PostgreSQL 15+**, `GRANT ... ON DATABASE` is *not* enough to create objects — the role
-also needs rights on the `public` schema. Serilog auto-creates its `logs` table there, so
-without this, logging fails at first write. Run in **both** databases:
-
-```sql
+-- PostgreSQL 15+: the role also needs the public schema, where the log sink creates its table
 \c TrackHubSecurity
 GRANT ALL ON SCHEMA public TO trackhub;
-
 \c TrackHub
 GRANT ALL ON SCHEMA public TO trackhub;
-```
-
-Then, connected **to the `TrackHub` database** (still as superuser):
-
-```sql
-\c TrackHub
 CREATE EXTENSION IF NOT EXISTS postgis;
 ```
 
-Both databases are still **empty** at this point — the schema is created in Step 5.
-
----
-
-## Step 4: Configure Environment
+## 4. Configure `.env`
 
 ```bash
-cd /opt/trackhub/TrackHub.Deployment
 cp .env.example .env
 nano .env
 ```
 
-**Required values to set:**
+`.env.example` documents every key. `deploy.sh` refuses to run while any of these is empty or still
+a placeholder:
 
-| Variable | What to Enter |
-|----------|---------------|
-| `DOMAIN` | Your domain name (e.g., `trackhub.example.com`) |
-| `ALLOWED_CORS_ORIGINS` | `https://trackhub.example.com` |
-| `DB_CONNECTION_SECURITY` | `server=DB_HOST;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword` |
-| `DB_CONNECTION_MANAGER` | `server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword` |
-| `DB_CONNECTION_TELEMETRY` | Same `TrackHub` database as above (Telemetry lives in the `telemetry` schema) |
-| `DB_CONNECTION_LOGGING` | `server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword` |
+| Key | Value |
+|---|---|
+| `DOMAIN`, `LETSENCRYPT_EMAIL` | Your domain and the Let's Encrypt contact |
+| `ALLOWED_CORS_ORIGINS` | `https://<domain>` |
+| `AUTHORITY_URL` | `https://<domain>/Identity` |
+| `DB_CONNECTION_SECURITY` | `server=DB_HOST;port=5432;database=TrackHubSecurity;user id=trackhub;password=...` |
+| `DB_CONNECTION_MANAGER`, `DB_CONNECTION_TELEMETRY`, `DB_CONNECTION_LOGGING` | The same string with `database=TrackHub` — all three use the `TrackHub` database |
 | `CERTIFICATE_PASSWORD` | A strong password for the token-signing certificate |
-| `ENCRYPTION_KEY` | A GUID (generate with `uuidgen` or any GUID tool) |
-| `AUTHORITY_URL` | `https://trackhub.example.com/Identity` |
-| `SYNCWORKER_CLIENT_SECRET` / `ROUTER_CLIENT_SECRET` / `SECURITY_CLIENT_SECRET` / `GEOFENCE_CLIENT_SECRET` / `TRIP_CLIENT_SECRET` | Service-to-service secrets — must match `config/clients.json` (Step 6) |
-| `ORS_API_KEY` | OpenRouteService key used by TripManagement for route planning. **Required** — free and same-day from <https://openrouteservice.org/dev/#/signup>, or point `ORS_BASE_URL` at a self-hosted instance. Leaving it empty is a deployment error: trips still work but every route plan fails with `ROUTING_NOT_CONFIGURED`. |
+| `ENCRYPTION_KEY` | A new GUID (`uuidgen`) |
+| `SYNCWORKER_`, `ROUTER_`, `SECURITY_`, `GEOFENCE_`, `TRIP_`, `REPORTING_`, `MANAGER_CLIENT_SECRET` | One strong random secret each, e.g. `openssl rand -hex 32` |
 
-Replace `DB_HOST` with your PostgreSQL server address (`localhost` if on the same server).
+Also set `ORS_API_KEY` (without it every route plan fails with `ROUTING_NOT_CONFIGURED`) and replace
+`your-domain.com` in every `REACT_APP_*` URL.
 
-> ⚠️ Write the user field as **`user id=`** — *with a space*. The deployment scripts
-> (`init-databases.sh`, `backup-database.sh`) parse the
-> connection string on that exact key. Writing `userid=` makes the user parse as empty
-> and **`db-init` fails on first deploy**.
+> Write the user as **`user id=`**, with the space. The scripts parse that exact key; `userid=`
+> makes `db-init` fail on the first deploy.
 
-All `REACT_APP_*` URLs in `.env.example` point at `your-domain.com` — replace the domain in
-every one of them. The `DOCUMENT_STORAGE_*` keys can stay at their defaults (documents are
-stored on the `manager-documents` volume); only change them if you use S3 or Azure Blob,
-which require additional keys — see [INSTALL.md](INSTALL.md#configuration-reference).
+## 5. Create the schema (EF migrations)
 
----
-
-## Step 5: Create the Database Schema (EF migrations)
-
-> ⚠️ **Do not skip this.** `db-init` (which runs during deploy) **only seeds data** — it does
-> **not** create or alter tables. If you deploy against the empty databases from Step 3, the
-> `db-init` container fails and the stack never comes up.
-
-Three services own migrations. Telemetry has none of its own — its `telemetry` schema is
-created by the Manager migrations.
-
-Requires the .NET SDK and `dotnet-ef` on the machine that can reach PostgreSQL:
+`db-init`, which runs during every deploy, **only seeds data** — it never creates tables. Against
+empty databases it fails. Five projects own migrations; Telemetry's tables come from Manager's.
 
 ```bash
 dotnet tool install --global dotnet-ef
-```
-
-`TrackHubCommon` needs no separate step: the services reference it as a
-`ProjectReference`, so `dotnet ef` builds it from the source in this checkout
-automatically (the Docker image builds resolve it the same way).
-
-Apply the migrations:
-
-```bash
 cd /opt/trackhub
 
-# Security → TrackHubSecurity database
-ConnectionStrings__Security="server=DB_HOST;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword" \
-dotnet ef database update \
-  --project TrackHubSecurity/src/Infrastructure/SecurityDB \
-  --startup-project TrackHubSecurity/src/Web
+export SECURITY_CONN="server=DB_HOST;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword"
+export TRACKHUB_CONN="server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword"
+export Database__CommandTimeoutSeconds=0    # index builds outlast the services' 30 s command timeout
 
-# AuthorityServer → TrackHubSecurity database, OpenIddict tables. MUST follow the Security step.
-# Required to issue tokens. On a deployment created before this step existed the tables are already
-# present without a migration history row — baseline it instead (see INSTALL.md §4).
-ConnectionStrings__Security="server=DB_HOST;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword" \
-dotnet ef database update \
-  --project TrackHub.AuthorityServer/src/Infrastructure \
-  --startup-project TrackHub.AuthorityServer/src/Web \
+ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
+  --project TrackHubSecurity/src/Infrastructure/SecurityDB --startup-project TrackHubSecurity/src/Web
+
+# OpenIddict tables, same database, after Security
+ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
+  --project TrackHub.AuthorityServer/src/Infrastructure --startup-project TrackHub.AuthorityServer/src/Web \
   --context AuthorityDbContext
 
-# Manager → TrackHub database (also creates the telemetry schema)
-ConnectionStrings__DefaultConnection="server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword" \
-dotnet ef database update \
-  --project TrackHub.Manager/src/Infrastructure/ManagerDB \
-  --startup-project TrackHub.Manager/src/Web
+# app, map and telemetry
+ConnectionStrings__DefaultConnection="$TRACKHUB_CONN" dotnet ef database update \
+  --project TrackHub.Manager/src/Infrastructure/ManagerDB --startup-project TrackHub.Manager/src/Web
 
-# Geofencing → TrackHub database (requires the postgis extension from Step 3)
-ConnectionStrings__DefaultConnection="server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword" \
-dotnet ef database update \
-  --project TrackHub.Geofencing/src/Infrastructure/ManagerDB \
-  --startup-project TrackHub.Geofencing/src/Web
+ConnectionStrings__DefaultConnection="$TRACKHUB_CONN" dotnet ef database update \
+  --project TrackHub.Geofencing/src/Infrastructure/ManagerDB --startup-project TrackHub.Geofencing/src/Web
 
-# TripManagement → TrackHub database, `trip` schema (requires the postgis extension from Step 3)
-ConnectionStrings__DefaultConnection="server=DB_HOST;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword" \
-dotnet ef database update \
-  --project TrackHub.TripManagement/src/Infrastructure/TripDB \
-  --startup-project TrackHub.TripManagement/src/Web
+ConnectionStrings__DefaultConnection="$TRACKHUB_CONN" dotnet ef database update \
+  --project TrackHub.TripManagement/src/Infrastructure/TripDB --startup-project TrackHub.TripManagement/src/Web
+
+cd /opt/trackhub/TrackHub.Deployment
 ```
 
-Re-run these same five commands on **every upgrade that adds migrations**.
+Always pass the connection strings: the committed `appsettings.json` files point at a local
+development database, which EF would otherwise use silently. Re-run the same five commands on every
+upgrade — EF applies only what is pending.
 
-> **Existing deployments must also re-run `db-init` after adding TripManagement.** The
-> migration creates the `trip` schema but seeds nothing — without the `trip_client`
-> registration and the `Trips`/`TripTracking`/`TollCatalog` resource + role seeding, **every
-> trip call returns `FORBIDDEN`** even for administrators, while the container looks healthy.
-
----
-
-## Step 6: Generate Certificates
-
-**Add `LETSENCRYPT_EMAIL` to your `.env` file:**
-
-```env
-LETSENCRYPT_EMAIL=admin@your-domain.com
-```
-
-**Obtain Let's Encrypt SSL + generate OpenIddict certificate:**
+## 6. Certificates
 
 ```bash
-sudo ./scripts/generate-certs.sh your-domain.com admin@your-domain.com YourCertificatePassword
+sudo ./scripts/generate-certs.sh
 ```
 
-This will:
-- Obtain a free SSL certificate from Let's Encrypt (auto-renews every 90 days)
-- Generate the OpenIddict token-signing certificate (`certificate.pfx`)
-- Set up a daily cron job for automatic renewal
+It reads `DOMAIN`, `LETSENCRYPT_EMAIL` and `CERTIFICATE_PASSWORD` from `.env`, obtains the Let's
+Encrypt certificate, creates the OpenIddict token-signing `certificates/certificate.pfx` if none
+exists, and installs the renewal hook that copies renewed files into `certificates/` and reloads
+nginx.
 
----
-
-## Step 7: Configure OAuth Clients
+## 7. OAuth clients
 
 ```bash
 cp config/clients.json.example config/clients.json
-nano config/clients.json
+sed -i 's/<<YOUR_DOMAIN>>/your-domain.com/g' config/clients.json
 ```
 
-Update the `web_client` callback URIs to use your domain (the frontend expects the
-`/authentication/callback` path), and set each service client's secret to match the
-`*_CLIENT_SECRET` values in your `.env`:
+Only the `web_client` URIs need your domain. Leave the `<<GENERATE_A_SECURE_SECRET>>` placeholders:
+the seeder takes every service client's secret from the matching `*_CLIENT_SECRET` in `.env`.
 
-```
-https://your-domain.com/authentication/callback
-```
-
----
-
-## Step 8: Deploy
+## 8. Deploy
 
 ```bash
-./scripts/deploy.sh full --build
+./scripts/deploy.sh full
 ```
 
-This builds all containers and force recreates the running containers from the
-freshly built images. First run takes several minutes.
+The first run builds every image one at a time and takes a while. Before stopping anything it runs
+`db-init` (OAuth clients, roles and permissions, master data), so a failed seed leaves nothing
+half-deployed.
 
----
-
-## Step 9: Verify
+## 9. Verify
 
 ```bash
-# Check all containers are running
-docker compose ps
-
-# Check service health
 ./scripts/health-check.sh your-domain.com
 ```
 
-Open `https://your-domain.com` in your browser. You should see the TrackHub login page.
+Open `https://your-domain.com` for the login page and `https://your-domain.com/status` — the status
+page needs no sign-in and shows one tile per service. Every tile should read *Working*; an *Unknown*
+tile usually means that service's `REACT_APP_*` URL is wrong in `.env`.
 
-Then open `https://your-domain.com/status` — the platform status page. It loads **without signing
-in** and shows a tile per service, so it is the fastest single-URL confirmation that the whole stack
-is reachable. Every tile should read *Working*; a grey *Unknown* tile usually means that service's
-`REACT_APP_*` endpoint is missing from `.env`.
+Sign in with the administrator the Security seeder creates on an empty database —
+`email@mail.com` / `12345678` — and **change that password immediately** (Profile → password).
 
----
-
-## Updating TrackHub
-
-> ⚠️ **Upgrading an instance installed before the Telemetry / SyncWorker / Documents release?**
-> The `git pull` + redeploy below is **not enough**. That release adds a new service
-> (`TrackHub.Telemetry/`), new `.env` keys, new OAuth service clients, and new database
-> migrations — none of which a plain redeploy creates for you. Follow
-> [INSTALL.md → Upgrading From a Previous Version](INSTALL.md#upgrading-from-a-previous-version)
-> **once** (back up → pull → reconcile `.env` → reconcile `clients.json` →
-> apply migrations → `deploy.sh full --build`). After that one-time upgrade, the steps
-> below are all you need.
-
-For code-only updates, updates are deterministic: `deploy.sh` rebuilds only what changed
-(source changes are detected automatically) and always force-recreates containers, and the
-frontend refreshes its static assets on every start. You do **not** need `--no-cache`,
-repeated runs, or manual volume cleanup.
-
-### Update Everything
-
-```bash
-# Pull the latest code — one repository, so one pull covers every service
-cd /opt/trackhub && git pull
-
-# Rebuild and deploy (cached, deterministic)
-cd /opt/trackhub/TrackHub.Deployment
-./scripts/deploy.sh full --build
-```
-
-> If the release adds EF migrations, apply them (Step 5 commands) **before** deploying —
-> `deploy.sh` does not run them.
-
-### Update a Single Service
-
-```bash
-# Same single pull — one repository covers every service
-cd /opt/trackhub && git pull
-
-# Rebuild and restart only the service that changed
-cd /opt/trackhub/TrackHub.Deployment
-./scripts/update-service.sh manager
-```
-
-Valid service names: `frontend`, `authority`, `security`, `manager`, `router`,
-`geofencing`, `tripmanagement` (alias `trip`), `telemetry`, `reporting`, `syncworker`, `nginx`.
-
-> `syncworker` is built from the `TrackHubRouter` repo, so a Router code change means
-> updating **both** `router` and `syncworker`.
-
----
-
-## Common Commands
-
-| Action | Command |
-|--------|---------|
-| Check the platform status | Open `https://your-domain.com/status` (no sign-in needed) |
-| View all logs | `./scripts/logs.sh` |
-| View one service log | `./scripts/logs.sh manager` |
-| Restart a service | `docker compose restart manager` |
-| Stop everything | `docker compose down --remove-orphans` |
-| Deploy/start everything | `./scripts/deploy.sh full --build` |
-| Backup databases | `./scripts/backup-database.sh backup` (dumps **both** databases into one `.tar.gz`) |
-| List backups | `./scripts/backup-database.sh list` |
-| Restore | `./scripts/backup-database.sh restore backups/database/<file>.tar.gz` |
-| Find the documents volume | `docker volume ls \| grep manager-documents` |
-| Back up uploaded documents | `docker run --rm -v <that-volume>:/d -v "$PWD/backups:/b" alpine tar czf /b/documents.tar.gz -C /d .` |
-| Tag a version | `./scripts/rollback.sh tag <service> v1.0.0` |
-| Undo the last update | `./scripts/rollback.sh rollback <service> previous` (`:previous` is tagged automatically by every update) |
-| Rollback to a named tag | `./scripts/rollback.sh rollback <service> v1.0.0` |
-| Which portal build is live? | Open `https://<domain>/status` — *Portal build* (no sign-in needed; hard-reload) |
-
----
-
-## Troubleshooting
-
-**Containers won't start?**
-```bash
-docker compose logs --tail=50
-```
-
-**Database connection fails?**
-- Verify PostgreSQL allows remote connections (`pg_hba.conf`)
-- Check connection strings in `.env` — the user field must be `user id=` (with a space)
-- Test: `docker exec -it trackhub-authority env | grep ConnectionStrings`
-  (only the `db-init` container has `DB_CONNECTION_*` vars; the services receive
-  `ConnectionStrings__*`)
-
-**`db-init` fails / "relation does not exist"?**
-
-You almost certainly skipped **Step 5** — the EF migrations. `db-init` seeds data only; it
-does not create tables. Apply the migrations, then re-run `./scripts/deploy.sh full --build`.
-
-**Never run `docker compose down -v`.**
-
-The `-v` flag deletes the volumes, which destroys **every uploaded document** (the
-`manager-documents` volume — this data is *not* in PostgreSQL and not covered by
-`backup-database.sh`). Use `docker compose down --remove-orphans`.
-
-**Certificate errors?**
-```bash
-ls -la certificates/
-openssl x509 -in certificates/fullchain.pem -text -noout
-```
-
-**CORS errors in browser?**
-- Check `ALLOWED_CORS_ORIGINS` matches your URL exactly (including `https://`)
-
-**A service still runs old code after an update?**
-
-Builds detect source changes automatically and containers are always
-force-recreated, so this is rare. If you suspect a problem:
-```bash
-# Confirm the latest code was pulled
-git -C /opt/trackhub/TrackHub.Manager log -1 --oneline
-
-# Rebuild and redeploy (optionally force a full rebuild)
-./scripts/deploy.sh full --build            # normal
-./scripts/deploy.sh full --build --no-cache # only if you must bypass the cache
-```
-You do **not** need to manually delete repos, remove volumes, or run the deploy
-multiple times.
-
----
-
-For the full deployment guide with advanced options, split-server setups, and migration instructions, see [INSTALL.md](INSTALL.md).
+**Next:** schedule the retention job and set up backups — [INSTALL.md → Operations](INSTALL.md#operations).

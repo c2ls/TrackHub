@@ -47,6 +47,7 @@ public class GetReportQueryHandlerTests
     private Mock<IReport> _report = null!;
     private StubExcelHelper _excel = null!;
     private StubPdfBuilder _pdf = null!;
+    private Mock<IReportFilterLabeler> _labeler = null!;
     private ReportingLimitsOptions _limits = null!;
     private Guid _accountId;
     private const string Code = "some-report";
@@ -63,6 +64,9 @@ public class GetReportQueryHandlerTests
         _report = new Mock<IReport>();
         _excel = new StubExcelHelper();
         _pdf = new StubPdfBuilder();
+        _labeler = new Mock<IReportFilterLabeler>();
+        _labeler.Setup(l => l.LabelAsync(It.IsAny<IReadOnlyList<KeyValuePair<string, object>>>(), It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new KeyValuePair<string, object>("FilterTransporterId", "AAA000")]);
         _limits = new ReportingLimitsOptions();
         _accountId = Guid.NewGuid();
 
@@ -92,7 +96,7 @@ public class GetReportQueryHandlerTests
 
     private GetReportQueryHandler BuildHandler()
         => new(_factory.Object, _user.Object, _audit.Object, _catalog.Object,
-            _features.Object, Mock.Of<IIdentityService>(), Zones(), _branding.Object, _excel, _pdf, _limits);
+            _features.Object, Mock.Of<IIdentityService>(), Zones(), _branding.Object, _excel, _pdf, _labeler.Object, _limits);
 
     private static FilterDto Filters(string language = "en") => new() { Name = "Title", Language = language };
 
@@ -107,6 +111,17 @@ public class GetReportQueryHandlerTests
         Assert.That(result.RowCount, Is.EqualTo(3));
         _audit.Verify(a => a.RecordReportExportAsync(_accountId, "User", It.IsAny<string>(), Code,
             It.IsAny<string>(), 3, "xlsx", "corr", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Pdf_RendersLabeledFilters_ExcelDoesNotNeedThem()
+    {
+        await BuildHandler().Handle(new GetReportQuery(Code, Filters("es"), "pdf"), CancellationToken.None);
+        await BuildHandler().Handle(new GetReportQuery(Code, Filters()), CancellationToken.None);
+
+        Assert.That(_pdf.Last!.AppliedFilters.Single().Value, Is.EqualTo("AAA000"));
+        _labeler.Verify(l => l.LabelAsync(It.IsAny<IReadOnlyList<KeyValuePair<string, object>>>(),
+            It.Is<CultureInfo>(c => c.TwoLetterISOLanguageName == "es"), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]

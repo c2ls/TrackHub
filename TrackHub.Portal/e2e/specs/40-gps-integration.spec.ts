@@ -145,48 +145,19 @@ test.describe('gps integration', () => {
     ).toBeVisible();
   });
 
-  test('the operator dialog offers exactly the providers the Router reports as capable', async ({
+  test('the operator dialog offers exactly the providers the Router reports', async ({
     shell,
     page,
     t,
     api,
   }) => {
-    // The portal carries no local protocol list any more: the picker is fed by
-    // the Router's ProviderCapabilityCatalog, which is the single alignment
-    // point between a provider's implementation and what a user may choose. A
-    // placeholder entry with no capability at all is a RESERVED value, not a
-    // provider, and must never be offered.
-    const catalog = await api.gql<{
-      providerCapabilities: {
-        displayName: string;
-        realTimePositions: boolean;
-        positionHistory: boolean;
-        deviceCatalog: boolean;
-        connectivityPing: boolean;
-      }[];
-    }>(
+    // The portal carries no local protocol list: the picker is fed by the
+    // Router's ProviderCapabilityCatalog, built from the registered providers.
+    const catalog = await api.gql<{ providerCapabilities: { displayName: string }[] }>(
       'router',
-      'query { providerCapabilities { protocolTypeId protocol displayName realTimePositions positionHistory deviceCatalog connectivityPing } }'
+      'query { providerCapabilities { displayName } }'
     );
-    const capable = catalog.providerCapabilities
-      .filter(
-        (provider) =>
-          provider.realTimePositions ||
-          provider.positionHistory ||
-          provider.deviceCatalog ||
-          provider.connectivityPing
-      )
-      .map((provider) => provider.displayName)
-      .sort();
-    const reserved = catalog.providerCapabilities
-      .filter(
-        (provider) =>
-          !provider.realTimePositions &&
-          !provider.positionHistory &&
-          !provider.deviceCatalog &&
-          !provider.connectivityPing
-      )
-      .map((provider) => provider.displayName);
+    const registered = catalog.providerCapabilities.map((provider) => provider.displayName).sort();
 
     await shell.open('gpsIntegration');
     const operators = new Section(page, 'gps-operators', t);
@@ -204,10 +175,7 @@ test.describe('gps integration', () => {
       )
     ).sort();
 
-    expect(offered).toEqual(capable);
-    for (const name of reserved) {
-      expect(offered).not.toContain(name);
-    }
+    expect(offered).toEqual(registered);
 
     await page.keyboard.press('Escape');
     await form.cancel();

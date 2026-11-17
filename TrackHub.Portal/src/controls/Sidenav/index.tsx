@@ -88,9 +88,10 @@ function Sidenav({
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 
   useEffect(() => {
-    // A function that sets the mini state of the sidenav.
+    // Below xl the sidenav is an overlay that closes on navigation; above it the user's
+    // mini/expanded choice stands.
     function handleMiniSidenav() {
-      setMiniSidenav(dispatch, window.innerWidth < 1200);
+      if (window.innerWidth < 1200) setMiniSidenav(dispatch, true);
     }
     /**
      The event listener that's calling the handleMiniSidenav function when resizing the window.

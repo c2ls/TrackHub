@@ -20,7 +20,10 @@ internal sealed record LoginResponse(string? Message, string? Auth);
 internal sealed record PagedResponse<T>(IReadOnlyList<T>? Data, int Page, int Pages);
 
 // Without a select, "device" is the assigned IMEI (null when the vehicle has no device).
-internal sealed record Vehicle(long Id, string? Name, long? Device);
+internal sealed record Vehicle(long Id, string? Name, long? Device)
+{
+    public bool HasDevice => Device is > 0;
+}
 
 // With select=device:latest..., "device" becomes an object carrying the IMEI and the latest state.
 internal sealed record VehicleLatest(long Id, string? Name, LatestDevice? Device);

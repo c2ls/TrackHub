@@ -61,4 +61,22 @@ public class ExcelHelperTests
         using var workbook = new XLWorkbook(stream);
         Assert.That(workbook.Worksheet(1).Cell(2, 1).GetString(), Is.EqualTo("Status"));
     }
+
+    private readonly record struct TripRow([property: ReportValues("TripStatus")] string TripStatus, string TripCode);
+
+    [TestCase("en", "In progress")]
+    [TestCase("es", "En curso")]
+    public void Export_WritesVocabularyValues_InTheRequestLanguage(string language, string expected)
+    {
+        var dataset = ReportDataset.Create(
+            new FilterDto { Name = "Trips", Language = language },
+            [new TripRow("InProgress", "InProgress")]);
+
+        var bytes = new ExcelHelper(new ReportingLimitsOptions()).Export(dataset, CultureInfo.GetCultureInfo(language));
+
+        using var stream = new MemoryStream(bytes);
+        using var workbook = new XLWorkbook(stream);
+        Assert.That(workbook.Worksheet(1).Cell(3, 1).GetString(), Is.EqualTo(expected));
+        Assert.That(workbook.Worksheet(1).Cell(3, 2).GetString(), Is.EqualTo("InProgress"));
+    }
 }

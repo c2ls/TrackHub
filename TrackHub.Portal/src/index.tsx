@@ -64,6 +64,9 @@ i18n
     },
     fallbackLng: 'en', // use 'en' as the fallback language
     supportedLngs: ['en', 'es'],
+    detection: {
+      convertDetectedLanguage: (lng: string) => lng.split('-')[0]
+    },
     interpolation: {
       escapeValue: false
     }

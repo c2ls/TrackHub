@@ -6,8 +6,7 @@
     Prepares everything docker-compose.local.yml needs. Safe to re-run: every step is
     idempotent and skips work that is already done.
 
-    Touches NOTHING production uses. IIS keeps ports 80 and 443 throughout - the
-    TrackHub proxy takes 8080/8443.
+    Touches NOTHING production uses. The TrackHub proxy serves 8080/8443.
 
     Steps that do NOT need elevation (the default):
       1. Verify Docker Desktop is running.
@@ -24,7 +23,7 @@
          cert, mounted into every container as SSL_CERT_FILE. That is what lets a
          container trust https://trackhub.local:8443 without editing any Dockerfile,
          while still trusting the real public CAs for outbound calls.
-      6. Write local/clients.json (needed only as a mount target - db-init is disabled).
+      6. Write local/clients.json (the seed db-init reads).
       7. Generate local/generated/appsettings.*.json with the production generator.
 
     Steps that DO need elevation (-AdminTasks):

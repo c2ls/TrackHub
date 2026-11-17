@@ -43,8 +43,8 @@ Edite los campos que desee cambiar y luego haga clic en **Guardar**. Si un campo
 1. Abra **Perfil** desde el menú lateral izquierdo.
 2. En la tarjeta **Información del Perfil**, haga clic en el pequeño ícono de **candado** en la esquina superior derecha de la tarjeta.
 3. Se abre la ventana **Actualizar Contraseña**.
-4. Escriba su nueva contraseña en el campo **Contraseña**.
-5. Escriba la misma contraseña de nuevo en el campo **Confirmar Contraseña**.
+4. Escriba su contraseña actual en el campo **Contraseña Actual**.
+5. Escriba su nueva contraseña en el campo **Contraseña**, y de nuevo en el campo **Confirmar Contraseña**.
 6. Haga clic en **Guardar**.
 
 **Requisitos de la contraseña.** Su nueva contraseña debe tener al menos **8 caracteres** e incluir **una letra mayúscula, una letra minúscula y un número**, y los campos **Contraseña** y **Confirmar Contraseña** deben **coincidir exactamente**. Si no se cumple alguna regla, TrackHub muestra un mensaje y no guarda hasta que se corrija. Agregar un símbolo la hace aún más segura.
@@ -58,9 +58,9 @@ La tercera tarjeta es de solo lectura. Tiene dos secciones:
 
 Esto le indica lo que tiene permitido hacer; no puede modificarlo aquí. Para saber qué desbloquea cada rol, vea [Roles y permisos](topic:roles-and-permissions).
 
-## Configuración de la cuenta (el botón de engranaje)
+## Configuración de la cuenta
 
-Si usted administra su cuenta, aparece un **botón redondo de engranaje (configuración)** en la **esquina inferior derecha** de la pantalla en cualquier página. Al hacer clic en él se abre deslizándose un panel titulado **Configuración** (con **Detalle de la Configuración** debajo), donde ajusta opciones relacionadas con el mapa para todas las personas de su cuenta:
+Si usted administra su cuenta, aparece un ícono de **Configuración** (un engranaje) en la barra superior de todas las pantallas. Al hacer clic en él se abre deslizándose un panel titulado **Configuración** (con **Detalle de la Configuración** debajo), donde ajusta opciones relacionadas con el mapa para todas las personas de su cuenta:
 
 - **Mapas** — elija el proveedor del mapa: **OSM** (OpenStreetMap) o **Google**.
 - **Clave de Mapas** — solo aparece cuando elige un proveedor distinto de OSM; ingrese la clave del proveedor aquí.
@@ -68,6 +68,8 @@ Si usted administra su cuenta, aparece un **botón redondo de engranaje (configu
 - **Actualizar Mapa** — active o desactive la actualización automática del mapa.
 - **Intervalo de Actualización de Mapa (Segundos)** — con qué frecuencia se actualiza el mapa cuando el interruptor anterior está activado.
 
+![Panel Configuración de la cuenta abierto junto al mapa en vivo](assets/es/account-settings-drawer.png)
+
 Haga clic en **Guardar** para aplicar. Un mensaje le recuerda que **algunas configuraciones pueden requerir recargar la página para que los cambios surtan efecto**.
 
-Este botón de engranaje y su panel de configuración solo están disponibles para Gestores y Administradores. Si usted no administra la cuenta, no verá el botón de engranaje.
+Solo los Gestores y Administradores ven el ícono de **Configuración**.

@@ -1,5 +1,7 @@
 using System.Globalization;
 using Moq;
+using TrackHub.Reporting.Application.Report.Filters;
+using TrackHub.Reporting.Domain.Interfaces.Manager;
 using Common.Application.Interfaces;
 using Common.Domain.Constants;
 using TrackHub.Reporting.Application.Report.Queries.Get;
@@ -58,7 +60,8 @@ public class GetReportQueryHandlerEdgeCaseTests
 
     private GetReportQueryHandler Handler()
         => new(_factory.Object, _user.Object, _audit.Object, _catalog.Object,
-            _features.Object, Mock.Of<IIdentityService>(), Zones(), _branding.Object, _excel, _pdf.Object, new ReportingLimitsOptions());
+            _features.Object, Mock.Of<IIdentityService>(), Zones(), _branding.Object, _excel, _pdf.Object,
+            new ReportFilterLabeler(Mock.Of<IReportNameReader>()), new ReportingLimitsOptions());
 
     private static ReportDataset Dataset(int rows) => new()
     {

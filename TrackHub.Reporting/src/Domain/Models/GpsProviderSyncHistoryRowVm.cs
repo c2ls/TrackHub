@@ -1,11 +1,11 @@
 namespace TrackHub.Reporting.Domain.Models;
 
 public readonly record struct GpsProviderSyncHistoryRowVm(
-    Guid OperatorId,
+    string Operator,
     DateTimeOffset StartedAt,
     DateTimeOffset? FinishedAt,
-    string Trigger,
-    string Result,
+    [property: ReportValues("SyncTrigger")] string Trigger,
+    [property: ReportValues("SyncResult")] string Result,
     int DevicesSynced,
     int Added,
     int Updated,

@@ -33,7 +33,7 @@ public sealed class DeviceReader(
             ObjectReportAction, $"&objectno={Uri.EscapeDataString(deviceDto.Serial)}", cancellationToken);
 
         return reports.FirstOrDefault(r => r.Objectno == deviceDto.Serial) is { } report
-            ? report.MapToDeviceVm(deviceDto)
+            ? DeviceMapper.Instance.Map(report, deviceDto)
             : throw new InvalidOperationException($"Device not found: {deviceDto.Serial}");
     }
 
@@ -41,12 +41,12 @@ public sealed class DeviceReader(
     {
         var devicesDictionary = devices.ToDeviceLookup(device => device.Serial);
         var reports = await GetListAsync<ObjectReport>(ObjectReportAction, string.Empty, cancellationToken);
-        return [.. reports.MapToDeviceVm(devicesDictionary)];
+        return [.. DeviceMapper.Instance.Map(reports, devicesDictionary)];
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
     {
         var reports = await GetListAsync<ObjectReport>(ObjectReportAction, string.Empty, cancellationToken);
-        return [.. reports.Where(r => r.Deleted != true).Select(r => r.MapToDeviceVm()).Distinct()];
+        return [.. DeviceMapper.Instance.Map(reports.Where(r => r.Deleted != true)).Distinct()];
     }
 }

@@ -46,7 +46,7 @@ import CustomSelect from 'controls/Dialogs/CustomSelect';
 import { getUserSettings, updateUserSettings } from 'api/manager/settings';
 import type { UserSettings, UserSettingsDtoInput } from 'api/manager/settings';
 import { notifyApiError } from 'api/core/errors';
-import { isDarkStyle, isMiniSidenav, writeUiPreferences } from 'utils/uiPreferences';
+import { isDarkStyle, writeUiPreferences } from 'utils/uiPreferences';
 import { LoadingContext } from 'LoadingContext';
 import { useAuth } from "AuthContext";
 import {
@@ -67,7 +67,6 @@ function PlatformSettings() {
     .filter(lang => lang !== 'cimode')
     .map(lang => ({ value: lang, label: lang }));
   const [style, setStyle] = useState(false);
-  const [sideNav, setSideNav] = useState(false);
   const [userSettings, setUserSettings] = useState<Partial<UserSettings>>({ language: 'en' });
 
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
@@ -82,7 +81,6 @@ function PlatformSettings() {
       try {
         const userSettings = await getUserSettings();
         setStyle(isDarkStyle(userSettings.style));
-        setSideNav(isMiniSidenav(userSettings.navbar));
         setUserSettings(userSettings);
       } catch (error) {
         notifyApiError(error);
@@ -132,10 +130,9 @@ function PlatformSettings() {
   }
 
   function handleNavbarChange() {
-    setSideNav(!sideNav);
     setUserSettings(prevSettings => ({
       ...prevSettings,
-      navbar: !sideNav ? 'collapsed' : 'none'
+      navbar: !miniSidenav ? 'collapsed' : 'none'
     }));
     handleMiniSidenav();
   }
@@ -168,7 +165,7 @@ function PlatformSettings() {
         <ArgonBox display="flex" py={1} mb={0.25}>
           <ArgonBox mt={0.25}>
             <Switch
-              checked={sideNav}
+              checked={miniSidenav}
               onChange={handleNavbarChange}
               slotProps={{ input: { 'aria-label': t('userprofile.sidenav') } }}
             />

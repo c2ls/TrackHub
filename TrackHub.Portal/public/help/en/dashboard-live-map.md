@@ -22,7 +22,7 @@ You are on the **Units** tab by default.
 
 Which map you see (Google or OpenStreetMap) depends on your account. TrackHub can be configured to use either provider; if your account uses Google, a Maps Key is set for you. This is an account-level setting managed by your administrator, so the map may look different from another company's TrackHub. Everything described below works the same on both.
 
-At the top right of the screen is a **Search units** box. Type a unit name or plate to narrow the [units side list](#the-units-side-list) instantly. This box appears only on the **Units** tab.
+At the top right of the screen is a **Search** box. Type a unit name or plate to narrow the [units side list](#the-units-side-list) instantly. This box appears only on the **Units** tab.
 
 ## The fleet summary
 
@@ -33,7 +33,7 @@ A summary strip sits across the top and always reflects your **whole** authorise
 | **Total Units** | Every unit reporting a position. |
 | **Active Units** | Units that have reported recently (within your account's online interval). |
 | **Moving Units** | Units currently in motion (speed greater than zero). |
-| **In Geofence** | Units currently located inside one of your geofences. |
+| **In Geofence** | Units currently located inside one of your geofences (shown only when geofencing is switched on for your account). |
 | **Critical Alerts** | Open critical-severity alerts that have not yet been acknowledged or resolved. |
 
 **Active Units**, **Moving Units**, and **In Geofence** also show that count as a percentage of your total.
@@ -47,11 +47,13 @@ Beside the summary is a row of filters that narrow **what the map shows**. They 
 - **Operator** — show only units served by a chosen GPS operator (*All operators* by default).
 - **Status** — *All statuses*, **Moving**, **Stopped**, or **Offline**.
 
-The overlay chips — **Geofences**, **Points of Interest**, **Follow**, and **Trail** — sit on the map itself, at its top-left corner (explained in [Map overlays](#map-overlays) and [Follow mode](#follow-mode)).
+The overlay chips — **Geofences** (when geofencing is on), **Points of Interest**, **Follow**, and **Trail** — sit on the map itself, at its top-left corner (explained in [Map overlays](#map-overlays) and [Follow mode](#follow-mode)).
 
 ## The live map
 
 Each unit appears as a coloured badge with its name underneath. The shape and colour show the unit's status: a green teardrop pointing in the direction of travel for moving, an amber rounded square for stopped, and a grey disc with a bar for offline. A unit counts as offline when it has not reported within your account's online interval; otherwise it is moving when its speed is above zero or its ignition is on, and stopped the rest of the time.
+
+![Units tab with the fleet summary, filter bar, live map and units side list](assets/en/dashboard-live-map.png)
 
 When many units are close together they are grouped into a **cluster** showing a count; zoom in or click the cluster to break it apart into individual markers. The map centres itself on your fleet when it first loads.
 
@@ -67,6 +69,8 @@ Selecting a unit opens a panel at the bottom of the map with the unit's latest d
 - **Mileage**, **Temperature**, **Hourmeter**, **ACC Status** (ignition On/Off), and **Satellites** — only when the device sends them.
 - **Address** — the street address for the position. If no address is stored yet, the panel instead shows the **Location** (city, state, country) or the raw coordinates with a **Resolve address** button; click it to look up the street address on demand.
 - Two quick-action buttons: **Share on WhatsApp** (sends a Google Maps link to the location) and **Street View** (opens Google Street View at that spot).
+
+![Unit details card open at the bottom of the map](assets/en/dashboard-unit-detail.png)
 
 ## Map overlays
 
@@ -106,7 +110,7 @@ On the right is a scrollable list of all your units, with columns:
 - **Date Time** — time of its last report.
 - **Speed (Km/Hr)**.
 
-Click a row to select that unit, highlight it, and centre the map on it. The **Search units** box at the top right filters this list. Above the list, coloured chips summarise how many units of each type are currently reporting.
+Click a row to select that unit, highlight it, and centre the map on it. The **Search** box at the top right filters this list. The list header shows how many units you have, with a count per unit type underneath (for example *Truck 12 · Car 4*).
 
 ## Why a unit is missing from the map
 

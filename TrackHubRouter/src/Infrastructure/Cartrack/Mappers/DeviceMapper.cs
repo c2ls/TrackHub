@@ -13,32 +13,18 @@
 //  limitations under the License.
 //
 
-using Common.Domain.Enums;
+using TrackHub.Router.Domain.Mappers;
 
 namespace TrackHub.Router.Infrastructure.Cartrack.Mappers;
 
-internal static class DeviceMapper
+internal sealed class DeviceMapper : DeviceMapperBase<Vehicle>
 {
-    private const DeviceType DefaultDeviceType = DeviceType.Cellular;
-    private const TransporterType DefaultTransporterType = TransporterType.Truck;
+    public static DeviceMapper Instance { get; } = new();
 
-    public static DeviceVm MapToDeviceVm(this Vehicle vehicle, Guid? transporterId = null)
-        => new(
-            transporterId,
-            vehicle.VehicleId is >= 0 and <= int.MaxValue ? (int)vehicle.VehicleId : 0,
-            vehicle.Registration,
-            string.IsNullOrWhiteSpace(vehicle.VehicleName) ? vehicle.Registration : vehicle.VehicleName,
-            (short)DefaultDeviceType,
-            (short)DefaultTransporterType);
+    protected override string Serial(Vehicle vehicle) => vehicle.Registration;
 
-    public static IEnumerable<DeviceVm> MapToDeviceVm(this IEnumerable<Vehicle> vehicles, IDictionary<string, DeviceTransporterVm> devicesDictionary)
-    {
-        foreach (var vehicle in vehicles)
-        {
-            if (devicesDictionary.TryGetValue(vehicle.Registration, out var device))
-            {
-                yield return vehicle.MapToDeviceVm(device.TransporterId);
-            }
-        }
-    }
+    protected override string Name(Vehicle vehicle)
+        => string.IsNullOrWhiteSpace(vehicle.VehicleName) ? vehicle.Registration : vehicle.VehicleName;
+
+    protected override int Identifier(Vehicle vehicle, DeviceTransporterVm? assignment) => ToIdentifier(vehicle.VehicleId);
 }

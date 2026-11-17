@@ -29,6 +29,7 @@ import ArgonTypography from 'components/ArgonTypography';
 import {
   TextCell,
   daysUntil,
+  effectiveQualificationStatus,
   expiryColor,
   statusColor,
 } from 'layouts/manageadmin/components/staff/workforceShared';
@@ -86,6 +87,7 @@ function QualificationExpirations() {
           ]}
           rows={expiring.map((qualification) => {
             const days = daysUntil(qualification.expiresAt, today);
+            const status = effectiveQualificationStatus(qualification.status, qualification.expiresAt, today);
             return {
               staff: (
                 <ArgonTypography variant="caption" fontWeight="medium">
@@ -112,8 +114,8 @@ function QualificationExpirations() {
               ),
               status: (
                 <ArgonBadge
-                  badgeContent={qualificationStatusLabel(t, qualification.status)}
-                  color={statusColor(qualification.status)}
+                  badgeContent={qualificationStatusLabel(t, status)}
+                  color={statusColor(status)}
                   size="xs"
                   container
                 />

@@ -154,6 +154,10 @@ const OSMGeofenceEditor = ({
     // The selected geofence may not be in this editor's local set yet (the sync
     // effect below has not populated it). Silently no-op in that case.
     if (!geofence) return;
+    const layer = layersRef.current.get(geofence.id);
+    if (layer && mapRef.current) {
+      mapRef.current.fitBounds(layer.getBounds(), { padding: [GEOFENCE_FIT_PADDING, GEOFENCE_FIT_PADDING] });
+    }
     selectPolygon(geofence.id);
   }, [selectedPolygon]);
 

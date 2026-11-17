@@ -1,55 +1,43 @@
-# TrackHub Telemetry API
+# TrackHub Telemetry
 
-[English](README.en.md) | [Español](README.es.md)
+The high-volume store: the latest position per transporter (the live map), the append-only position
+history, and the operator sync runs and health checks the Router records. Operator health and sync
+summaries are derived from those rows at read time. It never talks to GPS providers — that is the
+[Router](../TrackHubRouter).
 
-TrackHub is an innovative open-source application designed to unify multiple monitoring platforms into a cohesive system. Imagine having all your monitoring needs met in one place—this is the vision behind TrackHub.
+Wiki: [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry).
 
-Currently in development, our project aims to foster collaboration among diverse companies and developers, promoting continuous improvement and growth. TrackHub empowers organizations to centralize information about their assets and personnel, regardless of their vendors.
+## Build, run, test
 
-We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
+From this folder:
 
-![Image](../TrackHub.AuthorityServer/src/Web/wwwroot/images/logo.png)
+```bash
+dotnet build TrackHub.Telemetry.slnx
+dotnet test TrackHub.Telemetry.slnx
 
----
+dotnet run --project src/Web          # https://localhost:5008/graphql
+```
 
-## Overview
+Settings: `ConnectionStrings:DefaultConnection` in `src/Web/appsettings.json`, pointing at the
+**same** `TrackHub` database as Manager, whose migrations create the `telemetry` schema. In
+production, connect as a role with read/write on `telemetry` and read-only on the `app` scoping
+tables.
 
-The Telemetry API owns TrackHub's high-volume, append-heavy data: the latest-position projection that backs the live map, the append-only position history used for replay and reporting, operator sync runs, and operator health checks.
+## Gotchas
 
-It stores and serves this data; it never talks to GPS providers — that is the Router's role.
-
----
-
-## Documentation
-
-| | |
-|---|---|
-| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Telemetry](https://github.com/shernandezp/TrackHub/wiki/Telemetry) and [Database](https://github.com/shernandezp/TrackHub/wiki/Database) |
-| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
-
----
-
-## Modules in this repository
-
-| Repository | Purpose |
-|---|---|
-| [TrackHubCommon](../TrackHubCommon) | Shared framework, referenced by project |
-| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
-| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) |
-| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
-| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
-
----
-
-## License
-
-Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+- **No migrations here — do not add any.** The `telemetry` tables are migrated by
+  [Manager](../TrackHub.Manager); a new column is a Manager migration.
+- **The `app`-schema tables are mapped read-only** so account scoping and group visibility need no
+  network hop: users, groups and their memberships, transporters, devices and assignments,
+  operators and account features.
+- **`attributes` is a `json` column.** `json` has no equality operator, so `Distinct()`,
+  `GroupBy()` or set operations over a projection that includes it fail at runtime with `42883`.
+  De-duplicate with `EXISTS` or key predicates; EF InMemory will not catch it.
+- **`PlatformSyncActivityReader` is deliberately unscoped.** It is a platform-wide read behind
+  `[Authorize(Administrative, Read)]` returning timestamps and counts only, for the status page.
+- **Feature gating:** latest-position and health writes need authorization only; history writes
+  and replay reads are gated by `gps.positionHistory`.
+- **Retention is not done here.** Aged history is purged by the database functions db-init installs
+  (`CALL ops.run_purge()`), which the operator schedules; see `TrackHub.Deployment/INSTALL.md`.
+- After changing the GraphQL surface, run `dotnet test ../TrackHub.IntegrationTests` and then the
+  portal's `npm run codegen`.

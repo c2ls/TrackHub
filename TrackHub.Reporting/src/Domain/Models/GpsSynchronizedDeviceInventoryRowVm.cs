@@ -6,7 +6,7 @@ public readonly record struct GpsSynchronizedDeviceInventoryRowVm(
     string Serial,
     string Operator,
     string? ProviderStatus,
-    string DetectedStatus,
+    [property: ReportValues("DeviceStatus")] string DetectedStatus,
     DateTimeOffset FirstSeenAt,
     DateTimeOffset LastSeenAt,
     string? AssignedTransporter,

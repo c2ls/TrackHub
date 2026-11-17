@@ -125,6 +125,10 @@
       "CommandTrack": { "key": "ID de cliente" },
       "GeoTab": { "key": "Base de datos" },
       "GpsGate": { "password": "Token de autorización", "key": "ID de aplicación", "key2": "ID de usuario" },
+      "Mettax": { "key": "Clave de API", "key2": "Secreto de API", "uriHelp": "Su nodo regional, por ejemplo https://mettahub.mettaxiot.com/gps" },
+      "TrustTrack": { "key": "Clave de API" },
+      "Mapon": { "key": "Clave de API" },
+      "GpsTrackit": { "key": "Clave de API" },
       "Tracksolid": { "username": "Cuenta de Tracksolid", "key": "App key", "key2": "App secret", "uriHelp": "Su nodo regional, por ejemplo https://us-open.tracksolidpro.com" },
       "Motive": { "key": "Clave de API" },
       "Cartrack": { "password": "Contraseña de API", "uriHelp": "Su base regional, por ejemplo https://fleetapi-za.cartrack.com/rest" },
@@ -462,9 +466,11 @@
     "resourceType": "Tipo de Recurso",
     "resourceId": "Id del Recurso",
     "scopes": "Ámbitos (separados por coma)",
+    "scopesHeader": "Ámbitos",
     "purpose": "Propósito",
     "expiresAt": "Vence En",
     "revokedAt": "Revocado En",
+    "revoked": "Revocado",
     "accessCount": "Accesos",
     "status": "Estado"
   },
@@ -1193,10 +1199,17 @@
     "maxTimeGap": "Tiempo Máximo (Minutos)",
     "maxDistance": "Máxima Distancia (Km)"
   },
+  "entityTypes": {
+    "Trip": "Viaje",
+    "Transporter": "Unidad",
+    "Document": "Documento",
+    "Staff": "Personal",
+    "User": "Usuario"
+  },
   "transporterTypes": {
     "unknown": "Desconocido",
     "aircraft": "Aeronave",
-    "asset": "Activo",
+    "asset": "Bien",
     "bicycle": "Bicicleta",
     "boat": "Barco",
     "car": "Automóvil",
@@ -1408,9 +1421,13 @@
       "running": "En Ejecución",
       "pending": "Pendiente"
     },
+    "trigger": {
+      "automatic": "Automática",
+      "manual": "Manual"
+    },
     "assignmentForm": {
       "transporter": "Unidad que recibirá el dispositivo",
-      "transporterHelp": "Seleccione la unidad/activo que debe usar este dispositivo GPS.",
+      "transporterHelp": "Seleccione la unidad/bien que debe usar este dispositivo GPS.",
       "selectTransporter": "Seleccione una unidad",
       "device": "Dispositivo GPS sin asignar",
       "deviceHelp": "Solo se muestran dispositivos que no están asignados actualmente a una unidad.",
@@ -1559,7 +1576,6 @@
         "alert-evaluation": "Evaluación de alertas",
         "notification-dispatch": "Envío de notificaciones",
         "notification-digest": "Resúmenes de notificaciones",
-        "delivery-retention": "Limpieza de envíos",
         "document-scan": "Análisis antivirus de documentos",
         "document-expiration": "Avisos de vencimiento de documentos",
         "document-retention-cleanup": "Limpieza de retención de documentos",
@@ -1568,8 +1584,7 @@
         "workforce-expiration-scan": "Recordatorios de vencimiento del personal",
         "trip-eta-refresh": "Actualización de ETA de viajes",
         "trip-schedule-reminder": "Recordatorios de inicio de viajes",
-        "router-sync-worker": "Sincronizador GPS",
-        "platform-retention": "Limpieza de retención de la plataforma"
+        "router-sync-worker": "Sincronizador GPS"
       }
     },
     "manage": {

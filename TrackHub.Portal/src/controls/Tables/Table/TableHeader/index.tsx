@@ -63,8 +63,8 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
                 width={width || "auto"}
                 pt={compact ? 0.75 : 1.5}
                 pb={compact ? 0.5 : 1.25}
-                pl={compact ? 1 : align === "left" ? pl : 3}
-                pr={compact ? 1 : align === "right" ? pr : 3}
+                pl={compact ? 1 : pl}
+                pr={compact ? 1 : pr}
                 textAlign={align}
                 fontSize={size.xs}
                 fontWeight={fontWeightMedium}
@@ -74,7 +74,6 @@ const TableHeader = ({ columns, handleSort, sortable = true, compact = false }: 
                   position: "sticky",
                   top: 0,
                   backgroundColor: grey[100],
-                  whiteSpace: "nowrap",
                   zIndex: 10,
                 })}
                 onClick={sortable ? () => handleSort(name) : undefined}

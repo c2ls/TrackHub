@@ -29,12 +29,10 @@ namespace Common.Domain.Constants;
 ///   <item><term>alert-evaluation</term><description>Manager AlertEvaluationJob — once per DAY unconditionally (credential-expiry scan), plus on-work rows for communication loss.</description></item>
 ///   <item><term>notification-dispatch</term><description>Manager NotificationDispatchJob — only when it processed something.</description></item>
 ///   <item><term>notification-digest</term><description>Manager NotificationDigestJob — only when it folded something.</description></item>
-///   <item><term>delivery-retention</term><description>Manager DeliveryRetentionJob — only when it deleted something.</description></item>
 ///   <item><term>document-scan</term><description>Manager DocumentScanJob — only per scanned document (plus a Failed row on error).</description></item>
 ///   <item><term>document-expiration</term><description>Manager DocumentExpirationJob — only per expiring document.</description></item>
 ///   <item><term>document-retention-cleanup</term><description>Manager DocumentRetentionCleanupJob — only per purged version.</description></item>
 ///   <item><term>trial-expiration</term><description>Manager TrialExpirationJob — only per transitioned account (plus a Failed row on error).</description></item>
-///   <item><term>platform-retention</term><description>Manager PlatformRetentionJob — only when it purged at least one job run or alert event.</description></item>
 ///   <item><term>geofence-dwell-evaluation</term><description>Geofencing DwellEvaluationService — only when it raised a dwell alert.</description></item>
 ///   <item><term>workforce-expiration-scan</term><description>Manager WorkforceExpirationJob — only per raised qualification-expiration alert.</description></item>
 ///   <item><term>trip-eta-refresh</term><description>TripManagement TripEtaRefreshService — only when it refreshed an ETA for at least one in-progress trip, OR auto-completed a trip whose tracker went quiet; the cycle carries both because the auto-completion sweep is a fallback on this schedule rather than one of its own (spec 11a §5.2), and the recorded payload is <c>refreshed/completed</c>.</description></item>
@@ -51,12 +49,10 @@ public static partial class BackgroundJobKeys
     public const string AlertEvaluation = "alert-evaluation";
     public const string NotificationDispatch = "notification-dispatch";
     public const string NotificationDigest = "notification-digest";
-    public const string DeliveryRetention = "delivery-retention";
     public const string DocumentScan = "document-scan";
     public const string DocumentExpiration = "document-expiration";
     public const string DocumentRetentionCleanup = "document-retention-cleanup";
     public const string TrialExpiration = "trial-expiration";
-    public const string PlatformRetention = "platform-retention";
     public const string GeofenceDwellEvaluation = "geofence-dwell-evaluation";
     public const string WorkforceExpirationScan = "workforce-expiration-scan";
     public const string TripEtaRefresh = "trip-eta-refresh";

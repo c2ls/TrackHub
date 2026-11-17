@@ -33,17 +33,17 @@ public sealed class DeviceReader(
         var vehicle = (await ListVehiclesAsync(cancellationToken)).FirstOrDefault(v => v.Idgps == deviceDto.Serial);
         return vehicle is null
             ? throw new InvalidOperationException($"Device not found: {deviceDto.Serial}")
-            : vehicle.MapToDeviceVm(deviceDto);
+            : DeviceMapper.Instance.Map(vehicle, deviceDto);
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(IEnumerable<DeviceTransporterVm> devices, CancellationToken cancellationToken)
     {
         var devicesDictionary = devices.ToDeviceLookup(device => device.Serial);
-        return (await ListVehiclesAsync(cancellationToken)).MapToDeviceVm(devicesDictionary).ToList();
+        return DeviceMapper.Instance.Map(await ListVehiclesAsync(cancellationToken), devicesDictionary).ToList();
     }
 
     public async Task<IEnumerable<DeviceVm>> GetDevicesAsync(CancellationToken cancellationToken)
-        => (await ListVehiclesAsync(cancellationToken)).Select(v => v.MapToDeviceVm()).Distinct().ToList();
+        => DeviceMapper.Instance.Map(await ListVehiclesAsync(cancellationToken)).Distinct().ToList();
 
     // A vehicle without an installed GPS has nothing the Router could later query positions for.
     private async Task<IEnumerable<Vehicle>> ListVehiclesAsync(CancellationToken cancellationToken)

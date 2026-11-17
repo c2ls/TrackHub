@@ -11,7 +11,7 @@ order: 20
 
 # Usuarios, roles y grupos
 
-Estas secciones se encuentran en la pantalla [Administración de Cuentas](topic:management-overview), que solo los **Gestores** pueden abrir. **Usuarios**, **Roles** y **Políticas** están bajo el grupo **Usuarios y Accesos**; **Grupos** está bajo el grupo **Flota y Rastreo**. Expanda una sección para trabajar con ella.
+Estas secciones se encuentran en la pantalla [Administración de Cuentas](topic:management-overview), que solo los **Gestores** pueden abrir. **Usuarios**, **Roles** y **Políticas** están bajo el grupo **Usuarios y Accesos**; **Grupos** está bajo el grupo **Flota y Rastreo**. Elija una sección en la lista de secciones para abrirla.
 
 ## Usuarios
 
@@ -19,7 +19,7 @@ La sección **Usuarios** administra las personas que pueden iniciar sesión en s
 
 Columnas: **Nombre de Usuario** (cada fila muestra el correo electrónico de la persona con su nombre de usuario debajo), **Primer Nombre**, **Apellido**, **Estado**, **Acción** y **Contraseña**.
 
-Para agregar un usuario, expanda la sección y haga clic en el icono **+** (agregar). El diálogo **Detalle del Usuario** recopila:
+Para agregar un usuario, presione **Agregar**. El diálogo **Detalle del Usuario** recopila:
 
 - **Correo Electrónico** — obligatorio.
 - **Contraseña** — obligatoria, y se muestra solo al crear un nuevo usuario.
@@ -65,9 +65,13 @@ Vea [Roles y permisos](topic:roles-and-permissions) para saber cómo se combinan
 
 Los grupos le permiten organizar unidades, personal y usuarios juntos — por ejemplo, por sucursal, región o dependencia. Las unidades y el personal se asignan a los grupos, y los grupos se asignan a los usuarios.
 
+![Tabla de grupos con las acciones Asignar para usuarios, unidades y personal](assets/es/groups.png)
+
+Los grupos deciden lo que ve un **Usuario** sencillo: solo las unidades y el personal de sus grupos aparecen en su mapa, en sus selectores de viajes y en sus reportes. Un Usuario sin grupos no ve nada. Los Gestores y Administradores ven todo lo de la cuenta sin importar los grupos.
+
 Columnas: **Grupos** (nombre), **Descripción**, **Acción**, **Usuarios**, **Unidades** y **Personal**.
 
-Para agregar un grupo, expanda la sección y haga clic en el icono **+** (agregar). El diálogo **Detalle del Grupo** solicita un **Nombre** (obligatorio), una **Descripción** (obligatoria) y una casilla **Activo**. Presione **Guardar**.
+Para agregar un grupo, presione **Agregar**. El diálogo **Detalle del Grupo** solicita un **Nombre** (obligatorio), una **Descripción** (obligatoria) y una casilla **Activo**. Presione **Guardar**.
 
 Acciones de fila:
 

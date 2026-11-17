@@ -19,16 +19,16 @@ Each existing link is shown with these columns:
 
 | Column | Meaning |
 |---|---|
-| **Resource** | The resource the link points at (its type and id). |
-| **Scopes (comma separated)** | The scopes the token is allowed to use. |
+| **Resource** | The resource the link points at: its type and name (the trip code, unit name or document title). |
+| **Scopes** | The scopes the token is allowed to use. |
 | **Expires At** | When the link stops working. |
 | **Access Count** | How many times the link has been used. |
-| **Status** | **Active**, or **Revoked At** once the link has been revoked. |
+| **Status** | **Active**, or **Revoked** once the link has been revoked. |
 | **Action** | **Revoke Public Link**, shown while the link is still active. |
 
 ## Creating a link
 
-Press the **+** (add) icon on the section heading to open the **Create Public Link** dialog, and fill in:
+Press **Add** to open the **Create Public Link** dialog, and fill in:
 
 - **Resource Type** (required)
 - **Resource Id** (required)
@@ -38,7 +38,7 @@ Press the **+** (add) icon on the section heading to open the **Create Public Li
 
 Press **Save**. The portal then shows the **Public Link Token** once, with the warning **"Copy this token now. It will not be shown again."** Copy it immediately — the token cannot be retrieved later. Close the dialog when you have it.
 
-> The **+** icon appears only when the public-links feature is enabled for your account. Even when it is not, you can still see, monitor and **revoke** existing links — only creating new ones is gated.
+> The **Public Links** section appears only when the public-links feature is switched on for your account. Switching it off never deletes links that were already issued.
 
 ## Revoking a link
 

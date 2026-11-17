@@ -56,13 +56,13 @@ $UpstreamFile = Join-Path $ProjectDir "nginx\local.d\upstreams\$Service.conf"
 
 # upstream name in nginx.local.conf, published host port, default VS http port
 $Map = @{
-    authority     = @{ Upstream = 'authority_server';  HostPort = 6001; DebugPort = 5001 }
-    security      = @{ Upstream = 'security_api';      HostPort = 6002; DebugPort = 5007 }
+    authority     = @{ Upstream = 'authority_server';  HostPort = 6001; DebugPort = 5291 }
+    security      = @{ Upstream = 'security_api';      HostPort = 6002; DebugPort = 5000 }
     manager       = @{ Upstream = 'manager_api';       HostPort = 6003; DebugPort = 5005 }
     router        = @{ Upstream = 'router_api';        HostPort = 6004; DebugPort = 5003 }
-    geofencing    = @{ Upstream = 'geofencing_api';    HostPort = 6005; DebugPort = 5009 }
-    tripmanagement= @{ Upstream = 'trip_api';          HostPort = 6006; DebugPort = 5011 }
-    telemetry     = @{ Upstream = 'telemetry_api';     HostPort = 6007; DebugPort = 5005 }
+    geofencing    = @{ Upstream = 'geofencing_api';    HostPort = 6005; DebugPort = 5011 }
+    tripmanagement= @{ Upstream = 'trip_api';          HostPort = 6006; DebugPort = 5007 }
+    telemetry     = @{ Upstream = 'telemetry_api';     HostPort = 6007; DebugPort = 5009 }
     reporting     = @{ Upstream = 'reporting_api';     HostPort = 6008; DebugPort = 5013 }
 }
 $info     = $Map[$Service]

@@ -956,7 +956,7 @@ function TripManager() {
                   setException(String(value));
                 }}
               />
-              <ArgonBox width="220px">
+              <ArgonBox flex="1 1 170px" maxWidth="220px">
                 <SearchSelect
                   id="transporterFilter"
                   label={t('trips.filterTransporter')}
@@ -970,7 +970,7 @@ function TripManager() {
                   placeholder={t('trips.allTransporters')}
                 />
               </ArgonBox>
-              <ArgonBox width="220px">
+              <ArgonBox flex="1 1 170px" maxWidth="220px">
                 <SearchSelect
                   id="staffFilter"
                   label={t('trips.filterStaff')}
@@ -984,7 +984,7 @@ function TripManager() {
                   placeholder={t('trips.allStaff')}
                 />
               </ArgonBox>
-              <ArgonBox width="190px">
+              <ArgonBox flex="1 1 150px" maxWidth="190px">
                 <CustomTextField
                   margin="none"
                   name="from"
@@ -998,7 +998,7 @@ function TripManager() {
                   }}
                 />
               </ArgonBox>
-              <ArgonBox width="190px">
+              <ArgonBox flex="1 1 150px" maxWidth="190px">
                 <CustomTextField
                   margin="none"
                   name="to"

@@ -11,19 +11,19 @@ order: 70
 
 # System Administration
 
-The **System Admin** page is a single scrolling page of collapsible sections that operate across the whole platform rather than one account. Click a section heading to expand it; sections that create new records show an **Add** (**+**) icon in the heading. This page is restricted to platform super administrators — see [Roles and permissions](topic:roles-and-permissions). Sections are described in the order they appear.
+The **System Admin** screen holds the sections that operate across the whole platform rather than one account. Pick a section in the section list on the left to open it; sections that create records show an **Add** button. Only platform Administrators can open this screen — see [Roles and permissions](topic:roles-and-permissions). Sections are described in the order they appear.
 
-## Accounts
+## Account
 
-The master list of every account (tenant) on the platform. Each row shows the account **Name**, **Status** (a coloured badge), and its modified time, with an **Edit**, a **Change Status**, and an **Add User** action.
+The master list of every account on the platform. Each row shows the account **Name**, **Status** (a coloured badge), and its modified time, with an **Edit**, a **Change Status**, and an **Add User** action.
 
-Click the **+** icon to open the **Account Details** dialog and create an account. It collects:
+Press **Add** to open the **Account Details** dialog and create an account. It collects:
 
-- **Name** (required) and **Description**.
+- **Name** (required), **Description**, and **Time zone** — every date TrackHub works out for the account is read in this zone.
 - The first user for the account: **Email Address** (required), **Password** (required), **First Name** (required), **Last Name** (required). These fields appear only when creating a new account.
 - **Type** (required) and an **Active** checkbox.
 
-Press **Save**. Creating an account also creates its first user from those fields, **with the Manager role** — that person administers their own account but has no platform-wide access. Use **Edit** on a row to change an existing account's name, description, type, or active flag (the user fields are hidden when editing).
+Press **Save**. Creating an account also creates its first user from those fields, **with the Manager role** — that person administers their own account but has no platform-wide access. Use **Edit** on a row to change an existing account's name, description, time zone, type, or active flag (the user fields are hidden when editing).
 
 The **Active** checkbox decides the new account's starting status: ticked creates an **Active** account, unticked creates a **Suspended** one. **Trial** cannot be chosen here.
 
@@ -49,7 +49,7 @@ Each account row has an **Add User** action. Click it to open the user dialog pr
 
 ## API Clients
 
-Integration clients that let external systems connect to the platform, optionally acting as a linked user. Click the **+** icon to open the **API Client Details** dialog. For a new client it collects:
+Integration clients that let external systems connect to the platform, optionally acting as a linked user. Press **Add** to open the **API Client Details** dialog. For a new client it collects:
 
 - **Name** (required), **Description**, and **Secret** (required) — the client's credential.
 - **Linked User** — optionally tie the client to an existing user (an integration user).
@@ -58,7 +58,7 @@ Press **Save**. When editing an existing client, only the linked-user selection 
 
 ## Service Client Permissions
 
-Fine-grained rules that say which client may perform which action on which resource, optionally scoped to one account. Click the **+** icon to open the **Service Client Permission** dialog. It collects **Client**, **Resource**, **Action**, **Scope**, and **Audience** (all required, entered as identifiers/text), an optional **Account** (leave blank for all accounts), an **Active** flag, and an optional **Effective From** / **Effective To** window. Use **Edit** to change a rule, or the delete action to remove it (you are asked to confirm).
+Fine-grained rules that say which client may perform which action on which resource, optionally scoped to one account. Press **Add** to open the **Service Client Permission** dialog. It collects **Client**, **Resource**, **Action**, **Scope**, and **Audience** (all required, entered as identifiers/text), an optional **Account** (leave blank for all accounts), an **Active** flag, and an optional **Effective From** / **Effective To** window. Use **Edit** to change a rule, or the delete action to remove it (you are asked to confirm).
 
 ## Unit Types
 
@@ -71,10 +71,10 @@ The categories of tracked units and the movement thresholds used to interpret th
 
 ## Geocoding Providers
 
-The services used to turn coordinates into street addresses; only one provider is active at a time. Click the **+** icon to open the **Geocoding Provider Details** dialog:
+The services used to turn coordinates into street addresses; only one provider is active at a time. Press **Add** to open the **Geocoding Provider Details** dialog:
 
 - **Name** (required).
-- **Type** (required) — **Nominatim**, **OpenRouteService**, **Google**, or **Local (built-in)**. Local resolves addresses from reference data stored in the TrackHub database, so it needs no Endpoint URI or API key; it only covers the regions an administrator has loaded.
+- **Type** (required) — **Nominatim**, **OpenRouteService**, **Google**, or **Local (built-in)**. Local needs no Endpoint URI or API key, but it only covers the regions loaded into your installation.
 - **Endpoint URI** (required) and an optional **API Key**.
 - **Requests per Second** (default 1) and **Timeout (Seconds)** (default 5).
 - **Configuration (JSON)** — optional advanced settings.
@@ -139,13 +139,15 @@ Policies work the same way as roles but define reusable permission sets that can
 
 Turn optional features on or off per account and set their tier and storage settings. This is the master control; managers can only view their own account's features in Account Management.
 
-Pick an **Account** from the dropdown at the top of the section; the list then shows that account's features with **Feature**, **Enabled** (Yes/No badge), **Tier**, and **Source**, plus an **Edit** action. Click the **+** icon (**Add Feature to Account**) to choose an **Account** (the filtered one is preselected) and a **Feature**, then set the options. Editing an existing row fixes the account and feature and lets you change:
+![Trip Management feature settings for an account](assets/en/system-account-features.png)
+
+Pick an **Account** from the dropdown at the top of the section; the list then shows that account's features with **Feature**, **Enabled** (Yes/No badge), **Tier**, and **Source**, plus an **Edit** action. Press **Add** (**Add Feature to Account**) to choose an **Account** (the filtered one is preselected) and a **Feature**, then set the options. Editing an existing row fixes the account and feature and lets you change:
 
 - **Enabled** — the on/off switch for that feature on that account.
-- **Tier** — the subscription tier (defaults to `default`).
-- A storage value for certain features: **Storing Interval (Seconds)** for GPS integration (default 360), **Retention Days** for GPS position history (default 30), or **Block assignment when the staff’s license is expired** for workforce (default off).
+- **Tier** — a record-keeping label (defaults to **Default**).
+- The feature's settings, where it has any: **Storing Interval (Seconds)** for GPS Integration (default 360), **Retention Days** for GPS Position History (default 30), **Block assignment when the staff member's license is expired** for Workforce (default off), and the automatic trip settings for Trip Management (see the [Feature catalogue](topic:feature-catalog#trip-management)).
 
-There are exactly eleven manageable features: GPS integration, GPS position history, geofencing, trip management, staff mobile, public links, documents, notifications, email notifications, WhatsApp notifications, and workforce. When a feature is disabled for an account, the related menu items, sections, buttons, delivery channels, and reports are hidden from its users, and anything that still reaches the server is refused with a "feature not enabled" message (see [Troubleshooting](topic:troubleshooting)). Disabling a feature never deletes data.
+There are exactly eleven manageable features: GPS integration, GPS position history, geofencing, trip management, staff mobile, public links, documents, notifications, email notifications, WhatsApp notifications, and workforce. When a feature is disabled for an account, the related menu items, sections, buttons, delivery channels, and reports are hidden from its users, and anything that still gets through is refused with a "feature not enabled" message (see [Troubleshooting](topic:troubleshooting)). Disabling a feature never deletes data.
 
 What each feature actually turns on and off — key by key, including which reports and sections disappear — is set out in the [Feature catalogue](topic:feature-catalog).
 
@@ -153,6 +155,6 @@ What each feature actually turns on and off — key by key, including which repo
 
 Time-boxed grants that let a support user access a specific account for troubleshooting, each with a reason and a ticket reference for accountability. The list shows the **Account**, **Support User Id**, **Reason**, **Ticket Reference**, **Access Level**, the start/end window, **Status**, and actions.
 
-Click the **+** icon (**Support Grant Request**) to open the dialog, which collects **Account** (required), **Support User Id** (required), **Reason** (required), **Ticket Reference** (required), **Access Level** (defaults to `read`), and **Starts At** / **Ends At** (both required). Press **Save**.
+Press **Add** (**Support Grant Request**) to open the dialog, which collects **Account** (required), **Support User Id** (required), **Reason** (required), **Ticket Reference** (required), **Access Level** (defaults to `read`), and **Starts At** / **Ends At** (both required). Press **Save**.
 
 Row actions are **Approve Support Grant** (shown while the request is neither approved nor revoked) and **Revoke Support Grant** (shown until the grant is revoked). The grant status reads as requested, approved, or revoked accordingly.

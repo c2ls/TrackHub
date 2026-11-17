@@ -13,6 +13,10 @@
     <ProjectReference Include="..\Flespi\Flespi.csproj" />
     <ProjectReference Include="..\Geotab\Geotab.csproj" />
     <ProjectReference Include="..\GpsGate\GpsGate.csproj" />
+    <ProjectReference Include="..\GpsTrackit\GpsTrackit.csproj" />
+    <ProjectReference Include="..\Mapon\Mapon.csproj" />
+    <ProjectReference Include="..\Mettax\Mettax.csproj" />
+    <ProjectReference Include="..\TrustTrack\TrustTrack.csproj" />
     <ProjectReference Include="..\Navixy\Navixy.csproj" />
     <ProjectReference Include="..\Cartrack\Cartrack.csproj" />
     <ProjectReference Include="..\Motive\Motive.csproj" />

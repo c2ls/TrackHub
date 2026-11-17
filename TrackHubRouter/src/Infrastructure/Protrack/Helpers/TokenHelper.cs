@@ -15,6 +15,7 @@
 
 using System.Security.Cryptography;
 using System.Text;
+using TrackHub.Router.Domain.Helpers;
 using TrackHub.Router.Domain.Interfaces;
 using TrackHub.Router.Domain.Interfaces.Manager;
 
@@ -30,58 +31,18 @@ namespace TrackHub.Router.Infrastructure.Protrack.Helpers;
 /// </summary>
 internal class TokenHelper(ICredentialWriter credentialWriter, IProviderSessionStore sessionStore)
 {
-    // Do not hand out a token that dies mid-sync.
-    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(1);
+    private const string TokenScope = "protrack-token";
 
-    /// <summary>
-    /// Gets a valid access token, refreshing if necessary.
-    /// </summary>
-    public async Task<string> GetTokenAsync(
+    public Task<string> GetTokenAsync(
         IHttpClientService httpClientService,
         string baseUrl,
         CredentialTokenDto credential,
+        string? rejectedToken,
         CancellationToken cancellationToken)
-    {
-        if (sessionStore.TryGet(credential, out var cachedToken))
-        {
-            return cachedToken;
-        }
+        => sessionStore.AcquireReusingStoredTokenAsync(TokenScope, credential, rejectedToken,
+            token => AuthenticateAsync(httpClientService, baseUrl, credential, token), cancellationToken);
 
-        if (!string.IsNullOrEmpty(credential.Token) && !IsTokenExpired(credential))
-        {
-            CacheToken(credential, credential.Token, credential.TokenExpiration);
-            return credential.Token;
-        }
-
-        return await RefreshTokenAsync(httpClientService, baseUrl, credential, cancellationToken);
-    }
-
-    // Drops both caches and authenticates again. Used when the provider rejects the stored token
-    // with 401 before its recorded expiry — a server-side revocation the expiry cannot predict.
-    public async Task<string> ForceRefreshTokenAsync(
-        IHttpClientService httpClientService,
-        string baseUrl,
-        CredentialTokenDto credential,
-        CancellationToken cancellationToken)
-    {
-        sessionStore.Invalidate(credential.CredentialId);
-        return await RefreshTokenAsync(httpClientService, baseUrl, credential, cancellationToken);
-    }
-
-    // Non-sliding: a bearer token has an absolute expiry regardless of use. Tokens without an
-    // expiry are not cached (no TTL basis) — the durable credential copy covers them.
-    private void CacheToken(CredentialTokenDto credential, string tokenValue, DateTimeOffset? expiration)
-    {
-        if (expiration is { } expiresAt)
-        {
-            sessionStore.Set(credential, tokenValue, expiresAt - DateTimeOffset.UtcNow - ExpiryMargin, sliding: false);
-        }
-    }
-
-    /// <summary>
-    /// Refreshes the access token by calling the Protrack authorization API.
-    /// </summary>
-    private async Task<string> RefreshTokenAsync(
+    private async Task<ProviderSessionGrant> AuthenticateAsync(
         IHttpClientService httpClientService,
         string baseUrl,
         CredentialTokenDto credential,
@@ -108,8 +69,7 @@ internal class TokenHelper(ICredentialWriter credentialWriter, IProviderSessionS
             null
         ), cancellationToken);
 
-        CacheToken(credential, response.Record.Access_token, tokenExpiration);
-        return response.Record.Access_token;
+        return ProviderSessions.ExpiringAt(response.Record.Access_token, tokenExpiration);
     }
 
     /// <summary>
@@ -131,10 +91,4 @@ internal class TokenHelper(ICredentialWriter credentialWriter, IProviderSessionS
         var hashBytes = MD5.HashData(inputBytes);
         return Convert.ToHexStringLower(hashBytes);
     }
-
-    // A null expiry means the provider never said when the token dies. Treat that as expired: the
-    // lifted comparison would otherwise be false forever and pin a token the provider may already
-    // have dropped, leaving the operator failing 401 until someone rotates the credential by hand.
-    private static bool IsTokenExpired(CredentialTokenDto token)
-        => token.TokenExpiration is not { } expiration || DateTimeOffset.UtcNow >= expiration;
 }

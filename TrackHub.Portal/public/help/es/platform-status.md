@@ -38,6 +38,9 @@ Cada indicador corresponde a una parte de la plataforma, nombrada por lo que hac
 | **Datos de posición** | Las posiciones de los vehículos y su historial. |
 | **Geocercas** | Entradas, salidas y permanencias dentro de sus zonas. |
 | **Informes** | La generación de los informes que descarga o previsualiza. |
+| **Viajes** | La planificación de rutas, el seguimiento de viajes y los enlaces de seguimiento para clientes. |
+
+![Página Estado de la Plataforma con el aviso general y los indicadores de servicio](assets/es/platform-status-public.png)
 
 Cada indicador muestra uno de tres estados:
 
@@ -73,7 +76,7 @@ Los anuncios aparecen en dos lugares:
 
 El color sigue la importancia: azul para información, ámbar para advertencia y rojo para crítico. Puede cerrar la barra del portal con su **×**; permanecerá cerrada hasta que cierre el navegador, y un anuncio que siga activo volverá a aparecer la próxima vez que inicie sesión.
 
-Si falta la barra de anuncios mientras el indicador *Gestión de flota* está en rojo, es lo esperado: los anuncios se almacenan allí, por lo que una interrupción los oculta. Los indicadores siguen funcionando de todos modos.
+Si falta la barra de anuncios mientras el indicador *Gestión de flota* está en rojo, es lo esperado: una interrupción allí también oculta los anuncios. Los indicadores siguen funcionando de todos modos.
 
 ## ¿Qué versión estoy usando?
 
@@ -83,15 +86,15 @@ Identifica exactamente qué compilación de las pantallas de TrackHub está ejec
 
 La versión mostrada corresponde a las pantallas. Los servicios que están detrás los controla su proveedor y no se listan aquí.
 
-## Para gerentes y administradores
+## Para gestores y administradores
 
-**Sincronización GPS** — los **gerentes y administradores de la plataforma** que han iniciado sesión ven un indicador adicional para el sincronizador en segundo plano. Es el complemento de la pantalla Integración GPS: esa pantalla muestra los operadores de su cuenta, este indicador muestra si el sincronizador está funcionando. No tiene un punto de verificación propio, por lo que su estado se deduce de qué tan recientemente trabajó: verde cuando registró actividad en los últimos cinco minutos. Si ninguna cuenta tiene la integración GPS habilitada, muestra **Desconocido** con *«no hay nada que sincronizar»* — eso es normal, no una falla.
+**Sincronización GPS** — los **gestores y administradores de la plataforma** que han iniciado sesión ven un indicador adicional para el sincronizador en segundo plano. Es el complemento de la pantalla Integración GPS: esa pantalla muestra los operadores de su cuenta, este indicador muestra si el sincronizador está funcionando. Está en verde cuando registró actividad en los últimos cinco minutos. Si ninguna cuenta tiene la integración GPS habilitada, muestra **Desconocido** con *«no hay nada que sincronizar»* — eso es normal, no una falla.
 
 **Tareas en segundo plano** (solo administradores de la plataforma) — el trabajo programado que se ejecuta solo: evaluación de alertas, envío y resúmenes de notificaciones, análisis y vencimiento de documentos, vencimiento de pruebas, detección de permanencia en geocercas y tareas de limpieza. De cada una verá su estado, cuándo hizo algo por última vez y el resultado. Pase el cursor sobre un resultado fallido para ver el código de error.
 
 Lea esta tabla con atención, porque la mayoría de estas tareas **solo registran actividad cuando realmente tuvieron trabajo que hacer**. Una tarea de resumen sin nada que resumir no escribe nada. Por eso *«Inactiva»* y una marca de tiempo antigua son normales y saludables — la página deliberadamente no las considera detenidas. Solo las tareas verificadas que registran en cada ciclo pueden marcarse como **Sin actividad reciente**, y hoy la evaluación de alertas es la única.
 
-**Gestionar anuncios** — abre el editor de anuncios. Solo los administradores de la plataforma ven este botón y solo ellos pueden crear o modificar anuncios; los gerentes de cuenta no pueden.
+**Gestionar anuncios** — abre el editor de anuncios. Solo los administradores de la plataforma ven este botón y solo ellos pueden crear o modificar anuncios; los gestores de cuenta no pueden.
 
 Para cada anuncio usted indica:
 
@@ -101,4 +104,4 @@ Para cada anuncio usted indica:
 - **Inicia el** / **Termina el** — opcionales. Deje el inicio vacío para publicar de inmediato, y el fin vacío para mantenerlo visible hasta que lo desactive. Un anuncio desaparece solo al llegar la hora de fin.
 - **Activo** — desmárquelo para guardar un borrador o para retirar un anuncio sin eliminarlo. Los anuncios inactivos son invisibles en todas partes.
 
-Publique el anuncio de mantenimiento **antes** de que comience el mantenimiento. Una vez detenido el servicio de gestión de flota, los anuncios ya no pueden cargarse — por lo que un aviso programado con antelación es lo que la gente verá durante la ventana.
+Publique el anuncio de mantenimiento **antes** de que comience el mantenimiento. Mientras *Gestión de flota* no funcione, los anuncios no pueden cargarse — por lo que un aviso programado con antelación es lo que la gente verá durante la ventana.

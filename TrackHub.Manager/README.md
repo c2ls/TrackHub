@@ -1,55 +1,57 @@
-# TrackHub Management API
+# TrackHub Manager
 
-[English](README.en.md) | [Español](README.es.md)
+The master-data service, and the one most other services read from: accounts and their features,
+settings and branding; users and groups; transporters, devices and their assignments; GPS
+operators and their encrypted credentials; geocoding providers and points of interest; documents;
+staff and workforce; alert events, notification rules and deliveries; announcements, audit events,
+background job runs, public links and the report catalog. It owns the `app` and `map` schemas of the
+`TrackHub` database **and the DDL of the `telemetry` schema** that [Telemetry](../TrackHub.Telemetry)
+serves.
 
-TrackHub is an innovative open-source application designed to unify multiple monitoring platforms into a cohesive system. Imagine having all your monitoring needs met in one place—this is the vision behind TrackHub.
+Wiki: [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager),
+[Database](https://github.com/shernandezp/TrackHub/wiki/Database).
 
-Currently in development, our project aims to foster collaboration among diverse companies and developers, promoting continuous improvement and growth. TrackHub empowers organizations to centralize information about their assets and personnel, regardless of their vendors.
+## Build, run, test
 
-We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
+From this folder:
 
-![Image](../TrackHub.AuthorityServer/src/Web/wwwroot/images/logo.png)
+```bash
+dotnet build TrackHub.Manager.slnx
+dotnet test TrackHub.Manager.slnx
 
----
+# creates app, map and telemetry
+dotnet ef database update --project src/Infrastructure/ManagerDB --startup-project src/Web
 
-## Overview
+# report catalog, transporter types, the master account and administrator
+dotnet run --project src/DBInitializer
 
-The Management API is TrackHub's master-data service. It owns accounts, users and groups; operators, devices, transporters and device–transporter assignments; points of interest and geocoding providers; account features and branding; documents and the staff workforce; alert events, notification rules and deliveries; platform announcements; audit events; and the device-synchronization command surface.
+dotnet run --project src/Web          # https://localhost:5004/graphql
+```
 
-High-volume position and operator-telemetry data is **not** here — it belongs to the [Telemetry API](../TrackHub.Telemetry).
+Settings: `ConnectionStrings:DefaultConnection` in `src/Web/appsettings.json` and
+`src/DBInitializer/appsettings.json`. The `TrackHub` database needs the `postgis` extension once
+Geofencing or TripManagement migrate into it.
 
----
+## Gotchas
 
-## Documentation
-
-| | |
-|---|---|
-| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Manager](https://github.com/shernandezp/TrackHub/wiki/Manager), [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture) and [Database](https://github.com/shernandezp/TrackHub/wiki/Database) |
-| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
-
----
-
-## Modules in this repository
-
-| Repository | Purpose |
-|---|---|
-| [TrackHubCommon](../TrackHubCommon) | Shared framework, referenced by project |
-| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
-| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) |
-| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
-| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
-
----
-
-## License
-
-Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+- **Telemetry tables are migrated here.** Adding a `telemetry` column means adding a Manager
+  migration; Telemetry has none of its own.
+- **`ApplicationDbContext` is `NoTracking` by default.** A row fetched for mutation must be attached
+  (or queried `AsTracking()`), or `SaveChangesAsync` silently discards the change. EF InMemory
+  defaults to tracking, so a unit test only catches this when its context mirrors production.
+- **Do not add `Common.Domain.Enums` to the Infrastructure `GlobalUsings`.** Its `TransporterType`
+  collides with the table entity of the same name; import it per file.
+- **`transporter_position.attributes` is a `json` column.** `json` has no equality operator, so
+  `Distinct()`, `GroupBy()` or set operations over a projection that includes it fail at runtime
+  with `42883`. EF InMemory will not catch it.
+- **The report catalog is re-seeded on every `DBInitializer` run** from `IReportCatalogContribution`
+  files. Code owns the seeded metadata; only `Active` survives an admin edit.
+- **Manager → Router uses a 120 s client timeout** because manual sync awaits the provider fetch;
+  every other client uses 30 s.
+- **The announcements REST endpoint is anonymous and bypasses the mediator.** It is output-cached
+  (60 s) and rate-limited per client IP, which is why the service trusts forwarded headers from the
+  proxy.
+- **Localized text never lives in the database.** Notification defaults come from `.resx`; only
+  user-authored templates and announcements are stored, per language.
+- After changing the GraphQL surface, run `dotnet test ../TrackHub.IntegrationTests` and then the
+  portal's `npm run codegen`.

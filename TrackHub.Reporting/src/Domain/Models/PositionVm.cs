@@ -3,7 +3,7 @@ namespace TrackHub.Reporting.Domain.Models;
 public readonly record struct PositionVm(
     Guid TransporterId,
     string DeviceName,
-    string TransporterType,
+    [property: ReportValues("TransporterType")] string TransporterType,
     double Latitude,
     double Longitude,
     double? Altitude,

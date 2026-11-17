@@ -11,11 +11,19 @@ namespace TrackHub.Reporting.Application.UnitTests.Documents;
 public class DocumentReportsTests
 {
     private Mock<IDocumentReportReader> _reader = null!;
+    private static readonly Guid DocumentId = Guid.NewGuid();
+    private Mock<IReportNameReader> _names = null!;
     private FilterDto _filters;
 
     [SetUp]
     public void SetUp()
     {
+        _names = new Mock<IReportNameReader>();
+        _names.Setup(n => n.GetTransporterNamesAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetOperatorNamesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetDeviceSerialsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetStaffNamesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetDocumentNamesAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
         _reader = new Mock<IDocumentReportReader>();
         _reader.Setup(r => r.EnsureDocumentsFeatureAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         _filters = new FilterDto { Language = "en", Name = "Test" };
@@ -26,9 +34,9 @@ public class DocumentReportsTests
     [Test]
     public void Codes_MatchSpecConstants()
     {
-        Assert.That(new ExpiringDocumentsReport(_reader.Object).ReportCode, Is.EqualTo("documents-expiring"));
+        Assert.That(new ExpiringDocumentsReport(_reader.Object, _names.Object).ReportCode, Is.EqualTo("documents-expiring"));
         Assert.That(new MissingRequiredDocumentsReport(_reader.Object).ReportCode, Is.EqualTo("documents-missing-required"));
-        Assert.That(new DocumentShareActivityReport(_reader.Object).ReportCode, Is.EqualTo("documents-share-activity"));
+        Assert.That(new DocumentShareActivityReport(_reader.Object, _names.Object).ReportCode, Is.EqualTo("documents-share-activity"));
         Assert.That(new DocumentUploadVolumeReport(_reader.Object).ReportCode, Is.EqualTo("documents-upload-volume"));
     }
 
@@ -86,7 +94,7 @@ public class DocumentReportsTests
             new ReportDocumentVm("RTM", "Transporter", "t2", "b.pdf", "Internal", "Active", DateTimeOffset.UtcNow.AddDays(1))));
 
         var filters = _filters with { Values = FilterValues.Of((FilterNames.WithinDays, "15")) };
-        var result = await new ExpiringDocumentsReport(_reader.Object).GetDatasetAsync(filters, CancellationToken.None);
+        var result = await new ExpiringDocumentsReport(_reader.Object, _names.Object).GetDatasetAsync(filters, CancellationToken.None);
 
         Assert.That(result.RowCount, Is.EqualTo(2));
         // Sorted by nearest expiry first.
@@ -94,16 +102,40 @@ public class DocumentReportsTests
     }
 
     [Test]
+    public async Task Expiring_ShowsOwnerNames_AndKeepsTheIdWhenUnknown()
+    {
+        var unit = Guid.NewGuid();
+        var staff = Guid.NewGuid();
+        var unknown = Guid.NewGuid();
+        _names.Setup(n => n.GetTransporterNamesAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string> { [unit] = "AAA000" });
+        _names.Setup(n => n.GetStaffNamesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string> { [staff] = "Ana Rojas" });
+        _reader.Setup(r => r.GetExpiringDocumentsAsync(30, It.IsAny<CancellationToken>())).ReturnsAsync(List(
+            new ReportDocumentVm("SOAT", "Transporter", unit.ToString(), "a.pdf", "Internal", "Active", DateTimeOffset.UtcNow.AddDays(1)),
+            new ReportDocumentVm("License", "Staff", staff.ToString(), "b.pdf", "Internal", "Active", DateTimeOffset.UtcNow.AddDays(2)),
+            new ReportDocumentVm("RTM", "Transporter", unknown.ToString(), "c.pdf", "Internal", "Active", DateTimeOffset.UtcNow.AddDays(3))));
+
+        var result = await new ExpiringDocumentsReport(_reader.Object, _names.Object).GetDatasetAsync(_filters, CancellationToken.None);
+
+        Assert.That(result.Cell(0, "OwnerName"), Is.EqualTo("AAA000"));
+        Assert.That(result.Cell(1, "OwnerName"), Is.EqualTo("Ana Rojas"));
+        Assert.That(result.Cell(2, "OwnerName"), Is.EqualTo(unknown.ToString()));
+    }
+
+    [Test]
     public async Task ShareActivity_FiltersToDocumentResourceType()
     {
         _reader.Setup(r => r.GetDocumentSharesByAccountAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List(
-            new ReportShareVm("Document", "doc-1", "document.read", "share", DateTimeOffset.UtcNow, null, 3, DateTimeOffset.UtcNow),
+            new ReportShareVm("Document", DocumentId.ToString(), "document.read", "share", DateTimeOffset.UtcNow, null, 3, DateTimeOffset.UtcNow),
             new ReportShareVm("Transporter", "tr-1", "read", "x", DateTimeOffset.UtcNow, null, 9, null)));
 
-        var result = await new DocumentShareActivityReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
+
+        _names.Setup(n => n.GetDocumentNamesAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, string> { [DocumentId] = "SOAT 2026" });
+
+        var result = await new DocumentShareActivityReport(_reader.Object, _names.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.RowCount, Is.EqualTo(1));
-        Assert.That(result.Cell(0, "SharedDocumentId"), Is.EqualTo("doc-1"));
+        Assert.That(result.Cell(0, "SharedDocument"), Is.EqualTo("SOAT 2026"));
     }
 
     [Test]

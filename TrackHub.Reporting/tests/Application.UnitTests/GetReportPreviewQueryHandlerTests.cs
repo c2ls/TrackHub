@@ -105,6 +105,24 @@ public class GetReportPreviewQueryHandlerTests
     }
 
     [Test]
+    public async Task Preview_TranslatesVocabularyValues_InTheRequestLanguage()
+    {
+        _report.Setup(r => r.GetDatasetAsync(It.IsAny<FilterDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ReportDataset
+            {
+                Title = "T",
+                Columns = [new ReportColumn("TripStatus", typeof(string), "TripStatus"), new ReportColumn("TripCode", typeof(string))],
+                Rows = [["IN_PROGRESS", "InProgress"], ["Unheard", "X"]]
+            });
+
+        var result = await Handler().Handle(
+            new GetReportPreviewQuery(Code, new FilterDto { Name = "T", Language = "es" }), CancellationToken.None);
+
+        Assert.That(result.Rows[0], Is.EqualTo(new object?[] { "En curso", "InProgress" }));
+        Assert.That(result.Rows[1][0], Is.EqualTo("Unheard"));
+    }
+
+    [Test]
     public async Task Preview_UnknownCode_ThrowsReportNotFound()
     {
         _catalog.Setup(c => c.GetReportByCodeAsync(Code, It.IsAny<CancellationToken>()))

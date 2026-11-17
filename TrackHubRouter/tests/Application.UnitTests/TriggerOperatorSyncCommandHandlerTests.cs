@@ -32,30 +32,24 @@ namespace Application.UnitTests;
 [TestFixture]
 public class TriggerOperatorSyncCommandHandlerTests : TestsContext
 {
-    private Mock<IOperatorReader> _operatorReaderMock = null!;
     private Mock<IOperatorSystemReader> _operatorSystemReaderMock = null!;
     private Mock<ISyncDispatchQueue> _queueMock = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _operatorReaderMock = new Mock<IOperatorReader>();
         _operatorSystemReaderMock = new Mock<IOperatorSystemReader>();
         _queueMock = new Mock<ISyncDispatchQueue>();
         _queueMock.Setup(q => q.TryEnqueue(It.IsAny<SyncDispatchRequest>())).Returns(true);
     }
 
     private TriggerOperatorSyncCommandHandler CreateHandler() => new(
-        _operatorReaderMock.Object,
         _operatorSystemReaderMock.Object,
         _queueMock.Object,
         Mock.Of<ILogger<TriggerOperatorSyncCommandHandler>>());
 
-    // The caller-scoped read authorizes; the system read supplies the same operator with its
-    // credential, so both are configured together.
     private void SetupOperator(OperatorVm op)
     {
-        _operatorReaderMock.Setup(x => x.GetOperatorAsync(op.OperatorId, It.IsAny<CancellationToken>())).ReturnsAsync(op);
         _operatorSystemReaderMock.Setup(x => x.GetOperatorAsync(op.OperatorId, It.IsAny<CancellationToken>())).ReturnsAsync(op);
     }
 
@@ -98,8 +92,8 @@ public class TriggerOperatorSyncCommandHandlerTests : TestsContext
             new TriggerOperatorSyncCommand(accountId, op.OperatorId, "MANUAL", "corr-42"), CancellationToken.None);
 
         Assert.That(result, Is.True);
-        _operatorReaderMock.Verify(x => x.GetOperatorAsync(op.OperatorId, It.IsAny<CancellationToken>()), Times.Once);
-        _operatorReaderMock.VerifyNoOtherCalls();
+        _operatorSystemReaderMock.Verify(x => x.GetOperatorAsync(op.OperatorId, It.IsAny<CancellationToken>()), Times.Once);
+        _operatorSystemReaderMock.VerifyNoOtherCalls();
         _queueMock.Verify(q => q.TryEnqueue(
             It.Is<SyncDispatchRequest>(r =>
                 r.Operator.OperatorId == op.OperatorId

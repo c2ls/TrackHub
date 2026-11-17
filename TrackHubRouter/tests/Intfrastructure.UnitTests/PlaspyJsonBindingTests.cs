@@ -58,7 +58,7 @@ public class JsonBindingTests
             "tags": { "tagA": "valueA", "tagB": "valueB" }, "expires": "2025-12-31T23:59:59Z" } ]}
             """;
 
-        var devices = json.Deserialize<DevicesResponse>()!.Devices!.MapToDeviceVm().ToList();
+        var devices = DeviceMapper.Instance.Map(json.Deserialize<DevicesResponse>()!.Devices!).ToList();
 
         Assert.That(devices.Select(d => (d.Serial, d.Name)), Is.EqualTo(new[] { ("device123", "Device 1"), ("device456", "Device 2") }));
     }

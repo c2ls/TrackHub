@@ -28,19 +28,21 @@ public sealed class PositionReader(
 {
 
     public async Task<PositionVm> GetDevicePositionAsync(DeviceTransporterVm deviceDto, CancellationToken cancellationToken)
+        => await ReadLatestAsync(deviceDto, cancellationToken)
+            ?? throw new InvalidOperationException($"GpsGate device {deviceDto.Identifier} has no reported position.");
+
+    private async Task<PositionVm?> ReadLatestAsync(DeviceTransporterVm deviceDto, CancellationToken cancellationToken)
     {
-        // Use device endpoint to retrieve current device which contains last known position
+        // The device record carries its last known position.
         var url = $"api/v.1/{ApplicationId}/users/{UserId}/devices/{deviceDto.Identifier}";
         var device = await HttpClientService.GetAsync<Device>(url, cancellationToken: cancellationToken);
-
-        // Map Device coordinates to PositionVm using mapper
         return device.MapToPositionVm(deviceDto);
     }
 
     public async Task<IEnumerable<PositionVm>> GetDevicePositionAsync(IEnumerable<DeviceTransporterVm> devices, CancellationToken cancellationToken)
         // GpsGate provides no bulk last-position API, so the batch is a bounded fan-out rather than
         // a sequential walk: one call per vehicle in series did not fit the 10-second cycle.
-        => await ProviderConcurrency.ReadEachDeviceAsync(devices, GetDevicePositionAsync, cancellationToken);
+        => await ProviderConcurrency.ReadEachDeviceAsync(devices, async (device, token) => await ReadLatestAsync(device, token) ?? default, cancellationToken);
 
     public Task<IEnumerable<PositionVm>> GetPositionAsync(DateTimeOffset from, DateTimeOffset to, DeviceTransporterVm deviceDto, CancellationToken cancellationToken)
         // GpsGate exposes no usable track-history endpoint. Callers are expected to check

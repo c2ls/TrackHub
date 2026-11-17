@@ -264,6 +264,8 @@ export type ProtocolType =
   | 'FLESPI'
   | 'GEO_TAB'
   | 'GPS_GATE'
+  | 'GPS_TRACKIT'
+  | 'MAPON'
   | 'METTAX'
   | 'MOTIVE'
   | 'NAVIXY'
@@ -274,6 +276,7 @@ export type ProtocolType =
   | 'SAMSARA'
   | 'TRACCAR'
   | 'TRACKSOLID'
+  | 'TRUST_TRACK'
   | 'WEBFLEET'
   | 'WIALON';
 
