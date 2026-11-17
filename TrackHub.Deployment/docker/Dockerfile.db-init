@@ -2,8 +2,8 @@
 # Runs ClientSeeder and DBInitializers once during initial deployment
 
 # Stage 1: Build all three database initializers
-# TrackHubCommon is a ProjectReference now, so every service is copied under its
-# real repository path and restores resolve it directly — no packed feed.
+# TrackHubCommon is a ProjectReference, so every service is copied under its
+# real repository path and restores resolve it directly.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 

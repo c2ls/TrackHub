@@ -2,7 +2,7 @@
 # Multi-stage build for .NET 10
 
 # Stage 1: Build
-# TrackHubCommon is a ProjectReference now (not a packed NuGet feed), so it must
+# TrackHubCommon is a ProjectReference, so it must
 # be present in the same layout as the repository and restores resolve it directly.
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
