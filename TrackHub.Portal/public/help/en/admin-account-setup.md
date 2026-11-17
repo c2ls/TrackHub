@@ -40,13 +40,13 @@ Press **Save**.
 
 Open **Account Management → Account & Subscription → Account Features**. You will see all eleven features listed with **Enabled** Yes or No.
 
-This list is **read-only for you**. Which features your account has is a billing decision made by the platform administrator, so if something you expected is missing — geofencing, documents, notifications — that is who to ask.
+This list is **read-only for you**. Which features your account has is decided by the platform administrator, so if something you expected is missing — geofencing, documents, notifications — that is who to ask.
 
 Check it now rather than later. A missing feature is the other common reason a screen or section "isn't there", and it looks identical to a permissions problem. What each feature turns on and off is in the [Feature catalogue](topic:feature-catalog).
 
 ## 4. Create your users
 
-Open **Account Management → Users & Access → Users** and click the **+** icon. The **User Details** dialog collects **Email Address**, **Password**, **Username**, **First Name** and **Last Name** (plus optional second names and date of birth), and the **Active** and **Integration User** checkboxes.
+Open **Account Management → Users & Access → Users** and press **Add**. The **User Details** dialog collects **Email Address**, **Password**, **Username**, **First Name** and **Last Name** (plus optional second names and date of birth), and the **Active** and **Integration User** checkboxes.
 
 Before you start, three things to know.
 
@@ -74,7 +74,7 @@ Open **Account Management → Fleet & Tracking → Groups**.
 
 For each group:
 
-1. Click the **+** icon and fill in the **Group Details** dialog: **Name** (required), **Description** (required), and the **Active** checkbox. Press **Save**.
+1. Press **Add** and fill in the **Group Details** dialog: **Name** (required), **Description** (required), and the **Active** checkbox. Press **Save**.
 2. On the group's row, click **Assign** in the **Users** column and add the users who should see this group's units.
 3. Click **Assign** in the **Units** column and add the units.
 4. Click **Assign** in the **Staff** column and add the staff members who belong to the group.
@@ -90,8 +90,8 @@ Open **GPS Integration** from the left menu. An **operator** is a configured con
 **Have your provider credentials to hand before you start.** TrackHub does not obtain them for you; they come from your GPS provider.
 
 1. Expand **GPS Operators** and click the **+** icon. Fill in **Name** (required), the optional contact details, **Sync Interval (min)** (defaults to **30**), and **Protocol** (required).
-2. Pick the **Protocol** carefully — it must match what your provider actually speaks. The choices are `COMMAND_TRACK`, `TRACCAR`, `FLESPI`, `GEOTAB`, `GPS_GATE`, `NAVIXY`, `SAMSARA`, `WIALON`, and `PROTRACK`. The wrong protocol produces authentication or connectivity errors that look like bad credentials.
-3. Press **Save**, then on the operator's row click the **Credential** (key) action. Enter the **URL** (required) and whichever of **Username**, **Password**, **Secret Key**, and **Secret Key 2** your provider uses. Press **Save**. Credentials are encrypted where they are stored.
+2. Pick the **Protocol** carefully — it is your GPS provider (Geotab, Samsara, Wialon, Traccar, and so on; the full list is in [GPS integration](topic:gps-integration#adding-an-operator)). The wrong protocol produces errors that look like bad credentials.
+3. Press **Save**, then on the operator's row click **Credential**. The dialog asks only for what your provider needs, named the way the provider names it, and fills in the provider's usual **URL** where there is one. Press **Save**. Credentials are stored encrypted.
 4. **Test the connection before you enable anything.** Click the **check** action in the **Test Credential** column. You want *"The credential was successfully tested"*. TrackHub does not stop you enabling or syncing an untested operator — the buttons all stay clickable — so this discipline is yours to keep. An untested operator that fails at 3am is a much worse way to find out.
 5. Only once the test passes, use **Enable** on the operator's row. A disabled operator never syncs automatically; its health shows as **Disabled**.
 6. Click **Trigger Sync** to pull the device list immediately, rather than waiting for the interval. The devices then appear under **Synchronized Devices**.
@@ -100,13 +100,13 @@ Open **GPS Integration** from the left menu. An **operator** is a configured con
 
 **Watch the health afterwards.** The dashboard at the top of the page summarises operators, devices, and synchronisation, and each operator carries a health badge: **Healthy**, **Degraded**, **Offline**, **Disabled**, or **Unknown**. **Recent Sync Runs** shows what each synchronisation actually did. Full detail is in [GPS integration](topic:gps-integration).
 
-**One action to be careful with: Reset Sync.** It deletes the operator's synchronised devices *and any units that existed only for those devices*, then starts over. It asks you to confirm. Use it to rebuild a broken device list, never as a routine refresh.
+**One action to be careful with: Reset Sync.** It re-runs device detection from scratch: devices the provider no longer lists are retired and their unit links ended. Your units keep their identity and history. It asks you to confirm. Use it to repair a broken device list, never as a routine refresh.
 
 ## 7. Create your units, then assign devices
 
 A **device** is the tracker hardware; a **unit** is the vehicle or asset you actually care about. Devices arrive automatically from the operator sync — you do not create them by hand — and are then linked to units.
 
-1. **Units** (**Account Management → Fleet & Tracking → Units**) — click **+**, give the unit a **Name** and a **Type**, and **Save**. The **Type** determines the movement thresholds used to decide when the unit counts as stopped.
+1. **Units** (**Account Management → Fleet & Tracking → Units**) — press **Add**, give the unit a **Name** and a **Type**, and **Save**. The **Type** determines the movement thresholds used to decide when the unit counts as stopped.
 2. **Assign the device** — on the **GPS Integration** screen, under **Device Assignments**, choose the unit and an unassigned device and press **Assign Device**. Only devices not currently assigned to a unit are offered.
 3. **Staff** (**Fleet & Tracking → Staff**) — the people who work for you — drivers, operators, salespeople — go here. A staff member can carry a **Default Transporter**, so create the units first. Once a staff member exists you can also issue them a **staff credential** for the mobile app, with the **Credentials and devices** action on their row — that part works on every account. See [Staff and workforce](topic:staff-workforce).
 4. **Points of Interest** (**Fleet & Tracking → Points of Interest**) — named locations such as client sites, warehouses, fuel stations, and workshops, with a name, coordinates, a type, a colour, and optionally a group.
@@ -118,10 +118,11 @@ Now go back to **Groups** and complete steps 5.3 and 5.4 — assign the units an
 Only the features enabled for your account will be there. One line each:
 
 - **Geofences** — draw the zones you want entry and exit alerts for. See [Geofences](topic:geofences).
-- **Notification rules** — decide what raises an alert and where it goes. Email and WhatsApp are separate entitlements from the base notifications feature, so a channel you cannot select is a billing question, not a bug. See [Alerts and notifications](topic:alerts-notifications).
+- **Notification rules** — decide what raises an alert and where it goes. Email and WhatsApp are separate features from the base notifications feature, so a channel you cannot select is a question for the platform administrator, not a bug. See [Alerts and notifications](topic:alerts-notifications).
 - **Documents** — store vehicle and staff paperwork, with expiry tracking. See [Documents](topic:documents).
 - **Public Links** — share a limited, time-boxed view with someone who has no login. See [Public links](topic:public-links).
-- **Workforce** — record your staff' licences, medical exams and training with expiry dates, get alerted before they lapse, and keep a history of who drove which unit. See [Staff and workforce](topic:staff-workforce).
+- **Trips** — plan trips that start and finish themselves from your zones. Map your vehicle types under **Fleet & Tracking → Transporter toll classes** first so trips get a toll estimate. See [Trips and route planning](topic:trip-management).
+- **Workforce** — record your staff members' licences, medical exams and training with expiry dates, get alerted before they lapse, and keep a history of who drove which unit. See [Staff and workforce](topic:staff-workforce).
 
 ## 9. Verify the setup
 

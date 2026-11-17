@@ -20,4 +20,4 @@ public readonly record struct FeatureEnablementRowVm(
     string AccountName,
     string FeatureKey,
     bool Enabled,
-    string Tier);
+    [property: ReportValues("FeatureTier")] string Tier);

@@ -19,16 +19,16 @@ Cada enlace existente se muestra con estas columnas:
 
 | Columna | Significado |
 |---|---|
-| **Recurso** | El recurso al que apunta el enlace (su tipo e id). |
-| **Ámbitos (separados por coma)** | Los ámbitos que el token puede usar. |
+| **Recurso** | El recurso al que apunta el enlace: su tipo y nombre (el código del viaje, el nombre de la unidad o el título del documento). |
+| **Ámbitos** | Los ámbitos que el token puede usar. |
 | **Vence En** | Cuándo deja de funcionar el enlace. |
 | **Accesos** | Cuántas veces se ha usado el enlace. |
-| **Estado** | **Activo**, o **Revocado En** una vez que el enlace ha sido revocado. |
+| **Estado** | **Activo**, o **Revocado** una vez que el enlace ha sido revocado. |
 | **Acción** | **Revocar Enlace Público**, visible mientras el enlace sigue activo. |
 
 ## Crear un enlace
 
-Presione el icono **+** (agregar) en el encabezado de la sección para abrir el diálogo **Crear Enlace Público**, y complete:
+Presione **Agregar** para abrir el diálogo **Crear Enlace Público**, y complete:
 
 - **Tipo de Recurso** (obligatorio)
 - **Id del Recurso** (obligatorio)
@@ -38,7 +38,7 @@ Presione el icono **+** (agregar) en el encabezado de la sección para abrir el 
 
 Presione **Guardar**. El portal muestra entonces el **Token de Enlace Público** una sola vez, con la advertencia **"Copie este token ahora. No se mostrará de nuevo."** Cópielo de inmediato — el token no puede recuperarse más tarde. Cierre el diálogo cuando lo tenga.
 
-> El icono **+** aparece solo cuando la funcionalidad de enlaces públicos está habilitada para su cuenta. Aun cuando no lo esté, todavía puede ver, monitorear y **revocar** los enlaces existentes — solo la creación de nuevos enlaces está restringida.
+> La sección **Enlaces Públicos** solo aparece cuando la funcionalidad de enlaces públicos está activada para su cuenta. Desactivarla nunca elimina los enlaces ya emitidos.
 
 ## Revocar un enlace
 

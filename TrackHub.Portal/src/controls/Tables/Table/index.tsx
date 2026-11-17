@@ -214,7 +214,13 @@ function Table({
                 minWidth: "100%",
                 "& th": { whiteSpace: "nowrap" },
               }
-            : { tableLayout: "fixed", width: "100%", "& td": { overflow: "hidden", textOverflow: "ellipsis" } }),
+            : {
+                tableLayout: "fixed",
+                width: "100%",
+                "& th": { overflowWrap: "anywhere" },
+                "& td": { overflow: "hidden", textOverflow: "ellipsis", overflowWrap: "anywhere" },
+                "& td .MuiButton-root": { overflowWrap: "normal" },
+              }),
           "& tbody tr:not(:last-child) td": {
             borderBottom: ({ borders: { borderWidth, borderColor } }: Theme) =>
               `${borderWidth[1]} solid ${borderColor}`,

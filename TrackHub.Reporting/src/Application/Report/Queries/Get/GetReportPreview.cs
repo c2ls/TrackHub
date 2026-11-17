@@ -72,7 +72,10 @@ public class GetReportPreviewQueryHandler(
             throw new ReportLimitExceededException(limits.MaxExportRows);
         }
 
-        var rows = dataset.Rows.Take(limits.PreviewRows).ToArray();
+        var rows = dataset.Rows
+            .Take(limits.PreviewRows)
+            .Select(row => row.Select((value, col) => ReportValueResolver.Localize(value, dataset.Columns[col], culture)).ToArray())
+            .ToArray();
 
         return new ReportPreviewVm(columns, rows, total, total > limits.PreviewRows);
     }

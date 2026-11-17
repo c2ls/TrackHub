@@ -34,6 +34,8 @@ Si su cuenta tiene habilitada la funcionalidad de historial de posiciones, apare
 - **Proveedor GPS** — historial leído directamente del operador/proveedor GPS (la opción predeterminada).
 - **TrackHub** — historial almacenado por el propio TrackHub.
 
+![Pestaña Posiciones con el rango de fechas, la unidad y el selector Fuente del historial](assets/es/dashboard-position-history.png)
+
 Elija la fuente antes de hacer clic en **Buscar**. Si su cuenta no tiene esta funcionalidad, el selector queda oculto y TrackHub siempre usa el historial del proveedor. El historial de posiciones es una funcionalidad de cuenta que administra su administrador — consulte [Roles y permisos](topic:roles-and-permissions).
 
 ## La lista de viajes
@@ -68,6 +70,8 @@ Seleccione un viaje en la lista. Si el viaje tiene una línea de tiempo, aparece
 - **Reproducir / Pausar** — inicia o detiene la animación; un marcador se desplaza a lo largo de la ruta.
 - **Velocidad** — elija velocidad de reproducción **1x**, **2x**, **4x** u **8x**.
 - **Perfil de velocidad** — una gráfica de la velocidad de la unidad a lo largo del viaje, con la hora y la velocidad del punto actual sobre ella. Arrastre sobre la gráfica, o use el **control deslizante de la línea de tiempo** debajo de ella, para saltar a cualquier punto del viaje.
+
+![Un viaje seleccionado con el panel Resumen, los controles de reproducción y la gráfica de velocidad](assets/es/dashboard-replay-playback.png)
 
 ## Exportar a CSV
 

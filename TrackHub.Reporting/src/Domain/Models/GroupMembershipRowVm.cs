@@ -18,6 +18,6 @@ namespace TrackHub.Reporting.Domain.Models;
 // Group-membership export row: one row per group ↔ user/transporter assignment.
 public readonly record struct GroupMembershipRowVm(
     string GroupName,
-    string MemberType,
+    [property: ReportValues("EntityType")] string MemberType,
     string MemberName,
     string MemberId);

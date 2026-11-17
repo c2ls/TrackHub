@@ -19,13 +19,13 @@ Plain-language meaning of the terms and on-screen information you will meet acro
 
 **Unit Type** — What kind of thing the unit is, shown with its own icon. Available types include: **Unknown, Aircraft, Asset, Bicycle, Boat, Car, Cargo Container, Construction Vehicle, Child, Delivery Van, Drone, Elderly Person, Fleet Vehicle, Heavy Equipment, Live Stock, Motorcycle, Package, Person, Pet, School Bus, Scooter, Taxi, Tools, Truck,** and **Tractor**. The type also affects how trips are calculated (for example, some types decide a stop using the ignition/ACC signal).
 
-**Group** — A named collection of units and/or users. Groups control who can see which units: you generally see the units in the groups you belong to.
+**Group** — A named collection of units and staff, given to users. Groups control who sees what: a plain User sees only the units and staff in their groups; Managers see everything.
 
 ## Devices and GPS providers
 
 **Device** — The physical GPS tracker (the hardware) that sits in or on a unit and reports its location. A device has a name, an identifier/serial number, and a device type (for example, **Cellular, Satellite, OBD Scanner, Phone, Smartwatch, Marine, Aviation, Pet Tracking**, and others).
 
-**Operator** — A connection to a GPS provider — the external service that collects data from your devices and passes it to TrackHub. Each operator uses a **protocol** (the "language" it speaks), such as **Command Track, Traccar, Geotab,** or **GPS Gate**.
+**Operator** — A connection to a GPS provider — the external service that collects data from your devices and passes it to TrackHub. Each operator uses a **protocol** (the "language" it speaks), which here is simply the provider — for example **Geotab**, **Samsara**, **Wialon** or **Traccar**.
 
 **Credential** — The username, password, or keys TrackHub uses to connect to an operator's service. You normally test a credential with **Test Credential**; a successful test confirms TrackHub can reach the provider.
 
@@ -36,7 +36,7 @@ Plain-language meaning of the terms and on-screen information you will meet acro
 When you open a unit on the map, you see its latest **position** and details:
 
 - **Speed** — How fast the unit is moving, shown in kilometres per hour (Km/Hr).
-- **Course** — The compass direction the unit is heading.
+- **Heading** — The compass direction the unit is moving in.
 - **ACC Status (ignition)** — Whether the vehicle's ignition is **ACC On** or **ACC Off**. This is how TrackHub tells whether the engine is running.
 - **Altitude** — The unit's height above sea level.
 - **Mileage** — The distance the unit has travelled (its odometer reading).
@@ -49,20 +49,27 @@ When you open a unit on the map, you see its latest **position** and details:
 - **Last Report** — When the position was received (shown as "just now", "min ago", "h ago", or "d ago").
 - **Event / alarm** — Some positions carry an event or alarm code sent by the device (for example, a panic button or a specific sensor trigger); these can appear as alarms on a trip.
 
-**Device time vs. server time** — A position has two timestamps. The **device time** is the moment the GPS device recorded the location. The **server time** is the moment TrackHub received it. They are usually close, but a gap can appear if a device was out of signal and sent its data later.
 
 ## Trips and replay
 
-**Trip** — A single journey by a unit, from setting off to stopping. A trip summary can show its **From** and **To** points, **Total Distance**, **Duration**, **Max Speed**, **Average Speed**, number of **Stops**, and any **Alarms**. Time spent is split into **Transit** (moving) and **Stopped**.
+**Trip (history)** — On the Dashboard's **Positions** tab, a stretch of a unit's recorded movement, from setting off to stopping. A trip summary can show its **From** and **To** points, **Total Distance**, **Duration**, **Max Speed**, **Average Speed**, number of **Stops**, and any **Alarms**. Time spent is split into **Transit** (moving) and **Stopped**.
 
 **Replay (Playback)** — Playing back a unit's past movements on the map like a video, using **Play**, **Pause**, a **Speed** control, and a **Timeline**. You can choose the **History source**: the **GPS provider** (the raw data from the provider) or **TrackHub** (the history TrackHub has stored itself). You can also **Export** the replayed track. See [Trips and replay](topic:dashboard-trips-replay).
+
+**Trip (planned)** — On the **Trips** screen, a dispatched journey: one unit, an origin, ordered stops and a planned start. TrackHub starts and completes it on its own from the zones. See [Trips and route planning](topic:trip-management).
+
+**Phase** — What a planned trip is doing right now: **Scheduled**, **Waiting at**, **Loading at**, **In transit to**, **At stop**, **Overdue to start**, and so on.
+
+**Corridor** — A band around a trip's planned route. Leaving it raises a route deviation and the **Off corridor** badge.
+
+**Proof of delivery** — Evidence that a stop was delivered: who received it, when, and attached signatures, photos or receipts.
 
 ## Map zones and places
 
 **Geofence** — A zone you draw on the map to watch a specific area — for example, to know when a unit enters or leaves it. Each geofence has a name, a **type**, a **colour**, and can be active or inactive.
 
 - **Geofence types** describe what the zone represents: **Client Location, Construction Site, Danger Zone, Fuel Station, Garage, Hospital, Hotel, Office, Park, Parking Lot, Restricted Area, Retail Store, School,** and **Warehouse**.
-- **Geofence colours** are simply how the zone is drawn on the map so you can tell zones apart. The colour names are shown in English throughout the app: **Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Black,** and **White**.
+- **Geofence colours** are simply how the zone is drawn on the map so you can tell zones apart. The colours are **Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Black,** and **White**.
 
 **Point of Interest (POI)** — A single marked place on the map (a pin), rather than an area. Each POI has a name, a **type**, a location (latitude/longitude or address), and a colour. POI types include **Client Site, Warehouse, Fuel Station, Toll Booth, Rest Area, Workshop, Port,** and **Other**. Everyday users can view points of interest; managers can create and edit them.
 
@@ -83,17 +90,17 @@ A synchronised device's own state is shown as **Unassigned** (not yet linked to 
 
 **Operator Health** — A simple indicator of how well a GPS provider connection is working, based on its recent sync runs. It reads as **Healthy**, **Degraded**, **Offline**, **Disabled**, or **Unknown**, and is accompanied by the last successful sync, the last failure, and the latency (response time).
 
-**Position Retention** — The rules for how long stored position history is kept, together with how often positions are stored (the **Storing Interval**) and the number of **Retention Days**. These settings depend on your subscription plan and are managed by the administrator. See [GPS integration](topic:gps-integration).
+**Position Retention** — The rules for how long stored position history is kept, together with how often positions are stored (the **Storing Interval**) and the number of **Retention Days**. They are set by your platform administrator. See [GPS integration](topic:gps-integration).
 
 ## Alerts and notifications
 
 **Alert Event** — Something noteworthy that TrackHub detected and recorded, such as a unit entering a geofence, a communication gap, or a document about to expire. Each alert has a **Type**, a **Severity**, a **Source Module** (which part of TrackHub raised it), and a **Status**.
 
-**Severity** — How important or urgent an alert is, from routine/informational up to **critical**. Critical alerts are the ones that need attention first; they can notify recipients immediately and be escalated if nobody responds in time.
+**Severity** — How important or urgent an alert is, from routine/informational up to **critical**. Critical alerts are the ones that need attention first.
 
 **Alert Status** — Where the alert is in its lifecycle. You **Acknowledge** an alert to show you have seen it, and **Resolve** it once it has been dealt with.
 
-**Notification Rule** — A rule that decides when an alert should be raised and who should be told. A rule has a trigger event, a severity, the recipients, and delivery settings, and can be **enabled** or **disabled**.
+**Notification Rule** — A rule that decides who is told, and how, when an event happens. A rule has a trigger event, channels, recipients, and optional throttling, and can be **enabled** or **disabled**.
 
 ## Staff and workforce
 
@@ -101,7 +108,7 @@ A synchronised device's own state is shown as **Unassigned** (not yet linked to 
 
 **Staff Credential** — The login and password a staff member uses in the staff mobile app. One per staff member, with its own lifecycle: **Pending Activation, Active, Locked,** or **Revoked**. Revoking it also stops the sessions already running on the staff’s phone.
 
-**Device Registration** — A phone or tablet a staff member has enrolled from the mobile app, with its platform, app version, and a masked push token. Revoking one registration forces that device to enrol again; the credential is untouched.
+**Device Registration** — A phone or tablet a staff member has enrolled from the mobile app, with its platform and app version. Revoking one registration forces that device to enrol again; the credential is untouched.
 
 **Qualification** — A credentialed fact about a staff member with an expiry date: a **License, Medical Exam, Training, Background Check, HAZMAT Permit,** or **Other**. Each carries a category, a number, issue and expiry dates, an issuing authority, a status (**Valid, Expired, Revoked**), and optionally a linked document.
 
@@ -113,7 +120,7 @@ A synchronised device's own state is shown as **Unassigned** (not yet linked to 
 
 **Document** — A file stored against something in your account (for example, a vehicle's insurance or a staff member's licence). Documents support upload, **New Version** (replacing with an updated file while keeping history), **Download**, **Preview**, **Share**, **Sign**, and tracking of expiry.
 
-**Document Type** — What kind of document it is, chosen from your account's configurable list (examples include **SOAT, RTM, License, Medical, POD, Receipt, Invoice, Manifest, Certificate, Photo, Signature,** and **Other**). The field is labelled **Type**.
+**Document Type** — What kind of document it is, chosen from your account's configurable list (for example a licence, an insurance policy, a receipt or a photo). The field is labelled **Type**.
 
 **Classification** — How sensitive a document is, which controls who may open it: **Public, Internal, Confidential,** or **Legal**. More sensitive classifications (Confidential, Legal) are restricted to users whose access policy allows them.
 
@@ -141,7 +148,7 @@ A synchronised device's own state is shown as **Unassigned** (not yet linked to 
 
 **Account Status** — The overall state of the account: **Trial, Active, Suspended, Cancelled,** or **Archived**. Trial and Active accounts work normally; Suspended, Cancelled, and Archived accounts are blocked with an "Account Not Available" message. See [Roles and permissions](topic:roles-and-permissions#account-status-what-a-suspended-account-looks-like).
 
-**Branding** — Your account's display name, logo, primary colour, and report/export header, so the app and your exported documents carry your own identity.
+**Branding** — Your account's display name, logo, primary colour, and report/export header. The display name appears on PDF report exports.
 
 **Account Feature** — A capability that can be switched on or off for your whole account (for example, Geofencing, Documents, or GPS Integration). When a feature is off, its screens or sections are hidden for everyone in the account.
 

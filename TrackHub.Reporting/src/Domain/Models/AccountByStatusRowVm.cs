@@ -19,7 +19,7 @@ namespace TrackHub.Reporting.Domain.Models;
 // from Resources.resx keyed by property name.
 public readonly record struct AccountByStatusRowVm(
     string AccountName,
-    string Status,
-    short AccountType,
+    [property: ReportValues("AccountStatus")] string Status,
+    [property: ReportValues("AccountType")] string AccountType,
     bool Active,
     DateTimeOffset LastModified);

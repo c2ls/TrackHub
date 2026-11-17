@@ -37,6 +37,7 @@ import DocumentPanel from 'layouts/manageadmin/components/documents/DocumentPane
 import {
   StaffPicker,
   TextCell,
+  effectiveQualificationStatus,
   expiryColor,
   statusColor,
 } from 'layouts/manageadmin/components/staff/workforceShared';
@@ -226,7 +227,9 @@ function ManageStaffQualifications() {
               { name: 'action', title: t('generic.action'), align: 'center' },
               { name: 'id' },
             ]}
-            rows={qualifications.map((qualification) => ({
+            rows={qualifications.map((qualification) => {
+              const status = effectiveQualificationStatus(qualification.status, qualification.expiresAt, today);
+              return {
               type: (
                 <ArgonTypography variant="caption" fontWeight="medium">
                   {qualificationTypeLabel(t, qualification.qualificationType)}
@@ -246,8 +249,8 @@ function ManageStaffQualifications() {
               authority: <TextCell>{qualification.issuingAuthority}</TextCell>,
               status: (
                 <ArgonBadge
-                  badgeContent={qualificationStatusLabel(t, qualification.status)}
-                  color={statusColor(qualification.status)}
+                  badgeContent={qualificationStatusLabel(t, status)}
+                  color={statusColor(status)}
                   size="xs"
                   container
                 />
@@ -279,7 +282,8 @@ function ManageStaffQualifications() {
                 </>
               ),
               id: qualification.staffQualificationId,
-            }))}
+              };
+            })}
             selectedField="type"
           />
         )}

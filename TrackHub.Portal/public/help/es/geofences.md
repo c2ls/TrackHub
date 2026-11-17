@@ -33,6 +33,8 @@ El mapa tiene una barra de controles en su borde derecho con dos herramientas de
 3. Cuando la forma se vea bien, haga clic en el control **Guardar forma** (el ícono de guardar) — aparece en la barra de controles solo mientras dibuja o edita.
 4. Se abre el formulario de detalle de la geocerca. Complételo (vea abajo) y haga clic en **Guardar**.
 
+![Administrador de Geocercas mientras se dibuja un polígono en el mapa](assets/es/geofence-drawing.png)
+
 ## Detalle de la geocerca
 
 El formulario tiene estos campos:
@@ -63,7 +65,7 @@ La lista se filtra y pagina en el servidor, así que use la barra de herramienta
 
 - **Tipo** – restringe la lista a un tipo de geocerca (o "Todos los tipos").
 - **Estado** – muestra zonas **Activas**, **Inactivas** o **Todas**. Su valor predeterminado es **Activas**, así que las zonas retiradas quedan a un clic bajo **Inactivas** o **Todas**.
-- El cuadro de búsqueda de la barra superior filtra la lista por nombre mientras escribe.
+- El cuadro **Buscar** de la barra superior filtra la lista por nombre mientras escribe.
 
 El pie bajo la lista muestra "Mostrando *desde*–*hasta* de *total*" con flechas para pasar entre los resultados. Al seleccionar una entrada se resalta la forma correspondiente en el mapa. El mapa siempre muestra todas las geocercas, incluso mientras la lista está filtrada o paginada.
 

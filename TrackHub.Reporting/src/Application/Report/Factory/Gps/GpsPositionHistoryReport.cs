@@ -1,3 +1,5 @@
+using TrackHub.Reporting.Domain.Interfaces.Manager;
+using TrackHub.Reporting.Domain.Helpers;
 using TrackHub.Reporting.Domain.Paging;
 using Common.Application.Interfaces;
 using Common.Domain.Constants;
@@ -14,6 +16,7 @@ public sealed class GpsPositionHistoryReport(
     IUser user,
     IAccountFeatureReader features,
     IGpsTelemetryReader telemetry,
+    IReportNameReader names,
     ReportingLimitsOptions limits) : IReport
 {
     public string ReportCode => Reports.GpsPositionHistory;
@@ -34,15 +37,16 @@ public sealed class GpsPositionHistoryReport(
             return (page.Items, page.HasMore, page.NextCursor);
         });
 
+        var transporters = await names.GetTransporterNamesAsync(history.Select(p => p.TransporterId), cancellationToken);
+        var devices = await names.GetDeviceSerialsAsync(accountId, cancellationToken);
         var rows = history
             .OrderByDescending(p => p.SourceTimestamp)
             .Select(p => new GpsPositionHistoryRowVm(
-                p.TransporterId,
+                transporters.NameOf(p.TransporterId),
                 p.SourceTimestamp,
                 p.Latitude,
                 p.Longitude,
-                p.DeviceId,
-                p.AccountId))
+                devices.NameOf(p.DeviceId)))
             .ToList();
         return ReportDataset.Create(filters, rows);
     }

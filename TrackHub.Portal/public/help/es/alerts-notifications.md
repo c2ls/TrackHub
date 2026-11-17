@@ -26,11 +26,14 @@ El icono de campana en la barra de navegación superior es su feed personal dent
 
 La campana refleja las notificaciones que le fueron entregadas a usted personalmente. Para gestionar el registro de alertas de la cuenta, use **Eventos de Alerta** más abajo.
 
+En el Tablero, la cifra **Alertas Críticas** cuenta las alertas críticas abiertas que nadie ha reconocido ni resuelto todavía.
+
 ## Eventos de Alerta
 
-Abra **Administración de Cuentas**, vaya al grupo **Alertas y Notificaciones** y expanda **Eventos de Alerta**. Esta es la lista de trabajo donde reconoce y resuelve alertas.
+Abra **Administración de Cuentas** y elija **Eventos de Alerta** en el grupo **Alertas y Notificaciones**. Esta es la lista de trabajo donde reconoce y resuelve alertas.
 
-- Columnas: **Tipo**, **Estado**, **Modificado** y una columna de acción.
+- Columnas: **Tipo**, **Severidad** (**Informativa**, **Advertencia**, **Alta** o **Crítica**), **Unidad**, **Estado** (**Abierto**, **Reconocido** o **Resuelto**), **Primera vez**, **Última vez** y **Acción**.
+- Acote la lista con los filtros **Estado** y **Severidad** (**Todos los estados** / **Todas las severidades** por defecto).
 - Acciones de fila:
   - **Reconocer Alerta** — marca una alerta abierta como vista y en revisión. Se muestra mientras la alerta sigue abierta.
   - **Resolver Alerta** — la marca como atendida. Se muestra hasta que la alerta se resuelve.
@@ -41,11 +44,13 @@ Una alerta que ha reconocido aún puede resolverse después. Una vez que una ale
 
 ## Reglas de Notificación
 
-Las reglas de notificación deciden **a quién se le avisa, y cómo, cuando ocurre un evento** — de modo que usted no tenga que vigilar la lista de alertas por su cuenta. Expanda **Reglas de Notificación** en el mismo grupo.
+Las reglas de notificación deciden **a quién se le avisa, y cómo, cuando ocurre un evento** — de modo que usted no tenga que vigilar la lista de alertas por su cuenta. Elija **Reglas de Notificación** en el mismo grupo.
+
+![Diálogo Crear regla de notificación](assets/es/notification-rule-create.png)
 
 Cada fila de regla muestra su **Clave**, su **Tipo**, si está habilitada (**Estado**) y cuándo se **Modificó** por última vez, con las acciones **Editar** y **Deshabilitar**. **Deshabilitar** desactiva una regla habilitada sin eliminarla.
 
-Para crear una regla, presione el icono **+** (agregar) en la sección y complete el diálogo **Crear Regla de Notificación**. **No** escribe JSON — todo se elige mediante campos estructurados:
+Para crear una regla, presione **Agregar** y complete el diálogo **Crear Regla de Notificación**. **No** escribe JSON — todo se elige mediante campos estructurados:
 
 - **Clave** (obligatorio) — un identificador corto para la regla.
 - **Tipo** (obligatorio) — la clase de regla.
@@ -72,12 +77,19 @@ La lista **Evento Disparador** cubre los eventos que la plataforma puede generar
 | **Documento por Vencer** / **Documento Vencido** | Un documento controlado se acerca o pasa su vencimiento. |
 | **Habilitación del Personal por Vencer** / **Habilitación del Personal Vencida** | Una licencia, examen médico, capacitación, verificación de antecedentes o permiso de materiales peligrosos de un miembro del personal se acerca o pasa su vencimiento. |
 | **Fallo de Entrega de Notificación** | Una notificación no pudo entregarse. |
+| **Viaje Asignado** | Se asigna un miembro del personal a un viaje. |
+| **Inicio de Viaje Vencido** | Se acerca el inicio planeado de un viaje. |
+| **Viaje Iniciado** / **Viaje Completado** / **Viaje Cancelado** | Un viaje comienza, termina o se cancela. |
+| **Llegada a Parada** / **Salida de Parada** | La unidad llega a una parada o sale de ella. |
+| **Viaje Retrasado** | Una parada va más tarde que su ventana prometida. |
+| **Desviación de Ruta** | La unidad sale del corredor de la ruta planeada. |
+| **Comprobante de Entrega Enviado** | Se captura la prueba de entrega en una parada. |
 
-Los eventos de geocerca provienen de las geocercas que usted define — vea [Geocercas](topic:geofences). Los eventos de pérdida de comunicación y de documentos se relacionan con sus [Unidades y dispositivos](topic:units-devices). Los eventos de habilitación de personal provienen de la revisión diaria de vencimientos y requieren la funcionalidad de personal — vea [Personal y fuerza de trabajo](topic:staff-workforce).
+Los eventos de geocerca provienen de las geocercas que usted define — vea [Geocercas](topic:geofences). Los eventos de pérdida de comunicación y de documentos se relacionan con sus [Unidades y dispositivos](topic:units-devices). Los eventos de habilitación de personal provienen de la revisión diaria de vencimientos y requieren la funcionalidad de personal — vea [Personal y fuerza de trabajo](topic:staff-workforce). Los eventos de viajes requieren la gestión de viajes — vea [Viajes y planificación de rutas](topic:trip-management).
 
 Los dos eventos de habilitación del personal se comportan de forma algo distinta a los demás: se generan a distancias fijas de la fecha de vencimiento — **30**, **15**, **7** y **0** días — y cada una de ellas se dispara exactamente una vez por habilitación. Los tres primeros son **Habilitación del Personal por Vencer**; el día en que caduca es **Habilitación del Personal Vencida**, con mayor severidad. No hay nada que configurar en la revisión misma; se ejecuta una vez al día para cada cuenta que tenga la funcionalidad de personal.
 
-> El icono **+** en **Reglas de Notificación** aparece solo cuando la funcionalidad de notificaciones está habilitada para su cuenta. Las opciones de canal **Correo** y **WhatsApp** aparecen solo cuando esos canales están provisionados; el aprovisionamiento lo gestiona el equipo de la plataforma en [Administración del sistema](topic:system-administration).
+> **Reglas de Notificación**, **Suscripciones de Alertas**, **Plantillas de Notificación** y **Entregas de Notificaciones** solo aparecen cuando la funcionalidad de notificaciones está activada para su cuenta. Los canales **Correo** y **WhatsApp** solo aparecen cuando esas funcionalidades también están activadas. Vea el [Catálogo de funcionalidades](topic:feature-catalog).
 
 ## Otras secciones de este grupo
 
@@ -85,4 +97,4 @@ El grupo **Alertas y Notificaciones** también contiene **Suscripciones de Alert
 
 ## Quién puede usar esto
 
-Los Eventos de Alerta y las Reglas de Notificación residen dentro de **Administración de Cuentas** y requieren los permisos de gestión correspondientes. Vea [Vista general de administración](topic:management-overview).
+Los Eventos de Alerta y las Reglas de Notificación residen dentro de **Administración de Cuentas** y requieren los permisos correspondientes. Vea [Administración de Cuentas](topic:management-overview).

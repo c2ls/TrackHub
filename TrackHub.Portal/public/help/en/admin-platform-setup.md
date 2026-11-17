@@ -41,6 +41,7 @@ Your new password must be at least **8 characters** and contain **an uppercase l
 | **Service Client Permissions** | Which client may perform which action on which resource | Rarely |
 | **Unit Types** | Movement thresholds used to decide when a unit counts as stopped | Rarely — leave as installed |
 | **Geocoding Providers** | The service that turns coordinates into street addresses | Once at setup |
+| **Toll catalog** | Vehicle classes, toll stations and tariffs behind trip toll estimates | When trips are used |
 | **Roles** | The permission matrix behind Administrator, Manager, and User | Rarely — leave as installed |
 | **Policies** | Reusable permission sets | Rarely — leave as installed |
 | **Account Features** | Which features each account has | Every new customer |
@@ -52,9 +53,9 @@ Every section is described field by field in [System administration](topic:syste
 
 An **account** is a customer — its own users, units, devices, and data, sealed off from every other account.
 
-1. Open the **Account** section and click the **+** icon.
+1. Open the **Account** section and press **Add**.
 2. Fill in the **Account Details** dialog:
-   - **Name** (required) and **Description**.
+   - **Name** (required), **Description**, and **Time zone** — every date TrackHub works out for the account (today, daily totals, report ranges) is read in this zone.
    - **Email Address**, **Password**, **First Name**, **Last Name** — these are the account's **first user**, and they only appear when you are creating a new account.
    - **Type** (required) — **Personal**, **Business**, or **Associate**.
    - **Active** — leave it ticked.
@@ -104,16 +105,18 @@ A **Reason** is **required** when you move an account to **Suspended** or **Canc
 A new account starts with **no features**. Until you provision them, its Geofences menu is missing, its notification screens are absent, and its GPS reports do not exist. This step is not optional.
 
 1. Open the **Account Features** section.
-2. Click the **+** icon (**Add Feature to Account**).
+2. Press **Add** (**Add Feature to Account**).
 3. Choose the **Account** and the **Feature**.
-4. Set **Enabled**, a **Tier** (a plan label, `default` is fine), and — for the two features that have one — the setting value:
+4. Set **Enabled**, a **Tier** (**Default** is fine), and the feature's settings where it has any:
    - **Storing Interval (Seconds)** for GPS Integration, default **360**.
    - **Retention Days** for GPS Position History, default **30**.
-5. Press **Save**, and repeat for each feature the customer is entitled to.
+   - **Block assignment when the staff member's license is expired** for Workforce, default off.
+   - The automatic trip settings for Trip Management — see the [Feature catalogue](topic:feature-catalog#trip-management).
+5. Press **Save**, and repeat for each feature the account should have.
 
 Editing an existing row keeps the account and feature fixed and lets you change the rest.
 
-For a typical tracking customer, start with **GPS Integration** and **GPS Position History**, then add whatever the subscription includes. What every feature does, and exactly what disappears when one is off, is set out in the [Feature catalogue](topic:feature-catalog).
+For a typical tracking customer, start with **GPS Integration** and **GPS Position History**, then add whatever else the customer needs. What every feature does, and exactly what disappears when one is off, is set out in the [Feature catalogue](topic:feature-catalog).
 
 ## 6. Platform reference data
 
@@ -134,7 +137,7 @@ Grants are time-boxed and logged on purpose. Use them instead of borrowing a cus
 
 The account exists, it is Active, and its features are on. What is left belongs to the person you created as its Manager. Tell them:
 
-- Which features their account has, and that changing them is a billing decision that comes back to you.
+- Which features their account has, and that changing them comes back to you.
 - That they should change their password on first sign-in, exactly as you did in step 1.
 - That their setup order matters, and it is written down for them in [Setting up your account](topic:admin-account-setup).
 - That **creating a user does not give that user a role**, and that **a plain User with no group sees an empty map**. These are the two things new managers get wrong.

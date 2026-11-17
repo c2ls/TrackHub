@@ -34,12 +34,12 @@ public readonly record struct ReportShareVm(
 // ---- Row VMs (property order = Excel column order; property name = resx header key) ----
 
 public readonly record struct ExpiringDocumentRowVm(
-    string Category, string OwnerType, string OwnerId, string FileName, string Classification, string Status, DateTimeOffset? ExpiresAt);
+    string Category, [property: ReportValues("EntityType")] string OwnerType, string OwnerName, string FileName, [property: ReportValues("DocumentClassification")] string Classification, [property: ReportValues("DocumentStatus")] string Status, DateTimeOffset? ExpiresAt);
 
 public readonly record struct MissingRequiredDocumentRowVm(
-    string OwnerType, string OwnerName, string OwnerId, string Category);
+    [property: ReportValues("EntityType")] string OwnerType, string OwnerName, string Category);
 
 public readonly record struct DocumentShareActivityRowVm(
-    string SharedDocumentId, string Scopes, string Purpose, int AccessCount, DateTimeOffset? LastAccessedAt, DateTimeOffset ExpiresAt, DateTimeOffset? RevokedAt);
+    string SharedDocument, string Scopes, string Purpose, int AccessCount, DateTimeOffset? LastAccessedAt, DateTimeOffset ExpiresAt, DateTimeOffset? RevokedAt);
 
 public readonly record struct DocumentUploadVolumeRowVm(string Category, int DocumentCount);

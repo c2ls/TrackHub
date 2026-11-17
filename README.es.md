@@ -42,12 +42,12 @@ plataforma de microservicios GraphQL en .NET 10 con un portal en React 19.
 | | |
 |---|---|
 | **Seguimiento en vivo** | Mapa en tiempo real de cada transportador y dispositivo de todos los proveedores conectados, con reproducción y segmentación de viajes |
-| **Integración GPS multiproveedor** | Un servicio Router conectable por protocolo, con gestión de dispositivos, sincronización manual, ping de conectividad y salud derivada del operador |
+| **Integración GPS multiproveedor** | Veinte proveedores GPS detrás de un solo servicio Router, con gestión de dispositivos, sincronización manual, ping de conectividad y salud derivada del operador |
 | **Geocercas** | Zonas de polígono y círculo en ambos proveedores de mapas, detección de contención con PostGIS, alertas de entrada / salida / permanencia e historial de visitas |
 | **Gestión de viajes** | Ciclo de vida sin intervención — los viajes se arman, inician y completan desde las zonas de origen y de parada — más planes de ruta, peajes, prueba de entrega, ETA y enlaces públicos de seguimiento |
 | **Documentos y fuerza laboral** | Documentos versionados con firmas, uso compartido, vencimiento y retención; registro de personal con calificaciones e historial de asignaciones |
 | **Alertas y notificaciones** | Alertas gobernadas por reglas, entregadas en la app, por correo, WhatsApp o webhook, con limitación, resúmenes y escalamiento |
-| **Reportes** | Un catálogo gobernado de reportes con vista previa en la app y exportación a Excel / PDF |
+| **Reportes** | Un catálogo gobernado de 30 reportes con vista previa en la app y exportación a Excel / PDF |
 | **Multiempresa** | Ciclo de vida de cuentas, funcionalidades por cuenta, marca propia y un modelo de permisos por rol + política aplicado del lado del servidor |
 | **Operabilidad** | Una página pública `/status` que funciona sin iniciar sesión, health checks por servicio, anuncios de plataforma y reversión de imágenes Docker versionadas |
 
@@ -55,11 +55,8 @@ plataforma de microservicios GraphQL en .NET 10 con un portal en React 19.
 
 ## Arquitectura
 
-Ocho servicios backend, un portal React y un worker en segundo plano. Cada servicio sigue Clean
-Architecture (Domain → Application → Infrastructure → Web), CQRS sobre un mediador propio ligero, y
-expone **GraphQL** — también para las llamadas entre servicios. La autenticación es OAuth 2.0 /
-OpenID Connect emitida por el AuthorityServer; la autorización está centralizada en el servicio
-Security y la aplica un pipeline behavior en cada servicio.
+Ocho servicios backend, un worker en segundo plano y un portal React, todos comunicándose por
+GraphQL (Reporting es REST) y autenticados por el AuthorityServer.
 
 ```mermaid
 flowchart TB
@@ -71,7 +68,7 @@ flowchart TB
         security["Security<br/>usuarios · roles · políticas"]
     end
 
-    subgraph services ["Servicios de dominio · GraphQL"]
+    subgraph services ["Servicios de dominio"]
         manager["Manager<br/>datos maestros · alertas · documentos"]
         router["Router<br/>integración con proveedores GPS"]
         telemetry["Telemetry<br/>posiciones · historial · salud"]
@@ -99,7 +96,8 @@ flowchart TB
     identity --> db
 ```
 
-Detalle completo en la wiki: **[Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture)**,
+Cómo encaja todo está en la wiki:
+**[Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture)**,
 **[Inter-Service Communication](https://github.com/shernandezp/TrackHub/wiki/Inter-Service-Communication)**,
 **[Database](https://github.com/shernandezp/TrackHub/wiki/Database)**.
 
@@ -107,12 +105,12 @@ Detalle completo en la wiki: **[Architecture](https://github.com/shernandezp/Tra
 
 ## Estructura del repositorio
 
-Este es un monorepo: cada servicio, el portal, el framework compartido, las pruebas de contrato y
-las herramientas de despliegue viven aquí y compilan desde una sola solución.
+Cada servicio, el portal, el framework compartido, las pruebas de contrato y las herramientas de
+despliegue viven en este repositorio y compilan desde una sola solución.
 
 | Módulo | Propósito | Prefijo de ruta |
 |---|---|---|
-| [TrackHubCommon](TrackHubCommon) | Framework compartido (dominio, mediador, GraphQL, infraestructura), consumido como ProjectReference | — |
+| [TrackHubCommon](TrackHubCommon) | Framework compartido (dominio, pipeline de solicitudes, GraphQL, infraestructura, PDF), consumido como ProjectReference | — |
 | [TrackHub.AuthorityServer](TrackHub.AuthorityServer) | Servicio de autorización — OAuth 2.0 / OpenID Connect, inicio de sesión, tokens | `/Identity/` |
 | [TrackHubSecurity](TrackHubSecurity) | API de Seguridad — usuarios, roles, políticas, permisos, clientes de servicio | `/Security/` |
 | [TrackHub.Manager](TrackHub.Manager) | API de Gestión — cuentas, activos, operadores, documentos, fuerza laboral, alertas | `/Manager/` |
@@ -126,45 +124,51 @@ las herramientas de despliegue viven aquí y compilan desde una sola solución.
 | [TrackHub.Deployment](TrackHub.Deployment) | Despliegue Docker de todo el stack | — |
 | [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Aplicación móvil — **repositorio aparte** | — |
 
-`TrackHubCommon` se referencia por proyecto, no como paquete NuGet local: editar código compartido y
-un consumidor es un solo cambio, y el compilador reporta la ruptura de inmediato.
+Cada carpeta de módulo tiene un README corto: qué le pertenece, cómo compilarlo, ejecutarlo y
+probarlo por sí solo, y los detalles a tener en cuenta propios de él.
 
 ---
 
-## Inicio rápido
+## Primeros pasos
 
-### Levantar todo el stack con Docker
+### Desplegar todo el stack
 
-El camino más corto a una instalación funcional. Requiere un host Linux, Docker y PostgreSQL 14+
-con PostGIS.
+Un host Linux con Docker y PostgreSQL 14+ con PostGIS. Siga
+**[QUICKSTART.md](TrackHub.Deployment/QUICKSTART.md)** de principio a fin — las bases de datos, las
+migraciones, los certificados y los clientes OAuth deben hacerse en ese orden.
+**[INSTALL.md](TrackHub.Deployment/INSTALL.md)** cubre la configuración, las actualizaciones, los
+respaldos, la reversión y la solución de problemas.
 
-```bash
-git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub
-cd /opt/trackhub/TrackHub.Deployment
-cp .env.example .env      # luego edite: dominio, base de datos, secretos
-./scripts/deploy.sh full --build
-```
+### Compilar y probar desde el código fuente
 
-Siga **[QUICKSTART.md](TrackHub.Deployment/QUICKSTART.md)** de principio a fin para una primera
-instalación — cubre las bases de datos, la extensión PostGIS, las migraciones y el registro de
-clientes OAuth en el orden en que deben ocurrir. **[INSTALL.md](TrackHub.Deployment/INSTALL.md)** es
-la referencia completa: claves de configuración, SSL, actualizaciones, respaldos y solución de
-problemas.
-
-### Compilar desde el código fuente
+Requiere el SDK de .NET 10 y, para el portal, Node.js 22.
 
 ```bash
 git clone https://github.com/shernandezp/TrackHub.git
 cd TrackHub
 
-dotnet build TrackHub.slnx          # todo el grafo del backend
-dotnet test  TrackHub.Manager       # o cualquier servicio individual
+dotnet build TrackHub.slnx                       # todo el grafo del backend
+dotnet test TrackHub.Manager                     # las pruebas de un servicio
+dotnet test TrackHub.IntegrationTests            # la suite de contratos entre servicios
 
-cd TrackHub.Portal && npm ci && npm run dev
+cd TrackHub.Portal && npm ci && npm run typecheck && npm test && npm run build
 ```
 
-Cada servicio también tiene su propio `.slnx`, así que puede trabajar en uno sin cargar el grafo
-completo. Cada módulo tiene su propio README con un inicio rápido específico del servicio.
+Cada servicio tiene además su propio `.slnx`, para trabajar en él sin cargar el grafo completo.
+
+### Ejecutar servicios en local
+
+- **Ejecute el backend en Docker local y el portal en el servidor de desarrollo de Vite** —
+  [LOCAL-DOCKER.md](TrackHub.Deployment/LOCAL-DOCKER.md) (Windows, Docker Desktop, PostgreSQL en el
+  host). Todos los `appsettings.json` versionados y el `.env` del portal ya apuntan a ese stack
+  (`https://trackhub.local:8443`), así que un solo servicio puede sacarse al depurador mientras el
+  resto sigue corriendo en contenedores.
+- **El esquema de la base de datos lo crean las migraciones de EF Core**, nunca los seeders. El
+  README de cada servicio propietario tiene su comando `dotnet ef database update`; las cadenas de
+  conexión versionadas apuntan a `localhost:5432` como `postgres`.
+- **Todos los servicios cargan el certificado de firma de OpenIddict** desde `OpenIddict:Path`
+  (`C:\Certificates\certificate.pfx`, contraseña `openiddict` en la configuración versionada). Todos
+  los procesos que emiten o validan tokens deben compartir el mismo archivo.
 
 ---
 
@@ -173,7 +177,7 @@ completo. Cada módulo tiene su propio README con un inicio rápido específico 
 | | |
 |---|---|
 | **Backend** | .NET 10, HotChocolate GraphQL, EF Core + Npgsql, NetTopologySuite, FluentValidation, Serilog, OpenIddict |
-| **Frontend** | React 19, TypeScript 7, Vite 8, MUI 9, TanStack Query, Vitest 4, Leaflet / Google Maps |
+| **Frontend** | React 19, TypeScript 7, Vite 8, MUI 9, TanStack Query, Vitest 5, Playwright, Leaflet / Google Maps |
 | **Datos** | PostgreSQL 14+ con PostGIS — dos bases de datos (`TrackHub`, `TrackHubSecurity`), un esquema por servicio |
 | **Integración** | GraphQL en todas partes, también entre servicios; OAuth 2.0 client credentials para las identidades de servicio |
 | **Entrega** | Docker Compose detrás de nginx, CI con GitHub Actions, imágenes versionadas con reversión en un comando |
@@ -187,8 +191,8 @@ completo. Cada módulo tiene su propio README con un inicio rápido específico 
 | **Técnica** | La [wiki de TrackHub](https://github.com/shernandezp/TrackHub/wiki) — [Architecture](https://github.com/shernandezp/TrackHub/wiki/Architecture), [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology), [Database](https://github.com/shernandezp/TrackHub/wiki/Database), [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity), [Frontend](https://github.com/shernandezp/TrackHub/wiki/Frontend), [Testing Strategy](https://github.com/shernandezp/TrackHub/wiki/Testing-Strategy) |
 | **Agregar un proveedor GPS** | [Adding a Provider](https://github.com/shernandezp/TrackHub/wiki/Adding-a-Provider) |
 | **Despliegue y operación** | [Deployment and Operations](https://github.com/shernandezp/TrackHub/wiki/Deployment-and-Operations) · [QUICKSTART](TrackHub.Deployment/QUICKSTART.md) · [INSTALL](TrackHub.Deployment/INSTALL.md) |
-| **Documentación de usuario** | En la app — el botón de Ayuda o **F1** en cualquier pantalla, en inglés y español |
 | **Permisos** | [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview) |
+| **Documentación de usuario** | En la app — el botón de Ayuda o **F1** en cualquier pantalla, en inglés y español |
 
 ---
 
@@ -202,7 +206,8 @@ integraciones. Las contribuciones son bienvenidas.
   capas y CQRS se aplican de forma consistente en todos los servicios.
 - Cree su rama desde `develop`, mantenga `dotnet build TrackHub.slnx` en verde y agregue pruebas
   junto al código que modifique.
-- Abra un pull request; CI compila todo el grafo y ejecuta las pruebas de cada servicio afectado.
+- Abra un pull request; CI compila todo el grafo y ejecuta las pruebas de cada servicio afectado, la
+  suite de contratos y las verificaciones del portal.
 
 ---
 

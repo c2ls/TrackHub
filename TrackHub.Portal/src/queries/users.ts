@@ -34,6 +34,7 @@ export const userKeys = {
   current: () => [...userKeys.all, 'current'] as const,
   byAccount: (params: ListParams = {}) => [...userKeys.all, 'byAccount', params] as const,
   integration: () => [...userKeys.all, 'integration'] as const,
+  lookup: () => [...userKeys.all, 'lookup'] as const,
 };
 
 export function useCurrentUser(options: { enabled?: boolean } = {}) {
@@ -65,6 +66,15 @@ export function useIntegrationUsers(options: { enabled?: boolean } = {}) {
     queryKey: userKeys.integration(),
     queryFn: ({ signal }) => api.getUsers({ signal }),
     enabled: options.enabled ?? true,
+  });
+}
+
+export function useUserLookup(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: userKeys.lookup(),
+    queryFn: ({ signal }) => api.getUserLookupByAccount({ signal }),
+    enabled: options.enabled ?? true,
+    staleTime: 5 * 60_000,
   });
 }
 

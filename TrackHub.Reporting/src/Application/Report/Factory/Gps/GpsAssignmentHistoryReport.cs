@@ -1,3 +1,4 @@
+using TrackHub.Reporting.Domain.Helpers;
 using Common.Application.Interfaces;
 using Common.Domain.Constants;
 using TrackHub.Reporting.Domain.Interfaces;
@@ -11,7 +12,8 @@ namespace TrackHub.Reporting.Application.Report.Factory.Gps;
 public sealed class GpsAssignmentHistoryReport(
     IUser user,
     IAccountFeatureReader features,
-    IGpsManagerReader manager) : IReport
+    IGpsManagerReader manager,
+    IReportNameReader names) : IReport
 {
     public string ReportCode => Reports.GpsAssignmentHistory;
 
@@ -26,11 +28,13 @@ public sealed class GpsAssignmentHistoryReport(
             filtered = filtered.Where(a => a.EffectiveFrom >= from);
         if (filters.GetDate(FilterNames.To) is { } to)
             filtered = filtered.Where(a => a.EffectiveFrom <= to);
+        var transporters = await names.GetTransporterNamesAsync(filtered.Select(a => a.TransporterId), cancellationToken);
+        var devices = await names.GetDeviceSerialsAsync(accountId, cancellationToken);
         var rows = filtered
             .OrderByDescending(a => a.EffectiveFrom)
             .Select(a => new GpsAssignmentHistoryRowVm(
-                a.TransporterId,
-                a.DeviceId,
+                transporters.NameOf(a.TransporterId),
+                devices.NameOf(a.DeviceId),
                 a.IsPrimary ? "Primary" : "Secondary",
                 a.EffectiveFrom,
                 a.EffectiveTo,

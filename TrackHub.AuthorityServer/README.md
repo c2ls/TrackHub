@@ -1,55 +1,69 @@
-# TrackHub Authorization Service
+# TrackHub AuthorityServer
 
-[English](README.en.md) | [Español](README.es.md)
+The OpenIddict identity server. It signs users, staff and service clients in, issues the access
+tokens (audience `trackhub_api`) every other service validates, and hosts the login UI. It owns
+only the `OpenIddict*` tables in the `TrackHubSecurity` database; users, roles and service-client
+grants belong to [TrackHubSecurity](../TrackHubSecurity).
 
-TrackHub is an innovative open-source application designed to unify multiple monitoring platforms into a cohesive system. Imagine having all your monitoring needs met in one place—this is the vision behind TrackHub.
+Wiki: [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity).
 
-Currently in development, our project aims to foster collaboration among diverse companies and developers, promoting continuous improvement and growth. TrackHub empowers organizations to centralize information about their assets and personnel, regardless of their vendors.
+## Build, run, test
 
-We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
+From this folder:
 
-![Image](src/Web/wwwroot/images/logo.png)
+```bash
+dotnet build AuthorityServer.slnx
+dotnet test AuthorityServer.slnx
 
----
+# OpenIddict tables — after the TrackHubSecurity migration, same database
+dotnet ef database update --project src/Infrastructure --startup-project src/Web --context AuthorityDbContext
 
-## Overview
+# OAuth scopes and clients from src/ClientSeeder/clients.json (plus any clients.*.json overlay)
+dotnet run --project src/ClientSeeder
 
-The Authorization Service is the OpenIddict-based identity and OAuth 2.0 / OpenID Connect token server. It authenticates users, staff and service clients, and issues the access tokens (audience `trackhub_api`) that every other TrackHub service validates.
+dotnet run --project src/Web          # https://localhost:7158
+```
 
-It owns the OpenIddict tables in the `TrackHubSecurity` database and maps the Security-owned identity tables read-only.
+Settings: `ConnectionStrings:Security` (and `ConnectionStrings:Logging`) in `src/Web/appsettings.json`,
+and the token-signing certificate under `OpenIddict` (`LoadCertFromFile`, `Path`, `Password`). To
+create a development certificate at the committed path:
 
----
+```powershell
+$cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "Cert:\CurrentUser\My"
+$password = ConvertTo-SecureString -String "openiddict" -Force -AsPlainText
+New-Item -ItemType Directory -Force C:\Certificates | Out-Null
+Export-PfxCertificate -Cert $cert -FilePath "C:\Certificates\certificate.pfx" -Password $password
+```
 
-## Documentation
+Every service validates tokens with the same file, so they must all point at it.
 
-| | |
-|---|---|
-| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity) and [Technology](https://github.com/shernandezp/TrackHub/wiki/Technology) |
-| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
+## Gotchas
 
----
+- **`--context AuthorityDbContext` is required.** The project also carries a `SecurityDbContext`, a
+  read-only projection of Security-owned tables whose migration is deliberately empty
+  (`ExcludeFromMigrations()`). Never add DDL there.
+- **The seeder never creates tables.** It stops with a diagnostic when the OpenIddict schema is
+  missing; apply the migration first.
+- **A service client's secret comes from the environment when set.** For each service client the
+  seeder reads `{CLIENTID}_SECRET` (e.g. `TRIP_CLIENT_SECRET`) and lets it win over `clients.json`;
+  every `*_CLIENT_SECRET` variable also registers its client even when `clients.json` omits it.
+- **A service client's tenant is derived, never supplied.** The `account_id` claim comes from the
+  client's active rows in `security.service_client_permissions`:
 
-## Modules in this repository
+  | Client's effective grants | `account_id` claim |
+  |---|---|
+  | At least one `allowcrossaccount` grant (platform-internal identities) | Not issued — the token stays unscoped |
+  | Grants naming exactly one account | Issued automatically |
+  | Grants naming several accounts | Requires the `account_id` request parameter |
+  | No account-bound grant | Not issued |
 
-| Repository | Purpose |
-|---|---|
-| [TrackHubCommon](../TrackHubCommon) | Shared framework, referenced by project |
-| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
-| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) |
-| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
-| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
-
----
-
-## License
-
-Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+  The `account_id` parameter can only narrow to one of the client's own grants. An invalid value,
+  an ungranted account, or a multi-account client omitting it answers `invalid_request`.
+- **`UseCors` must run before `UseHealthChecks`**, which is terminal — otherwise the public status
+  page cannot read the Sign-in tile cross-origin.
+- **The issuer comes from the `Host` header.** `ForwardedHeaders` trusts `X-Forwarded-Proto` and
+  `X-Forwarded-For` only, so a reverse proxy must forward the original host and port.
+- **The role claim is for visibility scoping only.** Permissions are always checked by the Security
+  API; users sign in again to pick up a new role.
+- Login and validation messages come from `.resx` resources through `ResourceLocalizer`; never
+  hardcode them.

@@ -40,13 +40,13 @@ Presione **Guardar**.
 
 Abra **Administración de Cuentas → Cuenta y Suscripción → Funcionalidades de Cuenta**. Verá las once funcionalidades listadas con **Habilitada** en Sí o No.
 
-Esta lista es **de solo lectura para usted**. Qué funcionalidades tiene su cuenta es una decisión de facturación que toma el administrador de la plataforma, así que si falta algo que esperaba —geocercado, documentos, notificaciones— es a él a quien debe consultar.
+Esta lista es **de solo lectura para usted**. Qué funcionalidades tiene su cuenta lo decide el administrador de la plataforma, así que si falta algo que esperaba —geocercado, documentos, notificaciones— es a él a quien debe consultar.
 
 Revíselo ahora y no después. Una funcionalidad faltante es la otra causa habitual de que una pantalla o sección "no esté", y se ve idéntica a un problema de permisos. Qué activa y desactiva cada funcionalidad está en el [Catálogo de funcionalidades](topic:feature-catalog).
 
 ## 4. Cree sus usuarios
 
-Abra **Administración de Cuentas → Usuarios y Accesos → Usuarios** y haga clic en el ícono **+**. El diálogo **Detalle del Usuario** recopila **Correo Electrónico**, **Contraseña**, **Nombre de Usuario**, **Nombre** y **Apellido** (además de segundos nombres y fecha de nacimiento opcionales), y las casillas **Activo** y **Usuario de Integración**.
+Abra **Administración de Cuentas → Usuarios y Accesos → Usuarios** y presione **Agregar**. El diálogo **Detalle del Usuario** recopila **Correo Electrónico**, **Contraseña**, **Nombre de Usuario**, **Nombre** y **Apellido** (además de segundos nombres y fecha de nacimiento opcionales), y las casillas **Activo** y **Usuario de Integración**.
 
 Antes de empezar, tres cosas que debe saber.
 
@@ -74,7 +74,7 @@ Abra **Administración de Cuentas → Flota y Rastreo → Grupos**.
 
 Para cada grupo:
 
-1. Haga clic en el ícono **+** y complete el diálogo **Detalle del Grupo**: **Nombre** (obligatorio), **Descripción** (obligatoria) y la casilla **Activo**. Presione **Guardar**.
+1. Presione **Agregar** y complete el diálogo **Detalle del Grupo**: **Nombre** (obligatorio), **Descripción** (obligatoria) y la casilla **Activo**. Presione **Guardar**.
 2. En la fila del grupo, haga clic en **Asignar** en la columna **Usuarios** y agregue los usuarios que deben ver las unidades de este grupo.
 3. Haga clic en **Asignar** en la columna **Unidades** y agregue las unidades.
 4. Haga clic en **Asignar** en la columna **Personal** y agregue los miembros del personal que pertenecen al grupo.
@@ -90,8 +90,8 @@ Abra **Integración GPS** desde el menú lateral izquierdo. Un **operador** es u
 **Tenga a mano las credenciales de su proveedor antes de empezar.** TrackHub no las obtiene por usted; provienen de su proveedor GPS.
 
 1. Expanda **Operadores GPS** y haga clic en el ícono **+**. Complete **Nombre** (obligatorio), los datos de contacto opcionales, **Intervalo de Sincronización (min)** (predeterminado **30**) y **Protocolo** (obligatorio).
-2. Elija el **Protocolo** con cuidado — debe coincidir con el que su proveedor realmente habla. Las opciones son `COMMAND_TRACK`, `TRACCAR`, `FLESPI`, `GEOTAB`, `GPS_GATE`, `NAVIXY`, `SAMSARA`, `WIALON` y `PROTRACK`. Un protocolo equivocado produce errores de autenticación o de conectividad que parecen credenciales incorrectas.
-3. Presione **Guardar** y luego, en la fila del operador, haga clic en la acción **Credencial** (la llave). Ingrese la **URL** (obligatoria) y aquellos de **Nombre de Usuario**, **Contraseña**, **Clave Secreta** y **Clave Secreta 2** que use su proveedor. Presione **Guardar**. Las credenciales se almacenan cifradas.
+2. Elija el **Protocolo** con cuidado — es su proveedor GPS (Geotab, Samsara, Wialon, Traccar, etc.; la lista completa está en [Integración GPS](topic:gps-integration#agregar-un-operador)). Un protocolo equivocado produce errores que parecen credenciales incorrectas.
+3. Presione **Guardar** y luego, en la fila del operador, haga clic en **Credencial**. El cuadro solo pide lo que su proveedor necesita, con los nombres que usa el proveedor, y completa la **URL** habitual del proveedor cuando existe una. Presione **Guardar**. Las credenciales se almacenan cifradas.
 4. **Pruebe la conexión antes de habilitar nada.** Haga clic en la acción de verificación en la columna **Probar Credencial**. Busca obtener *"La credencial fue probada con éxito"*. TrackHub no le impide habilitar ni sincronizar un operador sin probar —los botones siguen todos disponibles—, así que esta disciplina depende de usted. Un operador sin probar que falla a las 3 de la madrugada es una forma mucho peor de enterarse.
 5. Solo cuando la prueba pase, use **Habilitar** en la fila del operador. Un operador deshabilitado nunca sincroniza automáticamente; su estado se muestra como **Deshabilitado**.
 6. Haga clic en **Sincronizar** para traer la lista de dispositivos de inmediato, en lugar de esperar al intervalo. Los dispositivos aparecen entonces en **Dispositivos Sincronizados**.
@@ -100,13 +100,13 @@ Abra **Integración GPS** desde el menú lateral izquierdo. Un **operador** es u
 
 **Vigile el estado después.** El panel en la parte superior de la página resume operadores, dispositivos y sincronización, y cada operador lleva un distintivo de estado: **Saludable**, **Degradado**, **Fuera de línea**, **Deshabilitado** o **Desconocido**. **Sincronizaciones Recientes** muestra qué hizo realmente cada sincronización. El detalle completo está en [Integración GPS](topic:gps-integration).
 
-**Una acción con la que hay que tener cuidado: Reiniciar Sincronización.** Elimina los dispositivos sincronizados del operador *y las unidades que solo existían para esos dispositivos*, y luego empieza de cero. Le pide confirmación. Úsela para reconstruir una lista de dispositivos rota, nunca como una actualización de rutina.
+**Una acción con la que hay que tener cuidado: Reiniciar Sincronización.** Vuelve a ejecutar desde cero la detección de dispositivos: los dispositivos que el proveedor ya no lista se retiran y sus vínculos con unidades terminan. Sus unidades conservan su identidad e historial. Le pide confirmación. Úsela para reparar una lista de dispositivos rota, nunca como una actualización de rutina.
 
 ## 7. Cree sus unidades y luego asigne los dispositivos
 
-Un **dispositivo** es el equipo rastreador; una **unidad** es el vehículo o activo que realmente le importa. Los dispositivos llegan automáticamente desde la sincronización del operador —usted no los crea a mano— y luego se vinculan a las unidades.
+Un **dispositivo** es el equipo rastreador; una **unidad** es el vehículo o bien que realmente le importa. Los dispositivos llegan automáticamente desde la sincronización del operador —usted no los crea a mano— y luego se vinculan a las unidades.
 
-1. **Unidades** (**Administración de Cuentas → Flota y Rastreo → Unidades**) — haga clic en **+**, dele a la unidad un **Nombre** y un **Tipo**, y **Guarde**. El **Tipo** determina los umbrales de movimiento usados para decidir cuándo la unidad cuenta como detenida.
+1. **Unidades** (**Administración de Cuentas → Flota y Rastreo → Unidades**) — presione **Agregar**, dele a la unidad un **Nombre** y un **Tipo**, y **Guarde**. El **Tipo** determina los umbrales de movimiento usados para decidir cuándo la unidad cuenta como detenida.
 2. **Asigne el dispositivo** — en la pantalla **Integración GPS**, bajo **Asignaciones de Dispositivos**, elija la unidad y un dispositivo sin asignar y presione **Asignar Dispositivo**. Solo se ofrecen los dispositivos que no están asignados actualmente a una unidad.
 3. **Personal** (**Flota y Rastreo → Personal**) — las personas que trabajan para usted — conductores, operadores, vendedores — van aquí. Un miembro del personal puede llevar un **Transportador Predeterminado**, así que cree primero las unidades. Una vez que el personal existe, también puede emitirle una **credencial de personal** para la aplicación móvil, con la acción **Credenciales y dispositivos** de su fila — esa parte funciona en cualquier cuenta. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
 4. **Puntos de Interés** (**Flota y Rastreo → Puntos de Interés**) — ubicaciones con nombre, como sitios de cliente, bodegas, estaciones de combustible y talleres, con un nombre, coordenadas, un tipo, un color y opcionalmente un grupo.
@@ -118,9 +118,10 @@ Ahora vuelva a **Grupos** y complete los pasos 5.3 y 5.4 — asigne las unidades
 Solo estarán las funcionalidades habilitadas para su cuenta. Una línea para cada una:
 
 - **Geocercas** — dibuje las zonas para las que quiere alertas de entrada y salida. Vea [Geocercas](topic:geofences).
-- **Reglas de notificación** — decida qué genera una alerta y a dónde va. El correo y WhatsApp son derechos separados de la funcionalidad base de notificaciones, así que un canal que no puede seleccionar es una cuestión de facturación, no un fallo. Vea [Alertas y notificaciones](topic:alerts-notifications).
+- **Reglas de notificación** — decida qué genera una alerta y a dónde va. El correo y WhatsApp son funcionalidades separadas de la funcionalidad base de notificaciones, así que un canal que no puede seleccionar es una consulta para el administrador de la plataforma, no un fallo. Vea [Alertas y notificaciones](topic:alerts-notifications).
 - **Documentos** — guarde la documentación de vehículos y personal, con seguimiento de vencimientos. Vea [Documentos](topic:documents).
 - **Enlaces Públicos** — comparta una vista limitada y con tiempo acotado con alguien que no tiene sesión. Vea [Enlaces públicos](topic:public-links).
+- **Viajes** — planifique viajes que se inician y terminan solos con sus zonas. Asocie primero sus tipos de vehículo en **Flota y Rastreo → Clases de peaje por vehículo** para que los viajes tengan estimación de peajes. Vea [Viajes y planificación de rutas](topic:trip-management).
 - **Personal** — registre las licencias, exámenes médicos y capacitaciones de su personal con sus fechas de vencimiento, reciba alertas antes de que caduquen y conserve un historial de quién condujo cada unidad. Vea [Personal y fuerza de trabajo](topic:staff-workforce).
 
 ## 9. Verifique la configuración

@@ -1,3 +1,5 @@
+using TrackHub.Reporting.Domain.Interfaces.Manager;
+using TrackHub.Reporting.Domain.Helpers;
 using Common.Application.Interfaces;
 using Common.Domain.Constants;
 using TrackHub.Reporting.Domain.Interfaces;
@@ -13,6 +15,7 @@ public sealed class GpsProviderSyncHistoryReport(
     IUser user,
     IAccountFeatureReader features,
     IGpsTelemetryReader telemetry,
+    IReportNameReader names,
     ReportingLimitsOptions limits) : IReport
 {
     public string ReportCode => Reports.GpsProviderSyncHistory;
@@ -23,8 +26,9 @@ public sealed class GpsProviderSyncHistoryReport(
         Guid? operatorId = filters.GetGuid(FilterNames.Operator);
         var take = GpsReportSupport.ResolveTake(filters, limits, 500);
         var filtered = await GpsReportSupport.DrainSyncRunsAsync(telemetry, accountId, operatorId, filters, take, cancellationToken);
+        var operators = await names.GetOperatorNamesAsync(cancellationToken);
         var rows = filtered.Select(r => new GpsProviderSyncHistoryRowVm(
-            r.OperatorId,
+            operators.NameOf(r.OperatorId),
             r.StartedAt,
             r.CompletedAt,
             r.TriggerType,

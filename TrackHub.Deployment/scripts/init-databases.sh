@@ -14,9 +14,8 @@
 # PlatformBootstrap ids in both databases, so no cross-database id sync exists.
 #
 # NOTE: EF schema migrations ("DB updates") are applied separately from this
-# script (the seeders assume the schema already exists). See INSTALL.md ->
-# "Applying Migrations". ClientSeeder creates the OpenIddict tables it needs via
-# EnsureCreated.
+# script (the seeders assume the schema already exists, and ClientSeeder stops if
+# the OpenIddict tables are missing). See QUICKSTART.md -> "Create the schema".
 # =============================================================================
 
 set -e

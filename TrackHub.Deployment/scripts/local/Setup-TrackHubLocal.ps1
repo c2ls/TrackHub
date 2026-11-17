@@ -23,7 +23,7 @@
          cert, mounted into every container as SSL_CERT_FILE. That is what lets a
          container trust https://trackhub.local:8443 without editing any Dockerfile,
          while still trusting the real public CAs for outbound calls.
-      6. Write local/clients.json (needed only as a mount target - db-init is disabled).
+      6. Write local/clients.json (the seed db-init reads).
       7. Generate local/generated/appsettings.*.json with the production generator.
 
     Steps that DO need elevation (-AdminTasks):

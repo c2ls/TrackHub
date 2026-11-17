@@ -26,11 +26,14 @@ The bell icon in the top navigation bar is your personal in-app feed. A red badg
 
 The bell reflects notifications delivered to you personally. To work through the account's alert record, use **Alert Events** below.
 
+On the Dashboard, the **Critical Alerts** figure counts open critical alerts that nobody has acknowledged or resolved yet.
+
 ## Alert Events
 
-Open **Account Management**, go to the **Alerts & Notifications** group and expand **Alert Events**. This is the working list where you acknowledge and resolve alerts.
+Open **Account Management** and pick **Alert Events** in the **Alerts & Notifications** group. This is the working list where you acknowledge and resolve alerts.
 
-- Columns: **Type**, **Status**, **Modified**, and an action column.
+- Columns: **Type**, **Severity** (**Info**, **Warning**, **High** or **Critical**), **Unit**, **Status** (**Open**, **Acknowledged** or **Resolved**), **First seen**, **Last seen**, and **Action**.
+- Narrow the list with the **Status** and **Severity** filters (**All statuses** / **All severities** by default).
 - Row actions:
   - **Acknowledge Alert** — marks an open alert as seen and being looked into. Shown while the alert is still open.
   - **Resolve Alert** — marks the alert as dealt with. Shown until the alert is resolved.
@@ -41,11 +44,13 @@ An alert you have acknowledged can still be resolved afterwards. Once an alert i
 
 ## Notification Rules
 
-Notification rules decide **who gets told, and how, when an event happens** — so you do not have to watch the alert list yourself. Expand **Notification Rules** in the same group.
+Notification rules decide **who gets told, and how, when an event happens** — so you do not have to watch the alert list yourself. Pick **Notification Rules** in the same group.
+
+![Create Notification Rule dialog](assets/en/notification-rule-create.png)
 
 Each rule row shows its **Key**, **Type**, whether it is enabled (**Status**), and when it was last **Modified**, with **Edit** and **Disable** actions. **Disable** switches an enabled rule off without deleting it.
 
-To create a rule, press the **+** (add) icon on the section and fill in the **Create Notification Rule** dialog. You do **not** type JSON — everything is chosen from structured fields:
+To create a rule, press **Add** and fill in the **Create Notification Rule** dialog. You do **not** type JSON — everything is chosen from structured fields:
 
 - **Key** (required) — a short identifier for the rule.
 - **Type** (required) — the kind of rule.
@@ -72,12 +77,19 @@ The **Trigger Event** list covers the events the platform can raise:
 | **Document Expiring** / **Document Expired** | A tracked document nears or passes its expiry. |
 | **Staff Qualification Expiring** / **Staff Qualification Expired** | A staff member licence, medical exam, training, background check or HAZMAT permit nears or passes its expiry. |
 | **Notification Delivery Failed** | A notification could not be delivered. |
+| **Trip Assigned** | A staff member is assigned to a trip. |
+| **Trip Start Due** | A trip's planned start is approaching. |
+| **Trip Started** / **Trip Completed** / **Trip Cancelled** | A trip starts, finishes, or is called off. |
+| **Trip Stop Arrived** / **Trip Stop Departed** | The unit arrives at or leaves a stop. |
+| **Trip Delayed** | A stop is running later than its promised window. |
+| **Trip Route Deviation** | The unit leaves the planned route corridor. |
+| **Trip POD Submitted** | Proof of delivery is captured at a stop. |
 
-Geofence events come from the geofences you define — see [Geofences](topic:geofences). Communication-loss and document events tie back to your [Units and devices](topic:units-devices). Staff qualification events come from the daily expiration scan and need the workforce feature — see [Staff and workforce](topic:staff-workforce).
+Geofence events come from the geofences you define — see [Geofences](topic:geofences). Communication-loss and document events tie back to your [Units and devices](topic:units-devices). Staff qualification events come from the daily expiration scan and need the workforce feature — see [Staff and workforce](topic:staff-workforce). Trip events need trip management — see [Trips and route planning](topic:trip-management).
 
 The two staff-qualification events behave a little differently from the rest: they are raised at fixed distances from the expiry date — **30**, **15**, **7**, and **0** days — and each of those fires exactly once per qualification. The first three are **Staff Qualification Expiring**; the day it lapses is **Staff Qualification Expired**, at a higher severity. There is nothing to configure on the scan itself; it runs once a day for every account that has the workforce feature.
 
-> The **+** icon on **Notification Rules** appears only when the notifications feature is enabled for your account. The **Email** and **WhatsApp** channel options appear only when those channels are provisioned; provisioning is handled by the platform team in [System administration](topic:system-administration).
+> **Notification Rules**, **Alert Subscriptions**, **Notification Templates** and **Notification Deliveries** appear only when the notifications feature is switched on for your account. The **Email** and **WhatsApp** channels appear only when those features are on too. See the [Feature catalogue](topic:feature-catalog).
 
 ## Other sections in this group
 
@@ -85,4 +97,4 @@ The **Alerts & Notifications** group also holds **Alert Subscriptions** (who fol
 
 ## Who can use this
 
-Alert Events and Notification Rules live under **Account Management** and require the matching management permissions. See [Management overview](topic:management-overview).
+Alert Events and Notification Rules live under **Account Management** and require the matching permissions. See [Account Management](topic:management-overview).

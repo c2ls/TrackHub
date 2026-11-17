@@ -33,6 +33,8 @@ The map has a control stack on its right edge with two drawing tools:
 3. When the shape looks right, click the **Save shape** control (the save icon) — it appears in the control stack only while you are drawing or editing.
 4. The geofence details form opens. Fill it in (see below) and click **Save**.
 
+![Geofence Manager while drawing a polygon on the map](assets/en/geofence-drawing.png)
+
 ## Geofence details
 
 The form has these fields:
@@ -63,7 +65,7 @@ The list is filtered and paged on the server, so use the toolbar above the map t
 
 - **Type** – restrict the list to one geofence type (or "All types").
 - **Status** – show **Active**, **Inactive**, or **All** zones. It defaults to **Active**, so retired zones are one click away under **Inactive** or **All**.
-- The navbar search box filters the list by name as you type.
+- The **Search** box in the top bar filters the list by name as you type.
 
 The footer under the list shows "Showing *from*–*to* of *total*" with arrows to page through the results. Selecting an entry highlights the matching shape on the map. The map always shows every geofence, even while the list is filtered or paged.
 

@@ -15,6 +15,7 @@
  */
 
 import { mapPreviewToTable, formatPreviewCell } from 'utils/reportUtils';
+import { formatDateOnly, formatDateTime } from 'utils/dateUtils';
 import type { ReportPreview } from 'api/reporting/reports';
 
 describe('mapPreviewToTable', () => {
@@ -82,10 +83,8 @@ describe('formatPreviewCell', () => {
     expect(formatPreviewCell('Provider A')).toBe('Provider A');
   });
 
-  test('formats ISO date strings to a locale string', () => {
-    const iso = '2026-07-16T12:00:00Z';
-    const formatted = formatPreviewCell(iso);
-    expect(formatted).not.toBe(iso);
-    expect(formatted).toBe(new Date(iso).toLocaleString());
+  test('formats ISO instants and calendar dates in the app format', () => {
+    expect(formatPreviewCell('2026-07-16T12:00:00Z')).toBe(formatDateTime('2026-07-16T12:00:00Z'));
+    expect(formatPreviewCell('2026-07-16')).toBe(formatDateOnly('2026-07-16'));
   });
 });

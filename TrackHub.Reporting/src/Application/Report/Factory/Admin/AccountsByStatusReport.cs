@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Common.Domain.Enums;
 using TrackHub.Reporting.Domain.Interfaces.Factory;
 using TrackHub.Reporting.Domain.Interfaces.Manager;
 using TrackHub.Reporting.Domain.Models;
@@ -38,7 +39,7 @@ public sealed class AccountsByStatusReport(IAdminReportReader reader) : IReport
         var rows = filtered
             .OrderBy(a => a.Status, StringComparer.OrdinalIgnoreCase)
             .ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(a => new AccountByStatusRowVm(a.Name, a.Status, a.TypeId, a.Active, a.LastModified))
+            .Select(a => new AccountByStatusRowVm(a.Name, a.Status, ((AccountType)a.TypeId).ToString(), a.Active, a.LastModified))
             .ToList();
 
         return ReportDataset.Create(filters, rows);

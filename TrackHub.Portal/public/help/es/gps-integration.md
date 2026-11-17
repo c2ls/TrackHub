@@ -1,101 +1,117 @@
 ---
 id: gps-integration
 title: Integración GPS
-description: Conecte sus proveedores GPS, sincronice la lista de dispositivos y vigile la salud — operadores, sincronizaciones, alertas, dispositivos y retención.
+description: Conecte sus proveedores GPS, sincronice la lista de dispositivos, vincule dispositivos a unidades y vigile la salud de la integración — operadores, sincronizaciones, alertas, dispositivos, asignaciones y retención.
 category: administration
 screens: [gpsIntegration]
-related: [units-devices, system-administration, troubleshooting, admin-account-setup]
-tags: [gps, operadores, sincronización, dispositivos, credenciales, salud]
+related: [units-devices, admin-account-setup, troubleshooting, system-administration]
+tags: [gps, operadores, proveedores, sincronización, dispositivos, asignaciones, credenciales, salud]
 order: 80
 ---
 
 # Integración GPS
 
-La página **Integración GPS** reúne todo lo relacionado con el vínculo entre TrackHub y sus proveedores GPS. En la parte superior hay un panel de salud; debajo hay secciones plegables para operadores, sincronizaciones, alertas, dispositivos, asignaciones y retención. Haga clic en el encabezado de una sección para expandirla; la sección de operadores tiene un ícono **Agregar** (**+**).
+La página **Integración GPS** reúne todo lo relacionado con el vínculo entre TrackHub y sus proveedores GPS. Arriba hay un panel de salud; debajo, secciones desplegables: **Operadores GPS**, **Sincronizaciones Recientes**, **Alertas GPS Abiertas**, **Dispositivos Sincronizados**, **Asignaciones de Dispositivos** y **Retención de Posiciones**. Haga clic en el encabezado de una sección para desplegarla.
 
-Esta página es para gestores. Para que la integración obtenga datos, la función de integración GPS debe estar habilitada para su cuenta (se configura en [Administración del Sistema](topic:system-administration)). Consulte también [Solución de problemas](topic:troubleshooting).
+Esta página es para los Gestores. ¿Configura un operador por primera vez? [Configuración de su cuenta](topic:admin-account-setup) lo guía paso a paso.
 
-¿Está configurando un operador por primera vez? [Configuración de su cuenta](topic:admin-account-setup) lo recorre en orden — credenciales a mano, protocolo elegido y conexión probada **antes** de habilitarlo.
+## El panel de la integración
 
-## El panel de integración
+Tres tarjetas resumen el estado de su integración:
 
-El panel superior resume el estado de su integración en tres tarjetas:
+- **Operadores** — **Habilitados / Totales**, más cuántos están **Saludables**, **Degradados** y **Desconectados**.
+- **Dispositivos** — el **Total**, desglosado en **Asignado**, **Sin asignar**, **Ignorado** y **Nuevos (24h)**.
+- **Sincronización** — **OK / Fallidas (24h)**, **Duración Promedio de Sincronización**, **Última Sincronización Automática** y **Última Sincronización Manual**.
 
-- **Operadores** — Habilitados / Totales, más cuántos están **Saludables**, **Degradados** y **Desconectados**.
-- **Dispositivos** — el total, desglosado en **Asignados**, **Sin asignar**, **Ignorados** y **Nuevos (24h)**.
-- **Sincronización** — **OK / Fallidas (24h)**, más **Duración Promedio de Sincronización**, **Última Sincronización Automática** y **Última Sincronización Manual**.
+![Tarjetas del panel de Integración GPS y Dispositivos por Proveedor/Estado](assets/es/gps-integration.png)
 
-Debajo de las tarjetas, **Dispositivos por Proveedor/Estado** ofrece un desglose por operador.
+Debajo de las tarjetas, **Dispositivos por Proveedor/Estado** desglosa los conteos de dispositivos por operador.
 
-**La salud del operador** (mostrada aquí y en cada fila de operador) significa:
+**La salud del operador** significa:
 
-- **Saludable** — sincronizando con normalidad.
-- **Degradado** — funcionando pero con problemas (por ejemplo, sincronizaciones lentas o que fallan parcialmente).
-- **Fuera de línea** — no alcanzable / las sincronizaciones fallan.
-- **Deshabilitado** — el operador fue apagado.
-- **Desconocido** — aún no hay información de salud.
+- **Saludable** — sincroniza con normalidad.
+- **Degradado** — funciona, pero con problemas como sincronizaciones lentas o con fallas parciales.
+- **Fuera de línea** — no se puede contactar al proveedor, o las sincronizaciones fallan.
+- **Deshabilitado** — el operador fue desactivado.
+- **Desconocido** — todavía no hay información de salud.
 
 ## Operadores GPS
 
-Un **operador** es una conexión configurada a un proveedor GPS — la cuenta, el servidor y las credenciales que TrackHub usa para extraer dispositivos y posiciones. Cada operador habla un **Protocolo**.
+Un **operador** es su conexión con una cuenta de un proveedor GPS — el proveedor, su dirección y las credenciales que TrackHub usa para traer sus dispositivos y sus posiciones.
 
-Haga clic en el ícono **+** para abrir el diálogo **Detalle del Operador**:
+### Agregar un operador
+
+Despliegue **Operadores GPS** y haga clic en el ícono **+** para abrir **Detalle del Operador**:
 
 - **Nombre** (obligatorio) y **Descripción**.
-- **Teléfono**, **Correo Electrónico**, **Dirección**, **Nombre de Contacto**.
-- **Intervalo de Sincronización (min)** — con qué frecuencia se sincroniza automáticamente (predeterminado 30).
-- **Protocolo** (obligatorio).
+- **Número de Teléfono**, **Correo Electrónico**, **Dirección** y **Nombre de Contacto** — su contacto en el proveedor.
+- **Intervalo de Sincronización (min)** — cada cuánto se actualiza automáticamente la lista de dispositivos (30 por defecto).
+- **Protocolo** (obligatorio) — su proveedor GPS.
 
-Presione **Guardar**. La fila del operador muestra su protocolo, intervalo de sincronización, estado habilitado, salud, última sincronización exitosa y fecha de modificación, con estas acciones:
+Los proveedores que puede elegir son: Cartrack, CommandTrack, Flespi, Geotab, GPS Trackit (Zonar), GpsGate, Mapon, MettaX IoT, Motive, Navixy, Pegasus Gateway, Plaspy, Protrack, RedGPS, Ruptela TrustTrack, Samsara, Traccar, Tracksolid Pro, Webfleet y Wialon.
 
-- **Editar** — cambiar los datos del operador.
-- **Habilitar** / **Deshabilitar** — pausar o reanudar la sincronización automática sin eliminar la configuración. La salud de un operador deshabilitado se muestra como **Deshabilitado**.
-- **Eliminar** — quitar el operador (confirma primero).
-- **Probar Credencial** (la acción de verificación) — comprueba la conexión con las credenciales almacenadas. Un diálogo informa "La credencial fue probada con éxito" o "Ocurrió un error al probar la credencial".
-- **Sincronizar** — extrae la lista de dispositivos del proveedor de inmediato. Si no se completa, un diálogo muestra "La sincronización no se completó. Verifique la conectividad del proveedor e intente nuevamente."
-- **Credencial** — abre el diálogo de credenciales (vea abajo).
-- **Reiniciar Sincronización** — una opción más fuerte que advierte primero: elimina los dispositivos sincronizados de ese operador y las unidades que solo existían para esos dispositivos, luego inicia una sincronización nueva. Úsela solo para reconstruir desde cero la lista de dispositivos de un operador.
+Algunos proveedores solo permiten una actualización de posición cada cierta cantidad de segundos. Al elegir uno de ellos, el cuadro le indica su límite; si su cuenta almacena posiciones con más frecuencia, se aplica el límite del proveedor.
 
-### Credenciales
+Presione **Guardar**.
 
-En la fila del operador, haga clic en **Credencial** (la acción de la llave) para abrir el diálogo, que recopila:
+### Ingresar las credenciales
 
-- **URL** (obligatoria) — el endpoint del proveedor.
-- **Nombre de Usuario** y **Contraseña**.
-- **Clave Secreta** y **Clave Secreta 2** — usadas por proveedores que autentican con claves.
+En la fila del operador, haga clic en **Credencial** para abrir el cuadro de credenciales. Solo pide lo que su proveedor necesita, con los nombres propios del proveedor — por ejemplo **Clave de API**, **Base de datos**, **ID de aplicación** o **Token de autorización** en lugar de una clave genérica. La **URL** se completa con la dirección habitual del proveedor cuando existe una; para proveedores con servidores regionales, la ayuda bajo el campo muestra un ejemplo. Complete los campos y presione **Guardar**.
 
-Complete los campos que su proveedor requiere y **Guarde**, luego use **Probar Credencial** para confirmar la conexión.
+![Diálogo de credenciales de un proveedor GPS con valores de ejemplo](assets/es/gps-credentials.png)
+
+Luego haga clic en el botón de verificación de la columna **Probar Credencial**. Un mensaje de **Prueba de Conectividad** indica **"La credencial fue probada con éxito"** u **"Ocurrió un error al probar la credencial"**. Pruebe antes de habilitar el operador.
+
+### Acciones del operador
+
+La fila del operador muestra su **Protocolo**, **Intervalo de Sincronización (min)**, **Habilitada**, **Estado** (salud), **Última Sincronización Exitosa** y **Modificado**, con estas acciones:
+
+- **Editar** — cambia los datos del operador.
+- **Habilitar** / **Deshabilitar** — reanuda o pausa la sincronización automática sin borrar nada. Un operador deshabilitado muestra la salud **Deshabilitado**.
+- **Eliminar** — elimina el operador (primero se le pide confirmar).
+- **Sincronizar** — actualiza ya la lista de dispositivos desde el proveedor. Al terminar, verá cuántos dispositivos se detectaron, agregaron, actualizaron y eliminaron. Si todavía está en curso, se le indica que consulte el historial de sincronización en unos momentos. **"La sincronización se completó, pero el proveedor no devolvió dispositivos"** suele significar que la credencial llega a una cuenta del proveedor equivocada.
+- **Credencial** — abre el cuadro de credenciales.
+- **Reiniciar Sincronización** — vuelve a ejecutar desde cero la detección de dispositivos de este operador. Los dispositivos que ya no están en la lista del proveedor se retiran y sus vínculos con unidades terminan, los ignorados se detectan de nuevo, y sus unidades conservan su identidad e historial. Pide confirmación. Úselo para reparar una lista de dispositivos, no como una actualización de rutina.
 
 ## Sincronizaciones Recientes
 
-Un historial de las sincronizaciones más recientes de sus operadores. Las columnas incluyen **Operador**, **Origen**, **Resultado**, **Inicio**, **Fin**, **Dispositivos (+/~/-)** (agregados / actualizados / eliminados), **Posiciones Aceptadas/Leídas** y **Código de Error**. Los valores de **Resultado** son **Exitosa**, **Parcial**, **Fallida**, **En Ejecución** y **Pendiente**. Una ejecución fallida suele llevar un **Código de Error** para ayudar a diagnosticar la causa.
+Las sincronizaciones más recientes de sus operadores: **Operador**, **Origen**, **Resultado**, **Inicio**, **Fin**, **Dispositivos (+/~/-)** (agregados / actualizados / eliminados), **Posiciones Aceptadas/Leídas** y **Código de Error**. El **Resultado** es **Exitosa**, **Parcial**, **Fallida**, **En Ejecución** o **Pendiente**. Una ejecución fallida suele traer un **Código de Error**.
 
 ## Alertas GPS Abiertas
 
-Lista las alertas abiertas generadas por la integración GPS. Las columnas incluyen **Tipo de Evento**, **Severidad**, **Estado**, **Módulo de Origen** y la fecha de última aparición. La **Severidad** va desde **Crítica** pasando por **Alta** y **Media** hasta **Baja**. Use esta sección para detectar problemas de integración que requieren atención.
+Las alertas abiertas generadas por la integración GPS, como sincronizaciones fallidas o credenciales del proveedor por expirar: **Tipo de Evento**, **Severidad**, **Estado**, **Módulo de Origen** y **Visto por Última Vez**. Reconózcalas y resuélvalas en **Administración de Cuentas → Eventos de Alerta** — vea [Alertas y notificaciones](topic:alerts-notifications).
 
 ## Dispositivos Sincronizados
 
-Los dispositivos descubiertos desde sus proveedores. Las columnas son **Nombre**, **ID**, **Número de Serie**, **Estado**, **Visto por Primera Vez** y **Visto por Última Vez**, con acciones. Filtre la lista con el cuadro **Buscar**, los menús **Estado** y **Operadores**, y los interruptores **Mostrar solo sin asignar** y **Mostrar solo recién agregados**.
+Los dispositivos encontrados en sus proveedores: **Nombre**, **ID**, **Número de Serie**, **Estado**, **Visto por Primera Vez** y **Visto por Última Vez**. Acote la lista con **Buscar**, los filtros **Estado** y **Operadores**, y los interruptores **Mostrar solo sin asignar** y **Mostrar solo recién agregados**.
 
 **El estado del dispositivo** significa:
 
-- **Sin asignar** — aún no vinculado a una unidad.
+- **Sin asignar** — todavía no está vinculado a una unidad.
 - **Asignado** — vinculado a una unidad.
-- **Ignorado** — oculto deliberadamente de las vistas normales.
-- **Eliminado** / **Faltante** — ya no reportado por el proveedor.
+- **Ignorado** — apartado deliberadamente.
+- **Eliminado** / **Faltante** — el proveedor ya no lo reporta.
 
-Acciones de fila y en lote:
+Acciones:
 
-- **Ignorar** / **No Ignorar** — oculta o muestra un dispositivo. **Ignorar en Lote** / **No Ignorar en Lote** se aplican a todos los dispositivos mostrados actualmente por sus filtros.
-- **Eliminar** — quita un dispositivo sincronizado (advierte primero; el historial de asignación queda en los registros de auditoría).
+- **Ignorar** / **No Ignorar** — aparta un dispositivo, o lo recupera. **Ignorar en Lote (esta página)** y **No Ignorar en Lote (esta página)** se aplican a los dispositivos de la página actual.
+- **Eliminar dispositivo** — elimina un dispositivo sincronizado (pregunta antes; su historial de asignación queda en la auditoría).
+- **Agregar Dispositivo** — solo aparece cuando tiene un operador cuyo proveedor no puede listar sus dispositivos. Abre **Registrar Dispositivo Manualmente**. Para proveedores que buscan los vehículos por placa, ingrese la placa exacta como nombre. Marque **Crear y asignar una unidad automáticamente** para que se cree y vincule una unidad en el mismo paso.
 
 ## Asignaciones de Dispositivos
 
-Vínculos entre dispositivos GPS y sus unidades. En resumen: elija una unidad y un dispositivo sin asignar y presione **Asignar Dispositivo**; use **Finalizar Asignación** para terminar un vínculo activo. Esto se cubre por completo — incluyendo qué significan **Principal** y **Prioridad** — en [Unidades y dispositivos](topic:units-devices).
+Un dispositivo solo aparece en el mapa cuando está vinculado a una **unidad**. En esta sección se hace ese vínculo.
+
+![Asignaciones de Dispositivos con los selectores de unidad y dispositivo y la tabla de asignaciones](assets/es/gps-device-assignments.png)
+
+1. En **Unidad que recibirá el dispositivo**, elija la unidad.
+2. En **Dispositivo GPS sin asignar**, elija el dispositivo. Solo se ofrecen los dispositivos que no están vinculados actualmente a una unidad.
+3. Presione **Asignar Dispositivo**.
+
+La tabla muestra **Unidades**, **Dispositivos**, **Principal**, **Prioridad**, **Estado** (**Activa**, **Finalizada** o **Reemplazada**), **Vigente Desde** y **Vigente Hasta**. Muestra los vínculos activos; cambie a **Mostrar Todo** para incluir los anteriores. **Finalizar Asignación** detiene un vínculo — se le pide un motivo — y la unidad deja de recibir las posiciones de ese dispositivo.
+
+Una unidad vinculada sigue siendo invisible para un Usuario sencillo hasta que esté en uno de sus grupos. Vea [Usuarios, roles y grupos](topic:users-roles-groups#grupos).
 
 ## Retención de Posiciones
 
-Muestra cuánto tiempo se conserva el historial de posiciones y con qué frecuencia se almacenan. Estos valores provienen de su suscripción y son de **solo lectura** para los gestores. La nota dice: "Estas configuraciones de almacenamiento dependen de su plan de suscripción y son gestionadas por el administrador."
-
-Los campos mostrados son **Historial de Posiciones** (habilitado, Sí/No), **Días de Retención** e **Intervalo de Almacenamiento (Segundos)**. Para cambiarlos, el equipo de la plataforma ajusta las funciones GPS de su cuenta en [Administración del Sistema](topic:system-administration).
+Cuánto tiempo se conserva el historial de posiciones y cada cuánto se almacenan: **Historial de Posiciones** (Sí/No), **Días de Retención** e **Intervalo de Almacenamiento (Segundos)**. Aquí son de solo lectura; los define el administrador de su plataforma (vea el [Catálogo de funcionalidades](topic:feature-catalog)).

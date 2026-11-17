@@ -21,6 +21,8 @@ Open **Reports** from the left-hand menu. The screen has the report catalog on t
 
 The catalog groups reports into collapsible categories — **Operations**, **GPS**, **Documents**, **Workforce**, **Trips**, and **Administration**. The first category is expanded for you; click a category heading to expand or collapse it.
 
+![Report catalog with the Trips category open and the filter panel](assets/en/report-filters.png)
+
 Each report is a card showing its name, a one-line description, and format badges: every report offers **XLSX** (Excel), and reports that also support PDF show a **PDF** badge. Click a report card to select it; its filter panel opens on the right. Nothing is selected until you click a report.
 
 ## The report catalog
@@ -83,16 +85,15 @@ The whole **Trips** category needs the trip management feature; without it the c
 
 The filter panel shows only the fields a report actually needs; a report that needs nothing shows just the action buttons. Possible fields are:
 
-- **Unit** – restricts the report to a single unit (a picker).
-- **Operator** – restricts the report to one GPS operator (a picker).
+- **Unit** – restricts the report to a single unit. Type to search; leave it on **All** for every unit.
+- **Operator** – restricts the report to one GPS operator, or **All**.
+- **Geofence** – restricts the report to one geofence, or **All** (used by Geofence Events).
 - **Device ID** – a device identifier, entered as free text.
 - **Status** – an account lifecycle status (used by the Accounts by Status report).
 - **From** / **To** – the start and end date-and-time of the reporting period.
 - **Max Rows** – a cap on how many rows to return.
 - **Within Days** – a rolling window in days (for "recently" or "expiring" reports).
 - **Lookback Hours** – how many hours back to summarise.
-
-Reports without a defined filter set default to a **From** / **To** date range.
 
 ## Preview, Excel, and PDF
 
@@ -102,4 +103,4 @@ The filter panel has up to three action buttons:
 - **Export Excel** – downloads the report as an Excel (`.xlsx`) file named after the report.
 - **Export PDF** – downloads a formatted PDF. This button appears only for reports that support PDF (the ones with a **PDF** badge in the catalog).
 
-Open Excel files in Excel, Google Sheets, or any spreadsheet app. If an export would be very large, tighten the date range or the unit selection and run it again — exports are subject to a server-side row limit from your plan.
+Open Excel files in Excel, Google Sheets, or any spreadsheet app. If an export would be very large, tighten the date range or the unit selection and run it again — very large exports are refused with a message asking you to narrow the filters.

@@ -47,12 +47,15 @@ const FRIENDLY_KEYS = new Set([
   'alert-evaluation',
   'notification-dispatch',
   'notification-digest',
-  'delivery-retention',
   'document-scan',
   'document-expiration',
   'document-retention-cleanup',
   'trial-expiration',
   'geofence-dwell-evaluation',
+  'workforce-expiration-scan',
+  'trip-eta-refresh',
+  'trip-schedule-reminder',
+  'router-sync-worker',
 ]);
 
 const BackgroundJobsTable = ({ jobs }: BackgroundJobsTableProps) => {

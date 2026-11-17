@@ -15,17 +15,17 @@ Significado en lenguaje sencillo de los términos y de la información en pantal
 
 ## Las unidades y qué son
 
-**Unidad** — Cualquier cosa que rastree en el mapa: un vehículo, un equipo, un activo o incluso una persona. En todas las pantallas se identifica como **Unidad**. Cada unidad tiene un nombre y un **tipo**.
+**Unidad** — Cualquier cosa que rastree en el mapa: un vehículo, un equipo, un bien o incluso una persona. En todas las pantallas se identifica como **Unidad**. Cada unidad tiene un nombre y un **tipo**.
 
-**Tipo de Unidad** — Qué clase de cosa es la unidad, mostrada con su propio ícono. Los tipos disponibles incluyen: **Desconocido, Aeronave, Activo, Bicicleta, Barco, Automóvil, Contenedor de Carga, Vehículo de Construcción, Niño, Furgoneta de Entrega, Dron, Persona Mayor, Vehículo de Flota, Equipo Pesado, Ganado, Motocicleta, Paquete, Persona, Mascota, Autobús Escolar, Scooter, Taxi, Herramientas, Camión** y **Tractor**. El tipo también influye en cómo se calculan los viajes (por ejemplo, algunos tipos determinan una parada mediante la señal de ignición/ACC).
+**Tipo de Unidad** — Qué clase de cosa es la unidad, mostrada con su propio ícono. Los tipos disponibles incluyen: **Desconocido, Aeronave, Bien, Bicicleta, Barco, Automóvil, Contenedor de Carga, Vehículo de Construcción, Niño, Furgoneta de Entrega, Dron, Persona Mayor, Vehículo de Flota, Equipo Pesado, Ganado, Motocicleta, Paquete, Persona, Mascota, Autobús Escolar, Scooter, Taxi, Herramientas, Camión** y **Tractor**. El tipo también influye en cómo se calculan los viajes (por ejemplo, algunos tipos determinan una parada mediante la señal de ignición/ACC).
 
-**Grupo** — Una colección con nombre de unidades y/o usuarios. Los grupos controlan quién puede ver cuáles unidades: por lo general usted ve las unidades de los grupos a los que pertenece.
+**Grupo** — Una colección con nombre de unidades y personal, que se entrega a los usuarios. Los grupos controlan quién ve qué: un Usuario sencillo solo ve las unidades y el personal de sus grupos; los Gestores ven todo.
 
 ## Dispositivos y proveedores de GPS
 
 **Dispositivo** — El rastreador GPS físico (el hardware) que va dentro o sobre una unidad y reporta su ubicación. Un dispositivo tiene un nombre, un identificador/número de serie y un tipo de dispositivo (por ejemplo, **Celular, Satélite, Escáner OBD, Teléfono, Reloj Inteligente, Marino, Aviación, Rastreo de Mascotas**, entre otros).
 
-**Operador** — Una conexión a un proveedor de GPS, el servicio externo que recopila los datos de sus dispositivos y los pasa a TrackHub. Cada operador usa un **Protocolo** (el "idioma" que habla), como **Command Track, Traccar, Geotab** o **GPS Gate**.
+**Operador** — Una conexión a un proveedor de GPS, el servicio externo que recopila los datos de sus dispositivos y los pasa a TrackHub. Cada operador usa un **Protocolo** (el "idioma" que habla), que aquí es simplemente el proveedor — por ejemplo **Geotab**, **Samsara**, **Wialon** o **Traccar**.
 
 **Credencial** — El nombre de usuario, la contraseña o las claves que TrackHub usa para conectarse al servicio de un operador. Normalmente prueba una credencial con **Probar Credencial**; una prueba exitosa confirma que TrackHub puede comunicarse con el proveedor.
 
@@ -36,7 +36,7 @@ Significado en lenguaje sencillo de los términos y de la información en pantal
 Cuando abre una unidad en el mapa, ve su **posición** más reciente y sus detalles:
 
 - **Velocidad (Km/Hr)** — Qué tan rápido se mueve la unidad, mostrada en kilómetros por hora.
-- **Course** — La dirección de la brújula hacia la que se dirige la unidad.
+- **Rumbo** — La dirección de la brújula en la que se mueve la unidad.
 - **Ignición (ACC Status)** — Si la ignición del vehículo está **ACC On** o **ACC Off**. Así es como TrackHub determina si el motor está en marcha.
 - **Altitud** — La altura de la unidad sobre el nivel del mar.
 - **Kilometraje** — La distancia que ha recorrido la unidad (la lectura de su odómetro).
@@ -49,20 +49,27 @@ Cuando abre una unidad en el mapa, ve su **posición** más reciente y sus detal
 - **Último Reporte** — Cuándo se recibió la posición (mostrado como "just now", "min ago", "h ago" o "d ago").
 - **Evento / alarma** — Algunas posiciones traen un código de evento o alarma enviado por el dispositivo (por ejemplo, un botón de pánico o el disparo de un sensor específico); estos pueden aparecer como alarmas en un viaje.
 
-**Hora del dispositivo vs. hora del servidor** — Una posición tiene dos marcas de tiempo. La **hora del dispositivo** es el momento en que el dispositivo GPS registró la ubicación. La **hora del servidor** es el momento en que TrackHub la recibió. Suelen estar cercanas, pero puede aparecer una diferencia si un dispositivo estuvo sin señal y envió sus datos más tarde.
 
 ## Viajes y reproducción
 
-**Viaje** — Un trayecto único de una unidad, desde que arranca hasta que se detiene. El resumen de un viaje puede mostrar sus puntos **Desde** y **Hasta**, la **Distancia Total**, la **Duración**, la **Vel. Máx**, la **Vel. Prom**, el número de **Paradas** y cualquier **Alarmas**. El tiempo transcurrido se divide en **En Tránsito** (en movimiento) y **Detenido**.
+**Viaje (historial)** — En la pestaña **Posiciones** del Tablero, un tramo del movimiento registrado de una unidad, desde que arranca hasta que se detiene. El resumen de un viaje puede mostrar sus puntos **Desde** y **Hasta**, la **Distancia Total**, la **Duración**, la **Vel. Máx**, la **Vel. Prom**, el número de **Paradas** y cualquier **Alarmas**. El tiempo transcurrido se divide en **En Tránsito** (en movimiento) y **Detenido**.
 
 **Reproducción (Playback)** — Reproducir en el mapa los movimientos pasados de una unidad como un video, usando **Reproducir**, **Pausar**, un control de **Velocidad** y una **Línea de tiempo**. Puede elegir la **Fuente del historial**: el **Proveedor GPS** (los datos sin procesar del proveedor) o **TrackHub** (el historial que TrackHub ha almacenado por su cuenta). También puede **Exportar** el recorrido reproducido. Vea [Viajes y reproducción](topic:dashboard-trips-replay).
+
+**Viaje (planificado)** — En la pantalla **Viajes**, un trayecto despachado: una unidad, un origen, paradas en orden y un inicio planeado. TrackHub lo inicia y lo completa solo a partir de las zonas. Vea [Viajes y planificación de rutas](topic:trip-management).
+
+**Fase** — Lo que está haciendo en este momento un viaje planificado: **Programado**, **Esperando en**, **Cargando en**, **En tránsito hacia**, **En parada**, **Sin iniciar a tiempo**, etc.
+
+**Corredor** — Una franja alrededor de la ruta planeada de un viaje. Salir de ella genera una desviación de ruta y la insignia **Fuera del corredor**.
+
+**Prueba de entrega** — La evidencia de que una parada fue entregada: quién la recibió, cuándo, y las firmas, fotos o recibos adjuntos.
 
 ## Zonas y lugares en el mapa
 
 **Geocerca** — Una zona que dibuja en el mapa para vigilar un área específica, por ejemplo, para saber cuándo una unidad entra o sale de ella. Cada geocerca tiene un nombre, un **Tipo**, un **Color** y puede estar activa o inactiva.
 
 - Los **tipos de geocerca** describen qué representa la zona: **Cliente, Construcción, Zona de Peligro, Estación de Combustible, Taller, Hospital, Hotel, Oficina, Parque, Parqueadero, Área Restringida, Tienda, Escuela** y **Bodega**.
-- Los **colores de geocerca** son simplemente la forma en que se dibuja la zona en el mapa para poder distinguir las zonas de un vistazo. Los nombres de los colores se muestran en inglés en toda la aplicación: **Red, Blue, Green, Yellow, Orange, Purple, Pink, Brown, Black** y **White**.
+- Los **colores de geocerca** son simplemente la forma en que se dibuja la zona en el mapa para poder distinguir las zonas de un vistazo. Los colores son **Rojo, Azul, Verde, Amarillo, Naranja, Púrpura, Rosado, Marrón, Negro** y **Blanco**.
 
 **Punto de Interés (POI)** — Un único lugar marcado en el mapa (un pin), en lugar de un área. Cada punto de interés tiene un nombre, un **Tipo**, una ubicación (latitud/longitud o dirección) y un color. Los tipos de punto de interés incluyen **Sitio de Cliente, Bodega, Estación de Combustible, Peaje, Área de Descanso, Taller, Puerto** y **Otro**. Los usuarios cotidianos pueden ver los puntos de interés; los gestores pueden crearlos y editarlos.
 
@@ -83,17 +90,17 @@ El estado propio de un dispositivo sincronizado se muestra como **Sin asignar** 
 
 **Estado del Operador** — Un indicador sencillo de qué tan bien funciona la conexión con un proveedor de GPS, basado en sus sincronizaciones recientes. Se lee como **Saludable**, **Degradado**, **Fuera de línea**, **Deshabilitado** o **Desconocido**, y va acompañado de la última sincronización exitosa, el último error y la latencia (tiempo de respuesta).
 
-**Retención de Posiciones** — Las reglas sobre cuánto tiempo se conserva el historial de posiciones almacenado, junto con la frecuencia con que se almacenan las posiciones (el **Intervalo de Almacenamiento (Segundos)**) y el número de **Días de Retención**. Estos ajustes dependen de su plan de suscripción y son gestionados por el administrador. Vea [Integración GPS](topic:gps-integration).
+**Retención de Posiciones** — Las reglas sobre cuánto tiempo se conserva el historial de posiciones almacenado, junto con la frecuencia con que se almacenan las posiciones (el **Intervalo de Almacenamiento (Segundos)**) y el número de **Días de Retención**. Los define el administrador de su plataforma. Vea [Integración GPS](topic:gps-integration).
 
 ## Alertas y notificaciones
 
 **Evento de Alerta** — Algo destacable que TrackHub detectó y registró, como una unidad que entra a una geocerca, una interrupción de comunicación o un documento a punto de vencer. Cada alerta tiene un **Tipo**, una **Severidad**, un **Módulo de Origen** (qué parte de TrackHub la generó) y un **Estado**.
 
-**Severidad** — Qué tan importante o urgente es una alerta, desde rutinaria/informativa hasta crítica. Las alertas críticas son las que necesitan atención primero; pueden notificar a los destinatarios de inmediato y escalarse si nadie responde a tiempo.
+**Severidad** — Qué tan importante o urgente es una alerta, desde rutinaria/informativa hasta crítica. Las alertas críticas son las que necesitan atención primero.
 
 **Estado de la alerta** — En qué punto de su ciclo de vida está la alerta. Usted usa **Reconocer Alerta** para indicar que la ha visto, y **Resolver Alerta** una vez que ha sido atendida.
 
-**Regla de Notificación** — Una regla que decide cuándo debe generarse una alerta y a quién debe avisarse. Una regla tiene un evento disparador, una severidad, los destinatarios y ajustes de entrega, y puede estar **habilitada** o deshabilitada.
+**Regla de Notificación** — Una regla que decide a quién se le avisa, y cómo, cuando ocurre un evento. Una regla tiene un evento disparador, canales, destinatarios y una limitación opcional, y puede estar **habilitada** o deshabilitada.
 
 ## Personal y fuerza de trabajo
 
@@ -101,7 +108,7 @@ El estado propio de un dispositivo sincronizado se muestra como **Sin asignar** 
 
 **Credencial de Personal** — El usuario y la contraseña con los que un miembro del personal ingresa a la aplicación móvil del personal. Una por personal, con su propio ciclo de vida: **Pendiente de Activación, Activa, Bloqueada** o **Revocada**. Revocarla también detiene las sesiones que ya estaban en curso en el teléfono del personal.
 
-**Registro de Dispositivo** — Un teléfono o tableta que un miembro del personal registró desde la aplicación móvil, con su plataforma, versión de la app y un token push enmascarado. Revocar un registro obliga a ese dispositivo a registrarse de nuevo; la credencial no se toca.
+**Registro de Dispositivo** — Un teléfono o tableta que un miembro del personal registró desde la aplicación móvil, con su plataforma y la versión de la app. Revocar un registro obliga a ese dispositivo a registrarse de nuevo; la credencial no se toca.
 
 **Habilitación** — Un hecho acreditado sobre un miembro del personal, con fecha de vencimiento: una **Licencia, Examen Médico, Capacitación, Verificación de Antecedentes, Permiso de Materiales Peligrosos** u **Otra**. Cada una lleva una categoría, un número, fechas de emisión y vencimiento, una autoridad emisora, un estado (**Vigente, Vencida, Revocada**) y opcionalmente un documento vinculado.
 
@@ -113,7 +120,7 @@ El estado propio de un dispositivo sincronizado se muestra como **Sin asignar** 
 
 **Documento** — Un archivo almacenado en relación con algo de su cuenta (por ejemplo, el seguro de un vehículo o la licencia de un miembro del personal). Los documentos admiten subida, **Nueva Versión** (reemplazar con un archivo actualizado conservando el historial), **Descargar**, **Vista Previa**, **Compartir**, **Firmar** y seguimiento del vencimiento.
 
-**Tipo de documento** — Qué clase de documento es, elegido de la lista configurable de su cuenta (los ejemplos incluyen **SOAT, RTM, License, Medical, POD, Receipt, Invoice, Manifest, Certificate, Photo, Signature** y **Other**). El campo se rotula como **Tipo**.
+**Tipo de documento** — Qué clase de documento es, elegido de la lista configurable de su cuenta (por ejemplo una licencia, una póliza de seguro, un recibo o una foto). El campo se rotula como **Tipo**.
 
 **Clasificación** — Qué tan sensible es un documento, lo cual controla quién puede abrirlo: **Público, Interno, Confidencial** o **Legal**. Las clasificaciones más sensibles (Confidencial, Legal) están restringidas a los usuarios cuya política de acceso lo permite.
 
@@ -141,7 +148,7 @@ El estado propio de un dispositivo sincronizado se muestra como **Sin asignar** 
 
 **Estado de la cuenta** — El estado general de la cuenta: **Prueba, Activa, Suspendida, Cancelada** o **Archivada**. Las cuentas en Prueba y Activa funcionan con normalidad; las cuentas Suspendida, Cancelada y Archivada quedan bloqueadas con un mensaje "Cuenta No Disponible". Vea [Roles y permisos](topic:roles-and-permissions#estado-de-la-cuenta-cómo-se-ve-una-cuenta-suspendida).
 
-**Personalización** — El nombre para mostrar, el logo, el color primario y el encabezado de reporte/exportación de su cuenta, para que la aplicación y sus documentos exportados lleven su propia identidad.
+**Personalización** — El nombre para mostrar, el logo, el color primario y el encabezado de reporte/exportación de su cuenta. El nombre para mostrar aparece en los reportes exportados a PDF.
 
 **Funcionalidad de Cuenta** — Una capacidad que puede activarse o desactivarse para toda su cuenta (por ejemplo, Geocercado, Documentos o Integración GPS). Cuando una funcionalidad está desactivada, sus pantallas o secciones quedan ocultas para todos en la cuenta.
 
