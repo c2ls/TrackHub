@@ -65,7 +65,7 @@ public sealed class ExcelHelper(ReportingLimitsOptions limits) : IExcelHelper
             var values = dataset.Rows[row];
             for (var col = 0; col < columnCount; col++)
             {
-                SetCell(worksheet.Cell(3 + row, col + 1), values[col], dataset.TimeZone);
+                SetCell(worksheet.Cell(3 + row, col + 1), ReportValueResolver.Localize(values[col], columns[col], culture), dataset.TimeZone);
             }
         }
 

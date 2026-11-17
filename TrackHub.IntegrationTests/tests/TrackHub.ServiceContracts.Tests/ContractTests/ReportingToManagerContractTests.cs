@@ -40,6 +40,10 @@ public class ReportingToManagerContractTests
         yield return new TestCaseData("GpsManagerReader.GetSynchronizedDevices", GpsManagerReader.SynchronizedDevicesQuery);
         yield return new TestCaseData("GpsManagerReader.GetUnassignedDevices", GpsManagerReader.UnassignedSynchronizedDevicesQuery);
         yield return new TestCaseData("GpsManagerReader.GetAssignmentsByAccount", GpsManagerReader.TransporterDeviceAssignmentsByAccountQuery);
+        yield return new TestCaseData("ReportNameReader.GetTransporterName", ReportNameReader.TransporterNameQuery);
+        yield return new TestCaseData("ReportNameReader.TransportersByAccount", ReportNameReader.TransportersByAccountQuery);
+        yield return new TestCaseData("ReportNameReader.RetiredTransporters", ReportNameReader.RetiredTransportersQuery);
+        yield return new TestCaseData("ReportNameReader.GetDocumentName", ReportNameReader.DocumentNameQuery);
         yield return new TestCaseData("AccountFeatureReader.EnsureFeatureEnabled", AccountFeatureReader.ValidateFeatureEnabledQuery);
         yield return new TestCaseData("ReportAuditWriter.RecordReportExport", ReportAuditWriter.CreateAuditEventMutation);
 

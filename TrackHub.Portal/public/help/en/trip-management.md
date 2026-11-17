@@ -1,7 +1,7 @@
 ---
 id: trip-management
 title: Trips and route planning
-description: Plan multi-stop trips, place stops from the map, a point of interest or a geofence, get an ORS route with a deviation corridor and a toll estimate, assign a staff member, follow progress, and share a tracking link with your customer.
+description: Plan multi-stop trips, place stops from the map, a point of interest or a geofence, get a planned route with a deviation corridor and a toll estimate, assign a staff member, follow progress, and share a tracking link with your customer.
 category: operation
 screens: [tripManager]
 featureKey: trip-management
@@ -31,7 +31,9 @@ The manual buttons are still there, grouped under **Override**. They are for the
 
 ## The dispatch board
 
-Open **Trips** from the left-hand menu. The board is one row per trip, showing its **code**, **customer**, **unit**, **planned start**, **stop count**, **phase** and **status**.
+Open **Trips** from the left-hand menu. The **Dispatch board** is one row per trip, showing its **Trip code**, **Customer**, **Unit**, **Staff**, **Planned start**, **Stops**, **Phase** and **Status**.
+
+![Dispatch board filtered to trips in progress, with New trip and Bulk upload](assets/en/trips-board.png)
 
 The **phase** is the column to read. Status tells you a trip is "in progress"; phase tells you what it is *doing* — *Loading at Plant 3*, *In transit to Client X (ETA 11:05)*, *At stop · Client Y*, *Overdue to start*. It is worked out fresh on every refresh from the times actually measured, so it is never a stale label somebody forgot to update.
 
@@ -48,7 +50,7 @@ Use the **Exceptions** filter to cut the board down to what needs a human:
 
 The other filters — status, unit, staff, date from, date to — and the search box in the top bar are applied by the server, so the list is a true page of matching trips rather than a filtered view of the first few. Use the arrows below the board to move between pages; the counter tells you which rows you are looking at.
 
-Click a row to open that trip in the workspace below.
+Click a row to open that trip in the workspace below. The workspace header carries **Edit**, **Share**, **Override** and **Delete**; underneath, the trip is split into tabs: **Route**, **Assignment**, **Stops**, **Tolls**, **Proof of delivery**, **Timeline** and **Replay**.
 
 ### A trip that never left
 
@@ -74,9 +76,19 @@ Click **New trip** and fill in the dialog:
 - **Trip code** (required) — your own reference. It must be unique within the account; reusing a code is rejected.
 - **Customer** — shown to the customer on the tracking page.
 - **Unit** (required) and **Staff** — the vehicle doing the work, and who is driving it.
-- **Origin** (required) — an existing **place**: one of your geofences, or a point of interest. There is no coordinate box, on purpose. The origin is what the automatic start is measured against, so a geofence is better than a point: the trip is judged against the plant's real shape instead of a 150 m circle around a pin.
-- **Destinations** (at least one) and the **activity** at them — see below.
-- **Planned start** (required) and **planned end**.
+- **Planned start** (required) and **Planned end**.
+
+![New trip dialog with the Route section](assets/en/trip-create.png)
+
+Under **Route**:
+
+- **Reuse a previous route** — copy the origin and destinations of an earlier trip, then adjust them.
+- **Trip type** — **Single destination**, **Round trip** or **Multi-destination**. A round trip gets a return stop at the origin automatically when it is created.
+- **Origin** (required) — an existing place, picked as an **Origin geofence** or an **Origin point of interest**. There is no coordinate box, on purpose. The origin is what the automatic start is measured against, so a geofence is better than a point: the trip is judged against the plant's real shape instead of a 150 m circle around a pin.
+- **Destinations** (at least one) — added with **Add geofence** or **Add point of interest**, each with its **Activity** (see below). Arrival windows, proof-of-delivery flags and ordering are fine-tuned later in the stop list.
+
+Under **Additional information**:
+
 - **External reference** — the id this trip carries in your own TMS or ERP.
 - **Toll vehicle class** — which tariff band this vehicle falls into, used for the toll estimate.
 - **Notes** — internal only. Notes are never shown to the customer.
@@ -141,6 +153,8 @@ Set the **corridor width** and press **Plan route**. TrackHub asks the routing s
 - the **planned distance** and **planned duration**;
 - the toll stations the route passes.
 
+![Trip detail Route tab with the planned line, stops and corridor width](assets/en/trip-detail.png)
+
 The corridor is what a deviation is measured against: while the trip runs, three consecutive positions outside the band raise one **route deviation**, and the trip picks up the **Off corridor** badge until the vehicle returns.
 
 If the routing service is unavailable, the plan comes back as **failed** with a reason. The trip stays completely usable — you can still start it, record arrivals and complete it — and stop ETAs fall back to your planned schedule instead of a live estimate.
@@ -160,10 +174,10 @@ The station and tariff catalog is platform-wide and is maintained by a super adm
 
 ### Toll classes for your fleet
 
-The estimate can only price a route once TrackHub knows which tariff band the vehicle falls into. **Toll classes**, at the top of the board, is where you tell it:
+The estimate can only price a route once TrackHub knows which tariff band the vehicle falls into. A Manager sets this in **Account Management → Fleet & Tracking → Transporter toll classes**:
 
-1. Choose whether the rule applies to a **vehicle type** or to **one vehicle** as an exception.
-2. Pick the vehicle type or the vehicle, then the **toll vehicle class**.
+1. Under **Apply to**, choose **Vehicle type**, or **One vehicle (override)** for an exception.
+2. Pick the vehicle type or the vehicle, then the **Toll vehicle class**.
 3. Save. You can add as many rules as you need without closing the dialog.
 
 New trips pick up their toll class from these rules automatically. Trips that already exist keep the class they were created with, and you can always override a single trip's class in the trip dialog.
@@ -176,7 +190,7 @@ The assignment panel shows who is currently assigned, on which unit, when they w
 
 ## Running the trip
 
-You do not have to do anything. Once the planned start is within about an hour, TrackHub begins watching that vehicle for its next planned trip; when the unit reaches the origin zone the trip starts itself, and from there positions are matched against each stop.
+You do not have to do anything. From a set time before the planned start (an hour, unless your administrator changed it), TrackHub watches that vehicle for its next planned trip; when the unit reaches the origin zone the trip starts itself, and from there positions are matched against each stop.
 
 While a trip is in progress the phase tells you where it is, and the workspace fills in as it goes.
 
@@ -192,7 +206,7 @@ Press **Override** in the trip header for the manual controls. They exist for th
 
 You can also record stop progress by hand from the stop table with **Record arrival**, **Record departure** and **Skip** — including while the trip is paused, which is exactly when you need them. A manual entry always wins over automatic detection, and recording the same thing twice never creates a duplicate.
 
-The trip's **History** tab shows where every event came from, so a measured start and a typed one are always told apart.
+The **Timeline** tab shows where every event came from, so a measured start and a typed one are always told apart.
 
 A trip that has any recorded activity cannot be deleted — cancel it instead. Only a freshly created trip with no history can be deleted, and simply being watched does not count as history.
 
@@ -208,13 +222,13 @@ An account whose vehicles do not report reliably can switch the automatic lifecy
 
 ## Trip detail
 
-Under the planner you get the full picture of the trip:
+The workspace tabs give you the full picture of the trip:
 
 - **Stops** — the planned window, the ETA with its source, the actual arrival and departure, and the current status of each stop. The ETA label tells you whether it is a **live estimate** from the routing service or a fallback to your **planned schedule**, so you know how much to trust it.
 - **Deliveries** — the consignments registered against each stop and how each one turned out. See *Deliveries and proof of delivery* below for how to register and close them.
-- **History** — every event on the trip, with when it happened and whether it came from the portal, the staff, automatic detection or a background job.
+- **Timeline** — every event on the trip, with when it happened and whether it came from the portal, the staff app, automatic detection or a scheduled check.
 - **Proof of delivery** — one card per capture, with who received it, when, where, any notes, and buttons to download the attachments.
-- **Route replay** — press **Load replay** to draw the positions the vehicle actually recorded over the planned line. If the trip has more history than the replay limit, a warning says so and tells you how many points are shown; use the position history report for the complete track rather than assuming the drawn line is everything. See [Trips and replay](topic:dashboard-trips-replay).
+- **Replay** — press **Load replay** to draw the positions the vehicle actually recorded over the planned line. If the trip has more history than the replay limit, a warning says so and tells you how many points are shown; use the position history report for the complete track rather than assuming the drawn line is everything. See [Trips and replay](topic:dashboard-trips-replay).
 
 ## Deliveries and proof of delivery
 
@@ -256,6 +270,8 @@ Captured proofs appear as cards in the trip detail, with buttons to download eac
 
 Press **Share** to create a read-only link your customer can open without an account.
 
+![Share with the customer dialog with what the customer can see](assets/en/trip-share-dialog.png)
+
 1. Set a **purpose** and, required, an **expiry** date and time.
 2. Tick exactly what the customer may see: **stop detail**, **the planned route on the map**, **live position**, **vehicle**, **staff first name**, and **whether each stop has proof of delivery**.
 3. Press save. The link appears **once**.
@@ -288,11 +304,11 @@ A blank duration means the measurement behind it was never taken — usually a t
 - **The trip's unit or origin cannot be changed** — it is running. Cancel it and plan a new one.
 - **A bulk upload rejected a row** — read the reason on that line. Almost always it is a place name that does not match any geofence or point of interest in this account.
 - **Plan route does nothing** — the trip needs at least one stop.
-- **"Route planning is not configured"** — the platform's routing service has no credentials. This is a platform setting, not an account one; contact your administrator.
+- **"Route planning is not configured"** — route planning has not been set up on this platform. Contact your administrator.
 - **The estimate says "Partial"** — that is the catalog telling you it does not have a tariff for every station on this route, not an error.
 - **Arrivals are not detected** — check the stop's arrival radius, and confirm the unit is actually reporting positions on the [live map](topic:dashboard-live-map).
 - **Proof of delivery will not save** — an attachment has not finished its virus scan, or failed it. Press **Re-check**, or remove the file.
 - **No delivery or proof-of-delivery buttons** — the trip is already completed, cancelled or aborted; a closed trip's record is not rewritten.
-- **The toll estimate never appears on new trips** — no toll class rule exists yet. Open **Toll classes** and map your vehicle types.
+- **The toll estimate never appears on new trips** — no toll class rule exists yet. Open **Account Management → Transporter toll classes** and map your vehicle types.
 - **The customer sees no city on a stop** — that stop has no city filled in. Open the stop and set it; the full address is deliberately never shared.
 - **The customer sees no route line** — the link was created without **the planned route on the map** ticked. Revoke it and create a new one with the box ticked.

@@ -13,7 +13,7 @@ order: 35
 
 Un **miembro del personal** es cualquier persona que trabaja para su cuenta — un conductor, un operador, un mecánico, un vendedor, un supervisor. Un miembro del personal se rastrea a través de una unidad: registre el dispositivo que lleva como una unidad con un nombre que diga quién es (por ejemplo *Representante de Ventas Norte*) y vincule al miembro del personal con ella mediante **Transportador Predeterminado** o una asignación. El tablero muestra unidades, así que esa unidad es la que usted sigue en el mapa. El personal no son usuarios del portal: nunca inician sesión en el portal web, tienen sus propias credenciales para la aplicación móvil del personal y se administran íntegramente desde el grupo **Flota y Rastreo** de la pantalla **Administración de Cuentas**.
 
-El área tiene cuatro secciones plegables, en este orden:
+El área tiene hasta cuatro secciones en la lista de secciones, en este orden:
 
 | Sección | Para qué sirve |
 |---|---|
@@ -24,15 +24,15 @@ El área tiene cuatro secciones plegables, en este orden:
 
 ## Qué requiere la funcionalidad Personal
 
-El registro de **Personal** y sus **Credenciales y dispositivos** son **plataforma base**. Siempre están disponibles para un administrador con los permisos correspondientes, en cualquier cuenta, sin importar lo que diga la suscripción. Siempre puede registrar personal, y siempre puede emitir, bloquear, restablecer y revocar sus credenciales móviles.
+El registro de **Personal** y sus **Credenciales y dispositivos** siempre están disponibles. Están ahí para un Gestor con los permisos correspondientes en cualquier cuenta. Siempre puede registrar personal, y siempre puede emitir, bloquear, restablecer y revocar sus credenciales móviles.
 
-Las tres últimas secciones — **Habilitaciones del Personal**, **Asignaciones del Personal** y **Vencimientos de Habilitaciones** — pertenecen a la funcionalidad facturable **Personal**. Sin ella simplemente no aparecen en la pantalla, no se generan alertas de vencimiento y los tres reportes de personal no están en el catálogo de reportes. Vea el [Catálogo de funcionalidades](topic:feature-catalog).
+Las tres últimas secciones — **Habilitaciones del Personal**, **Asignaciones del Personal** y **Vencimientos de Habilitaciones** — requieren la funcionalidad **Personal**. Sin ella simplemente no aparecen en la pantalla, no se generan alertas de vencimiento y los tres reportes de personal no están en el catálogo de reportes. Vea el [Catálogo de funcionalidades](topic:feature-catalog).
 
 ## Personal
 
 El registro propiamente dicho. Las columnas son **Nombre**, **Tipo de personal**, **Documento**, **Teléfono**, **Credencial**, **Activo** y una columna de acción. El selector **Todos los tipos**, junto al cuadro de búsqueda, limita la lista a un tipo de personal.
 
-Presione el icono **+** (agregar) para abrir el diálogo **Crear Personal**:
+Presione **Agregar** para abrir el diálogo **Crear Personal**:
 
 - **Nombre** (obligatorio) — el nombre completo del personal.
 - **Tipo de personal** (obligatorio) — qué hace la persona: **Conductor**, **Operador**, **Ayudante de conductor**, **Mecánico**, **Supervisor**, **Administrativo** u **Otro**. Los registros existentes quedan como **Conductor**. El tipo decide qué partes de la aplicación móvil del personal ve la persona; a quien no tiene vehículo nunca se le pide elegir uno.
@@ -45,9 +45,13 @@ Presione el icono **+** (agregar) para abrir el diálogo **Crear Personal**:
 
 Las acciones de fila son **Editar**, **Credenciales y dispositivos** (vea más abajo) y **Desactivar Personal** (se le pide confirmación). Desactivar no elimina nada, y a un miembro del personal inactivo no se le puede dar una nueva asignación.
 
+El personal pertenece a **grupos**, igual que las unidades. Agregue un miembro del personal a un grupo con **Asignar** en la columna **Personal** del grupo (vea [Usuarios, roles y grupos](topic:users-roles-groups#grupos)); los usuarios de ese grupo podrán entonces verlo y elegirlo, por ejemplo al asignar un viaje.
+
 ## Credenciales y Dispositivos del Personal
 
 Así es como un miembro del personal inicia sesión en la **aplicación móvil del personal**. Ábralo con la acción **Credenciales y dispositivos** en la fila del miembro del personal; el diálogo muestra la credencial de ese miembro del personal y los dispositivos registrados con ella.
+
+![Diálogo de credenciales y dispositivos registrados del personal](assets/es/staff-credentials.png)
 
 Un miembro del personal tiene como máximo una credencial. Presione **Crear Credencial** y defina un **Usuario** y una **Contraseña**. La credencial nace **Pendiente de Activación**, y el personal no puede iniciar sesión hasta que se active.
 
@@ -55,10 +59,8 @@ Un miembro del personal tiene como máximo una credencial. Presione **Crear Cred
 |---|---|
 | **Usuario** | El nombre que el personal escribe en la aplicación. |
 | **Estado** | Pendiente de Activación, Activa, Bloqueada o Revocada. |
-| **Intentos Fallidos** | Inicios de sesión fallidos consecutivos. El contador se reinicia con un ingreso exitoso. |
-| **Bloqueada Hasta** | Cuándo expira un bloqueo automático o manual. |
 | **Último Ingreso** | El último inicio de sesión exitoso. |
-| **Requiere Cambio de Contraseña** | El personal debe definir una contraseña nueva en el próximo ingreso. |
+| **Bloqueada Hasta** | Cuándo expira un bloqueo automático o manual. |
 
 Acciones de fila:
 
@@ -69,15 +71,14 @@ Acciones de fila:
 
 ### Dispositivos Registrados
 
-Debajo de la credencial está la lista de dispositivos que el personal registró desde la aplicación: **Nombre del Dispositivo**, **Plataforma**, **Versión de la App**, **Token Push (enmascarado)**, **Última Actividad** y **Estado**. **Revocar Registro de Dispositivo** elimina un dispositivo — el personal deberá registrarlo nuevamente desde la aplicación; su credencial no se toca.
+Debajo de la credencial está la lista de dispositivos que el personal registró desde la aplicación: **Nombre del Dispositivo**, **Plataforma**, **Versión de la App**, **Última Actividad** y **Estado**. **Revocar Registro de Dispositivo** elimina un dispositivo — el personal deberá registrarlo nuevamente desde la aplicación; su credencial no se toca.
 
-Los tokens push se muestran enmascarados, y los identificadores internos de sesión nunca se envían al portal. No hay forma de revelar ninguno de los dos, por diseño.
 
 ## Habilitaciones del Personal
 
 *Requiere la funcionalidad Personal.*
 
-Un registro de habilitación cubre todo lo acreditado de un miembro del personal, no solo la licencia de conducción. Elija un miembro del personal y use **+** para abrir **Crear Habilitación**:
+Un registro de habilitación cubre todo lo acreditado de un miembro del personal, no solo la licencia de conducción. Elija un miembro del personal en **Personal** y presione **Agregar** para abrir **Crear Habilitación**:
 
 - **Tipo** (obligatorio) — **Licencia**, **Examen Médico**, **Capacitación**, **Verificación de Antecedentes**, **Permiso de Materiales Peligrosos** u **Otra**.
 - **Categoría** — la subclase, cuando el tipo la tiene, por ejemplo la categoría de una licencia.
@@ -85,12 +86,16 @@ Un registro de habilitación cubre todo lo acreditado de un miembro del personal
 - **Fecha de Emisión** y **Fecha de Vencimiento** — una habilitación no puede vencer antes de haberse emitido.
 - **Autoridad Emisora** — quién la otorgó.
 - **Estado** (obligatorio) — **Vigente**, **Vencida** o **Revocada**. El vencimiento se deduce por sí solo de la **Fecha de Vencimiento**, así que el estado que normalmente fija a mano es **Revocada**, para una habilitación retirada antes de su fecha.
-- **Documento Vinculado** — el identificador del documento de respaldo (el escaneo de la licencia, el certificado médico). Guarde el archivo en [Documentos](topic:documents) y refiéralo aquí.
+- **Documento Vinculado** — archivo de respaldo opcional (el escaneo de la licencia, el certificado médico), elegido entre los documentos del propio miembro del personal.
 - **Notas** — texto libre.
 
 La columna **Fecha de Vencimiento** cambia de color a medida que la fecha se acerca. Las acciones de fila son **Editar** y **Eliminar**; la eliminación es permanente y solo la auditoría conserva el registro después.
 
 Los campos **Número de Licencia** / **Vencimiento de Licencia** del registro del personal permanecen como resumen de un vistazo. El conjunto completo de licencias y certificados vive aquí.
+
+### Documentos del Personal
+
+Debajo de las habilitaciones, **Documentos del Personal** lista los archivos del miembro del personal seleccionado. Presione **Subir Documento** para agregar el escaneo de la licencia, el certificado médico o cualquier otro papel, y luego elíjalo como **Documento Vinculado** de una habilitación. Las versiones, descargas y el compartir funcionan como se describe en [Documentos](topic:documents#subir-versiones-y-compartir).
 
 ## Asignaciones del Personal
 
@@ -142,7 +147,7 @@ Los datos del personal son datos personales, por lo que estas exportaciones se r
 
 ## Quién puede usar esto
 
-Todas las secciones residen dentro de **Administración de Cuentas**, que está disponible para los Gestores. Una sección, un botón **+** o una acción de fila también puede faltar porque su rol no tiene el permiso de personal correspondiente — leer, escribir, editar y eliminar se otorgan por separado. Vea [Roles y permisos](topic:roles-and-permissions) y [Administración de Cuentas](topic:management-overview).
+Todas las secciones residen dentro de **Administración de Cuentas**, que está disponible para los Gestores. Una sección, un botón **Agregar** o una acción de fila también puede faltar porque su rol no tiene el permiso de personal correspondiente — leer, escribir, editar y eliminar se otorgan por separado. Vea [Roles y permisos](topic:roles-and-permissions) y [Administración de Cuentas](topic:management-overview).
 
 Si faltan las secciones de habilitaciones, asignaciones o vencimientos pero el registro de personal sí está, se trata de la funcionalidad Personal, no de sus permisos.
 

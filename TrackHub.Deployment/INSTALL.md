@@ -1,2150 +1,618 @@
 # TrackHub Deployment Guide
 
-A comprehensive guide for deploying TrackHub on Linux servers using Docker.
+The operator runbook for a Docker deployment on Linux. A first installation follows
+[QUICKSTART.md](QUICKSTART.md); this guide is everything around it. Topology, routes, configuration
+groups and the background job catalog are in the wiki:
+[Deployment and Operations](https://github.com/shernandezp/TrackHub/wiki/Deployment-and-Operations).
 
-> **First time?** See [QUICKSTART.md](QUICKSTART.md) for a simplified step-by-step guide.
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Prerequisites](#prerequisites)
-4. [Quick Start](#quick-start)
-5. [Detailed Installation](#detailed-installation)
-6. [Configuration Reference](#configuration-reference)
-7. [Build Architecture](#build-architecture)
-8. [Deployment Scenarios](#deployment-scenarios)
-9. [Database Setup](#database-setup)
-10. [Migrating to a New Server](#migrating-to-a-new-server-existing-database)
-11. [SSL Certificates](#ssl-certificates)
-12. [Upgrading From a Previous Version](#upgrading-from-a-previous-version)
-13. [Updating Services](#updating-services)
-14. [Monitoring & Maintenance](#monitoring--maintenance)
-15. [Troubleshooting](#troubleshooting)
+1. [Requirements](#requirements)
+2. [External dependencies](#external-dependencies)
+3. [Configuration](#configuration)
+4. [Certificates](#certificates)
+5. [Database](#database)
+6. [Split deployment](#split-deployment)
+7. [Updating](#updating)
+8. [Upgrading from a previous version](#upgrading-from-a-previous-version)
+9. [Moving to a new server](#moving-to-a-new-server)
+10. [Operations](#operations)
+11. [Troubleshooting](#troubleshooting)
+12. [Security checklist](#security-checklist)
 
 ---
 
-## Overview
+## Requirements
 
-TrackHub is a GPS tracking and monitoring platform consisting of:
+### Server requirements
 
-| Component | Description | Technology |
-|-----------|-------------|------------|
-| **TrackHub** | Web frontend | React.js |
-| **AuthorityServer** | Identity provider | .NET 10, OpenIddict |
-| **TrackHubSecurity** | Security & user management | .NET 10, GraphQL |
-| **TrackHub.Manager** | Asset management | .NET 10, GraphQL |
-| **TrackHubRouter** | Device routing | .NET 10, GraphQL |
-| **TrackHub.Geofencing** | Geofence management | .NET 10, GraphQL |
-| **TrackHub.TripManagement** | Trip planning, route planning & tolls | .NET 10, GraphQL |
-| **TrackHub.Telemetry** | Position & telemetry store | .NET 10, GraphQL |
-| **TrackHub.Reporting** | Reports generation | .NET 10, REST API |
-| **SyncWorker** | Background data-sync service | .NET 10, Worker (no HTTP) |
-| **nginx** | Reverse proxy, SSL termination | nginx:alpine |
-| **db-init** | One-shot **seeder** (data only — never schema) | .NET 10, run once per deploy |
-
-**Document management** is part of **TrackHub.Manager**: uploads, versioning, signatures,
-sharing, plus scan/expiration/retention background jobs. Files are stored on the
-`manager-documents` Docker volume by default (`DocumentStorage__Provider=LocalFileSystem`),
-or in S3 / Azure Blob — see [Configuration Reference](#configuration-reference). Uploads are
-capped at **50 MB** by nginx (`client_max_body_size`). This volume is the only stateful data
-outside PostgreSQL: back it up separately.
-
----
-
-## Architecture
-
-### Full Stack Deployment (Single Server)
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Linux Server                              │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    Nginx (Reverse Proxy)                   │  │
-│  │              Port 80 → 443 (SSL Termination)               │  │
-│  └────────────────────────┬──────────────────────────────────┘  │
-│                           │                                      │
-│  ┌────────────────────────┼──────────────────────────────────┐  │
-│  │     /              /Identity    /Security    /Manager      │  │
-│  │   Frontend         Authority    Security     Manager       │  │
-│  │   (React)          (:8080)      (:8080)      (:8080)       │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  /Router    /Geofence   /Trip        /Telemetry  /Reporting│  │
-│  │  Router     Geofencing  TripMgmt     Telemetry   Reporting │  │
-│  │  (:8080)    (:8080)     (:8080)      (:8080)     (:8080)   │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  SyncWorker (background worker — no HTTP endpoint)          │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌─────────────────┐
-                    │   PostgreSQL    │
-                    │  (External DB)  │
-                    └─────────────────┘
-```
-
-### Split Deployment (Separate Servers)
-
-```
-┌──────────────────────┐        ┌──────────────────────┐
-│   Frontend Server    │        │   Backend Server     │
-│  ┌────────────────┐  │        │  ┌────────────────┐  │
-│  │     Nginx      │  │        │  │     Nginx      │  │
-│  └───────┬────────┘  │        │  └───────┬────────┘  │
-│          │           │        │          │           │
-│  ┌───────▼────────┐  │   →    │  ┌───────▼────────┐  │
-│  │  React App     │  │  API   │  │  All Backend   │  │
-│  │  (Static)      │──┼───────→│  │  Services      │  │
-│  └────────────────┘  │ Calls  │  └────────────────┘  │
-└──────────────────────┘        └──────────────────────┘
-```
-
----
-
-## Prerequisites
-
-### Server Requirements
-
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
+| | Minimum | Recommended |
+|---|---|---|
 | CPU | 2 cores | 4+ cores |
 | RAM | 4 GB + 4 GB swap | 8 GB + 4 GB swap |
 | Storage | 20 GB | 50+ GB SSD |
-| OS | Ubuntu 22.04 LTS | Ubuntu 24.04.4 LTS |
+| OS | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
 
-> **Note:** Ubuntu 24.04.4 LTS is the default and recommended operating system. Other Debian-based distributions may work but are not officially tested.
+Image builds spike above the RAM of a small host; without swap the kernel kills the build or the
+host stops answering SSH. `deploy.sh` warns when no swap is configured, and refuses to build with
+less than 10 GB free under the Docker root, less than 1.5 GB of available memory, or no answer from
+nuget.org.
 
-Every backend service has a memory ceiling, `<SERVICE>_MEMORY_LIMIT` in `.env` (reservations:
-`<SERVICE>_MEMORY_RESERVATION`). The defaults add up to about 3.7 GB (Reporting 768 MB for
-exports), leaving room for the OS, Docker, nginx and the portal on an 8 GB host with PostgreSQL
-elsewhere. Keep the sum of the limits below the host's
-RAM minus about 1.5 GB: a .NET service caps its heap at 75% of its limit, but the kernel kills the
-largest process when the host itself runs out, and a host without swap has no slack.
+```bash
+sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+```
 
-### Software Requirements
+Every backend container has a memory ceiling, `<SERVICE>_MEMORY_LIMIT` (and
+`<SERVICE>_MEMORY_RESERVATION`) in `.env`; the defaults add up to about 3.7 GB. Keep their sum below
+the host's RAM minus about 1.5 GB: .NET caps its heap at 75% of the container limit, but the kernel
+kills the largest process when the host itself runs out.
 
-| Software | Minimum Version | Recommended |
-|----------|----------------|-------------|
-| Docker Engine | 24.0+ | Latest stable |
-| Docker Compose | v2.20+ | Latest stable |
-| Git | 2.34+ | Latest stable |
-| OpenSSL | 3.0+ | Latest stable |
-| .NET SDK | 10.0 | 10.0 (build only) |
+### Software
 
-> **Note:** Docker builds include the .NET SDK automatically, but you still need the SDK
-> (plus `dotnet-ef`) on a host that can reach PostgreSQL, because **EF migrations are applied
-> outside Docker** — see [Applying Migrations](#applying-migrations). TrackHubCommon needs
-> no setup on that host: the services reference it as a `ProjectReference`, so restore and
-> build resolve it straight from the source in the checkout — the same way the Docker
-> image builds do.
+| | Version |
+|---|---|
+| Docker Engine | 24.0+ |
+| Docker Compose | v2.20+ |
+| Git | 2.34+ |
+| OpenSSL | 3.0+ |
+| .NET SDK + `dotnet-ef` | 10.0 — only on the host that applies migrations; images build with their own SDK |
 
-### External Requirements
+### PostgreSQL
 
-- Registered domain name (or static IP for internal deployments)
-- PostgreSQL 14+ database server (external, already installed and operational)
-- SSL certificate (Let's Encrypt recommended for production)
-- **An OpenRouteService API key or a self-hosted ORS instance** — required by
-  TripManagement, see [OpenRouteService Provisioning](#openrouteservice-provisioning-required)
+PostgreSQL 14+, installed and reachable from the application server, with two databases:
+`TrackHubSecurity` (identity, users, roles, policies, OAuth clients) and `TrackHub` (everything
+else, including the `public.logs` table of the log sink). The `TrackHub` database needs the
+`postgis` extension, created by a superuser.
 
-#### OpenRouteService Provisioning (required)
+---
 
-TripManagement plans routes through **OpenRouteService**. An **API key or a self-hosted ORS
-instance is a REQUIRED per-deployment dependency** and must be provisioned before this module
-can be released. It is the module's only hard external prerequisite and is obtainable
-**same-day** from the free public plan at <https://openrouteservice.org/dev/#/signup>;
-self-hosting is supported by pointing `ORS_BASE_URL` at your own instance.
+## External dependencies
 
-**Absence of configuration is a deployment error, not a supported operating mode.** At
-runtime it degrades rather than blocks: route planning returns `RoutePlan.Failed` +
-`ROUTING_NOT_CONFIGURED`, ETAs fall back to `EtaSource = Planned`, and trips remain fully
-usable — they simply never receive a planned route, distance, duration or corridor. Do not
-treat that degraded state as "working".
+### OpenRouteService (required)
 
-Configure it in `.env` (see the ROUTE PLANNING block in `.env.example`):
+TripManagement plans routes, distances, ETAs and corridors through OpenRouteService. Get a key from
+the free plan at <https://openrouteservice.org/dev/#/signup>, or self-host ORS and point
+`ORS_BASE_URL` at it:
 
 ```bash
 ROUTING_PROVIDER=OpenRouteService
 ORS_BASE_URL=https://api.openrouteservice.org   # or http://ors:8080/ors when self-hosted
 ORS_API_KEY=your-openrouteservice-api-key
 ORS_PROFILE=driving-hgv
-ORS_REQUESTS_PER_SECOND=2
-ORS_TIMEOUT_SECONDS=30
-ORS_MAX_WAYPOINTS=50
 ```
 
-> **The ORS key is deliberately configured in two places.** One vendor account serves two
-> consumers, and they read the credential from two different stores (spec 11 §7.2 / §18.7):
->
-> | Consumer | Store | Purpose |
-> |---|---|---|
-> | TripManagement | `AppSettings:Routing` (the `ORS_*` env vars above) | Directions / matrix — route planning |
-> | Router | a Manager **`GeocodingProvider`** row, entered in the systemAdmin panel | Reverse geocoding of incoming positions |
->
-> This duplication is intentional, not an oversight. `GeocodingProvider` has a
-> **single-active-row** model that cannot express "Nominatim for addresses, ORS for routes",
-> it is Router-owned, and route planning must not depend on which geocoder an operator
-> happens to have activated. Nominatim remains the default reverse-geocoder; adding an ORS
-> `GeocodingProvider` row is optional and independent of route planning.
+Without a key, trips keep working but every route plan fails with `ROUTING_NOT_CONFIGURED` and ETAs
+fall back to the planned times — treat that as a broken deployment, not a mode. The throttle and
+admission keys (`ORS_REQUESTS_PER_SECOND`, `ORS_TIMEOUT_SECONDS`, `ORS_MAX_WAYPOINTS`,
+`ORS_INTERACTIVE_TIMEOUT_SECONDS`, `ORS_BACKGROUND_*`) are documented in `.env.example`.
 
-#### Local Geocoding (optional)
+Reverse geocoding of positions is configured separately, as a **Geocoding Provider** in the system
+administration screens (Nominatim by default). Using ORS there too means entering the same key a
+second time; route planning never depends on which geocoder is active.
 
-The **Local** geocoding provider resolves addresses inside PostgreSQL, from reference tables in
-the `geocoding` schema of the `TrackHub` database (admin areas, roads, places, settlements). No
-external service is called at lookup time. The data covers Colombia and Costa Rica; outside it,
-positions get no address.
+### Local geocoding (optional)
 
-1. Set `LOCAL_GEOCODING=true` in `.env` and deploy. While the geocoding tables are empty,
-   `db-init` downloads the data from the original sources (Overture Maps, latest release unless
-   `GEOCODING_OVERTURE_RELEASE` is set; Geofabrik OpenStreetMap; the Medellín and Bogotá barrio
-   layers), builds it and loads it. That takes about 30 minutes and needs internet access from
-   the server; later deploys skip it. A failed import only logs a warning and is retried on the
-   next deploy. The build is capped at `GEOCODING_MEMORY_LIMIT` (default `2GB`) and spills to
-   disk beyond it (allow about 5 GB free in Docker's storage); raise the cap on a server with
-   more free memory to speed it up.
-2. In systemAdmin → Geocoding Providers, add a provider of type **Local** (no endpoint or API key)
-   and activate it. Lookups are cheap, so raise `requestsPerSecond` (e.g. 100) and the
-   enrichment budget in `configurationJson` (e.g. `{"enrichmentBudget": 500}`).
+The **Local** geocoding provider resolves addresses inside PostgreSQL from reference tables in the
+`geocoding` schema — no external call per lookup. The data covers Colombia and Costa Rica.
 
-**Refreshing with newer data:**
+1. Set `LOCAL_GEOCODING=true` in `.env` and deploy. While the tables are empty, `db-init`
+   downloads the sources (Overture Maps — latest release unless `GEOCODING_OVERTURE_RELEASE` is set —
+   Geofabrik OpenStreetMap, and the Medellín and Bogotá neighbourhood layers), builds and loads them.
+   It takes about 30 minutes and needs internet access; a failure only warns and is retried on the
+   next deploy. The build is capped at `GEOCODING_MEMORY_LIMIT` (default `2GB`) and spills to disk
+   beyond it (allow about 5 GB free).
+2. In system administration → Geocoding Providers, add a provider of type **Local** and activate
+   it. Lookups are cheap: raise `requestsPerSecond` (e.g. 100) and the enrichment budget in
+   `configurationJson` (e.g. `{"enrichmentBudget": 500}`).
+
+Refresh with newer data (add `-f docker-compose.backend.yml` on a split deployment); the new tables
+are built aside and swapped in, so lookups keep working:
 
 ```bash
 docker compose run --rm --no-deps --entrypoint /app/import-geocoding.sh db-init --refresh
 ```
 
-Add `-f docker-compose.backend.yml` on a split deployment. The new tables are built aside and
-swapped in at the end, so lookups keep working during the reload.
+`backup-database.sh` skips the geocoding table data (about 500 MB); after a restore the next deploy
+downloads it again.
 
-`backup-database.sh` skips the `geocoding` table data (about 500 MB). After a restore the tables
-are empty, and the next deploy downloads them again.
+### Toll catalog (empty by design)
 
-#### Toll Catalog Bootstrap (empty by design)
+TrackHub ships with no toll stations, tariffs or vehicle classes — there is no external toll API
+behind the feature. Each deployment enters its catalog through the administration screens or the
+CSV import. Until then toll estimates are **null**, never zero, and the `trip-toll-cost` report
+shows the gap.
 
-The platform ships with **zero toll stations, zero tariffs and zero vehicle classes**. This
-is a deliberate product decision, not missing seed data: there is no external toll API and no
-licensed dataset behind this feature. Each deployment enters its own catalog through the
-admin UI or the CSV import surface.
-
-Until you do, toll estimation returns a **null estimate** — never a fabricated or
-zero-defaulted number. Reports expose the gap explicitly through the `PartialNoTariff` column
-on `trip-toll-cost`, so partial coverage is visible rather than silently netted to zero.
-An empty catalog does not block trip creation, planning or execution.
-
-##### Colombia: loading the catalog from the INVÍAS open data
-
-`scripts/fetch-toll-catalog.mjs` turns the official INVÍAS publication
-([datos.gov.co/Transporte/Peajes/68qj-5xux](https://www.datos.gov.co/Transporte/Peajes/68qj-5xux),
-"Peajes registrados sobre La Red Vial Nacional", covering INVÍAS and ANI-concession
-stations) into a single SQL script:
+**Colombia.** `scripts/fetch-toll-catalog.mjs` turns the INVÍAS open-data publication
+([datos.gov.co, *Peajes*](https://www.datos.gov.co/Transporte/Peajes/68qj-5xux)) into one SQL
+script — 7 vehicle classes, about 173 stations and 1 026 tariffs:
 
 ```bash
 node scripts/fetch-toll-catalog.mjs --effective-from 2026-01-01 --out toll-catalog.sql
-psql -h localhost -U postgres -d TrackHub -f toll-catalog.sql
+psql -h DB_HOST -U postgres -d TrackHub -f toll-catalog.sql
 ```
 
-That loads the 7 vehicle classes, ~173 stations and ~1 026 tariffs in one transaction.
-The skipped records are listed in the script's header comment.
-
-Before running it:
-
-- **Clear any test data first.** `SELECT count(*) FROM trip.toll_stations;` should be 0.
-  The trip smoke tests create real stations and vehicle classes (`SMK*`, `smoke-*`), and
-  the catalog is platform-wide, so they are visible to every account.
-- **The script is one transaction and is not idempotent.** Running it twice fails on the
-  unique indexes and rolls back rather than duplicating — which is the behaviour you
-  want, because a duplicated station is matched twice by `ST_DWithin` and charges its
-  toll twice in every estimate.
-- **Use the admin UI or CSV import for later rate changes, not this script.**
-  `createTollTariff` closes the open tariff row and inserts a new one, so a past trip's
-  estimate stays reproducible against the rate it was priced with. Re-running the SQL
-  would not.
-
-Two caveats on the data itself:
-
-- **The source's scalar `latitud`/`longitud` columns are corrupt for a large minority of
-  records** — both hold the latitude. The script reads the GeoJSON `point` instead and
-  rejects anything outside Colombia's bounding box. This is not cosmetic: a mislocated
-  station never matches `ST_DWithin`, so it vanishes from every estimate silently
-  rather than failing.
-- **Verify the figures against the resolution in force** before relying on them
-  commercially. This is published reference data, not a contractual source, and tariffs
-  change by resolution (INVÍAS raised them 5.10% by IPC in January 2026). Categories
-  **VI and VII** are priced at 88 of the 179 stations but their descriptions are left as
-  `CONFIRMAR` — the axle rules vary by concession and are not published with the dataset.
-
-Stations with no priced category (decommissioned, `NO OPERATIVO`) are skipped rather than
-loaded at zero.
-
-### Database Server Requirements
-
-The deployment assumes an existing PostgreSQL server. Two databases are required:
-
-| Database | Purpose |
-|----------|---------|
-| `TrackHubSecurity` | Identity, users, roles, policies |
-| `TrackHub` | Assets, transporters, devices, geofences, trips, positions, and the `public.logs` Serilog table |
-
-The PostgreSQL server must be accessible from the application server(s) over the network.
+- Start from an empty catalog (`SELECT count(*) FROM trip.toll_stations;` is 0). The catalog is
+  platform-wide, so test stations are visible to every account.
+- The script is one transaction and not idempotent: a second run fails on the unique indexes and
+  rolls back, which prevents a duplicated station from being charged twice.
+- Make later rate changes through the screens or the CSV import, which close the open tariff and
+  insert a new one, so past estimates stay reproducible.
+- The source's scalar latitude/longitude columns are corrupt for many records; the script reads the
+  GeoJSON point instead and rejects anything outside Colombia. Check the figures against the
+  resolution in force — categories VI and VII are left marked `CONFIRMAR`.
 
 ---
 
-## Quick Start
+## Configuration
 
-### 1. Install Docker
+### How it flows
 
-```bash
-# Ubuntu/Debian
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
-
-# Log out and back in, then verify
-docker --version
-docker compose version
-```
-
-### 2. Clone Repositories
+`.env` is the single source. `deploy.sh` runs `generate-appsettings.sh` before every backend or full
+deploy, writing `generated/appsettings.<service>.json`; the compose files bind-mount each one
+read-only over the container's `/app/appsettings.json`. **Environment variables set in the compose
+files take precedence over the mounted file.**
 
 ```bash
-# Create project directory
-mkdir -p /opt/trackhub
-cd /opt/trackhub
-
-# Clone the repository — one clone brings every service, the portal and this folder
-git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub
-
-cd /opt/trackhub/TrackHub.Deployment
-cp .env.example .env
+./scripts/sync-config.sh validate                      # required keys present and not placeholders
+./scripts/sync-config.sh show                          # current values
+./scripts/sync-config.sh generate                      # all backend appsettings into generated/
+./scripts/sync-config.sh frontend                      # the portal .env only
+./scripts/generate-appsettings.sh --service manager    # preview one service on stdout
 ```
 
-The checkout root (`/opt/trackhub`) is the docker build context: every compose
-service builds with `context: ..` and each Dockerfile copies from
-`TrackHubCommon/`, `TrackHub.Manager/` and the other service directories, so those
-must sit alongside `TrackHub.Deployment/`. A normal clone gives you exactly that.
+`config/appsettings.template.json` shows every templated value and the variable it comes from.
 
-`clone-repos.sh` is no longer needed for the first checkout — the clone above *is*
-the checkout. Run it later to fast-forward the checkout and verify no source
-directory has gone missing. It reads these settings from `.env`:
+### Keys
 
-| Setting | Purpose | Default |
+`.env.example` (full stack), `.env.backend.example` and `.env.frontend.example` are the annotated
+reference for every key. The rules that matter:
+
+- **Required, no defaults** (`scripts/required-config.sh`): `ALLOWED_CORS_ORIGINS`, `AUTHORITY_URL`,
+  `DB_CONNECTION_SECURITY`, `DB_CONNECTION_MANAGER`, `DB_CONNECTION_TELEMETRY`,
+  `DB_CONNECTION_LOGGING`, `CERTIFICATE_PASSWORD`, `ENCRYPTION_KEY`, and the seven service-client
+  secrets `SYNCWORKER_`, `ROUTER_`, `SECURITY_`, `GEOFENCE_`, `TRIP_`, `REPORTING_` and
+  `MANAGER_CLIENT_SECRET`. `deploy.sh` and `sync-config.sh validate` refuse to continue while any
+  is empty or a placeholder.
+- **Connection strings use `user id=`, with the space.** `init-databases.sh` and
+  `backup-database.sh` parse that exact key. Telemetry and the log sink use the same `TrackHub`
+  database as Manager.
+- **Service-client secrets live only in `.env`.** `db-init` passes each `<CLIENT_ID>_SECRET` to the
+  client seeder, which uses it instead of whatever `clients.json` holds; the services authenticate
+  with the same variables.
+- **`ENCRYPTION_KEY` encrypts stored GPS provider credentials.** Changing it makes every stored
+  credential unreadable.
+- **`REACT_APP_*` values are baked into the portal at build time.** Changing one means
+  `./scripts/deploy.sh portal` (or `update-service.sh frontend`), not a restart.
+- **`GRAPHQL_*_SERVICE` are Docker-network addresses** (`http://manager:8080/graphql/`); leave them
+  unless you rename compose services.
+- **`OPENIDDICT_SCOPES`** must list the scopes in `clients.json`:
+  `mobile_scope,staff_mobile_scope,web_scope,service_scope`.
+- **`CERTIFICATE_PATH` / `CERTIFICATE_THUMBPRINT`** only affect appsettings generated for a host
+  (non-Docker) deployment; containers always load `/app/certificates/certificate.pfx`.
+- **Forwarded headers are trusted only from private networks** (loopback, `10/8`, `172.16/12`,
+  `192.168/16`, IPv6 ULA). A reverse proxy elsewhere must be listed in
+  `AppSettings:KnownProxyNetworks` (CIDR array), or client IPs in rate limits and audit rows are the
+  proxy's.
+
+### Notifications
+
+Email and WhatsApp stay disabled until configured (`SMTP_*`, `WHATSAPP_*`, `PORTAL_BASE_URL` for
+the links in messages); see `.env.backend.example`. WhatsApp needs a verified Meta Business account,
+a WhatsApp Business Account and an approved utility template.
+
+### Document storage
+
+Documents are stored on the `manager-documents` volume by default
+(`DOCUMENT_STORAGE_PROVIDER=LocalFileSystem`), capped at 50 MB per upload by nginx. For `S3` or
+`AzureBlob`, Manager refuses to start without the required keys:
+
+| Provider | Required | Optional |
 |---|---|---|
-| `GITHUB_OWNER` | Account that owns the repository | `shernandezp` |
-| `GITHUB_REPO` | Repository name | `TrackHub` |
-| `GITHUB_BRANCH` | Branch to check out (`main` or `develop`) | `main` |
-| `GITHUB_USER` / `GITHUB_PASSWORD` | Credentials, private repository only | *(empty)* |
+| `S3` | `DOCUMENT_S3_BUCKET_NAME` | `DOCUMENT_S3_REGION`, `DOCUMENT_S3_SERVICE_URL` (MinIO / S3-compatible), `DOCUMENT_S3_ACCESS_KEY` + `DOCUMENT_S3_SECRET_KEY` (omit both for the AWS credential chain), `DOCUMENT_S3_FORCE_PATH_STYLE`, `DOCUMENT_S3_PRESIGNED_EXPIRY_MINUTES` |
+| `AzureBlob` | `DOCUMENT_AZURE_CONTAINER_NAME`, `DOCUMENT_AZURE_CONNECTION_STRING` | `DOCUMENT_AZURE_SAS_EXPIRY_MINUTES` |
 
-For a private deployment, point it at your own copy:
+Switching provider does not migrate existing files — move them yourself.
+
+---
+
+## Certificates
+
+Two certificates with different jobs: the **TLS** certificate nginx serves, and the **OpenIddict**
+certificate (`certificates/certificate.pfx`) every service uses to sign and validate tokens.
+
+### TLS (Let's Encrypt)
 
 ```bash
-GITHUB_OWNER=your-account
-GITHUB_REPO=TrackHub.Private
-GITHUB_USER=your-username
-GITHUB_PASSWORD=ghp_your_personal_access_token
+sudo ./scripts/generate-certs.sh [domain] [email] [certificate-password] [--rotate-openiddict]
 ```
 
-> `GITHUB_REPO_SUFFIX` from the per-repository layout is no longer read. An existing
-> `.env` that set `GITHUB_OWNER` plus a suffix still resolves correctly, but set
-> `GITHUB_REPO` explicitly if your repository is not named `TrackHub`.
-
-> `GITHUB_PASSWORD` must be a **Personal Access Token**, not your account password —
-> GitHub no longer accepts passwords over HTTPS. Create one at
-> [github.com/settings/tokens](https://github.com/settings/tokens) with the `repo` scope.
-> The token is only ever passed to `git` on the command line; it is not written into
-> any repository's `.git/config`.
-
-> `TrackHubRouter` also provides the **SyncWorker** background service — it has no
-> separate repository.
-
-### 3. Configure Environment
+Arguments default to `DOMAIN`, `LETSENCRYPT_EMAIL` and `CERTIFICATE_PASSWORD` from `.env`. The
+script installs certbot if needed, obtains the certificate (webroot when nginx is running,
+standalone otherwise), copies `fullchain.pem` / `privkey.pem` into `certificates/`, creates the
+OpenIddict certificate when none exists, and installs the deploy hook
+`/etc/letsencrypt/renewal-hooks/deploy/trackhub-nginx.sh`. certbot's timer renews; the hook copies the
+renewed files and reloads nginx. Without the hook, nginx keeps serving the old copy until it expires.
 
 ```bash
+./scripts/renew-ssl.sh                                           # manual renewal check
+ls -l /etc/letsencrypt/renewal-hooks/deploy/trackhub-nginx.sh
+sudo certbot renew --dry-run
+```
+
+With a certificate obtained another way, place `fullchain.pem` and `privkey.pem` in `certificates/`
+and still run `generate-certs.sh` once, for the hook and the `.pfx`. It needs a public domain — it
+always goes through Let's Encrypt.
+
+### OpenIddict signing certificate
+
+`generate-certs.sh` keeps an existing `certificate.pfx` (checking that `CERTIFICATE_PASSWORD` opens
+it), because a new signing key invalidates every token and signs every user out.
+`--rotate-openiddict` replaces it on purpose. To create one by hand:
+
+```bash
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=your-domain.com"
+openssl pkcs12 -export -out certificates/certificate.pfx -inkey key.pem -in cert.pem -password pass:your-certificate-password
+rm key.pem cert.pem
+```
+
+For a CA-issued certificate, add `-certfile your-ca-bundle.pem` to the `pkcs12` step. Containers load
+it from the read-only `/app/certificates/` mount (`OpenIddict__LoadCertFromFile=true`,
+`OpenIddict__Path`, `OpenIddict__Password`). A Windows host deployment can instead use the
+certificate store: `LoadCertFromFile=false` and `Thumbprint`.
+
+---
+
+## Database
+
+### Migrations create the schema; db-init only seeds
+
+| Step | Does | Does not |
+|---|---|---|
+| EF migrations (`dotnet ef database update`) | Create and alter every table and schema | Seed anything |
+| `db-init` (every `deploy.sh full` / `backend`) | Upsert OAuth scopes and clients, seed roles, resources, permissions and service-client grants, seed master data and the report catalog, pin database time zones to UTC, install the retention and geocoding SQL | Create or alter tables |
+
+### Applying migrations
+
+Five projects own migrations; Telemetry's tables come from Manager's. The commands, with explicit
+connection strings and no command timeout, are in [QUICKSTART.md step 5](QUICKSTART.md#5-create-the-schema-ef-migrations).
+
+| Project | Database | Schemas |
+|---|---|---|
+| `TrackHubSecurity/src/Infrastructure/SecurityDB` | `TrackHubSecurity` | `security` |
+| `TrackHub.AuthorityServer/src/Infrastructure` (`--context AuthorityDbContext`, after Security) | `TrackHubSecurity` | OpenIddict tables |
+| `TrackHub.Manager/src/Infrastructure/ManagerDB` | `TrackHub` | `app`, `map`, `telemetry` |
+| `TrackHub.Geofencing/src/Infrastructure/ManagerDB` | `TrackHub` | `geofencing` (PostGIS) |
+| `TrackHub.TripManagement/src/Infrastructure/TripDB` | `TrackHub` | `trip` (PostGIS) |
+
+**No EF tooling near production?** Generate SQL on a workstation and run it as the application role:
+`dotnet ef migrations script --idempotent` per project (add `--context AuthorityDbContext` for the
+AuthorityServer). Keep the scripts with your operator files.
+
+### Running the seeders by hand
+
+They assume the schema exists. Each reads its connection string from its own `appsettings.json`
+(`ConnectionStrings:Security`, or `DefaultConnection` for Manager), overridable with
+`ConnectionStrings__...` variables:
+
+```bash
+cd /opt/trackhub
+dotnet run --project TrackHub.AuthorityServer/src/ClientSeeder   # reads clients.json beside it
+dotnet run --project TrackHubSecurity/src/DBInitializer
+dotnet run --project TrackHub.Manager/src/DBInitializer
+```
+
+### Server tuning
+
+`scripts/sql/tune-postgresql.sql` sets what the workload depends on (SSD cost model, WAL sizing,
+autovacuum, slow-query logging, the `accountid` statistics target). Run it once per server as a
+superuser:
+
+```bash
+psql -h DB_HOST -U postgres -d postgres -f scripts/sql/tune-postgresql.sql
+```
+
+Memory settings and `max_connections` are listed, commented, at the end of the file.
+`max_connections` must cover the sum of every service process's pool (`Database:MaxPoolSize`,
+20 by default) plus headroom — Npgsql pools per process.
+
+### Time zones
+
+Every timestamp is `timestamp with time zone`, so instants survive a restore on a host in another
+zone. Services pin their sessions to UTC, images set `TZ=UTC`, and `db-init` runs
+`ALTER DATABASE ... SET timezone TO 'UTC'` on every deploy — which needs the database owner or a
+superuser; otherwise it warns and you run it once by hand. A dump does not carry the setting, so
+re-run `db-init` after a restore. Calendar questions use each account's IANA zone.
+
+An appsettings file generated before the log sink moved into Common still names
+`Serilog.Sinks.PostgreSQL.Configuration` and fails at startup; regenerate it.
+
+### Partitioning the position history (optional)
+
+`telemetry.transporter_position_history` is the one table whose growth justifies partitioning
+(about 66 GB in 30 days at 3 000 devices on a one-minute provider). Partitioned, retention drops
+whole months instead of deleting rows. Everything works unpartitioned; Telemetry detects the layout.
+
+After the migrations are applied:
+
+```bash
+psql -h DB_HOST -U postgres -d TrackHub -f scripts/sql/partition-position-history.sql
+```
+
+The script renames the table, creates the partitioned one (a month per partition, covering the data
+plus three months ahead), copies the rows and drops the old table — budget for the copy.
+`ops.maintain_position_partitions()`, part of the retention run, then keeps creating months ahead
+and dropping aged ones. With partitions, history deduplication is enforced per month by the
+database and for two days by the ingest probe, so a provider replaying older batches stores them
+twice.
+
+---
+
+## Split deployment
+
+Frontend and backend on separate servers, each with its own `.env` and certificate.
+
+```bash
+# backend server
+cp .env.backend.example .env && nano .env
+./scripts/deploy.sh backend
+
+# frontend server
+cp .env.frontend.example .env && nano .env
+./scripts/deploy.sh frontend
+```
+
+The frontend server only serves the static bundle; the browser calls the backend directly through
+the `REACT_APP_*` URLs, so those point at the backend host. On the backend, `ALLOWED_CORS_ORIGINS`
+and the `web_client` URIs in `clients.json` use the **frontend** domain. `deploy.sh` refuses
+`frontend` or `backend` on a host that already runs the full stack. Pass
+`docker-compose.backend.yml` / `docker-compose.frontend.yml` as the compose-file argument to
+`update-service.sh`, `rollback.sh` and `health-check.sh`.
+
+---
+
+## Updating
+
+For a release with no new migrations, OAuth clients or configuration keys. Builds use the Docker
+layer cache and detect source changes, containers are always recreated, and the portal refreshes its
+static assets on every start — no `--no-cache`, repeated runs or volume cleanup needed. Every image
+an update replaces is kept as `:previous` first (see [Rollback](#rollback)).
+
+```bash
+cd /opt/trackhub && git pull
 cd TrackHub.Deployment
-
-# Copy example configuration
-cp .env.example .env
-
-# Edit configuration (see Configuration Reference section)
-nano .env
+./scripts/deploy.sh full
 ```
 
-### 4. Create the Database Schema (EF migrations)
+| Command | Effect |
+|---|---|
+| `./scripts/deploy.sh full` | Every image, `db-init`, then the whole stack (default) |
+| `./scripts/deploy.sh portal` | Only the portal on a full-stack server, plus nginx |
+| `./scripts/deploy.sh backend` / `frontend` | One half of a split deployment |
+| `./scripts/update-service.sh <service> [compose-file] [--no-cache]` | One service, no `db-init` |
 
-> ⚠️ **Required on a fresh install.** `db-init` **seeds data only** — it does not create or
-> alter tables (see [Database Setup](#database-setup)). Deploying against empty databases
-> makes the `db-init` container fail.
+Options for `deploy.sh`: `--no-cache` (full rebuild), `--skip-init` (no `db-init`),
+`--skip-git-check` (deploy although the checkout is behind its upstream — by default it refuses,
+because the compose files themselves are deployment inputs). `--build` is accepted and has no effect.
 
-Apply migrations for the **five** projects that own them (Telemetry has none — its `telemetry`
-schema is created by the Manager migrations).
+`update-service.sh` services: `frontend`, `authority`, `security`, `manager`, `router`,
+`geofencing`, `tripmanagement` (alias `trip`), `telemetry`, `reporting`, `syncworker`, `nginx`. The
+SyncWorker builds from `TrackHubRouter/`, so a Router change means updating both `router` and
+`syncworker`.
 
-> ⚠️ **AuthorityServer is one of them.** Its `AuthorityDbContext` owns the four `OpenIddict*` tables
-> and lives in the **Security** database. Without this step the platform cannot issue tokens.
->
-> **Upgrading a deployment created before this step existed?** Its OpenIddict tables are already
-> present but carry no `__EFMigrationsHistory` row, so `database update` fails with
-> *relation "OpenIddictApplications" already exists*. **Baseline it instead** — insert the
-> InitialCreate row so EF adopts the existing tables:
+### Zero-downtime order
+
+Publish a maintenance announcement first (Platform Status → Manage announcements,
+SuperAdministrator). Announcements are stored and served by Manager, so the banner disappears while
+Manager restarts; one scheduled in advance with *Starts at* / *Ends at* is what users see. Then
+update one service at a time, frontend last:
+
+```bash
+for s in authority security manager router geofencing tripmanagement telemetry reporting syncworker frontend nginx; do
+  ./scripts/update-service.sh "$s"
+done
+```
+
+`update-service.sh` never runs migrations or `db-init`; a release that adds either goes through
+[Upgrading](#upgrading-from-a-previous-version).
+
+---
+
+## Upgrading from a previous version
+
+A release can add migrations, OAuth clients, scopes and configuration keys. `.env` and
+`config/clients.json` are your files — `git pull` never touches them — so merge new keys in by hand,
+in this order.
+
+**1. Back up** the databases, configuration and documents ([Backups](#backups)).
+
+**2. Pull** — `cd /opt/trackhub && git pull`. An installation from before the single-repository
+layout (one clone per service under `/opt/trackhub`) cannot be converted in place: clone into a new
+directory, copy `TrackHub.Deployment/.env`, `config/clients.json`, `certificates/` and `generated/`
+across, and switch over.
+
+**3. Reconcile `.env`** — list the keys the template has and yours lacks:
+
+```bash
+comm -23 <(grep -oE '^[A-Z0-9_]+=' .env.example | sort -u) <(grep -oE '^[A-Z0-9_]+=' .env | sort -u)
+```
+
+Then `./scripts/sync-config.sh validate`.
+
+**4. Reconcile `config/clients.json`** with `config/clients.json.example`: the four scopes
+(`web_scope`, `mobile_scope`, `staff_mobile_scope`, `service_scope`, all with resource
+`trackhub_api`), the `mobile_client` with `"passwordGrant": true`, `staff_mobile_client`, every service
+client in the example, and `web_client.postLogoutUri` = `https://<domain>/`.
+
+**5. Apply the migrations** — the five commands in [QUICKSTART.md step 5](QUICKSTART.md#5-create-the-schema-ef-migrations),
+before starting the new images. A Security or Manager image against a schema that lacks its columns
+fails at request time while the container reports healthy.
+
+> An installation created before the AuthorityServer had a migration has the OpenIddict tables but
+> no history row, so its `database update` fails with *relation "OpenIddictApplications" already
+> exists*. Baseline it once in `TrackHubSecurity`:
 >
 > ```sql
 > INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 > SELECT '20260722030751_InitialCreate', '10.0.10'
 > WHERE NOT EXISTS (SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260722030751_InitialCreate');
 > ```
->
-> Fresh installs need none of that — just run the command below with the others.
 
-**Prerequisites on the host running the migrations:**
+**6. Deploy** — `./scripts/deploy.sh full`. Its `db-init` registers new clients, scopes, resources
+and grants. **Skipping it is the most common post-upgrade failure:** a new module's calls all
+return `FORBIDDEN` while its service reports healthy.
 
-```bash
-# .NET SDK + EF tooling
-dotnet tool install --global dotnet-ef
-
-# TrackHubCommon needs no separate step — the services reference it as a
-# ProjectReference, so restore (and therefore `dotnet ef`) builds it from the
-# source in this checkout.
-```
-
-Set the connection strings explicitly — **do not rely on the services' `appsettings.json`,
-which contains a localhost dev connection string** and would otherwise be used silently:
-
-```bash
-cd /opt/trackhub
-
-export SECURITY_CONN="server=db.example.com;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword"
-export MANAGER_CONN="server=db.example.com;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword"
-
-# Services run with a 30 s command timeout (the shared connection-string normalization in
-# Common.Infrastructure). Index builds and table rewrites take longer, so migrations run without one.
-export Database__CommandTimeoutSeconds=0
-
-ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
-  --project TrackHubSecurity/src/Infrastructure/SecurityDB --startup-project TrackHubSecurity/src/Web
-
-# OpenIddict tables (applications/authorizations/scopes/tokens). Same database as Security, and it
-# MUST run after the Security migration above. Skip on an existing deployment — baseline it instead
-# (see the note above). --context is required: this project also carries a SecurityDbContext, whose
-# migration is deliberately empty (TrackHubSecurity owns those tables; DM-05 convention).
-ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
-  --project TrackHub.AuthorityServer/src/Infrastructure --startup-project TrackHub.AuthorityServer/src/Web \
-  --context AuthorityDbContext
-
-ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
-  --project TrackHub.Manager/src/Infrastructure/ManagerDB --startup-project TrackHub.Manager/src/Web
-
-ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
-  --project TrackHub.Geofencing/src/Infrastructure/ManagerDB --startup-project TrackHub.Geofencing/src/Web
-
-ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
-  --project TrackHub.TripManagement/src/Infrastructure/TripDB --startup-project TrackHub.TripManagement/src/Web
-
-cd /opt/trackhub/TrackHub.Deployment
-```
-
-Geofencing and TripManagement both require the `postgis` extension in the `TrackHub`
-database (see [Database Setup](#database-setup)). TripManagement's `trip` schema lives in
-the same `TrackHub` database, so it uses the same `${DB_CONNECTION_MANAGER}` connection.
-
-### 5. Set Up Certificates
-
-```bash
-# Obtain Let's Encrypt SSL certificate + generate OpenIddict certificate
-# Args: <domain> <letsencrypt-email> [certificate-password]
-# Requires DOMAIN and LETSENCRYPT_EMAIL in .env (or pass as arguments)
-sudo ./scripts/generate-certs.sh your-domain.com admin@your-domain.com
-```
-
-### 6. Configure OAuth Clients
-
-```bash
-# Copy and edit clients.json
-cp config/clients.json.example config/clients.json
-nano config/clients.json
-
-# Update the callback URI with your domain, and set each service client's
-# secret to match the matching *_CLIENT_SECRET in .env
-```
-
-### 7. Deploy
-
-```bash
-# Deploy full stack
-./scripts/deploy.sh full --build
-```
-
-### 8. Verify Deployment
-
-```bash
-# Check health
-./scripts/health-check.sh your-domain.com
-
-# View logs
-./scripts/logs.sh
-```
+**7. Verify** — `./scripts/health-check.sh <domain>`, then `/status`: every tile *Working* and the
+*Portal build* line showing the new build (hard-reload).
 
 ---
 
-## Detailed Installation
-
-### Step 1: Prepare the Linux Server
-
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install required packages
-sudo apt install -y \
-    curl \
-    git \
-    openssl \
-    htop \
-    ufw
-
-# Configure firewall
-sudo ufw allow 22/tcp   # SSH
-sudo ufw allow 80/tcp   # HTTP
-sudo ufw allow 443/tcp  # HTTPS
-sudo ufw enable
-
-# Swap: image builds spike above the RAM of a small host, and without swap the kernel
-# kills the build or freezes the host instead
-sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
-echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
-```
-
-### Step 2: Install Docker
-
-```bash
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
-# Add current user to docker group
-sudo usermod -aG docker $USER
-
-# Start Docker on boot
-sudo systemctl enable docker
-
-# Log out and back in
-exit
-# SSH back in
-
-# Verify installation
-docker --version
-docker compose version
-```
-
-### Step 3: Set Up Project Structure
-
-```bash
-# Create directory structure
-sudo mkdir -p /opt/trackhub
-sudo chown $USER:$USER /opt/trackhub
-cd /opt/trackhub
-
-# Clone the repository (as shown in Quick Start)
-```
-
-### Step 4: Database Setup
-
-Before deploying, ensure your PostgreSQL database is accessible:
-
-```bash
-# Test database connectivity
-psql -h your-db-server.com -U postgres -d postgres -c "SELECT version();"
-```
-
-See the [Database Setup](#database-setup) section for detailed database initialization instructions.
-
-### Step 5: Configure Environment Variables
-
-Create and configure the `.env` file:
-
-```bash
-cd /opt/trackhub/TrackHub.Deployment
-cp .env.example .env
-```
-
-Edit the file with your configuration:
-
-```bash
-nano .env
-```
-
-Key configurations to update:
-
-```env
-# Domain
-DOMAIN=trackhub.example.com
-ALLOWED_CORS_ORIGINS=https://trackhub.example.com
-
-# Database  (note: the user field is "user id=" WITH a space — the scripts parse that exact key)
-DB_CONNECTION_SECURITY=server=db.example.com;user id=postgres;password=SecurePass123;database=TrackHubSecurity;port=5432
-DB_CONNECTION_MANAGER=server=db.example.com;user id=postgres;password=SecurePass123;database=TrackHub;port=5432
-DB_CONNECTION_TELEMETRY=server=db.example.com;user id=postgres;password=SecurePass123;database=TrackHub;port=5432
-DB_CONNECTION_LOGGING=server=db.example.com;user id=postgres;password=SecurePass123;database=TrackHub;port=5432
-
-# Certificate
-CERTIFICATE_PASSWORD=your-cert-password
-
-# Encryption (generate a new GUID)
-ENCRYPTION_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-
-# Service-to-service OAuth secrets — no defaults; must match config/clients.json
-SYNCWORKER_CLIENT_SECRET=your-syncworker-client-secret
-ROUTER_CLIENT_SECRET=your-router-client-secret
-SECURITY_CLIENT_SECRET=your-security-client-secret
-GEOFENCE_CLIENT_SECRET=your-geofence-client-secret
-TRIP_CLIENT_SECRET=your-trip-client-secret
-REPORTING_CLIENT_ID=reporting_client
-REPORTING_CLIENT_SECRET=your-reporting-client-secret
-
-# Route planning (spec 11) — REQUIRED before the trip module can be released
-ORS_API_KEY=your-openrouteservice-api-key
-
-# Update all REACT_APP_ URLs with your domain
-REACT_APP_AUTHORIZATION_ENDPOINT=https://trackhub.example.com/Identity/authorize
-# ... etc
-```
-
-`DB_CONNECTION_TELEMETRY` and the `*_CLIENT_SECRET` keys have **no defaults** in
-`docker-compose.yml`. Omitting them yields a Telemetry service with an empty connection
-string and service clients that cannot authenticate. `deploy.sh` and
-`./scripts/sync-config.sh validate` check the same list (`scripts/required-config.sh`) and refuse
-to continue while any of those keys is missing or still a placeholder.
-
-### Step 6: SSL and OpenIddict Certificates
-
-You need **two types of certificates**:
-1. **SSL/TLS Certificate** - For HTTPS (Nginx) — obtained from Let's Encrypt
-2. **OpenIddict Certificate** - For token signing (Authority Server and all APIs)
-
-#### SSL Certificate (Let's Encrypt)
-
-The `generate-certs.sh` script handles both certificates. Add these to your `.env`:
-
-```env
-DOMAIN=trackhub.example.com
-LETSENCRYPT_EMAIL=admin@trackhub.example.com
-```
-
-Then run:
-
-```bash
-sudo ./scripts/generate-certs.sh
-```
-
-This will:
-- Install `certbot` if not present
-- Obtain a free Let's Encrypt certificate (valid 90 days, auto-renewed)
-- Generate the OpenIddict `.pfx` certificate for token signing
-- Install the certbot deploy hook that copies renewed files into `certificates/` and reloads nginx
-
-If nginx is already running, it uses the **webroot** method (zero downtime). Otherwise, it uses **standalone** mode.
-
-**Manual alternative (if not using the script):**
-
-```bash
-# Install certbot
-sudo apt install -y certbot
-
-# Obtain certificate
-sudo certbot certonly --standalone -d trackhub.example.com --email admin@trackhub.example.com --agree-tos
-
-# Copy certificates
-sudo cp /etc/letsencrypt/live/trackhub.example.com/fullchain.pem certificates/
-sudo cp /etc/letsencrypt/live/trackhub.example.com/privkey.pem certificates/
-sudo chown $USER:$USER certificates/*.pem
-```
-
-Then run `sudo ./scripts/generate-certs.sh` once anyway: with a valid certificate already in place it only installs
-the renewal deploy hook (and the OpenIddict `.pfx`). Without the hook, renewals never reach nginx.
-
-#### OpenIddict Certificate (for Token Signing)
-
-All services (Authority Server, Security, Manager, etc.) use the same OpenIddict certificate to sign and validate tokens. For Linux/Docker deployments, certificates are loaded from a `.pfx` file.
-
-```bash
-# Generate OpenIddict certificate (if not using generate-certs.sh)
-openssl req -x509 -newkey rsa:4096 \
-    -keyout key.pem -out cert.pem \
-    -days 365 -nodes \
-    -subj "/CN=trackhub.example.com"
-
-# Convert to PFX format
-openssl pkcs12 -export \
-    -out certificates/certificate.pfx \
-    -inkey key.pem -in cert.pem \
-    -password pass:your-secure-password
-
-# Clean up
-rm key.pem cert.pem
-
-# Update .env with the password
-# CERTIFICATE_PASSWORD=your-secure-password
-```
-
-**Note:** `generate-certs.sh` obtains the SSL certificate and creates the OpenIddict certificate
-when none exists. It needs `CERTIFICATE_PASSWORD` in `.env` and keeps an existing
-`certificate.pfx` (checking that the password opens it), because a new signing certificate
-invalidates every token and signs every user out. Pass `--rotate-openiddict` to replace it on
-purpose.
-
-### Step 7: Configure OAuth Clients
-
-```bash
-cp config/clients.json.example config/clients.json
-```
-
-Edit `config/clients.json`:
-
-```json
-{
-  "scopes": [
-    {"name": "web_scope", "resource": "trackhub_api"},
-    {"name": "mobile_scope", "resource": "trackhub_api"},
-    {"name": "staff_mobile_scope", "resource": "trackhub_api"},
-    {"name": "service_scope", "resource": "trackhub_api"}
-  ],
-  "PKCEClients": [
-    {
-      "clientId": "web_client",
-      "uri": "https://trackhub.example.com/authentication/callback",
-      "postLogoutUri": "https://trackhub.example.com/",
-      "scope": "web_scope"
-    },
-    {
-      "clientId": "mobile_client",
-      "uri": "trackhubmobile://callback",
-      "postLogoutUri": "trackhubmobile://callback",
-      "scope": "mobile_scope",
-      "passwordGrant": true
-    },
-    {
-      "clientId": "staff_mobile_client",
-      "uri": "trackhubstaff://callback",
-      "postLogoutUri": "trackhubstaff://callback",
-      "scope": "staff_mobile_scope"
-    }
-  ],
-  "serviceClients": [
-    {"clientId": "syncworker_client", "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
-    {"clientId": "router_client",     "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
-    {"clientId": "security_client",   "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
-    {"clientId": "geofence_client",   "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"},
-    {"clientId": "trip_client",       "clientSecret": "generate-a-secure-secret-here", "scope": "service_scope"}
-  ]
-}
-```
-
-> **Tenant-bound (partner) service clients:** the five clients above are **platform-internal** —
-> their permission rows are seeded with `allowcrossaccount = true`, they receive a token with **no**
-> `account_id` claim, and they legitimately operate across every account. A partner/TMS client is
-> the opposite: seed its rows in `security.service_client_permissions` **with** an `accountid` and
-> **without** `allowcrossaccount`, and the token endpoint will bind its tokens to that account
-> automatically. If a partner client ends up holding grants on **several** accounts, its token
-> requests must add an `account_id=<account-guid>` form parameter to pick the tenant — otherwise the
-> token endpoint answers `invalid_request`, by design, rather than guessing a customer. See
-> *Client Credentials Flow* in `TrackHub.AuthorityServer/README.en.md` for the full claim rules.
-
-> **Important:** The `resource` for every scope must be `trackhub_api` (this is the
-> token audience the APIs validate). Each service client's `clientSecret` must match the
-> `${SYNCWORKER_CLIENT_SECRET}` / `${ROUTER_CLIENT_SECRET}` / `${SECURITY_CLIENT_SECRET}` /
-> `${GEOFENCE_CLIENT_SECRET}` / `${TRIP_CLIENT_SECRET}` values in your `.env`, and `OPENIDDICT_SCOPES` in `.env` must
-> list the same scopes (`mobile_scope,staff_mobile_scope,web_scope,service_scope`).
-
-### Step 8: Deploy
-
-```bash
-# Full stack deployment
-./scripts/deploy.sh full --build
-
-# Monitor deployment
-docker compose logs -f
-```
-
-### Step 9: Initialize Databases
-
-`deploy.sh` runs `db-init` on every deploy, as a one-off container, while the previous release is
-still serving; only when it succeeds is the stack stopped and restarted on the new images, so a
-failed seed leaves the running deployment in place. Its output streams into the deploy log. It
-refuses to run without `config/clients.json`.
-
-### Step 10: Sync User and Account IDs
-
-The seeders create the administrator and the master account under the well-known
-`PlatformBootstrap` ids in both databases, so `security.users`, `app.users` and
-`app.accounts` agree by construction. There is no id sync step and nothing to run here.
-
-
-### Step 11: Verify Deployment
-
-```bash
-# Health check
-./scripts/health-check.sh trackhub.example.com
-
-# Test in browser
-# https://trackhub.example.com
-```
+## Moving to a new server
+
+Keeping the existing database:
+
+1. Back up the database and the old server's `TrackHub.Deployment/.env`, `config/clients.json`,
+   `certificates/` (including `certificate.pfx` — a new one signs every user out) and the documents
+   volume (`./scripts/backup.sh` collects all but the database).
+2. Install Docker and clone on the new server ([QUICKSTART.md](QUICKSTART.md) steps 1–2), restore
+   those files, and update `.env` for the new host and domain.
+3. Deploy. `db-init` is idempotent and safe against the existing data; use
+   `./scripts/deploy.sh full --skip-init` only while the old server still writes to the same
+   database.
+4. Sign in, check `/status`, and exercise the APIs before retiring the old server.
 
 ---
 
-## Centralized Configuration Management
+## Operations
 
-All backend services share similar `appsettings.json` configurations. Instead of manually updating each service's configuration file, use the centralized configuration tools.
+### Retention (schedule this)
 
-### Configuration Workflow
-
-1. **Edit the central `.env` file** with all your settings
-2. **Run the generator** to create the `appsettings.json` files in `generated/`
-3. **Deploy** — the compose files bind-mount `generated/appsettings.<service>.json` read-only
-   over each container's `/app/appsettings.json`
-
-`deploy.sh` regenerates the `generated/` files from `.env` before every backend/full
-deployment, so a normal deploy already picks up your `.env` changes. Environment variables
-set in the compose files still take precedence over the mounted `appsettings.json`.
-
-### Generate AppSettings Files
+Nothing inside the services deletes aged rows. `db-init` installs `scripts/sql/purge-functions.sql`
+on every deploy; scheduling it — cron, pgAgent, Task Scheduler — is yours. Daily is enough:
 
 ```bash
-# Preview all generated configurations (stdout)
-./scripts/generate-appsettings.sh
-
-# Generate all backend configs into generated/
-./scripts/generate-appsettings.sh --output-dir ./generated
-
-# Generate for a specific service only
-./scripts/generate-appsettings.sh --service manager --output-dir ./generated
+psql -h DB_HOST -U trackhub -d TrackHub -c "CALL ops.run_purge();"
 ```
 
-### Full Configuration Sync
+`ops.run_purge()` runs each task in its own transaction and logs a failing one as a warning;
+`ops.purge_all()` does the same in one transaction and returns a row per task. Each task is also
+callable alone with its window, e.g. `SELECT ops.purge_audit_events(now(), 365);`.
 
-The `sync-config.sh` script handles both backend and frontend configuration:
+| Data | Default retention |
+|---|---|
+| Position history, logs, operator health checks | 30 days (position history per account: the `gps.positionHistory` entitlement's `retentionDays`) |
+| Background job runs, notification deliveries, operator sync runs | 90 days |
+| Resolved alert events | 180 days |
+| API usage hours | 400 days |
+| Audit events, trip events | 730 days |
+
+Each task keeps what is still needed: failed job runs and the newest run per job, alert events a
+delivery references, events of unfinished trips, the newest sync run and health check per operator.
+On a partitioned history, run it at least monthly even with nothing to purge, or new rows land in
+the default partition. Document bytes are the exception: Manager reclaims superseded versions itself
+after `DOCUMENT_RETENTION_DAYS`.
+
+### Logs and health
 
 ```bash
-# Validate your .env configuration
-./scripts/sync-config.sh validate
-
-# Show current configuration values
-./scripts/sync-config.sh show
-
-# Generate all backend appsettings.json files into generated/
-./scripts/sync-config.sh generate
-
-# Generate only the React .env file
-./scripts/sync-config.sh frontend
-```
-
-### Configuration Template
-
-The master template at `config/appsettings.template.json` shows all configurable values and their environment variable mappings:
-
-| Variable | Used By | Description |
-|----------|---------|-------------|
-| `${ALLOWED_CORS_ORIGINS}` | All services | CORS allowed origins |
-| `${AUTHORITY_URL}` | All except Authority | Identity provider URL |
-| `${DB_CONNECTION_SECURITY}` | Authority, Security | Security database (`TrackHubSecurity`) |
-| `${DB_CONNECTION_MANAGER}` | Manager, Geofencing, TripManagement | Manager database (`TrackHub`) |
-| `${DB_CONNECTION_TELEMETRY}` | Telemetry | Telemetry DB — **must be the same `TrackHub` database** (schema `telemetry`) |
-| `${DB_CONNECTION_LOGGING}` | All backend services | Serilog sink (`public.logs` in the `TrackHub` database) |
-| `${CERTIFICATE_PATH}` | All services | Path to OpenIddict certificate |
-| `${CERTIFICATE_PASSWORD}` | All services | Certificate password |
-| `${ENCRYPTION_KEY}` | Security, Manager, Router, SyncWorker | Database encryption key |
-| `${SECURITY_CLIENT_ID}` / `${SECURITY_CLIENT_SECRET}` | Security | `security_client` service credentials (audit forwarding) |
-| `${ROUTER_CLIENT_ID}` / `${ROUTER_CLIENT_SECRET}` | Router | `router_client` service credentials |
-| `${SYNCWORKER_CLIENT_ID}` / `${SYNCWORKER_CLIENT_SECRET}` | SyncWorker | `syncworker_client` service credentials |
-| `${GEOFENCE_CLIENT_ID}` / `${GEOFENCE_CLIENT_SECRET}` | Geofencing | `geofence_client` service credentials (alert emission + dwell-evaluator job runs toward Manager) |
-| `${TRIP_CLIENT_ID}` / `${TRIP_CLIENT_SECRET}` | TripManagement | `trip_client` service credentials (alerts, job runs, public links, staff/transporter validation toward Manager; position history toward Telemetry) |
-| `${REPORTING_CLIENT_ID}` / `${REPORTING_CLIENT_SECRET}` | Reporting | `reporting_client` service credentials — reads the account's time zone from Manager so report day boundaries are the account's. Without them every preview and export fails at start-up with `Setting 'ClientId' not found` |
-| `${ROUTING_PROVIDER}` / `${ORS_BASE_URL}` / `${ORS_API_KEY}` / `${ORS_PROFILE}` / `${ORS_REQUESTS_PER_SECOND}` / `${ORS_TIMEOUT_SECONDS}` / `${ORS_MAX_WAYPOINTS}` | TripManagement | `AppSettings:Routing` — OpenRouteService directions/matrix. **Required per deployment**, see [OpenRouteService provisioning](#openrouteservice-provisioning-required) |
-| `${ORS_INTERACTIVE_TIMEOUT_SECONDS}` / `${ORS_BACKGROUND_REQUESTS_PER_WINDOW}` / `${ORS_BACKGROUND_WINDOW_SECONDS}` | TripManagement | `AppSettings:Routing` admission control — how long an interactive caller waits for a slot (default 15s) and the background ETA-refresh budget per rolling window (defaults 250 per 300s) |
-| `${DOCUMENT_STORAGE_PROVIDER}` / `${DOCUMENT_STORAGE_LOCAL_ROOT}` / `${DOCUMENT_RETENTION_DAYS}` | Manager | Document management storage |
-| `${SMTP_*}` / `${WHATSAPP_*}` / `${PORTAL_BASE_URL}` / `${NOTIFICATION_DELIVERY_RETENTION_DAYS}` / `${NOTIFICATION_SENDING_RECLAIM_MINUTES}` | Manager | Alerts & notifications delivery channels, retention, and stuck-delivery reclaim (default 10 min) |
-| `${BACKGROUND_JOB_RUN_RETENTION_DAYS}` / `${ALERT_EVENT_RETENTION_DAYS}` | Manager | Platform retention sweep (`platform-retention` job) — job-run history and alert events purge windows (defaults 90 / 180 days) |
-| `${GRAPHQL_*_SERVICE}` | Various | Internal service URLs (includes `GRAPHQL_TELEMETRY_SERVICE` and `GRAPHQL_TRIP_SERVICE`) |
-| `${REPORTING_MAX_EXPORT_ROWS}` / `${REPORTING_MAX_PDF_ROWS}` / `${REPORTING_PREVIEW_ROWS}` | Reporting | `AppSettings:Reporting` — report export/preview row limits. Defaults 100000 / 500 / 100 come from `ReportingLimitsOptions`; set these in `.env` and compose passes them as `AppSettings__Reporting__*` (`generate-appsettings.sh` writes the same block into `appsettings.reporting.json`) — no rebuild needed. |
-
-### When to Regenerate
-
-Regenerate appsettings when you change:
-- Domain or URLs
-- Database connection strings
-- Encryption keys
-- Certificate paths or passwords
-- Service endpoint URLs
-
----
-
-## Configuration Reference
-
-### Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DOMAIN` | Your domain name | `trackhub.example.com` |
-| `LETSENCRYPT_EMAIL` | Email for Let's Encrypt | `admin@trackhub.example.com` |
-| `ALLOWED_CORS_ORIGINS` | CORS allowed origins | `https://trackhub.example.com` |
-| `DB_CONNECTION_SECURITY` | Security DB connection | `server=...;database=TrackHubSecurity;...` |
-| `DB_CONNECTION_MANAGER` | Manager DB connection | `server=...;database=TrackHub;...` |
-| `DB_CONNECTION_TELEMETRY` | Telemetry DB connection (same `TrackHub` DB) | `server=...;database=TrackHub;...` |
-| `DB_CONNECTION_LOGGING` | Centralized logging DB connection | `server=...;database=TrackHub;...` |
-| `CERTIFICATE_PASSWORD` | OpenIddict cert password | `your-password` |
-| `ENCRYPTION_KEY` | Database encryption key | `GUID format` |
-| `AUTHORITY_URL` | Identity provider URL | `https://domain.com/Identity` |
-| `OPENIDDICT_SCOPES` | Scopes the Authority registers | `mobile_scope,staff_mobile_scope,web_scope,service_scope` |
-| `SYNCWORKER_CLIENT_ID` | SyncWorker OAuth client ID | `syncworker_client` |
-| `SYNCWORKER_CLIENT_SECRET` | SyncWorker OAuth client secret | `your-secret` |
-| `ROUTER_CLIENT_ID` | Router OAuth client ID | `router_client` |
-| `ROUTER_CLIENT_SECRET` | Router OAuth client secret | `your-secret` |
-| `SECURITY_CLIENT_ID` | Security OAuth client ID | `security_client` |
-| `SECURITY_CLIENT_SECRET` | Security OAuth client secret | `your-secret` |
-| `GEOFENCE_CLIENT_ID` | Geofencing OAuth client ID | `geofence_client` |
-| `GEOFENCE_CLIENT_SECRET` | Geofencing OAuth client secret | `your-secret` |
-| `TRIP_CLIENT_ID` | TripManagement OAuth client ID | `trip_client` |
-| `TRIP_CLIENT_SECRET` | TripManagement OAuth client secret | `your-secret` |
-| `REPORTING_CLIENT_ID` | Reporting OAuth client ID | `reporting_client` |
-| `REPORTING_CLIENT_SECRET` | Reporting OAuth client secret | `your-secret` |
-| `ROUTING_PROVIDER` | Routing provider name (`AppSettings:Routing:Provider`) | `OpenRouteService` |
-| `ORS_BASE_URL` | ORS base URL — public API or your self-hosted instance | `https://api.openrouteservice.org` |
-| `ORS_API_KEY` | ORS API key. **Required**; empty ⇒ `RoutePlan.Failed` + `ROUTING_NOT_CONFIGURED` | `your-ors-key` |
-| `ORS_PROFILE` | Routing profile (`driving-hgv` honours truck weight/dimensions) | `driving-hgv` |
-| `ORS_REQUESTS_PER_SECOND` / `ORS_TIMEOUT_SECONDS` / `ORS_MAX_WAYPOINTS` | Client-side throttle, HTTP timeout, and max stops per directions call | `2` / `30` / `50` |
-| `GRAPHQL_IDENTITY_SERVICE` / `GRAPHQL_SECURITY_SERVICE` | Internal URL of the Security service (both point at the same container) | `http://security:8080/graphql/` |
-| `GRAPHQL_MANAGER_SERVICE` / `GRAPHQL_TELEMETRY_SERVICE` / `GRAPHQL_ROUTER_SERVICE` / `GRAPHQL_GEOFENCE_SERVICE` / `GRAPHQL_TRIP_SERVICE` | Internal Docker-network GraphQL URLs for service-to-service calls | `http://manager:8080/graphql/` |
-| `REACT_APP_DEFAULT_LAT` / `REACT_APP_DEFAULT_LNG` | Default map center when the user denies location permission | `4.624335` / `-74.063644` |
-| `REACT_APP_CLIENT_ID` | Frontend OAuth client id (PKCE client in `clients.json`) | `web_client` |
-| `REACT_APP_AUTHORIZATION_ENDPOINT` / `REACT_APP_TOKEN_ENDPOINT` / `REACT_APP_REVOKE_TOKEN_ENDPOINT` / `REACT_APP_LOGOUT_ENDPOINT` | Public OAuth endpoints on the Authority server | `https://domain.com/Identity/authorize` etc. |
-| `REACT_APP_CALLBACK_ENDPOINT` | OAuth redirect URI — must match the `web_client` `uri` in `clients.json` | `https://domain.com/authentication/callback` |
-| `REACT_APP_MANAGER_ENDPOINT` / `REACT_APP_ROUTER_ENDPOINT` / `REACT_APP_SECURITY_ENDPOINT` / `REACT_APP_GEOFENCING_ENDPOINT` / `REACT_APP_TRIPMANAGEMENT_ENDPOINT` / `REACT_APP_TELEMETRY_ENDPOINT` | Public GraphQL API URLs per service | `https://domain.com/Manager/graphql` |
-| `REACT_APP_REPORTING_ENDPOINT` | Public Reporting REST API base URL | `https://domain.com/Reporting/` |
-| `DOCUMENT_STORAGE_PROVIDER` | Manager document store (`LocalFileSystem`/`S3`/`AzureBlob`) | `LocalFileSystem` |
-| `DOCUMENT_STORAGE_LOCAL_ROOT` | Path inside the container (LocalFileSystem only) | `/app/documents` |
-| `DOCUMENT_RETENTION_DAYS` | Byte-retention cleanup horizon | `1825` |
-| `PORTAL_BASE_URL` | Portal URL embedded in notification messages | `https://domain.com` |
-| `NOTIFICATION_DELIVERY_RETENTION_DAYS` | Notification delivery history retention | `90` |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_USE_STARTTLS` / `SMTP_FROM_ADDRESS` / `SMTP_FROM_NAME` | Email channel (empty host disables sends; production needs a real relay — external blocker) | empty |
-| `WHATSAPP_API_BASE_URL` / `WHATSAPP_PHONE_NUMBER_ID` / `WHATSAPP_ACCESS_TOKEN` / `WHATSAPP_TEMPLATE_NAME` | WhatsApp channel (Meta Cloud API, outbound utility templates; empty ids disable sends — external blocker: verified Meta Business + WABA + approved templates) | empty |
-
-> **`REACT_APP_*` values are baked into the frontend bundle at build time** — changing any of
-> them requires rebuilding the frontend image (`./scripts/update-service.sh frontend`), not
-> just restarting the container. The `GRAPHQL_*_SERVICE` URLs are internal Docker-network
-> addresses; leave them at their defaults unless you rename services in `docker-compose.yml`.
-
-### Document Storage: S3 / Azure Blob
-
-`LocalFileSystem` (the default) needs none of the keys below — documents persist to the
-`manager-documents` volume. If you set `DOCUMENT_STORAGE_PROVIDER=S3` or `AzureBlob`, the
-**required** keys become mandatory: the Manager throws at startup without them.
-
-| Variable | Required? | Description |
-|----------|-----------|-------------|
-| `DOCUMENT_S3_BUCKET_NAME` | **Required for S3** | Target bucket |
-| `DOCUMENT_S3_REGION` | Optional | AWS region (e.g. `us-east-1`) |
-| `DOCUMENT_S3_SERVICE_URL` | Optional | Custom endpoint (MinIO / S3-compatible) |
-| `DOCUMENT_S3_ACCESS_KEY` | Optional | Static key; omit both keys to use the default AWS credential chain (IAM role) |
-| `DOCUMENT_S3_SECRET_KEY` | Optional | Static secret |
-| `DOCUMENT_S3_FORCE_PATH_STYLE` | Optional | Defaults to true when a custom `SERVICE_URL` is set |
-| `DOCUMENT_S3_PRESIGNED_EXPIRY_MINUTES` | Optional | Presigned-URL TTL (default `5`) |
-| `DOCUMENT_AZURE_CONTAINER_NAME` | **Required for AzureBlob** | Blob container |
-| `DOCUMENT_AZURE_CONNECTION_STRING` | **Required for AzureBlob** | Storage account connection string |
-| `DOCUMENT_AZURE_SAS_EXPIRY_MINUTES` | Optional | SAS TTL (default `5`) |
-
-Switching provider does **not** migrate existing documents — move the contents of the
-`manager-documents` volume to the new backend yourself.
-
-### Service Ports (Internal)
-
-| Service | Internal Port |
-|---------|---------------|
-| Authority | 8080 |
-| Security | 8080 |
-| Manager | 8080 |
-| Router | 8080 |
-| Geofencing | 8080 |
-| TripManagement | 8080 |
-| Telemetry | 8080 |
-| Reporting | 8080 |
-| SyncWorker | - (background) |
-
-### URL Paths
-
-| Path | Service | Authentication |
-|------|---------|----------------|
-| `/` | Frontend (React) | Static files — the SPA itself is never authenticated |
-| `/status` | Frontend (React) | **Anonymous.** Platform status page — see below |
-| `/health` | nginx | Anonymous (static 200) |
-| `/health/{service}` | Per-service passthrough | Anonymous |
-| `/Identity/*` | Authority Server | Anonymous (it *is* the sign-in surface) |
-| `/Security/*` | Security API | Bearer token |
-| `/Manager/*` | Manager API | Bearer token, **except** `/Manager/api/PlatformStatus/announcements` |
-| `/Router/*` | Router API | Bearer token |
-| `/Geofence/*` | Geofencing API | Bearer token |
-| `/Trip/*` | Trip Management API | Bearer token, **except** the anonymous public-link resolution surface |
-| `/Telemetry/*` | Telemetry API | Bearer token |
-| `/Reporting/*` | Reporting API | Bearer token |
-
-**Deliberately anonymous surfaces.** `/status`, the `/health*` probes, and
-`GET /Manager/api/PlatformStatus/announcements` are unauthenticated **by design**: the status page
-must answer "is the platform down?" for a user who cannot sign in, which rules out anything behind
-the login. The announcements endpoint is rate-limited per client IP, output-cached for 60 s, and
-returns only currently-visible announcements — it never exposes drafts, scheduling metadata, or any
-account data. Do not put these behind auth or an IP allowlist without removing the status page too.
-
----
-
-## Build Architecture
-
-### Docker Build Context
-
-All services use the parent directory (`/opt/trackhub/`) as the Docker build context. This allows each Dockerfile to access:
-
-1. **Its own source directory** (e.g., `TrackHub.Manager/`)
-2. **The TrackHubCommon source** (`TrackHubCommon/`), consumed as a `ProjectReference` —
-   the Dockerfile copies it in the repository layout and restore/build resolve it from source
-3. **Shared scripts** (`TrackHub.Deployment/scripts/`)
-
-Each Dockerfile has a matching `docker/<Dockerfile>.dockerignore` file that
-excludes host build artifacts (`bin/`, `obj/`, `node_modules/`, `build/`, `.git/`)
-from the context. This is required for correctness, not just speed: without it,
-host-generated `obj/`/`bin/` folders would be copied into the image and overwrite
-the container's own restore/compile output, causing `dotnet publish --no-restore`
-to treat the code as up-to-date and ship **stale binaries**. Keeping these out of
-the context also lets Docker's layer cache detect real source changes, so normal
-cached builds always deploy updated code and `--no-cache` is not required.
-
-### Deterministic Updates (No Stale Artifacts)
-
-Updates are designed to always deploy current code without `--no-cache`, repeated
-runs, or manual cleanup:
-
-- **Backend / worker images** use ordered layers (`.csproj` → `restore` →
-  `COPY src` → `publish`). Because `bin/`/`obj/` are ignored, a source change
-  invalidates the `COPY src` layer and forces a real recompile; unchanged code
-  reuses the cache safely.
-- **Frontend** builds are baked into the image at `/app/dist`. The container
-  entrypoint (`docker/frontend-entrypoint.sh`) copies that build into the shared
-  `trackhub-frontend` volume on **every start**, and nginx only starts once the
-  frontend reports healthy. This fixes the classic named-volume trap where Docker
-  populates a volume only when it is first created (empty), leaving nginx serving
-  the previous build after a rebuild.
-- **`--force-recreate`** guarantees containers are replaced by the freshly built
-  images on every deploy.
-
-### TrackHubCommon (shared library)
-
-TrackHub services depend on the **TrackHubCommon** shared library, which is not published to nuget.org. It is consumed as a `ProjectReference`: each Dockerfile copies the `TrackHubCommon/` sources into the image build context in the same layout as the repository, and `dotnet restore`/`build` resolve the `Common.*` projects directly from source. There is no packing stage and no local NuGet feed.
-
-Because the library is compiled from the `TrackHubCommon/` source on every image build, updating it requires nothing beyond rebuilding the affected services — and there are no per-service version pins to keep in lockstep; the `<Version>` on TrackHubCommon only stamps the assemblies and any packages `dotnet pack` produces.
-
-### Reverse Proxy and HTTPS
-
-Nginx terminates SSL and forwards HTTP requests to backend containers. Each ASP.NET service uses `ForwardedHeaders` middleware to trust `X-Forwarded-Proto` and `X-Forwarded-For` headers from nginx, ensuring the application correctly identifies requests as HTTPS even though internal traffic is HTTP.
-
----
-
-## Deployment Scenarios
-
-### Scenario 1: Single Server (Full Stack)
-
-Use `docker-compose.yml`:
-
-```bash
-./scripts/deploy.sh full --build
-```
-
-The deployment script rebuilds images using the Docker layer cache (source
-changes are detected automatically), then starts services with
-`--force-recreate --no-build` so the running containers come from the freshly
-built images. Add `--no-cache` only if you ever need to force a full rebuild.
-
-### Scenario 2: Separate Frontend and Backend
-
-#### Backend Server
-
-```bash
-# Copy .env.backend.example to .env
-cp .env.backend.example .env
-# Edit with backend-specific settings
-nano .env
-
-# Deploy backend only
-./scripts/deploy.sh backend --build
-```
-
-#### Frontend Server
-
-```bash
-# Copy .env.frontend.example to .env
-cp .env.frontend.example .env
-# Edit with frontend-specific settings (pointing to backend server)
-nano .env
-
-# Deploy frontend only
-./scripts/deploy.sh frontend --build
-```
-
----
-
-## Database Setup
-
-### PostgreSQL Requirements
-
-- PostgreSQL 14+
-- Two databases: `TrackHubSecurity` and `TrackHub`
-- The **`postgis`** extension in the `TrackHub` database (required by Geofencing and by
-  TripManagement — their migrations declare `HasPostgresExtension("postgis")`). One
-  `CREATE EXTENSION` covers both; they share the database.
-- Must be installed and operational before deploying TrackHub
-
-### The Schema Is Created by EF Migrations — Not by `db-init`
-
-This trips people up, so it is worth stating plainly:
-
-| Step | What it does | What it does **not** do |
-|------|--------------|--------------------------|
-| **EF migrations** (`dotnet ef database update`) | Create and alter all tables/schemas | — |
-| **`db-init`** (runs inside `deploy.sh full`) | Seed reference data + OAuth clients (idempotent) | **Does not create or alter any table** |
-
-Both `DBInitializer`s call `SeedAsync()` only. Running `db-init` against an empty database
-fails. Apply migrations **first**, on a fresh install *and* on every upgrade that adds them.
-
-### Manual Database Creation
-
-Run as a **superuser** — `CREATE EXTENSION` requires it:
-
-```sql
--- Create databases
-CREATE DATABASE "TrackHubSecurity";
-CREATE DATABASE "TrackHub";
-
--- Create user (if needed)
-CREATE USER trackhub WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE "TrackHubSecurity" TO trackhub;
-GRANT ALL PRIVILEGES ON DATABASE "TrackHub" TO trackhub;
-
--- PostgreSQL 15+: database-level grants do NOT allow creating objects. The role also needs
--- the public schema, where Serilog auto-creates its "logs" table (needAutoCreateTable).
-\c TrackHubSecurity
-GRANT ALL ON SCHEMA public TO trackhub;
-
-\c TrackHub
-GRANT ALL ON SCHEMA public TO trackhub;
-
--- PostGIS, in the TrackHub database (superuser required)
-CREATE EXTENSION IF NOT EXISTS postgis;
-```
-
-### Applying Migrations
-
-Four services own migrations. **Telemetry has none** — its `telemetry` schema is created by
-the Manager migrations.
-
-| Service | Migrations project | Startup project | Target DB |
-|---------|--------------------|-----------------|-----------|
-| Security | `TrackHubSecurity/src/Infrastructure/SecurityDB` | `TrackHubSecurity/src/Web` | `TrackHubSecurity` |
-| Manager | `TrackHub.Manager/src/Infrastructure/ManagerDB` | `TrackHub.Manager/src/Web` | `TrackHub` |
-| Geofencing | `TrackHub.Geofencing/src/Infrastructure/ManagerDB` | `TrackHub.Geofencing/src/Web` | `TrackHub` |
-| TripManagement | `TrackHub.TripManagement/src/Infrastructure/TripDB` | `TrackHub.TripManagement/src/Web` | `TrackHub` (schema `trip`, **requires `postgis`**) |
-
-Set the connection strings explicitly — the services'
-`appsettings.json` holds a **localhost dev** connection string that EF would otherwise use
-silently. (`TrackHubCommon` builds from source automatically — it is a `ProjectReference`,
-so no local feed setup is needed.)
-
-```bash
-dotnet tool install --global dotnet-ef
-
-cd /opt/trackhub
-
-export SECURITY_CONN="server=db.example.com;port=5432;database=TrackHubSecurity;user id=trackhub;password=YourStrongPassword"
-
-# Services run with a 30 s command timeout (the shared connection-string normalization in
-# Common.Infrastructure). Index builds and table rewrites take longer, so migrations run without one.
-export Database__CommandTimeoutSeconds=0
-export MANAGER_CONN="server=db.example.com;port=5432;database=TrackHub;user id=trackhub;password=YourStrongPassword"
-
-ConnectionStrings__Security="$SECURITY_CONN" dotnet ef database update \
-  --project TrackHubSecurity/src/Infrastructure/SecurityDB --startup-project TrackHubSecurity/src/Web
-
-ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
-  --project TrackHub.Manager/src/Infrastructure/ManagerDB --startup-project TrackHub.Manager/src/Web
-
-ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
-  --project TrackHub.Geofencing/src/Infrastructure/ManagerDB --startup-project TrackHub.Geofencing/src/Web
-
-ConnectionStrings__DefaultConnection="$MANAGER_CONN" dotnet ef database update \
-  --project TrackHub.TripManagement/src/Infrastructure/TripDB --startup-project TrackHub.TripManagement/src/Web
-```
-
-> **Existing deployments: re-run `db-init` after adding TripManagement.** The trip
-> authorization surface depends on seeded data — the `trip_client` service-client
-> registration and its permissions, and the `Trips` / `TripTracking` / `TollCatalog`
-> resources plus their role matrix. Migrations alone do **not** seed any of it. Until
-> `db-init` has run again, **every trip call returns `FORBIDDEN`**, including for
-> administrators, and the service itself looks healthy. See
-> [Upgrading From a Previous Version](#upgrading-from-a-previous-version).
-
-### Server Tuning
-
-`scripts/sql/tune-postgresql.sql` applies the settings TrackHub's workload depends on — the SSD
-cost model, WAL sizing, autovacuum aggressiveness, slow-query logging and the `accountid` statistics
-target. Run it once per server, as a superuser, after the databases exist:
-
-```bash
-psql -h "$DB_HOST" -U postgres -d postgres -f scripts/sql/tune-postgresql.sql
-```
-
-Memory settings and `max_connections` are sized against the host and are listed, commented, at the
-end of that file — they are the one part it does not set for you. `max_connections` must be at
-least the sum of every service process's `Maximum Pool Size` (20 by default, see
-`Database:MaxPoolSize`) plus headroom; Npgsql pools **per process**, not per service.
-
-
-### Time zones
-
-Every timestamp column is `timestamp with time zone`: PostgreSQL stores a UTC instant and the
-session zone only changes how it is printed, so a dump restored on a host in another zone keeps
-every instant. Three layers keep results independent of the host's zone:
-
-- Services pin their own sessions. Common's connection-string helper adds `Timezone=UTC` unless
-  the string states one, and the Dockerfiles set `TZ=UTC`.
-- `db-init` runs `ALTER DATABASE ... SET timezone TO 'UTC'` on every database on every deploy
-  (Step 3b), so psql, cron and hand-run scripts get a UTC session too. The statement needs the
-  database's owner or a superuser; when the service user is neither, db-init prints a warning and
-  you run it once by hand as `postgres`. A dump does not carry the setting: re-run db-init, or the
-  statement by hand, after a restore.
-- The log sink writes `raise_date` as a UTC instant into a `timestamp with time zone` column
-  whatever zone the process runs in (`UtcTimestampColumnWriter` in Common).
-  The sink is configured as
-  `"Name": "TrackHubPostgreSQL"` with `"Using": ["Common.Infrastructure"]`: an appsettings file
-  from before this change still names `Serilog.Sinks.PostgreSQL.Configuration`, an assembly that
-  no longer ships, and the service fails at startup until the file is regenerated.
-
-Calendar questions — which day an instant belongs to — are answered in the account's IANA zone
-(`app.accounts.timezoneid`), never in the server's.
-
-### Partitioning the Position History
-
-`telemetry.transporter_position_history` is the only table whose growth justifies partitioning: at
-3 000 devices on a one-minute provider it reaches ~66 GB in 30 days. Partitioned, retention is a
-`DROP TABLE` instead of a `DELETE` — measured 1.24 s and 176 kB of WAL against 10.7 s and 782 MB
-for the same 2 550 000 rows, and the space comes back.
-
-**This is optional.** Everything works unpartitioned; Telemetry detects the layout at runtime and
-the retention job simply skips partition maintenance when the table is not partitioned.
-
-Order matters:
-
-1. Apply migrations — `PartitionReadyPositionHistoryKeys` puts `sourcetimestamp` into both keys,
-   which is what PostgreSQL requires before the table can be partitioned at all.
-2. Run the cutover:
-
-```bash
-psql -h "$DB_HOST" -U postgres -d TrackHub -f scripts/sql/partition-position-history.sql
-```
-
-The script renames the existing table, creates the partitioned one with a month per partition
-covering the data plus three months ahead, copies the rows and drops the old table — budget for
-the copy on a large table. Month bounds are UTC midnights; the script forces a UTC session.
-`ops.maintain_position_partitions()` (part of `ops.purge_all()`) then creates each following
-month three months ahead and drops the months every account has aged past. Nothing inside the
-services does this: schedule it (see Retention).
-
-> **Idempotency becomes per-partition.** A unique index on a partitioned table must contain the
-> partition key, so the same `idempotencykey` in two different months is no longer rejected by the
-> database. The ingest probe is bounded to match
-> (`TransporterPositionHistoryWriter.DeduplicationWindow`, two days): a provider replaying a batch
-> older than that would store it twice.
-
-### Running Seeders Manually
-
-These **seed only** — they assume the schema already exists (see above).
-
-```bash
-# Build and run ClientSeeder
-cd /opt/trackhub/TrackHub.AuthorityServer/src/ClientSeeder
-dotnet build
-dotnet run
-
-# Build and run Security DBInitializer
-cd /opt/trackhub/TrackHubSecurity/src/DBInitializer
-dotnet build
-dotnet run
-
-# Build and run Manager DBInitializer
-cd /opt/trackhub/TrackHub.Manager/src/DBInitializer
-dotnet build
-dotnet run
-```
-
----
-
-## Migrating to a New Server (Existing Database)
-
-If you already have a running TrackHub installation and want to migrate the application services to a new server while keeping your existing database, follow these steps:
-
-### What the db-init Container Does
-
-The `db-init` container runs on **every deploy** and performs:
-
-1. **ClientSeeder** - Upserts the OAuth scopes and clients from `config/clients.json` (idempotent)
-2. **Security DBInitializer** - Seeds security resources, roles, and service-client registrations (idempotent)
-3. **Manager DBInitializer** - Seeds master data (report catalog, transporter types, master account/user) (idempotent)
-
-Every step upserts or skips anything that already exists, so re-running adds any clients/resources present in `config/clients.json` and the seed data while leaving existing rows untouched. Running it against an existing database is safe and is the normal path; the seeded administrator and master account use the well-known `PlatformBootstrap` ids in both databases, so there is no cross-database id alignment to protect.
-
-> **Schema vs. seed:** the DBInitializers **seed data only** — they assume the database
-> schema already exists. EF Core **schema migrations ("DB updates") are applied separately**
-> from `db-init` (see README → *Database Migrations*, applied with your EF migration
-> process, e.g. `dotnet ef database update`). Apply migrations for **all** stateful
-> services — Security, Manager, **Geofencing** (`geofencing` schema), **TripManagement**
-> (`trip` schema) and the `telemetry` schema (owned by Manager migrations) — before or
-> alongside a deploy.
-
-### Skipping the Seed (optional)
-
-If the new server must not write seed data (for example while the old server is still live against the same database), deploy without db-init:
-
-```bash
-./scripts/deploy.sh full --build --skip-init
-```
-
-This preserves the normal cached build and forced recreation behavior, starts every other service with nginx last, and never starts db-init.
-Then remove the dependency from the authority service.
-
-### Migration Checklist
-
-- [ ] Backup existing database before migration
-- [ ] Verify PostgreSQL is accessible from new server
-- [ ] Copy SSL certificates (`certificates/` folder)
-- [ ] Copy OpenIddict certificate (`certificate.pfx`)
-- [ ] Update `.env` with correct database connection strings
-- [ ] Update `.env` with new server's domain (if changed)
-- [ ] Decide whether db-init runs (default, safe) or `--skip-init`
-- [ ] Deploy and verify services connect properly
-- [ ] Test authentication flow
-- [ ] Test API endpoints
-
----
-
-## SSL Certificates
-
-### Production (Let's Encrypt)
-
-The recommended way is to use the provided script:
-
-```bash
-# Set in .env
-# DOMAIN=your-domain.com
-# LETSENCRYPT_EMAIL=admin@your-domain.com
-
-# Run the script (handles everything)
-sudo ./scripts/generate-certs.sh
-```
-
-The script will:
-1. Install `certbot` if needed
-2. Obtain a free SSL certificate from Let's Encrypt
-3. Copy `fullchain.pem` and `privkey.pem` to `certificates/`
-4. Generate the OpenIddict `certificate.pfx` for token signing
-5. Install the certbot deploy hook (`/etc/letsencrypt/renewal-hooks/deploy/trackhub-nginx.sh`) that copies
-   renewed files into `certificates/` and reloads nginx
-
-Certificates are valid for 90 days. certbot's own systemd timer renews them with the **webroot** method, so nginx
-stays online, and the deploy hook publishes the result to nginx. Without the hook, nginx keeps serving the old copy
-in `certificates/` until it expires.
-
-```bash
-# Manual renewal check
-./scripts/renew-ssl.sh
-
-# Verify the renewal chain
-ls -l /etc/letsencrypt/renewal-hooks/deploy/trackhub-nginx.sh
-sudo certbot renew --dry-run
-```
-
-### OpenIddict Certificate (Token Signing)
-
-All services (including the Authority Server) use the `LoadCertFromFile` option to load the OpenIddict certificate from a `.pfx` file. This is the recommended approach for Linux/Docker deployments.
-
-#### Option A: Generate Self-Signed Certificate (Development/Testing)
-
-> Do **not** use `scripts/generate-certs.sh` for this. That script always obtains a real
-> Let's Encrypt certificate first (it installs certbot, runs `certonly`, and exits with an
-> error if `/etc/letsencrypt/live/<domain>` never appears). It requires a public domain and
-> is a production-only path. For a self-signed token-signing certificate, use OpenSSL
-> directly:
-
-```bash
-openssl req -x509 -newkey rsa:4096 \
-    -keyout key.pem -out cert.pem \
-    -days 365 -nodes \
-    -subj "/CN=your-domain.com"
-
-# Convert to PFX format
-openssl pkcs12 -export \
-    -out certificates/certificate.pfx \
-    -inkey key.pem -in cert.pem \
-    -password pass:your-certificate-password
-
-# Clean up temporary files
-rm key.pem cert.pem
-```
-
-#### Option B: Use CA-Signed Certificate (Production)
-
-1. Obtain a certificate from a trusted Certificate Authority
-2. Convert to PFX format if needed:
-
-```bash
-# If you have separate cert and key files
-openssl pkcs12 -export \
-    -out certificates/certificate.pfx \
-    -inkey your-private-key.pem \
-    -in your-certificate.pem \
-    -certfile your-ca-bundle.pem \
-    -password pass:your-certificate-password
-```
-
-#### Certificate Configuration
-
-The Docker deployment is configured to use file-based certificate loading:
-
-| Environment Variable | Description | Example |
-|---------------------|-------------|---------|
-| `OpenIddict__LoadCertFromFile` | Enable file-based loading | `true` |
-| `OpenIddict__Path` | Path to certificate file | `/app/certificates/certificate.pfx` |
-| `OpenIddict__Password` | Certificate password | Set in `.env` as `CERTIFICATE_PASSWORD` |
-
-**Important Notes:**
-- All services use the same certificate for token validation
-- The certificate is mounted as a read-only volume at `/app/certificates/`
-- Set `CERTIFICATE_PASSWORD` in your `.env` file
-- For production, use a CA-signed certificate with a strong password
-
-#### Windows vs Linux Certificate Loading
-
-| Platform | Method | Configuration |
-|----------|--------|---------------|
-| **Linux/Docker** | File-based (PFX) | `LoadCertFromFile=true`, `Path=/app/certificates/certificate.pfx` |
-| **Windows host** | Certificate Store | `LoadCertFromFile=false`, `Thumbprint=<cert-thumbprint>` |
-
-The services support both methods. For Docker deployments, file-based loading is used automatically.
-
----
-
-## Upgrading From a Previous Version
-
-A version upgrade can introduce new services, new configuration keys, new OAuth
-clients, and new database migrations. Because `.env` and `config/clients.json`
-are **your local files** (they are not overwritten by `git pull`), you must merge the
-new keys into them yourself. Follow these steps in order.
-
-### 1. Back up first
-
-```bash
-cd /opt/trackhub/TrackHub.Deployment
-./scripts/backup-database.sh backup          # dumps BOTH databases into one archive
-cp .env .env.bak
-cp config/clients.json config/clients.json.bak
-
-# Uploaded documents are NOT in the database — back the volume up too
-docker volume ls | grep manager-documents
-docker run --rm -v <volume-name>:/data -v "$PWD/backups:/backup" alpine \
-  tar czf /backup/documents-preupgrade.tar.gz -C /data .
-```
-
-### 2. Pull the new code
-
-Everything ships in one repository, so a single pull brings every service —
-including `TrackHub.Telemetry/` and `TrackHubCommon/`, which older instances had to
-clone separately:
-
-```bash
-cd /opt/trackhub && git pull
-```
-
-**TrackHubCommon must be present on disk** — the services consume it as a
-`ProjectReference`, so the backend images build it straight from its source. It is
-part of this repository, so the pull above is all it takes; `deploy.sh` now reports a
-missing directory as a broken checkout rather than trying to clone it.
-
-No separate checkout is needed for **SyncWorker** — it builds from `TrackHubRouter/`.
-
-> Upgrading an instance that predates the single-repository layout? Its `/opt/trackhub`
-> holds one clone per service. Re-clone into a fresh directory
-> (`git clone https://github.com/shernandezp/TrackHub.git /opt/trackhub-new`), copy your
-> `TrackHub.Deployment/.env`, `certificates/` and `generated/` across, then switch over.
-> Do not try to convert the old layout in place.
-
-### 3. Reconcile your `.env` with the template
-
-Compare your live `.env` against the updated example and add anything missing:
-
-```bash
-# Show keys present in the template but not in your .env
-comm -23 <(grep -oE '^[A-Z0-9_]+=' .env.example | sort -u) \
-         <(grep -oE '^[A-Z0-9_]+=' .env | sort -u)
-```
-
-Keys that are **new or changed** and required by this release:
-
-| Key | Action |
-|-----|--------|
-| `ROUTER_CLIENT_ID` / `ROUTER_CLIENT_SECRET` | **Add.** Router now performs service-to-service calls; must match the `router_client` in `clients.json`. |
-| `SECURITY_CLIENT_ID` / `SECURITY_CLIENT_SECRET` | **Add.** Security now forwards audit/user writes; must match `security_client`. |
-| `DB_CONNECTION_TELEMETRY` | **Add** (same `TrackHub` database as `DB_CONNECTION_MANAGER`). |
-| `GRAPHQL_TELEMETRY_SERVICE` | **Add** (`http://telemetry:8080/graphql/`). |
-| `REACT_APP_TELEMETRY_ENDPOINT` | **Add** (`https://<domain>/Telemetry/graphql`). |
-| `DOCUMENT_STORAGE_PROVIDER` / `DOCUMENT_STORAGE_LOCAL_ROOT` / `DOCUMENT_RETENTION_DAYS` | **Add** (defaults work; documents persist to the `manager-documents` volume). |
-| `OPENIDDICT_SCOPES` | **Change** to `mobile_scope,staff_mobile_scope,web_scope,service_scope`. |
-| `SYNCWORKER_CLIENT_ID` | **Change** to `syncworker_client`. |
-| `GEOFENCE_CLIENT_ID` / `GEOFENCE_CLIENT_SECRET` | **Add**. Geofencing now emits alert events and job runs to Manager; must match the `geofence_client` in `clients.json`. |
-| `TRIP_CLIENT_ID` / `TRIP_CLIENT_SECRET` | **Add**. TripManagement calls Manager (alerts, job runs, public links, staff/transporter validation) and Telemetry; must match the `trip_client` in `clients.json`. |
-| `REPORTING_CLIENT_ID` / `REPORTING_CLIENT_SECRET` | **Add**. Reporting reads the account's time zone from Manager; must match the `reporting_client` in `clients.json`. Reports fail with HTTP 500 without them. |
-| `GRAPHQL_TRIP_SERVICE` | **Add** (`http://tripmanagement:8080/graphql/`). Consumed by Router (`processTripPositions`) and Reporting (trip report data). |
-| `REACT_APP_TRIPMANAGEMENT_ENDPOINT` | **Add** (`https://<domain>/Trip/graphql`). Baked in at frontend build time. |
-| `ROUTING_PROVIDER` / `ORS_BASE_URL` / `ORS_API_KEY` / `ORS_PROFILE` / `ORS_REQUESTS_PER_SECOND` / `ORS_TIMEOUT_SECONDS` / `ORS_MAX_WAYPOINTS` | **Add.** Required before releasing the trip module — see [OpenRouteService Provisioning](#openrouteservice-provisioning-required). |
-
-### 4. Reconcile `config/clients.json`
-
-Bring your `clients.json` in line with `config/clients.json.example`:
-
-- **scopes:** add `staff_mobile_scope` and `service_scope` (`resource: trackhub_api`); remove any `sec_scope`.
-- **PKCEClients:** add `mobile_client` and `staff_mobile_client` if you run the mobile/staff apps.
-- **`mobile_client.passwordGrant` (2026-09):** set to `true`. The mobile app signs in through an in-app page with the OAuth 2.0 password grant and gets `unauthorized_client` without it. Only `mobile_client` carries the flag; every other public client stays on code + PKCE.
-- **serviceClients:** add `router_client`, `security_client`, `geofence_client`, and `trip_client`, and give **every** service client `"scope": "service_scope"`. Each `clientSecret` must equal the matching `*_CLIENT_SECRET` in `.env`.
-- **`web_client.postLogoutUri`:** change to `https://<domain>/` (was `.../authentication/callback`). Logout from the portal lands on a 404 otherwise.
-
-> After changing `clients.json` you must **re-run `db-init`** — it is what registers the
-> clients and seeds the resource/role matrix. Skipping it leaves `trip_client` unregistered
-> and every trip call answering `FORBIDDEN`.
-
-### 5. Apply database migrations
-
-`db-init` seeds data only — it does **not** create or alter the schema. Apply the EF
-Core migrations for every stateful service against your existing databases **before**
-starting the new images (Security → `TrackHubSecurity`; Manager, Geofencing and
-TripManagement → `TrackHub`; the `telemetry` schema is created by the Manager migrations). Use your
-standard migration process (e.g. `dotnet ef database update` per service, or an EF
-migration bundle). This step is required on every upgrade that adds migrations.
-
-**Migrations added by recent releases** (apply in order; each is additive and safe to re-run):
-
-| Migration | Service | Adds | If not applied |
-|-----------|---------|------|----------------|
-| `AddWorkforceQualificationsAndAssignments` | Manager | `app.staff_qualifications` and `app.staff_transporter_assignments` (workforce qualifications and staff/transporter assignment history). | Every workforce call fails; qualification expiration scanning and the workforce reports return errors. |
-| `InitialCreate` (TripDB) | TripManagement | The `trip` schema: trips, stops, route plans, tracking events, PODs, public-link grants, the toll catalog, plus two views. **Requires the `postgis` extension** in `TrackHub` — already present if Geofencing is deployed, since they share the database. | TripManagement crash-loops at startup; every `/Trip/*` call fails. |
-| `AddTripDetectionState` (TripDB) | TripManagement | `trip.trips.consecutiveoutsidefixes` and `trip.trip_stops.outsidesinceat` — the persisted arrival/departure detection state. | Trip tracking ingestion fails; automatic stop arrival/departure detection never advances. |
-| `AddPublicShareDisclosureAndTollIntegrity` (TripDB) | TripManagement | `trip.trip_stops.city` and `trip.trip_shares.includeroute` (public-share disclosure control), plus the toll-catalog integrity constraints: unique `toll_vehicle_classes.code`, the reworked `transporter_toll_classes` uniqueness/XOR check, and the `toll_tariffs` / `transporter_toll_classes` foreign keys to the vehicle-class code. | Public share links ignore the route/city disclosure settings; the toll catalog accepts duplicate and orphaned class rows. |
-| `AddTollStationNameUniqueness` (TripDB) | TripManagement | Replaces the `(name, code)` unique index on `trip.toll_stations` with two partial indexes — one for coded stations, one for code-less ones. `code` is nullable and PostgreSQL treats NULLs as distinct, so the original index allowed unlimited duplicate code-less stations. | An operator can enter the same code-less station twice; route matching then finds both and charges its toll twice in every estimate. |
-| `AddZeroTouchLifecycle` (TripDB) | TripManagement | Origin geofence / arming columns on `trip.trips` and the `origingeom` GiST index. | Zero-touch trip start never arms; trips stay Planned until started by hand. |
-
-**No EF tooling on the server?** Generate the schema as plain SQL on a workstation and run it in
-pgAdmin as the application role. `dotnet ef migrations script 0 <last-applied-migration>` (per
-service) reproduces what production has, `dotnet ef migrations script` (no range) the full model;
-diffing the two `information_schema` dumps gives the exact catch-up. Keep the resulting file with
-your other operator scripts so the next upgrade starts from a known state.
-| `AddServiceClientPermissionAllowCrossAccount` | Security | `security.service_client_permissions.allowcrossaccount`, and back-fills it to `TRUE` for every account-less (`accountid IS NULL`) permission row. | **Every Security permission read fails** — the column is mapped by EF, so the query errors out. Service-to-service authorization breaks platform-wide, not just for the trip module. |
-
-> **`db-init` must be re-run after this migration, on existing deployments too.** The
-> migration creates the `trip` schema but seeds nothing. The `trip_client` service-client
-> registration, its permissions, and the `Trips` / `TripTracking` / `TollCatalog` resources
-> and role matrix all come from the seeders. Until `db-init` runs again, **every trip call
-> returns `FORBIDDEN`** — for administrators as well — while the container reports healthy
-> and the schema looks complete. This is the single most likely trip-module deployment
-> failure.
-
-> **`AddServiceClientPermissionAllowCrossAccount` is the one migration you cannot skip.**
-> Apply it to `TrackHubSecurity` **before** starting the new images. The new Security code
-> maps `security.service_client_permissions.allowcrossaccount`; against a database that
-> lacks the column **every permission read throws**, so *all* service-to-service
-> authorization fails — Router, Reporting, Geofencing and TripManagement alike — and the
-> containers still report healthy. This is not scoped to the trip module.
-
-> **This matters on the code-only paths.** `update-service.sh` and the zero-downtime
-> procedure do **not** run migrations. Deploying a Security image that expects
-> `security.service_client_permissions.allowcrossaccount`, or a Manager image that expects
-> the workforce tables, onto a database without them fails at request time until you run the
-> migration. Verify afterwards with `./scripts/health-check.sh <domain>`.
-
-### 6. Rebuild and deploy
-
-```bash
-cd /opt/trackhub/TrackHub.Deployment
-./scripts/deploy.sh full --build
-```
-
-`deploy.sh full` runs `db-init`, which re-seeds idempotently — registering the new
-`router_client`/`security_client` and any new scopes/permissions — and force-recreates
-every container (so the Authority picks up the new `OPENIDDICT_SCOPES`).
-
-Images build **one at a time**, and every Dockerfile shares one BuildKit NuGet cache, so each
-package is downloaded once per host rather than once per image. Before building, the script
-checks free disk (10 GB under the Docker root), available memory (1.5 GB) and that nuget.org
-answers, and refuses to start otherwise. Already-built images are cached, so a re-run after a
-failure resumes where it stopped. After a successful deploy it prunes superseded images and
-trims the build cache to 15 GB.
-
-### 7. Verify
-
-```bash
-./scripts/health-check.sh your-domain.com
-```
-
-Open `https://your-domain.com/status` and check the **Portal build** line: it is the only
-surface that proves which frontend build the browser actually loaded. If the upgrade has to
-be reversed, see [Version Management & Rollback](#version-management--rollback) — every
-image this deploy replaced was preserved as `:previous`.
-
-> **Note:** the per-service and [zero-downtime](#zero-downtime-updates) update paths below
-> do **not** run `db-init` and do **not** apply migrations. Use them for code-only updates.
-> Any upgrade that adds a migration, a new OAuth client, or a new scope must go through the
-> full `deploy.sh full --build` at least once (after steps 3–5).
-
----
-
-## Updating Services
-
-For code-only updates (no new migrations, clients, or config keys), updates are
-deterministic. `deploy.sh` and `update-service.sh` rebuild images with the Docker
-layer cache (source changes are detected automatically) and always force-recreate
-containers, and the frontend refreshes its static assets on every start. You do
-**not** need `--no-cache`, repeated executions, or manual volume/repo cleanup. Pass
-`--no-cache` only to force a full rebuild in exceptional cases.
-
-Every image an update overwrites is preserved as `:previous` first, so any of these paths
-can be reversed with a single command — see
-[Version Management & Rollback](#version-management--rollback).
-
-### Update Single Service
-
-```bash
-# Update only the manager service
-./scripts/update-service.sh manager
-
-# Update only the frontend
-./scripts/update-service.sh frontend
-
-# Force a full rebuild of a service (rarely needed)
-./scripts/update-service.sh manager docker-compose.yml --no-cache
-```
-
-### Update All Services
-
-```bash
-# Pull the latest code — one repository, so one pull covers every service,
-# the portal and this deployment folder.
-cd /opt/trackhub && git pull
-
-# Rebuild and deploy (cached, deterministic)
-cd /opt/trackhub/TrackHub.Deployment
-./scripts/deploy.sh full --build
-```
-
-`./scripts/clone-repos.sh` does the same pull and additionally verifies that no
-source directory is missing from the checkout.
-
-### Zero-Downtime Updates
-
-> **Announce the window first.** Publish a maintenance announcement from the portal
-> (**Platform Status → Manage announcements**, SuperAdministrator only) *before* you start.
-> Announcements are stored by the Manager service and served by it, so once Manager restarts the
-> banner cannot be loaded — a notice scheduled in advance is what users actually see during the
-> window. Give it a `Starts at` / `Ends at` covering the window and it retires itself.
->
-> Note the same dependency during the update: while Manager is restarting, the banner disappears
-> from `/status` and from the portal shell. That is expected degradation, not a fault — the service
-> tiles keep working because they are probed directly.
-
-For production environments, update services one at a time:
-
-```bash
-# Update backend services
-./scripts/update-service.sh authority
-./scripts/update-service.sh security
-./scripts/update-service.sh manager
-./scripts/update-service.sh router
-./scripts/update-service.sh geofencing
-./scripts/update-service.sh tripmanagement   # alias: ./scripts/update-service.sh trip
-./scripts/update-service.sh telemetry
-./scripts/update-service.sh reporting
-./scripts/update-service.sh syncworker
-
-# Update frontend last
-./scripts/update-service.sh frontend
-./scripts/update-service.sh nginx
-```
-
----
-
-## Monitoring & Maintenance
-
-### View Logs
-
-```bash
-# All services
-./scripts/logs.sh
-
-# Specific service
-./scripts/logs.sh manager
-
-# Last 50 lines, no follow
-./scripts/logs.sh security -n 50 --no-follow
-```
-
-### Health Checks
-
-```bash
-# Check all services
-./scripts/health-check.sh your-domain.com
-
-# HTTP endpoints (nginx static probe + one anonymous passthrough per service)
-curl -k https://your-domain.com/health
-curl -k https://your-domain.com/health/authority
-curl -k https://your-domain.com/health/security
+./scripts/logs.sh                         # all services, following
+./scripts/logs.sh manager -n 50 --no-follow
+./scripts/health-check.sh your-domain.com # exit code 1 if anything is unhealthy
 curl -k https://your-domain.com/health/manager
-curl -k https://your-domain.com/health/router
-curl -k https://your-domain.com/health/geofencing
-curl -k https://your-domain.com/health/trip
-curl -k https://your-domain.com/health/telemetry
-curl -k https://your-domain.com/health/reporting
-```
-
-Manager, Telemetry, Security, Geofencing, TripManagement and AuthorityServer health checks include a database
-probe; Reporting and Router are liveness-only. The SyncWorker has no HTTP listener — its liveness is
-derived from the rows it writes, and it is surfaced on the platform status page rather than here.
-
-Non-technical users can check the same signals without a shell — and without signing in — at
-`https://your-domain.com/status`.
-
-### Backup Configuration
-
-```bash
-./scripts/backup.sh
-```
-
-Archives land in `backups/`, readable by their owner only: `.env`, `config/`, `certificates/`
-(including the OpenIddict signing certificate), `nginx/` and `generated/`, plus the
-manager's `documents` volume when documents are stored on the local file system. A missing piece
-fails the backup instead of producing a partial archive.
-
-### Database Backup & Restore
-
-`backup` takes **no database argument** — it dumps *both* databases into a single
-timestamped `.tar.gz` under `backups/database/`, and `restore` takes that tarball.
-
-```bash
-# Back up BOTH databases into one archive
-./scripts/backup-database.sh backup
-
-# List all backups
-./scripts/backup-database.sh list
-
-# Restore from a backup archive
-./scripts/backup-database.sh restore backups/database/trackhub_backup_20260711_120000.tar.gz
-
-# Cleanup old backups (keep last 7 days)
-./scripts/backup-database.sh cleanup 7
-```
-
-### Backing Up Uploaded Documents
-
-`backup-database.sh` covers PostgreSQL only. Documents uploaded through the document
-management feature live on the **`manager-documents`** Docker volume and are the only
-stateful data *outside* the database. Back the volume up separately:
-
-```bash
-# Find the volume (its name is prefixed with the compose project name)
-docker volume ls | grep manager-documents
-
-# Archive it
-docker run --rm -v <volume-name>:/data -v "$PWD/backups:/backup" alpine \
-  tar czf /backup/documents-$(date +%F).tar.gz -C /data .
-```
-
-### Which Build Is Deployed?
-
-The **portal** reports its own build, because it is served as static files from a volume —
-the image tag on disk cannot tell you what a browser actually loaded:
-
-- **Footer** (`v1.1.0`) on every screen that renders it.
-- **`https://your-domain.com/status`** — *"Portal build: v1.1.0 · 2026-07-28 14:32 UTC"*,
-  under the bookmark hint. This page needs **no sign-in**, which is what makes it the check
-  to use during an update window.
-
-The version comes from `TrackHub.Portal/package.json` and the timestamp from the moment
-`vite build` ran, so **two builds of the same version are still distinguishable** — you do
-not have to bump `package.json` to tell one deployment apart from another.
-
-**Backend services do not report a version.** They are identified by their image tags:
-`./scripts/rollback.sh list` and `docker compose ps` are the authority for what is running.
-
-### Version Management & Rollback
-
-Rollback is **image-level**: it re-points a service's `:latest` tag at an older image and
-recreates the container. It does **not** touch the database — see the caveat at the end of
-this section.
-
-Both `tag` and `rollback` take a **service name** plus the tag. There is **no `delete`
-command**. All four sub-commands accept an optional compose file as the last argument
-(`docker-compose.backend.yml` / `docker-compose.frontend.yml` on split deployments).
-
-```bash
-# Tag a service's current image before making changes
-./scripts/rollback.sh tag manager v1.0.0
-
-# List tagged versions
-./scripts/rollback.sh list
-
-# Show a service's image history
-./scripts/rollback.sh history manager
-
-# Roll a service back to a previous tag
-./scripts/rollback.sh rollback manager v1.0.0
-```
-
-#### The `:previous` safety net
-
-`deploy.sh --build` and `update-service.sh` **rebuild `<project>-<service>:latest` in
-place**. The image being replaced keeps no tag of its own and becomes dangling, so an
-untagged deployment is unrecoverable. Both scripts therefore tag every image they are about
-to overwrite as **`:previous`** first, giving you a one-step rollback with no preparation:
-
-```bash
-./scripts/rollback.sh rollback frontend previous
-```
-
-`:previous` only ever holds **the last** deployment — the next update overwrites it. Tag a
-named version (`rollback.sh tag frontend v1.1.0`) for anything you want to keep across
-several updates.
-
-#### Rolling back an update — step by step
-
-The frontend is used here because the portal version makes each step visible; the same
-sequence applies to any service.
-
-```bash
-cd /opt/trackhub/TrackHub.Deployment
-
-# 1. Record what is running now. Note the portal build shown at /status.
-./scripts/rollback.sh history frontend
-curl -k https://your-domain.com/status      # or just open it in a browser
-
-# 2. Give the current image a name you will recognise later.
-#    (Optional — :previous is created automatically in step 3 — but a named tag
-#     survives further updates.)
-./scripts/rollback.sh tag frontend v1.1.0
-
-# 3. Update. The outgoing image is preserved as frontend:previous.
-./scripts/update-service.sh frontend
-
-# 4. Confirm the NEW build is live: hard-reload /status (Ctrl+Shift+R) and check that
-#    "Portal build" changed. The service worker-less SPA is cached by the browser, so a
-#    plain reload can still show the old assets.
-```
-
-Then roll back:
-
-```bash
-# 5. Roll back to either tag. The command prompts for confirmation and saves the
-#    version it is replacing as :pre-rollback-<timestamp>.
-./scripts/rollback.sh rollback frontend previous     # or: ... frontend v1.1.0
-
-# 6. Verify: /status must report the ORIGINAL build again (hard-reload), and the
-#    container must be up.
-docker compose ps frontend
-./scripts/health-check.sh your-domain.com
-```
-
-Notes that matter when the rolled-back service is the frontend:
-
-- nginx serves the SPA from the shared `trackhub-frontend` volume and is **not** restarted.
-  The frontend container's entrypoint re-copies the image's build output into that volume on
-  every start, so the rollback reaches nginx without any further action.
-- **Hard-reload the browser.** `index.html` is small and often cached; without a hard reload
-  you can see the old version string and conclude the rollback failed when it did not.
-
-#### What rollback does *not* cover
-
-- **The database is never rolled back.** Migrations are forward-only and `rollback.sh` does
-  not run any. Rolling code back **across a migration** puts an older binary on a newer
-  schema — usually tolerable (EF ignores columns it does not know) but not guaranteed. For a
-  release that added a migration, restore from `backup-database.sh` if the schema itself has
-  to go back.
-- **Configuration travels with the image, `.env` does not.** Tagging a service (deploys tag
-  `:previous`) saves its `generated/appsettings.<service>.json` under `generated/releases/`, and
-  rolling back restores the one saved with that tag. `.env` itself is not rolled back: the next
-  `sync-config.sh` regenerates from it.
-- **Seed data is not rolled back.** `db-init` seeds idempotently and only ever adds.
-
-### Retention
-
-Purging lives in the database. Nothing inside the services deletes aged rows, so these must be
-scheduled — pgAgent, cron, Windows Task Scheduler or your own runner — or the tables grow forever.
-
-```bash
-psql -d TrackHub -c "CALL ops.run_purge();"
-```
-
-db-init installs `scripts/sql/purge-functions.sql` (idempotent) on every deploy; scheduling it is
-yours.
-
-`ops.run_purge()` runs every task in its own transaction and reports each one: a task that fails
-is logged as a warning and the rest still run. `ops.purge_all()` does the same work in one
-transaction and returns a row per task, for an ad-hoc run. Together they cover position
-history, monthly partition maintenance, background job runs, resolved alert events, audit events,
-notification deliveries, API usage hours, logs, trip events, operator sync runs and operator health
-checks. Daily is enough.
-
-Each task is also callable on its own, with the retention window as an argument:
-
-```sql
-SELECT ops.purge_audit_events(now(), 365);
-SELECT ops.maintain_position_partitions();
-```
-
-Defaults are 30 days for position history, logs and operator health checks, 90 for job runs,
-deliveries and operator sync runs, 180 for resolved alert events, 400 for API usage hours, and
-730 for audit events and trip events. Position history is per account: the
-`gps.positionHistory` entitlement's `configurationJson.retentionDays` overrides the default for
-that tenant.
-
-What each task deliberately keeps: failed job runs and the newest run per job key, alert events a
-notification delivery still references, events of trips that have not reached a terminal status,
-and the newest sync run and health check per operator.
-
-`ops.maintain_position_partitions()` creates the months covering the retention window plus three
-ahead and drops whole months once the longest retention on the platform has passed them. Run it
-at least monthly even if you purge nothing, or new rows land in the DEFAULT partition. It forces a UTC session for its month
-bounds whatever zone the caller has.
-
-Document *storage* is the exception: reclaiming the bytes behind superseded or voided document
-versions needs the object store, not SQL, so `DocumentRetentionCleanupJob` still runs inside
-Manager on `DocumentStorage:RetentionDays`.
-
-### SSL Certificate Renewal
-
-Let's Encrypt certificates are renewed by certbot's systemd timer (webroot, no downtime). The deploy hook installed by `generate-certs.sh` copies the renewed files into `certificates/` and reloads nginx.
-
-```bash
-# Manual renewal check
-./scripts/renew-ssl.sh
-
-# Verify the renewal chain
-ls -l /etc/letsencrypt/renewal-hooks/deploy/trackhub-nginx.sh
-sudo certbot renew --dry-run
-```
-
-### Service Management
-
-```bash
-# Stop all services
-docker compose down
-
-# Deploy/start all services (cached, deterministic builds + forced recreation)
-./scripts/deploy.sh full --build
-
-# Restart specific service
-docker compose restart manager
-
-# View service status
 docker compose ps
+docker stats
 ```
 
-### Resource Monitoring
+`/health/<authority|security|manager|router|geofencing|trip|telemetry|reporting>` are anonymous.
+Authority, Security, Manager, Telemetry, Geofencing and TripManagement probe their database; Router
+and Reporting are liveness-only. The SyncWorker has no listener — its activity shows on `/status`.
+`/status` needs no sign-in and is the check for users who cannot log in.
+
+`/status`, the `/health*` probes and `GET /Manager/api/PlatformStatus/announcements` are anonymous
+by design (the latter rate-limited, cached 60 s, and returning only visible announcements). Do not
+put them behind authentication or an IP allowlist without giving up the status page.
+
+### Backups
 
 ```bash
-# Container resource usage
-docker stats
-
-# System resources
-htop
+./scripts/backup.sh                                        # .env, config/, certificates/, nginx/, generated/, local documents
+./scripts/backup-database.sh backup                        # both databases into one backups/database/*.tar.gz
+./scripts/backup-database.sh list
+./scripts/backup-database.sh restore backups/database/<file>.tar.gz
+./scripts/backup-database.sh cleanup 7                     # keep 7 days (default 30)
 ```
+
+Archives are readable by their owner only; they hold every credential and every tenant's data.
+Uploaded documents are **not** in PostgreSQL. On `LocalFileSystem` storage `backup.sh` includes
+them; to archive the volume yourself:
+
+```bash
+docker volume ls | grep manager-documents
+docker run --rm -v <volume>:/data -v "$PWD/backups:/backup" alpine tar czf /backup/documents-$(date +%F).tar.gz -C /data .
+```
+
+**Never run `docker compose down -v`** — it deletes the documents volume. Use
+`docker compose down --remove-orphans`.
+
+### Which build is deployed?
+
+The portal shows its version and build time in the footer and on `/status` (*Portal build*). That
+is the only proof of what a browser loaded — hard-reload, since `index.html` is cached. Backend
+services are identified by their image tags: `./scripts/rollback.sh list` and `docker compose ps`.
+
+### Rollback
+
+Rollback is image-level: it re-points a service's image at an older tag and recreates the container.
+
+```bash
+./scripts/rollback.sh list [compose-file]
+./scripts/rollback.sh history <service>
+./scripts/rollback.sh tag <service> v1.0.0            # name the running image before an update
+./scripts/rollback.sh rollback <service> previous     # undo the last update
+./scripts/rollback.sh rollback <service> v1.0.0
+```
+
+`deploy.sh` and `update-service.sh` tag every image they replace as `:previous`, which holds only the
+last deployment; tag named versions you want to keep. `rollback` asks for confirmation and saves
+the image it replaces as `:pre-rollback-<timestamp>`. Tagging also saves the service's
+`generated/appsettings.<service>.json` under `generated/releases/`, and rolling back restores it.
+
+Not rolled back: the **database** (migrations are forward-only — restore a backup if the schema
+itself must go back), `.env`, and seed data. Rolling the portal back reaches nginx without a
+restart, because the frontend container re-copies its build into the shared volume on start.
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+| Symptom | Cause and fix |
+|---|---|
+| `db-init` fails, *relation does not exist* | Migrations not applied — run them ([QUICKSTART step 5](QUICKSTART.md#5-create-the-schema-ef-migrations)) and deploy again |
+| `db-init` fails on the first deploy, user parses empty | Connection string written `userid=`; use `user id=` |
+| Every call to one module is `FORBIDDEN`, service healthy | `db-init` did not run after the release that added it, or its service client is missing from `.env` / `clients.json` |
+| Reports fail with `Setting 'ClientId' not found` | `REPORTING_CLIENT_ID` / `REPORTING_CLIENT_SECRET` missing |
+| Every API answers 404 through nginx but works directly | Containers restarted by hand got new IPs; nginx resolves upstreams once. `docker compose restart nginx` |
+| Build dies with *failed to execute bake: signal: killed* | Out of memory during the build — add swap and re-run; built images are cached |
+| OpenIddict *ID2083: This server only accepts HTTPS requests* | The request did not arrive through the proxy with `X-Forwarded-Proto`, or the proxy is outside `AppSettings:KnownProxyNetworks` |
+| CORS errors | `ALLOWED_CORS_ORIGINS` must match the portal origin exactly, including `https://` |
+| A `/status` tile reads *Unknown* | That service's `REACT_APP_*` URL is wrong; fix `.env` and `./scripts/deploy.sh portal` |
+| Everyone signed out after a deploy | `certificate.pfx` was replaced; keep the original unless rotating on purpose |
+| A service runs old code | Check `git -C /opt/trackhub log -1 --oneline`, redeploy; `--no-cache` only as a last resort |
+| `COPY ... /TrackHubCommon/...: not found` | Incomplete checkout; `./scripts/clone-repos.sh` fast-forwards it and names any missing directory |
+| 502 Bad Gateway | `docker compose ps`, then `docker logs trackhub-<service>` |
+| Database unreachable | `pg_hba.conf` / `listen_addresses`; inside containers the variables are `ConnectionStrings__*` (`docker exec trackhub-manager env \| grep ConnectionStrings`) — `DB_CONNECTION_*` exist only on `db-init` |
 
-#### Every API answers 404 through nginx, but works when called directly
-
-nginx resolves the container names in its `upstream` blocks once, at startup, and open-source
-nginx never re-resolves them. If backend containers were restarted by hand (`docker compose
-restart`, `docker restart`, a crash loop), they may have new IPs and nginx keeps proxying to the
-old ones - `/Identity/health` returns 404 from whichever container inherited the address, and
-`docker compose ps` shows nginx unhealthy. Fix: restart nginx so it resolves again.
-
-```bash
-docker compose restart nginx
-```
-
-`deploy.sh` never hits this: it recreates nginx together with the services.
-
-#### Build dies with "failed to execute bake: signal: killed"
-
-The kernel OOM-killed the image build. `deploy.sh` builds one image at a time and refuses to
-start with less than 1.5 GB available, but a build spike still needs somewhere to go: add swap
-before deploying (the same lack of swap is what makes a host stop answering SSH mid-build):
-
-```bash
-fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-```
-
-Already-built images are cached, so re-running the deploy resumes where it stopped.
-
-#### Services won't start
-
-```bash
-# Check logs
-docker compose logs --tail=100
-
-# Check specific service
-docker logs trackhub-authority
-```
-
-#### A service still runs old code after an update
-
-This should not happen with the current deployment: `.dockerignore` files keep
-stale host `bin/`/`obj/`/`node_modules/` out of the build so layer caching detects
-real source changes, the frontend refreshes its static assets from the image on
-every start, and containers are always force-recreated. If you still suspect
-staleness:
-
-```bash
-# 1. Confirm the latest code was actually pulled
-git -C /opt/trackhub log -1 --oneline
-
-# 2. Redeploy (normal cached build already rebuilds changed services)
-./scripts/deploy.sh full --build
-
-# 3. Only if you must bypass the cache entirely (rarely needed)
-./scripts/deploy.sh full --build --no-cache
-```
-
-You should **not** need to delete repositories, remove volumes, or run the deploy
-command multiple times.
-
-#### Database connection issues
-
-```bash
-# Test connectivity from container
-docker exec -it trackhub-authority ping db-server.com
-
-# Check environment variables
-docker exec -it trackhub-authority env | grep ConnectionStrings
-# (DB_CONNECTION_* exists only on the db-init container; services get ConnectionStrings__*)
-```
-
-#### Certificate issues
-
-```bash
-# Verify certificate files exist
-ls -la certificates/
-
-# Test certificate
-openssl x509 -in certificates/fullchain.pem -text -noout
-```
-
-#### CORS errors
-
-1. Check `ALLOWED_CORS_ORIGINS` in `.env`
-2. Ensure frontend URL matches exactly (including protocol)
-3. Check nginx configuration
-
-#### OpenIddict HTTPS error (ID2083)
-
-If you see `error:invalid_request` with `This server only accepts HTTPS requests`:
-
-1. The Authority Server needs `ForwardedHeaders` middleware to trust nginx's `X-Forwarded-Proto` header
-2. Ensure `UseForwardedHeaders` is called **before** `UseHttpsRedirection` in `Program.cs`
-3. This is required because nginx terminates SSL and forwards HTTP internally
-
-#### Restore failures in Docker (missing TrackHubCommon)
-
-If `dotnet restore` fails because `Common.*` projects cannot be found: TrackHubCommon is a
-`ProjectReference` — there is no packing stage and no local NuGet feed — so this almost
-always means the build context is wrong or incomplete.
-
-1. Verify `TrackHubCommon/` exists at the root of the checkout (the docker build context,
-   `context: ..`) — `./scripts/clone-repos.sh` verifies this and names any missing directory
-2. A `COPY` failure like `"/TrackHubCommon/...": not found` means the checkout is
-   partial — re-run `./scripts/clone-repos.sh`
-3. Ensure stale host build artifacts (`bin/`, `obj/`) are not leaking into the build
-   context (they are excluded by the `.dockerignore` files)
-
-#### 502 Bad Gateway
-
-1. Check if backend service is running: `docker compose ps`
-2. Check service logs: `docker logs trackhub-<service>`
-3. Verify network connectivity between containers
-
-### Debug Mode
-
-Enable detailed logging:
-
-```bash
-# Add to service environment in docker-compose.yml
-environment:
-  - ASPNETCORE_ENVIRONMENT=Development
-  - Logging__LogLevel__Default=Debug
-```
-
-### Reset Deployment
-
-> 🛑 **`-v` is destructive and irreversible.** It deletes the Docker volumes, which means:
-> - **`manager-documents`** — *every uploaded document*. This data is **not** in PostgreSQL
->   and **not** covered by `backup-database.sh`. Archive it first (see
->   [Backing Up Uploaded Documents](#backing-up-uploaded-documents)).
->
-> For a normal restart use `docker compose down --remove-orphans` (no `-v`).
-
-Only if you genuinely want to discard all local container state:
-
-```bash
-# Stop and remove everything INCLUDING volumes (see warning above)
-docker compose down -v --remove-orphans
-
-# Remove all images
-docker system prune -a
-
-# Re-deploy
-./scripts/deploy.sh full --build
-```
+For more detail, add `Logging__LogLevel__Default=Debug` to a service's `environment` in the compose
+file and recreate it.
 
 ---
 
-## Security Considerations
+## Security checklist
 
-> **⚠️ Development secrets are committed on purpose.** The repositories ship with generic
-> development credentials (OAuth client secrets in `ClientSeeder/clients.json`, sample
-> appsettings, `.env` examples, seeded users) so the multi-service development environment can
-> be stood up without manual secret plumbing. **They are for local/dev use only** — every
-> production deployment must replace them via environment variables and the steps below
-> (regenerate client secrets, strong DB/certificate passwords).
+The repository ships generic development credentials on purpose — seeded client secrets, sample
+appsettings, `.env` examples, the seeded administrator — so a development environment starts
+without secret plumbing. A deployment replaces all of them:
 
-1. **Never commit `.env` files** to version control
-2. **Use strong passwords** for database and certificates
-3. **Rotate the seeded OAuth client secrets** (`syncworker_client`, `router_client`,
-   `security_client`, `geofence_client`, `trip_client`) before
-   exposing any environment beyond local development
-4. **Keep Docker and OS updated** with security patches
-5. **Use Let's Encrypt** for production SSL certificates
-6. **Configure firewall** to only allow necessary ports
-7. **Regular backups** of configuration and database
-8. **Monitor logs** for suspicious activity
-
----
-
-## Support
-
-For issues and questions:
-- GitHub Issues: [TrackHub Repository](https://github.com/shernandezp/TrackHub/issues)
-- Documentation: [Project README](https://github.com/shernandezp/TrackHub)
-
----
-
-## License
-
-Apache License 2.0 - See individual repository LICENSE files for details.
+1. Generate every `*_CLIENT_SECRET`, `ENCRYPTION_KEY`, `CERTIFICATE_PASSWORD` and the database
+   password fresh; never commit `.env`.
+2. Change the seeded administrator's password at first sign-in.
+3. Use Let's Encrypt or a CA certificate, open only ports 80 and 443 (and SSH).
+4. Keep Docker and the OS patched, back up configuration and databases, and watch the logs.

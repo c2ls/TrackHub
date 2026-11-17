@@ -7,7 +7,9 @@ using TrackHub.Reporting.Application.Report.Factory.Admin;
 using TrackHub.Reporting.Application.Report.Factory.Document;
 using TrackHub.Reporting.Application.Report.Factory.Trip;
 using TrackHub.Reporting.Application.Report.Factory.Workforce;
+using TrackHub.Reporting.Application.Report.Filters;
 using TrackHub.Reporting.Domain.Helpers;
+using TrackHub.Reporting.Domain.Interfaces;
 using TrackHub.Reporting.Domain.Interfaces.Factory;
 using TrackHub.Reporting.Domain.Interfaces.Helpers;
 
@@ -20,6 +22,7 @@ public static class DependencyInjection
         var assembly = Assembly.GetExecutingAssembly();
         services.AddApplicationServices(assembly, false);
 
+        services.AddScoped<IReportFilterLabeler, ReportFilterLabeler>();
         services.AddScoped<IReport, LiveReport>();
         services.AddScoped<IReport, PositionRecord>();
         services.AddScoped<IReport, TransportersInGeofence>();

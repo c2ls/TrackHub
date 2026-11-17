@@ -11,7 +11,7 @@ order: 20
 
 # Users, roles, and groups
 
-These sections live on the [Account Management](topic:management-overview) screen, which only **Managers** can open. **Users**, **Roles**, and **Policies** sit under the **Users & Access** group; **Groups** sits under the **Fleet & Tracking** group. Expand a section to work with it.
+These sections live on the [Account Management](topic:management-overview) screen, which only **Managers** can open. **Users**, **Roles**, and **Policies** sit under the **Users & Access** group; **Groups** sits under the **Fleet & Tracking** group. Pick a section in the section list to open it.
 
 ## Users
 
@@ -19,7 +19,7 @@ The **Users** section manages the people who can sign in to your account.
 
 Columns: **Username** (each row shows the person's email with their username beneath), **First Name**, **Last Name**, **Status**, **Action**, and **Password**.
 
-To add a user, expand the section and click the **+** (add) icon. The **User Details** dialog collects:
+To add a user, press **Add**. The **User Details** dialog collects:
 
 - **Email Address** — required.
 - **Password** — required, and shown only when you are creating a new user.
@@ -65,9 +65,13 @@ See [Roles and permissions](topic:roles-and-permissions) for how roles and polic
 
 Groups let you organise units, staff and users together — for example by branch, region or department. Units and staff are assigned to groups, and groups are assigned to users.
 
+![Groups table with Assign actions for users, units and staff](assets/en/groups.png)
+
+Groups decide what a plain **User** sees: only the units and staff in their groups appear on their map, their trip pickers and their reports. A User in no group sees nothing. Managers and Administrators see everything in the account regardless of groups.
+
 Columns: **Groups** (name), **Description**, **Action**, **Users**, **Units**, and **Staff**.
 
-To add a group, expand the section and click the **+** (add) icon. The **Group Details** dialog asks for a **Name** (required), a **Description** (required), and an **Active** checkbox. Press **Save**.
+To add a group, press **Add**. The **Group Details** dialog asks for a **Name** (required), a **Description** (required), and an **Active** checkbox. Press **Save**.
 
 Row actions:
 

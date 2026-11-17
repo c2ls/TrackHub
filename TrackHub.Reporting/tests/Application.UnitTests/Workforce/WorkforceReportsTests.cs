@@ -14,11 +14,17 @@ namespace TrackHub.Reporting.Application.UnitTests.Workforce;
 public class WorkforceReportsTests
 {
     private Mock<IWorkforceReportReader> _reader = null!;
+    private Mock<IReportNameReader> _names = null!;
     private FilterDto _filters;
 
     [SetUp]
     public void SetUp()
     {
+        _names = new Mock<IReportNameReader>();
+        _names.Setup(n => n.GetTransporterNamesAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetOperatorNamesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetDeviceSerialsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
+        _names.Setup(n => n.GetStaffNamesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Dictionary<Guid, string>());
         _reader = new Mock<IWorkforceReportReader>();
         _reader.Setup(r => r.EnsureWorkforceFeatureAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         _filters = new FilterDto { Language = "en", Name = "Test" };
@@ -39,7 +45,7 @@ public class WorkforceReportsTests
     [Test]
     public void Codes_MatchSpecConstants()
     {
-        Assert.That(new StaffRegistryReport(_reader.Object).ReportCode, Is.EqualTo("workforce-staff-registry"));
+        Assert.That(new StaffRegistryReport(_reader.Object, _names.Object).ReportCode, Is.EqualTo("workforce-staff-registry"));
         Assert.That(new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).ReportCode, Is.EqualTo("workforce-qualification-expirations"));
         Assert.That(new AssignmentHistoryReport(_reader.Object).ReportCode, Is.EqualTo("workforce-assignment-history"));
     }
@@ -54,19 +60,19 @@ public class WorkforceReportsTests
             new ReportStaffMemberVm(Guid.NewGuid(), "Zulema", null, null, null, true, null, null, null, null, "Driver"),
             new ReportStaffMemberVm(Guid.NewGuid(), "ana", "E-1", "CC", "123", true, "E-1", "LIC-9", new DateOnly(2027, 3, 4), transporterId, "Mechanic")));
 
-        var result = await new StaffRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
+        var result = await new StaffRegistryReport(_reader.Object, _names.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.RowCount, Is.EqualTo(2));
         // Case-insensitive alphabetical order.
         Assert.That(result.Cell(0, "StaffName"), Is.EqualTo("ana"));
         Assert.That(result.Cell(0, "DocumentNumber"), Is.EqualTo("123"));
         Assert.That(result.Cell(0, "LicenseExpiresAt"), Is.EqualTo(new DateOnly(2027, 3, 4)));
-        Assert.That(result.Cell(0, "DefaultTransporterId"), Is.EqualTo(transporterId.ToString()));
+        Assert.That(result.Cell(0, "DefaultTransporter"), Is.EqualTo(transporterId.ToString()));
         // Nulls become empty strings, never null cells.
         Assert.That(result.Cell(1, "Phone"), Is.EqualTo(string.Empty));
         Assert.That(result.Cell(1, "LicenseNumber"), Is.EqualTo(string.Empty));
         Assert.That(result.Cell(1, "LicenseExpiresAt"), Is.Null);
-        Assert.That(result.Cell(1, "DefaultTransporterId"), Is.EqualTo(string.Empty));
+        Assert.That(result.Cell(1, "DefaultTransporter"), Is.EqualTo(string.Empty));
     }
 
     [Test]
@@ -74,12 +80,12 @@ public class WorkforceReportsTests
     {
         _reader.Setup(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportStaffMemberVm>());
 
-        var result = await new StaffRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None);
+        var result = await new StaffRegistryReport(_reader.Object, _names.Object).GetDatasetAsync(_filters, CancellationToken.None);
 
         Assert.That(result.Columns.Select(c => c.PropertyName), Is.EqualTo(new[]
         {
             "StaffName", "StaffType", "EmployeeCode", "DocumentType", "DocumentNumber", "Phone",
-            "LicenseNumber", "LicenseExpiresAt", "DefaultTransporterId", "Active"
+            "LicenseNumber", "LicenseExpiresAt", "DefaultTransporter", "Active"
         }));
     }
 
@@ -88,7 +94,7 @@ public class WorkforceReportsTests
     {
         _reader.Setup(r => r.GetStaffMembersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(List<ReportStaffMemberVm>());
 
-        await new StaffRegistryReport(_reader.Object).GetDatasetAsync(
+        await new StaffRegistryReport(_reader.Object, _names.Object).GetDatasetAsync(
             _filters with
             {
                 Values = FilterValues.Of(
@@ -125,6 +131,21 @@ public class WorkforceReportsTests
             _filters with { Values = FilterValues.Of((FilterNames.WithinDays, "7")) }, CancellationToken.None);
 
         _reader.Verify();
+    }
+
+    [Test]
+    public async Task Expirations_ReportsPastDueValidQualificationsAsExpired()
+    {
+        _reader.Setup(r => r.GetStaffQualificationsAsync(It.IsAny<Guid?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(List(
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Ana", "License", null, null, null, Today.AddDays(-1), null, "Valid"),
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Beto", "License", null, null, null, Today, null, "Valid"),
+            new ReportStaffQualificationVm(Guid.NewGuid(), Guid.NewGuid(), "Carla", "License", null, null, null, Today.AddDays(-5), null, "Revoked")));
+
+        var result = await new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None);
+
+        Assert.That(result.Cell(0, "Status"), Is.EqualTo("Revoked"));
+        Assert.That(result.Cell(1, "Status"), Is.EqualTo("Expired"));
+        Assert.That(result.Cell(2, "Status"), Is.EqualTo("Valid"));
     }
 
     [Test]
@@ -281,7 +302,7 @@ public class WorkforceReportsTests
             .ThrowsAsync(new UnauthorizedAccessException());
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
-            () => new StaffRegistryReport(_reader.Object).GetDatasetAsync(_filters, CancellationToken.None));
+            () => new StaffRegistryReport(_reader.Object, _names.Object).GetDatasetAsync(_filters, CancellationToken.None));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => new QualificationExpirationsReport(_reader.Object, Mock.Of<Common.Application.Interfaces.IUser>(u => u.AccountId == Guid.NewGuid()), UtcZones()).GetDatasetAsync(_filters, CancellationToken.None));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(

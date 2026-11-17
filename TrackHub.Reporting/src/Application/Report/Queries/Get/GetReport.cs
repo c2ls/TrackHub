@@ -53,6 +53,7 @@ public class GetReportQueryHandler(
     IReportBrandingReader brandingReader,
     IExcelHelper excelHelper,
     IPdfReportBuilder pdfReportBuilder,
+    IReportFilterLabeler filterLabeler,
     ReportingLimitsOptions limits)
         : IRequestHandler<GetReportQuery, ReportFileVm>
 {
@@ -104,6 +105,8 @@ public class GetReportQueryHandler(
             {
                 dataset = dataset.WithBranding(brand.AccountName, brand.LogoImage);
             }
+
+            dataset = dataset.WithAppliedFilters(await filterLabeler.LabelAsync(dataset.AppliedFilters, culture, cancellationToken));
 
             content = pdfReportBuilder.Build(dataset, culture);
             contentType = PdfContentType;

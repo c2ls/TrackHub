@@ -1,9 +1,8 @@
 namespace TrackHub.Reporting.Domain.Models;
 
 public readonly record struct GpsPositionHistoryRowVm(
-    Guid TransporterId,
+    string TransporterName,
     DateTimeOffset DeviceDateTime,
     double Latitude,
     double Longitude,
-    Guid SourceDeviceId,
-    Guid AccountId);
+    string Serial);

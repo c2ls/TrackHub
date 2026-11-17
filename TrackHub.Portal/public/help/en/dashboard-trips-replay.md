@@ -34,6 +34,8 @@ If your account has the position-history feature enabled, a **History source** t
 - **GPS provider** — history read directly from the GPS operator/provider (the default).
 - **TrackHub** — history stored by TrackHub itself.
 
+![Positions tab with the date range, unit and History source toggle](assets/en/dashboard-position-history.png)
+
 Pick the source before you click **Search**. If your account does not have this feature, the toggle is hidden and TrackHub always uses the provider's history. Position history is an account feature managed by your administrator — see [Roles and permissions](topic:roles-and-permissions).
 
 ## The trip list
@@ -68,6 +70,8 @@ Select a trip in the list. If the trip has a timeline, playback controls appear 
 - **Play / Pause** — start or stop the animation; a marker moves along the route.
 - **Speed** — choose **1x**, **2x**, **4x**, or **8x** playback speed.
 - **Speed profile** — a chart of the unit's speed across the trip, with the time and speed at the current point shown above it. Drag across the chart, or use the **timeline slider** under it, to jump to any point in the trip.
+
+![A selected trip with the Summary panel, playback controls and speed chart](assets/en/dashboard-replay-playback.png)
 
 ## Exporting to CSV
 

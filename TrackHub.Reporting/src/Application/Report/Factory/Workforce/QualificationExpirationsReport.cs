@@ -51,9 +51,13 @@ public sealed class QualificationExpirationsReport(IWorkforceReportReader reader
                 q.IssuedAt,
                 q.ExpiresAt,
                 q.ExpiresAt.DaysUntil(today),
-                q.Status))
+                EffectiveStatus(q.Status, q.ExpiresAt, today)))
             .ToList();
 
         return ReportDataset.Create(filters, rows);
     }
+
+    // Manager stores only revocation; expiry is a matter of the date.
+    private static string EffectiveStatus(string status, DateOnly? expiresAt, DateOnly today)
+        => status.Equals("Valid", StringComparison.OrdinalIgnoreCase) && expiresAt < today ? "Expired" : status;
 }

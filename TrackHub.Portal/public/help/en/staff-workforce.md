@@ -13,7 +13,7 @@ order: 35
 
 A **staff member** is anyone who works for your account — a driver, an operator, a mechanic, a salesperson, a supervisor. A staff member is tracked through a unit: register the device they carry as a unit with a name that says who it is (for example *Sales Representative North*) and link the staff member to it with **Default Transporter** or an assignment. The dashboard shows units, so that unit is what you follow on the map. Staff are not portal users: they never sign in to the web portal, they have their own credentials for the staff mobile app, and they are managed entirely from the **Fleet & Tracking** group of the **Account Management** screen.
 
-The area has four collapsible sections, in this order:
+The area has up to four sections in the section list, in this order:
 
 | Section | What it is for |
 |---|---|
@@ -24,15 +24,15 @@ The area has four collapsible sections, in this order:
 
 ## What needs the Workforce feature
 
-The **Staff** registry and its **Credentials and devices** are **core platform**. They are always there for an administrator with the right permissions, on every account, whatever the subscription says. You can always register staff, and you can always issue, lock, reset, and revoke their mobile credentials.
+The **Staff** registry and its **Credentials and devices** are always available. They are there for a Manager with the right permissions on every account. You can always register staff, and you can always issue, lock, reset, and revoke their mobile credentials.
 
-The last three sections — **Staff Qualifications**, **Staff Assignments**, and **Qualification Expirations** — belong to the billable **Workforce** feature. Without it they are simply not on the screen, expiration alerts are not raised, and the three workforce reports are absent from the report catalogue. See the [Feature catalogue](topic:feature-catalog).
+The last three sections — **Staff Qualifications**, **Staff Assignments**, and **Qualification Expirations** — need the **Workforce** feature. Without it they are simply not on the screen, expiration alerts are not raised, and the three workforce reports are absent from the report catalogue. See the [Feature catalogue](topic:feature-catalog).
 
 ## Staff
 
 The registry itself. Columns are **Name**, **Staff type**, **Document**, **Phone**, **Credential**, **Active**, and an action column. The **All types** selector beside the search box narrows the list to one staff type.
 
-Press the **+** (add) icon to open the **Create Staff Member** dialog:
+Press **Add** to open the **Create Staff Member** dialog:
 
 - **Name** (required) — the staff member's full name.
 - **Staff type** (required) — what the person does: **Driver**, **Operator**, **Driver assistant**, **Mechanic**, **Supervisor**, **Administrative** or **Other**. Existing records are **Driver**. The type decides which parts of the staff mobile app the person sees; people without a vehicle are never asked to pick one.
@@ -45,9 +45,13 @@ Press the **+** (add) icon to open the **Create Staff Member** dialog:
 
 Row actions are **Edit**, **Credentials and devices** (see below), and **Deactivate Staff Member** (you are asked to confirm). Deactivating does not delete anything, and an inactive staff cannot be given a new assignment.
 
+Staff belong to **groups** just like units do. Add a staff member to a group with **Assign** in the group's **Staff** column (see [Users, roles, and groups](topic:users-roles-groups#groups)); the users of that group can then see and pick them, for example when assigning a trip.
+
 ## Staff Credentials & Devices
 
 This is how a staff member signs in to the **staff mobile app**. Open it with the **Credentials and devices** action on the staff member's row; the dialog shows that staff member's credential and the devices enrolled on it.
+
+![Staff credentials and registered devices dialog](assets/en/staff-credentials.png)
 
 A staff member has at most one credential. Press **Create Credential** and set a **Login** and a **Password**. The credential starts **Pending Activation**, and the staff cannot sign in until it is activated.
 
@@ -55,10 +59,8 @@ A staff member has at most one credential. Press **Create Credential** and set a
 |---|---|
 | **Login** | The name the staff types in the app. |
 | **Status** | Pending Activation, Active, Locked, or Revoked. |
-| **Failed Attempts** | Consecutive failed sign-ins. The counter resets on a successful sign-in. |
-| **Locked Until** | When an automatic or manual lock expires. |
 | **Last Login** | The last successful sign-in. |
-| **Password Reset Required** | The staff must set a new password at next sign-in. |
+| **Locked Until** | When an automatic or manual lock expires. |
 
 Row actions:
 
@@ -69,15 +71,14 @@ Row actions:
 
 ### Registered Devices
 
-Under the credential sits the list of devices the staff has enrolled from the app: **Device Name**, **Platform**, **App Version**, **Push Token (masked)**, **Last Seen**, and **Status**. **Revoke Device Registration** removes one device — the staff must enrol it again from the app; their credential is untouched.
+Under the credential sits the list of devices the staff has enrolled from the app: **Device Name**, **Platform**, **App Version**, **Last Seen**, and **Status**. **Revoke Device Registration** removes one device — the staff must enrol it again from the app; their credential is untouched.
 
-Push tokens are shown masked, and the internal session identifiers are never sent to the portal at all. There is no way to reveal either, by design.
 
 ## Staff Qualifications
 
 *Requires the Workforce feature.*
 
-One qualification record covers everything credentialed about a staff member, not just the driving licence. Pick a staff member, then use **+** to open **Create Qualification**:
+One qualification record covers everything credentialed about a staff member, not just the driving licence. Pick a staff member in **Staff**, then press **Add** to open **Create Qualification**:
 
 - **Type** (required) — **License**, **Medical Exam**, **Training**, **Background Check**, **HAZMAT Permit**, or **Other**.
 - **Category** — the sub-class where the type has one, for example a licence category.
@@ -85,12 +86,16 @@ One qualification record covers everything credentialed about a staff member, no
 - **Issued At** and **Expires At** — a qualification cannot expire before it was issued.
 - **Issuing Authority** — who granted it.
 - **Status** (required) — **Valid**, **Expired**, or **Revoked**. Expiry is worked out from **Expires At** on its own, so the status you normally set by hand is **Revoked**, for a qualification that was withdrawn before its date.
-- **Linked Document** — the identifier of the supporting document (the licence scan, the medical certificate). Store the file itself under [Documents](topic:documents) and reference it here.
+- **Linked Document** — optional supporting file (the licence scan, the medical certificate), chosen from the staff member's own documents.
 - **Notes** — free text.
 
 The **Expires At** column is colour-coded as the date approaches. Row actions are **Edit** and **Delete**; deletion is permanent, and only the audit trail keeps the record afterwards.
 
 The **License Number** / **License Expires At** fields on the staff record stay as the at-a-glance summary. The full set of licences and certificates lives here.
+
+### Staff Documents
+
+Below the qualifications, **Staff Documents** lists the files held for the selected staff member. Press **Upload Document** to add the licence scan, the medical certificate or any other paper, then pick it as the **Linked Document** of a qualification. Versions, downloads and sharing work as described in [Documents](topic:documents#uploading-versions-and-sharing).
 
 ## Staff Assignments
 
@@ -142,7 +147,7 @@ Staff data is personal data, so these exports are recorded in the audit trail at
 
 ## Who can use this
 
-Every section lives inside **Account Management**, which is available to Managers. A section, a **+** button, or a row action can also be missing because your role does not carry the matching staff permission — read, write, edit, and delete are granted separately. See [Roles and permissions](topic:roles-and-permissions) and [Account Management](topic:management-overview).
+Every section lives inside **Account Management**, which is available to Managers. A section, an **Add** button, or a row action can also be missing because your role does not carry the matching staff permission — read, write, edit, and delete are granted separately. See [Roles and permissions](topic:roles-and-permissions) and [Account Management](topic:management-overview).
 
 If the qualification, assignment, or expiration sections are missing but the staff registry is there, that is the Workforce feature, not your permissions.
 

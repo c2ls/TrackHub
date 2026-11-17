@@ -19,6 +19,7 @@ import type { Report } from 'api/manager/reports';
 import type { ReportPreview, ReportPreviewCell } from 'api/reporting/reports';
 import type { TableColumn, TableRowData } from 'controls/Tables/Table';
 import { toCamelCase } from 'utils/stringUtils';
+import { formatDateOnly, formatDateTime } from 'utils/dateUtils';
 
 /**
  * The screen name of a catalog report and the sentence under it. Falls back to the
@@ -66,20 +67,18 @@ export function mapPreviewToTable(preview: ReportPreview): {
   return { columns, rows };
 }
 
-/** ISO-8601 date/date-time detector for {@link formatPreviewCell}. */
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?)?$/;
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_DATE_TIME_RE = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/;
 
 /**
  * Formats a preview cell for display: null → '-', booleans → yes/no glyph text,
- * ISO date strings → locale date-time, everything else stringified as-is.
+ * ISO dates → the app's date / date-time format, everything else stringified as-is.
  */
 export function formatPreviewCell(value: ReportPreviewCell): string {
   if (value === null || value === undefined) return '-';
   if (typeof value === 'boolean') return value ? '✓' : '✗';
-  if (typeof value === 'string' && ISO_DATE_RE.test(value)) {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) return parsed.toLocaleString();
-  }
+  if (typeof value === 'string' && DATE_ONLY_RE.test(value)) return formatDateOnly(value) || value;
+  if (typeof value === 'string' && ISO_DATE_TIME_RE.test(value)) return formatDateTime(value) || value;
   return String(value);
 }
 

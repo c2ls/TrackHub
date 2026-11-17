@@ -1,42 +1,41 @@
 ---
 id: units-devices
 title: Units and devices
-description: Manage the units you track and the GPS devices that report for them, both from the Fleet & Tracking group of Account Management.
+description: Add, edit, retire and restore the units you track, and see the GPS devices that report for them, from the Fleet & Tracking group of Account Management.
 category: administration
 screens: [manageAdmin]
-related: [gps-integration, management-overview, glossary]
-tags: [units, transporters, devices, fleet, gps]
+related: [gps-integration, management-overview, users-roles-groups, glossary]
+tags: [units, devices, fleet, retire, gps]
 order: 30
 ---
 
 # Units and devices
 
-The **Units** and **Devices** sections both sit under the **Fleet & Tracking** group of the [Account Management](topic:management-overview) screen, which only **Managers** can open. Expand a section to work with it.
+The **Units** and **Devices** sections sit under the **Fleet & Tracking** group of the [Account Management](topic:management-overview) screen, which only **Managers** can open.
 
-A **unit** is the thing you track — a vehicle, an asset, a person, or any object. A **device** is the physical GPS hardware that reports positions. A device is linked to a unit so the unit shows up on the map; that linking is done on the GPS Integration page (see below).
+A **unit** is the thing you track — a vehicle, an asset, a person, or any object. A **device** is the GPS hardware that reports positions. A device is linked to a unit so the unit shows up on the map; that link is made on the **GPS Integration** page.
 
 ## Units
 
-The app labels tracked things **Units** (some screens call them transporters).
+Columns: **Name**, **Type**, and **Action**. Use the search box to find a unit by name.
 
-Columns: **Units** (name), **Type** (shown as a coloured label), and **Action**.
+- **Add** opens the **Unit Details** dialog. Enter a **Name** and choose a **Type** (Car, Truck, Motorcycle, Asset, and so on), then press **Save**. The type decides the icon and the rules used to tell when the unit counts as stopped.
+- **Edit** reopens the same dialog.
+- **Retire** takes a unit out of use. It stops being tracked and leaves every list, but its history is kept.
 
-Row actions:
+To see retired units, turn on **Show retired units**. Each retired unit then offers **Restore**, which brings it back.
 
-- **Edit** opens the **Unit Details** dialog, where you can change the **Name** (required) and the **Type** (required — chosen from the unit type list: Car, Truck, Motorcycle, Asset, and so on). Press **Save**.
-- **Delete** removes the unit. You are asked to confirm ("Are you sure you want to delete this unit?").
-
-This section has no **+** (add) button — you edit or remove existing units here. To connect a unit to a tracking device, use the GPS Integration page; see [GPS integration](topic:gps-integration).
+For a staff member you want to follow on the map — a sales representative, a technician — register the device they carry as a unit with a name that says who it is, for example *Sales Representative North*. See [Staff and workforce](topic:staff-workforce).
 
 ## Devices
 
-The **Devices** section lists the raw tracking devices known to your account.
+The **Devices** section lists the GPS devices known to your account. Columns: **Name** (with the device's **ID** beneath), **Serial Number**, **Description**, **Type**, and **Action**.
 
-Columns: **Name** (with the device's ID shown beneath), **Serial Number**, **Description**, **Type** (shown as a coloured label), and **Action**.
+Devices are not added here: they arrive on their own when your GPS provider is synchronised. The only action is **Delete**, which asks you to confirm.
 
-- The only row action is **Delete**. Deleting asks you to confirm ("Are you sure you want to delete this device?").
-- There is no "add device" button here. Devices normally appear on their own when they are synchronised from your GPS provider. See [GPS integration](topic:gps-integration).
+## Making a unit appear on the map
 
-## Connecting a device to a unit
+A unit shows on the map when two things are true:
 
-Linking a GPS device to a unit is done on the **GPS Integration** page, not here — it is the step that makes a device's positions show up under a unit on the map. See [GPS integration](topic:gps-integration) for how to assign a device, mark it primary, set its priority, and end an assignment.
+1. **A device is linked to it.** Link devices under **GPS Integration → Device Assignments** — see [GPS Integration](topic:gps-integration#device-assignments).
+2. **It is in a group the viewer belongs to.** Plain Users see only the units in their groups — see [Users, roles, and groups](topic:users-roles-groups#groups). Managers see every unit.

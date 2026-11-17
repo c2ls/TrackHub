@@ -102,7 +102,7 @@ function ManageOperators() {
         handleAddClick={handleAddClick}
         setExpanded={setExpanded}>
         <ServerSearch value={searchDraft} onChange={setSearchDraft} />
-        <Table columns={columns} rows={rows} selectedField='name' serverPaged />
+        <Table columns={columns} rows={rows} selectedField='name' serverPaged horizontalScroll />
         <ServerPagination
           page={page}
           pageSize={PAGE_SIZE}

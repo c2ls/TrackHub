@@ -62,7 +62,7 @@ export interface PasswordFormValues {
 }
 
 /** A column descriptor / rendered row for the vendored users `Table`. */
-export interface UserTableColumn { name: string; title?: string; align?: "left" | "right" | "center"; }
+export interface UserTableColumn { name: string; title?: string; align?: "left" | "right" | "center"; width?: string; }
 export type UserTableRow = Record<string, ReactNode>;
 export interface UserTableData { columns: UserTableColumn[]; rows: UserTableRow[]; }
 
@@ -171,7 +171,7 @@ function useUserTableData(
 
   const buildTableData = (users: AccountUser[]): UserTableData => ({
     columns: [
-      { name: "user", title:t('user.username'), align: "left" },
+      { name: "user", title:t('user.username'), align: "left", width: "30%" },
       { name: "firstName", title:t('user.firstName'), align: "left" },
       { name: "lastName", title:t('user.lastName'), align: "left" },
       { name: "status", title:t('user.status'), align: "center" },

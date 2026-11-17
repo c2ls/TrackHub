@@ -1,53 +1,51 @@
-# TrackHub Security API
+# TrackHub Security
 
-[English](README.en.md) | [Español](README.es.md)
+The authorization model: users, roles, policies, the resource/action catalog, staff credentials and
+service-client grants, in the `security` schema of the `TrackHubSecurity` database. Every service
+asks it, on each request, whether the caller may perform a `Resource + Action`; access is granted if
+the role path **or** the policy path allows it. Default roles: Administrator, Manager, User, Audit.
 
-TrackHub is an innovative open-source application designed to unify multiple monitoring platforms into a cohesive system. Imagine having all your monitoring needs met in one place—this is the vision behind TrackHub.
+Wiki: [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity),
+[User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview).
 
-Currently in development, our project aims to foster collaboration among diverse companies and developers, promoting continuous improvement and growth. TrackHub empowers organizations to centralize information about their assets and personnel, regardless of their vendors.
+## Build, run, test
 
-We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
+From this folder:
 
-![Image](../TrackHub.AuthorityServer/src/Web/wwwroot/images/logo.png)
+```bash
+dotnet build TrackHub.Security.slnx
+dotnet test TrackHub.Security.slnx
 
----
+dotnet ef database update --project src/Infrastructure/SecurityDB --startup-project src/Web
 
-## Overview
+# roles, resources, actions, role matrices, service-client names and grants
+dotnet run --project src/DBInitializer
 
-The Security API owns TrackHub's authorization model — users, roles, resources, actions and policies, plus the service-client permission allowlist — and answers the identity and permission checks every other service makes on each request.
+dotnet run --project src/Web          # https://localhost:5001/graphql
+```
 
----
+Settings: `ConnectionStrings:Security` in `src/Web/appsettings.json` and
+`src/DBInitializer/appsettings.json`. Apply this migration before the
+[AuthorityServer](../TrackHub.AuthorityServer) one — both target `TrackHubSecurity`.
 
-## Documentation
+## Gotchas
 
-| | |
-|---|---|
-| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Security and Identity](https://github.com/shernandezp/TrackHub/wiki/Security-and-Identity) and [User Permissions Overview](https://github.com/shernandezp/TrackHub/wiki/User-Permissions-Overview) |
-| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
-
----
-
-## Modules in this repository
-
-| Repository | Purpose |
-|---|---|
-| [TrackHubCommon](../TrackHubCommon) | Shared framework, referenced by project |
-| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
-| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) |
-| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
-| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
-
----
-
-## License
-
-Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+- **Seed data lives in `IRbacSeedContribution` files** under `src/DBInitializer`. A new resource
+  must be listed in a contribution's `Resources` (and in `CustomActionResources` if it uses
+  `Actions.Custom`) **and** granted in each role's `RoleGrants`. Role grants match role names
+  exactly — nothing is inherited — so a missing grant is a `FORBIDDEN` for every non-Administrator.
+  Administrator receives every resource-action automatically.
+- **Seeding only ever adds.** Removing a grant from a contribution does not remove it from a
+  seeded database; retracted grants need explicit cleanup SQL.
+- **A service identity needs two registrations**: its name in `ServiceClientNames`
+  (`security.clients`) and its grants in `security.service_client_permissions`. With only the first,
+  every call returns `FORBIDDEN` while the calling service reports healthy.
+- **`allowcrossaccount = true` marks a platform-internal identity**, whose token carries no
+  `account_id`. A partner client is seeded with an `accountid` and without `allowcrossaccount`.
+- **Identity queries pin the subject to the caller** (`IdentityCallerGuard`): a user token may only
+  ask about itself, a service token only about its own client.
+- Callers cache authorization decisions for `AppSettings:AuthorizationCacheSeconds` (default 30),
+  so a permission change can take that long to apply.
+- Password policy: at least 8 characters with an uppercase letter, a lowercase letter and a digit.
+- After changing the GraphQL surface, run `dotnet test ../TrackHub.IntegrationTests` and then the
+  portal's `npm run codegen`.

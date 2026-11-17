@@ -22,7 +22,7 @@ namespace TrackHub.Reporting.Domain.Interfaces.Manager;
 // feature gate. All list reads page transparently up to the 100k report row limit.
 public interface IDocumentReportReader
 {
-    // Pre-checks the `documents` billing feature so a disabled account fails with FEATURE_DISABLED (403)
+    // Pre-checks the `documents` feature so a disabled account fails with FEATURE_DISABLED (403)
     // rather than a raw GraphQL error.
     Task EnsureDocumentsFeatureAsync(CancellationToken cancellationToken);
 

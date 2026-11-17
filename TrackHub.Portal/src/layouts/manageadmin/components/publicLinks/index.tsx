@@ -36,6 +36,8 @@ import {
 } from "api/manager/publicLinks";
 import type { PublicLinkGrant, PublicLinkGrantDtoInput } from "api/manager/publicLinks";
 import { useFeatures } from "context/features";
+import { useEntityNames } from "queries/entityNames";
+import { entityLabel } from "utils/entityLabel";
 import { notifyApiError } from "api/core/errors";
 import { LoadingContext } from 'LoadingContext';
 import { formatDateTime } from "utils/dateUtils";
@@ -69,6 +71,7 @@ function ManagePublicLinks() {
   const [pageLength, setPageLength] = useState(0);
   const { page, setPage, params } = useServerList(PAGE_SIZE);
   useClampPage(page, PAGE_SIZE, totalCount, setPage);
+  const resourceNames = useEntityNames(links.map(link => ({ type: link.resourceType, id: link.resourceId })));
 
   const loadLinks = async () => {
     setLoading(true);
@@ -152,7 +155,7 @@ function ManagePublicLinks() {
         <Table
           columns={[
             { name: 'resource', title: t('publicLinks.resource'), align: 'left' },
-            { name: 'scopes', title: t('publicLinks.scopes'), align: 'center' },
+            { name: 'scopes', title: t('publicLinks.scopesHeader'), align: 'center' },
             { name: 'expires', title: t('publicLinks.expiresAt'), align: 'center' },
             { name: 'accessCount', title: t('publicLinks.accessCount'), align: 'center' },
             { name: 'status', title: t('publicLinks.status'), align: 'center' },
@@ -160,11 +163,11 @@ function ManagePublicLinks() {
             { name: 'id' }
           ]}
           rows={links.map(link => ({
-            resource: <TextCell>{`${link.resourceType}:${link.resourceId}`}</TextCell>,
+            resource: <TextCell>{entityLabel(t, resourceNames, link.resourceType, link.resourceId)}</TextCell>,
             scopes: <TextCell>{link.scopes}</TextCell>,
             expires: <TextCell>{formatDateTime(link.expiresAt)}</TextCell>,
             accessCount: <TextCell>{link.accessCount}</TextCell>,
-            status: <TextCell>{link.revokedAt ? t('publicLinks.revokedAt') : t('generic.active')}</TextCell>,
+            status: <TextCell>{link.revokedAt ? t('publicLinks.revoked') : t('generic.active')}</TextCell>,
             action: (
               !link.revokedAt && (
                 <ArgonButton variant="text" color="error" onClick={() => handleRevoke(link)}>

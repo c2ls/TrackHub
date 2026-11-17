@@ -40,6 +40,7 @@ import {
 import type { NotificationDelivery, DeliveryHealth } from "api/manager/notificationDeliveries";
 import { notifyApiError } from "api/core/errors";
 import { LoadingContext } from 'LoadingContext';
+import { useEntityNames } from "queries/entityNames";
 import { formatDateTime } from "utils/dateUtils";
 import { toCamelCase } from "utils/stringUtils";
 import { DELIVERY_STATUSES, NOTIFICATION_CHANNELS } from 'utils/notificationsCatalog';
@@ -79,6 +80,7 @@ function ManageNotificationDeliveries() {
   const [pageLength, setPageLength] = useState(0);
   const { page, setPage, params } = useServerList(PAGE_SIZE);
   useClampPage(page, PAGE_SIZE, totalCount, setPage);
+  const recipientNames = useEntityNames(deliveries.map(delivery => ({ type: delivery.recipientPrincipalType, id: delivery.recipient })));
 
   const loadDeliveries = async (currentFilters: FilterValues = filters) => {
     setLoading(true);
@@ -232,7 +234,7 @@ function ManageNotificationDeliveries() {
               })}
             </TextCell>
           ),
-          recipient: <TextCell>{delivery.recipient}</TextCell>,
+          recipient: <TextCell>{recipientNames.get(`${delivery.recipientPrincipalType}:${delivery.recipient}`) ?? delivery.recipient}</TextCell>,
           status: (
             <ArgonBadge
               variant="gradient"

@@ -74,6 +74,15 @@ export const GetIntegrationUsersDocument = graphql(`
   }
 `);
 
+export const GetUserLookupByAccountDocument = graphql(`
+  query GetUserLookupByAccount {
+    userLookupByAccount {
+      userId
+      username
+    }
+  }
+`);
+
 export const GetUsersByAccountDocument = graphql(`
   query GetUsersByAccount($skip: Int, $take: Int, $search: String) {
     usersByAccount(query: { skip: $skip, take: $take, search: $search }) {

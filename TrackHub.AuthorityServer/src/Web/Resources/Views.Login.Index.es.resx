@@ -127,7 +127,7 @@
     <value>Digite correo electrónico</value>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
-    <value>Ingrese su comtraseña</value>
+    <value>Ingrese su contraseña</value>
   </data>
   <data name="LoginLabel" xml:space="preserve">
     <value>Ingresar</value>

@@ -51,7 +51,7 @@ public sealed class MissingRequiredDocumentsReport(IDocumentReportReader reader)
             var activeCategories = transporter.ActiveCategories.ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var category in requiredCategories.Where(c => !activeCategories.Contains(c)).OrderBy(c => c, StringComparer.OrdinalIgnoreCase))
             {
-                rows.Add(new MissingRequiredDocumentRowVm(OwnerTypeTransporter, transporter.TransporterName, transporter.TransporterId.ToString(), category));
+                rows.Add(new MissingRequiredDocumentRowVm(OwnerTypeTransporter, transporter.TransporterName, category));
             }
         }
 

@@ -324,12 +324,6 @@
   <data name="Source" xml:space="preserve">
     <value>Source</value>
   </data>
-  <data name="SourceDeviceId" xml:space="preserve">
-    <value>Source Device Id</value>
-  </data>
-  <data name="AccountId" xml:space="preserve">
-    <value>Account Id</value>
-  </data>
   <data name="AccountName" xml:space="preserve">
     <value>Account</value>
   </data>
@@ -369,9 +363,6 @@
   <data name="OwnerType" xml:space="preserve">
     <value>Owner Type</value>
   </data>
-  <data name="OwnerId" xml:space="preserve">
-    <value>Owner Id</value>
-  </data>
   <data name="OwnerName" xml:space="preserve">
     <value>Owner Name</value>
   </data>
@@ -402,8 +393,8 @@
   <data name="DocumentCount" xml:space="preserve">
     <value>Documents</value>
   </data>
-  <data name="SharedDocumentId" xml:space="preserve">
-    <value>Document Id</value>
+  <data name="SharedDocument" xml:space="preserve">
+    <value>Document</value>
   </data>
   <data name="GeneratedAt" xml:space="preserve">
     <value>Generated</value>
@@ -471,8 +462,8 @@
   <data name="LicenseExpiresAt" xml:space="preserve">
     <value>License Expires At</value>
   </data>
-  <data name="DefaultTransporterId" xml:space="preserve">
-    <value>Default Transporter</value>
+  <data name="DefaultTransporter" xml:space="preserve">
+    <value>Default Unit</value>
   </data>
   <data name="LicenseCategory" xml:space="preserve">
     <value>License Category</value>
@@ -656,5 +647,344 @@
   </data>
   <data name="CapturedAt" xml:space="preserve">
     <value>Captured At</value>
+  </data>
+  <data name="AccountStatus_Trial" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="AccountStatus_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="AccountStatus_Suspended" xml:space="preserve">
+    <value>Suspended</value>
+  </data>
+  <data name="AccountStatus_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="AccountStatus_Archived" xml:space="preserve">
+    <value>Archived</value>
+  </data>
+  <data name="EntityType_Trip" xml:space="preserve">
+    <value>Trip</value>
+  </data>
+  <data name="EntityType_Transporter" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="EntityType_Document" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="EntityType_Staff" xml:space="preserve">
+    <value>Staff</value>
+  </data>
+  <data name="EntityType_User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="DocumentClassification_Public" xml:space="preserve">
+    <value>Public</value>
+  </data>
+  <data name="DocumentClassification_Internal" xml:space="preserve">
+    <value>Internal</value>
+  </data>
+  <data name="DocumentClassification_Confidential" xml:space="preserve">
+    <value>Confidential</value>
+  </data>
+  <data name="DocumentClassification_Legal" xml:space="preserve">
+    <value>Legal</value>
+  </data>
+  <data name="DocumentStatus_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="DocumentStatus_Uploaded" xml:space="preserve">
+    <value>Uploaded</value>
+  </data>
+  <data name="DocumentStatus_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="DocumentStatus_Expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="DocumentStatus_Replaced" xml:space="preserve">
+    <value>Replaced</value>
+  </data>
+  <data name="DocumentStatus_Voided" xml:space="preserve">
+    <value>Voided</value>
+  </data>
+  <data name="DocumentStatus_Deleted" xml:space="preserve">
+    <value>Deleted</value>
+  </data>
+  <data name="FeatureTier_Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="FeatureTier_Trial" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="FeatureTier_Basic" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="FeatureTier_Standard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="FeatureTier_Premium" xml:space="preserve">
+    <value>Premium</value>
+  </data>
+  <data name="FeatureTier_Enterprise" xml:space="preserve">
+    <value>Enterprise</value>
+  </data>
+  <data name="DeviceAssignmentType_Primary" xml:space="preserve">
+    <value>Primary</value>
+  </data>
+  <data name="DeviceAssignmentType_Secondary" xml:space="preserve">
+    <value>Secondary</value>
+  </data>
+  <data name="OperatorHealth_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="OperatorHealth_Healthy" xml:space="preserve">
+    <value>Healthy</value>
+  </data>
+  <data name="OperatorHealth_Degraded" xml:space="preserve">
+    <value>Degraded</value>
+  </data>
+  <data name="OperatorHealth_Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="OperatorHealth_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="SyncTrigger_Automatic" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="SyncTrigger_Manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="SyncResult_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="SyncResult_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="SyncResult_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="SyncResult_PartiallySucceeded" xml:space="preserve">
+    <value>Partial</value>
+  </data>
+  <data name="SyncResult_Partial" xml:space="preserve">
+    <value>Partial</value>
+  </data>
+  <data name="SyncResult_Throttled" xml:space="preserve">
+    <value>Throttled</value>
+  </data>
+  <data name="SyncResult_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="DeviceStatus_New" xml:space="preserve">
+    <value>Unassigned</value>
+  </data>
+  <data name="DeviceStatus_Available" xml:space="preserve">
+    <value>Unassigned</value>
+  </data>
+  <data name="DeviceStatus_Assigned" xml:space="preserve">
+    <value>Assigned</value>
+  </data>
+  <data name="DeviceStatus_Ignored" xml:space="preserve">
+    <value>Ignored</value>
+  </data>
+  <data name="DeviceStatus_Removed" xml:space="preserve">
+    <value>Removed</value>
+  </data>
+  <data name="DeviceStatus_Missing" xml:space="preserve">
+    <value>Missing</value>
+  </data>
+  <data name="QualificationType_License" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="QualificationType_MedicalExam" xml:space="preserve">
+    <value>Medical Exam</value>
+  </data>
+  <data name="QualificationType_Training" xml:space="preserve">
+    <value>Training</value>
+  </data>
+  <data name="QualificationType_BackgroundCheck" xml:space="preserve">
+    <value>Background Check</value>
+  </data>
+  <data name="QualificationType_HazmatPermit" xml:space="preserve">
+    <value>HAZMAT Permit</value>
+  </data>
+  <data name="QualificationType_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="QualificationStatus_Valid" xml:space="preserve">
+    <value>Valid</value>
+  </data>
+  <data name="QualificationStatus_Expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="QualificationStatus_Revoked" xml:space="preserve">
+    <value>Revoked</value>
+  </data>
+  <data name="StaffAssignmentType_Regular" xml:space="preserve">
+    <value>Regular</value>
+  </data>
+  <data name="StaffAssignmentType_Temporary" xml:space="preserve">
+    <value>Temporary</value>
+  </data>
+  <data name="StaffAssignmentStatus_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="StaffAssignmentStatus_Ended" xml:space="preserve">
+    <value>Ended</value>
+  </data>
+  <data name="StaffAssignmentStatus_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="StaffType_Driver" xml:space="preserve">
+    <value>Driver</value>
+  </data>
+  <data name="StaffType_Operator" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="StaffType_DriverAssistant" xml:space="preserve">
+    <value>Driver assistant</value>
+  </data>
+  <data name="StaffType_Mechanic" xml:space="preserve">
+    <value>Mechanic</value>
+  </data>
+  <data name="StaffType_Supervisor" xml:space="preserve">
+    <value>Supervisor</value>
+  </data>
+  <data name="StaffType_Administrative" xml:space="preserve">
+    <value>Administrative</value>
+  </data>
+  <data name="StaffType_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="TripStatus_Created" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="TripStatus_InProgress" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="TripStatus_Paused" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="TripStatus_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="TripStatus_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="TripStatus_Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="StopActivity_Load" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="StopActivity_Unload" xml:space="preserve">
+    <value>Unloading</value>
+  </data>
+  <data name="StopActivity_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="StopStatus_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="StopStatus_Arrived" xml:space="preserve">
+    <value>Arrived</value>
+  </data>
+  <data name="StopStatus_Departed" xml:space="preserve">
+    <value>Departed</value>
+  </data>
+  <data name="StopStatus_Skipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="Boolean_True" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Boolean_False" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="TransporterType_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="TransporterType_Aircraft" xml:space="preserve">
+    <value>Aircraft</value>
+  </data>
+  <data name="TransporterType_Asset" xml:space="preserve">
+    <value>Asset</value>
+  </data>
+  <data name="TransporterType_Bicycle" xml:space="preserve">
+    <value>Bicycle</value>
+  </data>
+  <data name="TransporterType_Boat" xml:space="preserve">
+    <value>Boat</value>
+  </data>
+  <data name="TransporterType_Car" xml:space="preserve">
+    <value>Car</value>
+  </data>
+  <data name="TransporterType_CargoContainer" xml:space="preserve">
+    <value>Cargo Container</value>
+  </data>
+  <data name="TransporterType_ConstructionVehicle" xml:space="preserve">
+    <value>Construction Vehicle</value>
+  </data>
+  <data name="TransporterType_Child" xml:space="preserve">
+    <value>Child</value>
+  </data>
+  <data name="TransporterType_DeliveryVan" xml:space="preserve">
+    <value>Delivery Van</value>
+  </data>
+  <data name="TransporterType_Drone" xml:space="preserve">
+    <value>Drone</value>
+  </data>
+  <data name="TransporterType_ElderlyPerson" xml:space="preserve">
+    <value>Elderly Person</value>
+  </data>
+  <data name="TransporterType_FleetVehicle" xml:space="preserve">
+    <value>Fleet Vehicle</value>
+  </data>
+  <data name="TransporterType_HeavyEquipment" xml:space="preserve">
+    <value>Heavy Equipment</value>
+  </data>
+  <data name="TransporterType_Livestock" xml:space="preserve">
+    <value>Livestock</value>
+  </data>
+  <data name="TransporterType_Motorcycle" xml:space="preserve">
+    <value>Motorcycle</value>
+  </data>
+  <data name="TransporterType_Package" xml:space="preserve">
+    <value>Package</value>
+  </data>
+  <data name="TransporterType_Person" xml:space="preserve">
+    <value>Person</value>
+  </data>
+  <data name="TransporterType_Pet" xml:space="preserve">
+    <value>Pet</value>
+  </data>
+  <data name="TransporterType_SchoolBus" xml:space="preserve">
+    <value>School Bus</value>
+  </data>
+  <data name="TransporterType_Scooter" xml:space="preserve">
+    <value>Scooter</value>
+  </data>
+  <data name="TransporterType_Taxi" xml:space="preserve">
+    <value>Taxi</value>
+  </data>
+  <data name="TransporterType_Tool" xml:space="preserve">
+    <value>Tool</value>
+  </data>
+  <data name="TransporterType_Truck" xml:space="preserve">
+    <value>Truck</value>
+  </data>
+  <data name="TransporterType_Tractor" xml:space="preserve">
+    <value>Tractor</value>
+  </data>
+  <data name="AccountType_Personal" xml:space="preserve">
+    <value>Personal</value>
+  </data>
+  <data name="AccountType_Business" xml:space="preserve">
+    <value>Business</value>
+  </data>
+  <data name="AccountType_Associate" xml:space="preserve">
+    <value>Associate</value>
   </data>
 </root>

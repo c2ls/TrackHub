@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using TrackHub.Reporting.Domain.Helpers;
 using TrackHub.Reporting.Domain.Interfaces.Factory;
 using TrackHub.Reporting.Domain.Interfaces.Manager;
 using TrackHub.Reporting.Domain.Models;
@@ -23,7 +24,7 @@ namespace TrackHub.Reporting.Application.Report.Factory.Workforce;
 // Staff registry export (spec 09 §13). Every staff on the account with identity, license summary and
 // default transporter. No filters — the account scope comes from the caller's token. Excel only.
 // Carries staff personal data; the account scope is enforced by the Manager query.
-public sealed class StaffRegistryReport(IWorkforceReportReader reader) : IReport
+public sealed class StaffRegistryReport(IWorkforceReportReader reader, IReportNameReader names) : IReport
 {
     public string ReportCode => WorkforceReportCodes.StaffRegistry;
 
@@ -33,6 +34,8 @@ public sealed class StaffRegistryReport(IWorkforceReportReader reader) : IReport
 
         var staff = await reader.GetStaffMembersAsync(cancellationToken);
 
+        var transporters = await names.GetTransporterNamesAsync(
+            staff.Where(s => s.DefaultTransporterId.HasValue).Select(s => s.DefaultTransporterId!.Value), cancellationToken);
         var rows = staff
             .OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase)
             .Select(d => new StaffRegistryRowVm(
@@ -44,7 +47,7 @@ public sealed class StaffRegistryReport(IWorkforceReportReader reader) : IReport
                 d.Phone.OrEmpty(),
                 d.LicenseNumber.OrEmpty(),
                 d.LicenseExpiresAt,
-                d.DefaultTransporterId?.ToString() ?? string.Empty,
+                d.DefaultTransporterId is { } transporterId ? transporters.NameOf(transporterId) : string.Empty,
                 d.Active))
             .ToList();
 

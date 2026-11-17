@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using System.Reflection;
 using Common.Domain.Time;
 using TrackHub.Reporting.Domain.Records;
 
@@ -20,7 +21,7 @@ namespace TrackHub.Reporting.Domain.Models;
 
 // One column of a report dataset. PropertyName is the resx key used to resolve the localized
 // header at format time (ExcelHelper / PdfReportBuilder), matching the pre-refactor behavior.
-public readonly record struct ReportColumn(string PropertyName, Type PropertyType);
+public readonly record struct ReportColumn(string PropertyName, Type PropertyType, string? Vocabulary = null);
 
 // The format-agnostic tabular result of running a report. Produced once per report
 // (IReport.GetDatasetAsync) and consumed by every output format: Excel, PDF, and JSON preview.
@@ -46,11 +47,15 @@ public sealed class ReportDataset
     // Returns a copy of this dataset with the account branding block populated. Used by
     // the export pipeline to attach branding fetched from Manager to a PDF export without the report itself
     // needing to know about branding. All other fields (data, columns, filters) are carried over unchanged.
-    public ReportDataset WithBranding(string? accountName, byte[]? logoImage) => Copy(accountName, logoImage, TimeZone);
+    public ReportDataset WithBranding(string? accountName, byte[]? logoImage) => Copy(accountName, logoImage, TimeZone, AppliedFilters);
 
-    public ReportDataset InZone(AccountTimeZone timeZone) => Copy(AccountName, LogoImage, timeZone);
+    public ReportDataset InZone(AccountTimeZone timeZone) => Copy(AccountName, LogoImage, timeZone, AppliedFilters);
 
-    private ReportDataset Copy(string? accountName, byte[]? logoImage, AccountTimeZone timeZone) => new()
+    public ReportDataset WithAppliedFilters(IReadOnlyList<KeyValuePair<string, object>> appliedFilters)
+        => Copy(AccountName, LogoImage, TimeZone, appliedFilters);
+
+    private ReportDataset Copy(
+        string? accountName, byte[]? logoImage, AccountTimeZone timeZone, IReadOnlyList<KeyValuePair<string, object>> appliedFilters) => new()
     {
         Title = Title,
         FromDate = FromDate,
@@ -58,7 +63,7 @@ public sealed class ReportDataset
         GeneratedAt = GeneratedAt,
         Columns = Columns,
         Rows = Rows,
-        AppliedFilters = AppliedFilters,
+        AppliedFilters = appliedFilters,
         AccountName = accountName,
         LogoImage = logoImage,
         TimeZone = timeZone
@@ -78,7 +83,10 @@ public sealed class ReportDataset
         var columns = new ReportColumn[properties.Length];
         for (var i = 0; i < properties.Length; i++)
         {
-            columns[i] = new ReportColumn(properties[i].Name, properties[i].PropertyType);
+            columns[i] = new ReportColumn(
+                properties[i].Name,
+                properties[i].PropertyType,
+                properties[i].GetCustomAttribute<ReportValuesAttribute>()?.Vocabulary);
         }
 
         var materialized = rows as ICollection<T> ?? [.. rows];

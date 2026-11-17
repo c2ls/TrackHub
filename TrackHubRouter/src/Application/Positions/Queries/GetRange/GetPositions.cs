@@ -49,7 +49,7 @@ public class GetPositionsRecordQueryHandler(
     /// <summary>
     /// Retrieves the operator, and device positions asynchronously.
     /// PROVIDER (default) reads the GPS operator API on demand; STORED reads
-    /// TrackHub-stored history through Manager and requires gps.positionHistory.
+    /// TrackHub-stored history from Telemetry and requires gps.positionHistory.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>

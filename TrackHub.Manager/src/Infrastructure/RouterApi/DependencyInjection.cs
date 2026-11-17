@@ -24,9 +24,6 @@ public static class RouterApiDependencyInjection
 {
     public static IServiceCollection AddAppRouterContext(this IServiceCollection services, IConfiguration configuration)
     {
-        // The sync dispatch awaits Router's whole chain (provider fetch + device write-back),
-        // which can legitimately exceed the default 30 s on large first syncs.
-        services.AddGraphQLClient(Clients.Router, timeoutSeconds: 120);
         services.AddGraphQLServiceClient(Clients.Router);
 
         services.AddScoped<ISyncDispatcher, RouterSyncDispatcher>();

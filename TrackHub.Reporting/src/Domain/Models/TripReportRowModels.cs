@@ -22,7 +22,7 @@ namespace TrackHub.Reporting.Domain.Models;
 // the report is the comparison. LoadingMinutes/TransitMinutes/TotalMinutes are what answer "how long
 // did loading, transit and the whole trip actually take" (spec 11a §13).
 public readonly record struct TripSummaryRowVm(
-    string TripCode, string TripStatus, string TransporterName, string StaffName,
+    string TripCode, [property: ReportValues("TripStatus")] string TripStatus, string TransporterName, string StaffName,
     DateTimeOffset PlannedStartAt, DateTimeOffset? ActualStartAt,
     DateTimeOffset? PlannedEndAt, DateTimeOffset? ActualEndAt,
     DateTimeOffset? OriginArrivedAt, DateTimeOffset? OriginDepartedAt,
@@ -34,10 +34,10 @@ public readonly record struct TripSummaryRowVm(
 // Activity sits next to the dwell it explains, so the same figure reads as loading time at a plant
 // and unloading time at a client instead of an anonymous number of minutes.
 public readonly record struct TripStopDetailRowVm(
-    string TripCode, int StopSequence, string StopName, string StopActivity, string CustomerName,
+    string TripCode, int StopSequence, string StopName, [property: ReportValues("StopActivity")] string StopActivity, string CustomerName,
     DateTimeOffset? PlannedArrivalFrom, DateTimeOffset? PlannedArrivalTo,
     DateTimeOffset? ActualArrivalAt, DateTimeOffset? ActualDepartureAt,
-    double? DwellMinutes, string StopStatus,
+    double? DwellMinutes, [property: ReportValues("StopStatus")] string StopStatus,
     int DeliveryCount, int DeliveredCount, int FailedDeliveryCount, int PartialDeliveryCount);
 
 // Aggregated one row per (transporter, staff, customer). Only stops carrying BOTH a planned window
@@ -50,7 +50,7 @@ public readonly record struct TripOnTimePerformanceRowVm(
 // Dwell distribution aggregated per (stop, customer); only stops with both an arrival and a
 // departure contribute, so an open visit never deflates the average.
 public readonly record struct TripStopDwellRowVm(
-    string StopName, string StopActivity, string CustomerName, int VisitCount,
+    string StopName, [property: ReportValues("StopActivity")] string StopActivity, string CustomerName, int VisitCount,
     double AverageDwellMinutes, double MinDwellMinutes, double MaxDwellMinutes, double TotalDwellMinutes);
 
 // One row per matched station. PartialNoTariff makes a catalog gap visible instead of netting the

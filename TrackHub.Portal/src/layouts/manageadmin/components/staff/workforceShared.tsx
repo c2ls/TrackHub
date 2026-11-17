@@ -66,6 +66,16 @@ export function expiryColor(expiresAt: string | null | undefined, today: string)
   return 'success';
 }
 
+/** Expiry is derived from the date at read time; the stored status only records revocation. */
+export function effectiveQualificationStatus(
+  status: string | null | undefined,
+  expiresAt: string | null | undefined,
+  today: string
+): string | null | undefined {
+  const days = daysUntil(expiresAt, today);
+  return status === 'Valid' && days !== null && days < 0 ? 'Expired' : status;
+}
+
 /** Assignment/qualification lifecycle status color. */
 export function statusColor(status: string | null | undefined): BadgeColor {
   switch ((status || '').toUpperCase()) {

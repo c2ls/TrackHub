@@ -34,20 +34,27 @@ Once you are signed in, every screen shares the same frame:
 - A **top bar** across the top, showing the name of the screen you are on, a notification bell, and your **account menu**.
 - The **main area** in the centre, which changes depending on the screen you pick.
 
+![The TrackHub main layout with the left menu and the top bar](assets/en/dashboard-live-map.png)
+
 ## The left menu
 
-The left menu lists the screens you are allowed to open. Depending on your role and which features your account has, you may see some or all of the following:
+The left menu lists the screens you are allowed to open, in four groups. Depending on your role and which features your account has, you may see some or all of them:
 
-- **Dashboard** — the live map and unit overview.
-- **System Admin** — platform-wide administration (only administrators see this).
-- **Account Management** — manage your account's units, users, devices, and more (only managers and administrators see this).
-- **Geofences** — draw and manage map zones (only appears when geofencing is switched on for your account).
-- **Reports** — generate and export reports.
-- **GPS Integration** — monitor GPS providers and device synchronisation (only managers and administrators see this).
-- **Account** — a section heading, followed by:
+- **Operations**
+  - **Dashboard** — the live map and the history of each unit.
+  - **Trips** — plan and follow trips (only when trip management is switched on for your account).
+  - **Geofences** — draw and manage map zones (only when geofencing is switched on for your account).
+- **Insights**
+  - **Reports** — generate and export reports.
+- **Administration**
+  - **Account Management** — your account's units, staff, groups, users, alerts, and more (managers and administrators).
+  - **GPS Integration** — GPS providers and device synchronisation (managers and administrators).
+  - **System Admin** — platform-wide administration (administrators only).
+  - **Platform Status** — whether TrackHub itself is working (everyone).
+- **Account**
   - **Profile** — your personal settings.
 
-The menu is arranged in groups — **Operations**, **Insights**, **Administration** and **Account** — and a group only appears when it has a screen you can open. To open a screen, **click its name in the left menu**. The item you are currently viewing is highlighted. Which items appear for which role is covered in [Roles and permissions](topic:roles-and-permissions).
+A group only appears when it has a screen you can open. To open a screen, **click its name in the left menu**. The item you are currently viewing is highlighted. Which items appear for which role is covered in [Roles and permissions](topic:roles-and-permissions).
 
 **Compact vs. full menu.** On narrow windows the menu collapses to a slim strip of icons to save space. When it is collapsed, **move your mouse over it** to expand it temporarily, and move away to collapse it again. You can also set your preference permanently with the **Sidenav Mini** switch — see [Profile and settings](topic:profile-and-settings#appearance-language-and-the-compact-menu).
 
@@ -57,9 +64,10 @@ The top bar shows, from left to right:
 
 - A **menu icon** you can click to collapse or expand the left menu.
 - The **name of the screen** you are on. On the Dashboard, the **Units** and **Positions** tabs sit beside it.
+- On some screens, a **Search** box that filters the list on that screen.
 - A **help** icon that opens this help.
 - A **notification bell** with a red count of unread notifications.
-- A **settings** icon (managers only) that opens the account map settings.
+- A **Settings** icon (managers only) that opens the account map settings — see [Profile and settings](topic:profile-and-settings#account-settings).
 - Your **account menu** (the round person icon), with **Profile** and **Sign off**.
 
 ### The notification bell

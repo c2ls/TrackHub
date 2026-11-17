@@ -13,7 +13,9 @@ order: 40
 
 El área de **Documentos** de la pantalla **Administración de Cuentas** le permite almacenar archivos, mantenerlos clasificados y versionados, vigilar los vencimientos y compartirlos de forma segura. La encuentra en el grupo **Documentos y Compartidos** de la página.
 
-El área tiene tres secciones plegables — **Biblioteca de Documentos**, **Documentos por Vencer** y **Tipos de Documento** — además de un panel de documentos incorporado que aparece en el detalle del elemento al que pertenece un documento (por ejemplo, una unidad o un miembro del personal).
+El área tiene tres secciones — **Biblioteca de Documentos**, **Documentos por Vencer** y **Tipos de Documento**. Solo aparecen cuando la funcionalidad de documentos está activada para su cuenta.
+
+Los archivos se suben donde corresponden: los papeles de un miembro del personal desde **Documentos del Personal** en [Habilitaciones del Personal](topic:staff-workforce#documentos-del-personal), y los adjuntos de las pruebas de entrega desde la pantalla [Viajes](topic:trip-management#capturar-la-prueba-de-entrega).
 
 ## Biblioteca de Documentos
 
@@ -25,7 +27,7 @@ Una búsqueda de los documentos de toda la cuenta.
 | Columna | Significado |
 |---|---|
 | **Nombre de Archivo** | El título del documento, o el nombre de archivo original. |
-| **Propietario** | El registro al que pertenece el documento (tipo de entidad e id). |
+| **Propietario** | El registro al que pertenece el documento: su tipo y nombre (por ejemplo, la unidad o el miembro del personal). |
 | **Tipo** | La categoría del documento. |
 | **Clasificación** | Público, Interno, Confidencial o Legal. |
 | **Estado** | Activo, Pendiente, Cargado, Expirado, Reemplazado, Anulado o Eliminado. |
@@ -43,7 +45,7 @@ Un panel de documentos próximos a vencer. Columnas: **Tipo**, **Propietario**, 
 Configure las categorías que usa su cuenta.
 
 - Columnas: **Tipo**, **Obligatorio**, **Controla Vencimiento**, **Validez Predeterminada (días)**, **Estado** y una acción.
-- El icono **+** (agregar) abre el diálogo **Tipos de Documento**, donde define:
+- **Agregar** abre el diálogo **Tipos de Documento**, donde define:
   - **Tipo** (el identificador de categoría, obligatorio)
   - **Título** (el nombre para mostrar)
   - **Validez Predeterminada (días)**
@@ -52,11 +54,11 @@ Configure las categorías que usa su cuenta.
 - Presione **Guardar**.
 - La acción de bloqueo en una fila deshabilita ese tipo (se le pide confirmar primero).
 
-> El icono **+** en **Tipos de Documento** aparece solo cuando la funcionalidad de documentos está habilitada para su cuenta. Si falta, la funcionalidad no está provisionada — el equipo de la plataforma la gestiona en [Administración del sistema](topic:system-administration).
+Configure sus tipos de documento antes de que alguien suba archivos: el cuadro de carga pide un **Tipo**, y una cuenta sin tipos no puede subir documentos.
 
 ## Subir, versiones y compartir
 
-Los documentos normalmente se agregan desde el panel de detalle del registro al que pertenecen, usando un panel de documentos incorporado. Ese panel lista los documentos del registro con las columnas **Nombre de Archivo**, **Tipo**, **Clasificación**, **Estado**, **Estado de Análisis**, **Vence En** y **Versión**, y ofrece estas acciones:
+El panel de documentos (por ejemplo **Documentos del Personal**) lista los documentos del registro con las columnas **Nombre de Archivo**, **Tipo**, **Clasificación**, **Estado**, **Estado de Análisis**, **Vence En** y **Versión**, y ofrece estas acciones:
 
 - **Subir Documento** — presione el botón, luego arrastre un archivo al área de soltar (**"Arrastre y suelte un archivo aquí, o haga clic para seleccionar"**) o haga clic para explorar. Elija un **Tipo** (categoría, obligatorio), una **Clasificación** (Público, Interno, Confidencial o Legal — Interno por defecto), un **Título** opcional y una fecha **Vence En** opcional. Presione **Guardar**.
 - **Nueva Versión** — suba un archivo de reemplazo para un documento existente. Puede agregar un **Motivo**; la columna **Versión** lleva entonces el número de versión actual.

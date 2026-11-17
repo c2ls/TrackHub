@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using TrackHub.Reporting.Domain.Helpers;
 using TrackHub.Reporting.Domain.Interfaces.Factory;
 using TrackHub.Reporting.Domain.Interfaces.Manager;
 using TrackHub.Reporting.Domain.Models;
@@ -22,7 +23,7 @@ namespace TrackHub.Reporting.Application.Report.Factory.Document;
 
 // Document share-activity report: every Document public-link grant with its access count,
 // last-access, expiry, and revocation. Filters the account's grants to ResourceType = "Document".
-public sealed class DocumentShareActivityReport(IDocumentReportReader reader) : IReport
+public sealed class DocumentShareActivityReport(IDocumentReportReader reader, IReportNameReader names) : IReport
 {
     private const string DocumentResourceType = "Document";
 
@@ -34,11 +35,16 @@ public sealed class DocumentShareActivityReport(IDocumentReportReader reader) : 
 
         var shares = await reader.GetDocumentSharesByAccountAsync(cancellationToken);
 
-        var rows = shares
+        var documentShares = shares
             .Where(s => string.Equals(s.ResourceType, DocumentResourceType, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var documents = await names.GetDocumentNamesAsync(
+            documentShares.Select(s => Guid.TryParse(s.ResourceId, out var id) ? id : Guid.Empty).Where(id => id != Guid.Empty), cancellationToken);
+
+        var rows = documentShares
             .OrderByDescending(s => s.AccessCount)
             .ThenBy(s => s.ResourceId, StringComparer.OrdinalIgnoreCase)
-            .Select(s => new DocumentShareActivityRowVm(s.ResourceId, s.Scopes, s.Purpose, s.AccessCount, s.LastAccessedAt, s.ExpiresAt, s.RevokedAt))
+            .Select(s => new DocumentShareActivityRowVm(documents.NameOf(s.ResourceId), s.Scopes, s.Purpose, s.AccessCount, s.LastAccessedAt, s.ExpiresAt, s.RevokedAt))
             .ToList();
 
         return ReportDataset.Create(filters, rows);

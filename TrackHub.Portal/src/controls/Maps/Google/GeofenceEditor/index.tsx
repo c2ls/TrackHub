@@ -195,6 +195,21 @@ const GoogleGeofenceEditor = ({
     }
   }, [initialPolygons, mapReady]);
 
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !selectedPolygon) return;
+    const shape = shapes.current.find((candidate) => candidate.name === selectedPolygon);
+    if (!shape) return;
+    const bounds = new window.google.maps.LatLngBounds();
+    if (shape.shape === 'circle' && shape.center && shape.radiusMeters) {
+      const [sw, ne] = circleBoundsCorners(shape.center.lat, shape.center.lng, shape.radiusMeters);
+      bounds.extend({ lat: sw[0], lng: sw[1] });
+      bounds.extend({ lat: ne[0], lng: ne[1] });
+    } else {
+      shape.latlngs.forEach((point) => bounds.extend(point));
+    }
+    if (!bounds.isEmpty()) mapRef.current.fitBounds(bounds, GEOFENCE_FIT_PADDING);
+  }, [selectedPolygon, mapReady]);
+
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
     setMapReady(true);

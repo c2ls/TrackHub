@@ -72,7 +72,7 @@ public sealed class PdfReportBuilder : IPdfReportBuilder
             var cells = new PdfCell[columns.Count];
             for (var col = 0; col < columns.Count; col++)
             {
-                cells[col] = ToCell(values[col], columns[col], culture, dataset.TimeZone);
+                cells[col] = ToCell(ReportValueResolver.Localize(values[col], columns[col], culture), columns[col], culture, dataset.TimeZone);
             }
 
             table.Row(cells);
@@ -103,7 +103,7 @@ public sealed class PdfReportBuilder : IPdfReportBuilder
             double d => d.ToString(NumberFormat(column), culture),
             float f => f.ToString(NumberFormat(column), culture),
             decimal m => m.ToString(NumberFormat(column), culture),
-            bool b => b.ToString(),
+            bool b => ReportHeaderResolver.Resolve(b ? "Boolean_True" : "Boolean_False", culture),
             _ => value.ToString() ?? string.Empty
         };
 

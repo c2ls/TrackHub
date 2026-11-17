@@ -24,6 +24,7 @@ Los problemas al iniciar sesión tienen algunas causas distintas. Revíselas en 
 - **Página de error "Error de Autenticación".** Si el inicio de sesión se interrumpe, puede llegar a una página de pantalla completa **Error de Autenticación**. Enumera las causas probables (el servicio de autenticación temporalmente no disponible, problemas de conectividad de red, o una solicitud de autenticación inválida o expirada). Espere a que termine la cuenta regresiva **Reintentar en Ns**, luego presione **Reintentar Autenticación**, o presione **Volver**. Variantes específicas:
   - Un mensaje sobre un fallo al intercambiar el código de autorización por un token de acceso significa que el servicio de autenticación no era accesible — reintente en breve.
   - Un mensaje sobre la ausencia de un código de autorización significa que el inicio de sesión se interrumpió o que usó un enlace antiguo — inicie una nueva sesión en lugar de reutilizar una URL de retorno guardada en favoritos. Reintentar desde esta página inicia un intento limpio.
+  - Un mensaje de que no se pudo verificar el intento de inicio de sesión suele significar que entró desde una página de inicio de sesión guardada en favoritos o desactualizada, o que su navegador bloquea el almacenamiento del sitio (por ejemplo, en modo privado). Ingrese directamente a la página principal del portal y reintente.
 
 Si los reintentos siguen fallando durante varios minutos, el servicio de autenticación podría estar caído — contacte a su administrador.
 
@@ -31,18 +32,18 @@ Si los reintentos siguen fallando durante varios minutos, el servicio de autenti
 
 Si ve un mensaje de pantalla completa **Cuenta No Disponible** — "Esta cuenta no está operativa actualmente. Por favor, contacte a soporte para obtener ayuda." — con un **Estado** mostrado en la parte inferior, toda su cuenta ha sido puesta en un estado no operativo (Suspendida, Cancelada o Archivada).
 
-Solo las cuentas **Prueba** y **Activa** pueden usar la aplicación. Esto no es algo que pueda solucionar desde dentro del portal: **contacte a su administrador** (o al equipo de plataforma) para que la cuenta sea reactivada. Los superadministradores de plataforma cambian el estado de la cuenta desde **Administrador del Sistema → Cuentas → Cambiar Estado** (vea [Administración del sistema](topic:system-administration)). Para el panorama completo, vea [Roles y permisos](topic:roles-and-permissions#estado-de-la-cuenta-cómo-se-ve-una-cuenta-suspendida).
+Solo las cuentas **Prueba** y **Activa** pueden usar la aplicación. Esto no es algo que pueda solucionar desde dentro del portal: **contacte a su administrador** (o al equipo de plataforma) para que la cuenta sea reactivada. Los superadministradores de plataforma cambian el estado de la cuenta desde **Administrador del Sistema → Cuenta → Cambiar Estado** (vea [Administración del sistema](topic:system-administration)). Para el panorama completo, vea [Roles y permisos](topic:roles-and-permissions#estado-de-la-cuenta-cómo-se-ve-una-cuenta-suspendida).
 
 ## Falta una funcionalidad en mi menú
 
 Una sección o elemento de menú que esperaba no está. Dos razones comunes:
 
 - **Su rol o sus políticas no lo incluyen.** El acceso a las pantallas y acciones está controlado por roles y políticas. Pida a un administrador que revise sus asignaciones — vea [Roles y permisos](topic:roles-and-permissions).
-- **La funcionalidad no está habilitada para su cuenta.** Las funcionalidades opcionales se activan por cuenta. Cuando **Geocercado** está desactivado, desaparece todo el elemento de menú **Geocercas**. Las demás funcionalidades (Documentos, Enlaces Públicos, Notificaciones, etc.) ocultan su **sección o botones** dentro de la pantalla correspondiente, no un elemento de menú. Puede ver qué funcionalidades están activas en **Administración de Cuentas → Funcionalidades de Cuenta** (solo lectura). Activar una es una decisión de suscripción gestionada por el equipo de plataforma.
+- **La funcionalidad no está habilitada para su cuenta.** Las funcionalidades opcionales se activan por cuenta. Cuando **Geocercado** o **Gestión de Viajes** está desactivado, desaparece todo el elemento de menú **Geocercas** o **Viajes**. Las demás funcionalidades (Documentos, Enlaces Públicos, Notificaciones, etc.) ocultan su **sección o botones** dentro de la pantalla correspondiente, no un elemento de menú. Puede ver qué funcionalidades están activas en **Administración de Cuentas → Funcionalidades de Cuenta** (solo lectura). Solo el administrador de la plataforma puede activar una.
 
 ## "Esta funcionalidad no está habilitada para su cuenta"
 
-Si una acción muestra el mensaje **"Esta funcionalidad no está habilitada para su cuenta."**, la funcionalidad subyacente está desactivada para su cuenta. Nada está roto — simplemente la capacidad no forma parte de su plan actual. Pida a su administrador que habilite la funcionalidad (los superadministradores de plataforma lo hacen en **Administrador del Sistema → Funcionalidades de Cuenta**). Vea [Administración del sistema](topic:system-administration).
+Si una acción muestra el mensaje **"Esta funcionalidad no está habilitada para su cuenta."**, la funcionalidad subyacente está desactivada para su cuenta. Nada está roto. Pida a su administrador que habilite la funcionalidad (los administradores de la plataforma lo hacen en **Administrador del Sistema → Funcionalidades de Cuenta**). Vea [Administración del sistema](topic:system-administration).
 
 ## Mensajes de error en rojo (notificaciones)
 
@@ -60,14 +61,16 @@ Si las unidades muestran posiciones antiguas o no se actualizan, el problema cas
 - **¿Las credenciales funcionan?** Use **Probar Credencial** en el operador. Una prueba fallida significa que la conexión con el proveedor está rota (vea más abajo).
 - **¿El operador está saludable?** En el panel, verifique si los operadores están **Degradados** o **Fuera de línea**, y observe **Sincronizaciones Recientes** en busca de resultados con estado **Fallida** y códigos de error, y **Alertas GPS Abiertas**.
 - **¿El dispositivo sigue asignado a la unidad?** Si la asignación de un dispositivo fue finalizada, su unidad deja de recibir posiciones. Verifique **Asignaciones de Dispositivos** — el vínculo debe estar **Activa**, no **Finalizada**. Reasigne el dispositivo si es necesario.
-- **Sincronice** para forzar una actualización, y observe el resultado.
+- **Sincronice** para forzar una actualización, y lea el mensaje: *«el proveedor no devolvió dispositivos»* suele significar que la credencial llega a una cuenta del proveedor equivocada.
+- **¿Puede ver la unidad?** Un Usuario sencillo solo ve las unidades de sus grupos. Si un Gestor la ve y usted no, pida que agreguen la unidad a uno de sus grupos.
 
 ## Falla una prueba de conectividad
 
 Cuando **Probar Credencial** informa **"Ocurrió un error al probar la credencial"**, TrackHub no pudo alcanzar al proveedor con los datos almacenados. Verifique:
 
 - Que la **URL** en el diálogo **Credencial** del operador sea correcta.
-- Que el **Nombre de Usuario**, la **Contraseña** y la **Clave Secreta** / **Clave Secreta 2** coincidan con lo que espera el proveedor y no hayan expirado ni sido rotadas.
+- Que los demás campos (usuario, contraseña, clave de API, etc. — el cuadro los nombra como lo hace su proveedor) coincidan con lo que espera el proveedor y no hayan expirado ni sido rotados.
+- Que el **Protocolo** del operador sea realmente su proveedor. Un protocolo equivocado se ve exactamente igual que unas credenciales incorrectas.
 - Que el proveedor mismo esté en línea.
 
 Corrija los datos en el diálogo **Credencial**, guarde y pruebe de nuevo. Vea [Integración GPS](topic:gps-integration).
@@ -85,7 +88,3 @@ Cuando un diálogo de crear/editar permanece abierto después de que usted presi
 
 - Lea el mensaje de error, corrija la causa (por ejemplo, un campo obligatorio faltante, un error de validación mostrado debajo de un campo, o un error transitorio del servidor) y presione **Guardar** de nuevo.
 - Los campos obligatorios están marcados y mostrarán un mensaje si se dejan en blanco; corríjalos primero.
-
-## Advertencias de seguridad o certificado del navegador
-
-En entornos de desarrollo o prueba, el portal y sus servicios pueden usar certificados autofirmados, por lo que su navegador puede mostrar una advertencia de "su conexión no es privada" o de certificado. Esto es esperado solo en esos entornos. En un entorno de producción correctamente desplegado **no** debería ver advertencias de certificado — si las ve, deténgase y repórtelo a su administrador en lugar de omitirlas.

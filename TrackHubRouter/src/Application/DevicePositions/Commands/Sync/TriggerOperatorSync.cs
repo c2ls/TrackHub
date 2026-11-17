@@ -36,7 +36,6 @@ public readonly record struct TriggerOperatorSyncCommand(
     bool? AutoAssignNewDevices = null) : IRequest<bool>;
 
 public class TriggerOperatorSyncCommandHandler(
-    IOperatorReader operatorReader,
     IOperatorSystemReader operatorSystemReader,
     ISyncDispatchQueue dispatchQueue,
     ILogger<TriggerOperatorSyncCommandHandler> logger) : IRequestHandler<TriggerOperatorSyncCommand, bool>
@@ -49,8 +48,9 @@ public class TriggerOperatorSyncCommandHandler(
         // Manager can never be silently dropped here. The Router still validates operator/account/
         // enabled and returns typed errors instead of a silent false. One Manager read suffices:
         // Manager already validated the account (authorization + account-status gate) before
-        // dispatching, and the operator row binds the account id.
-        var op = await operatorReader.GetOperatorAsync(request.OperatorId, cancellationToken);
+        // dispatching, and the operator row binds the account id. The caller is manager_client,
+        // which holds no Operators grant, so the read runs under the Router's own service identity.
+        var op = await operatorSystemReader.GetOperatorAsync(request.OperatorId, cancellationToken);
         if (op.AccountId != request.AccountId)
         {
             logger.LogWarning("Manual sync trigger rejected: operator {OperatorId} does not belong to account {AccountId}.", request.OperatorId, request.AccountId);
@@ -67,15 +67,11 @@ public class TriggerOperatorSyncCommandHandler(
             "Sync trigger accepted for operator {OperatorId} (account {AccountId}), trigger {TriggerType}, correlation {CorrelationId}.",
             request.OperatorId, request.AccountId, request.TriggerType, request.CorrelationId);
 
-        // The account/enabled checks above run on the caller-scoped read. Re-read with the Router's
-        // service identity so the device sync receives the decrypted credential.
-        var authorized = await operatorSystemReader.GetOperatorAsync(op.OperatorId, cancellationToken);
-
         // Accepted, not awaited: the provider read, the device write-back, the run record, the
         // health probe and the alerts all happen off the request. operator_sync_runs is where the
         // caller reads what actually happened.
         var accepted = dispatchQueue.TryEnqueue(new SyncDispatchRequest(
-            authorized,
+            op,
             request.TriggerType,
             request.CorrelationId,
             request.ResetDeviceCatalog,

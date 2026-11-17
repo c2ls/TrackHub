@@ -25,6 +25,7 @@ import type { DocumentUploadFields } from 'api/manager/documents';
 
 export const documentKeys = {
   all: ['documents'] as const,
+  detail: (documentId: string) => [...documentKeys.all, 'detail', documentId] as const,
   forOwner: (accountId: string, ownerEntityType: string, ownerEntityId: string) =>
     [...documentKeys.all, 'forOwner', accountId, ownerEntityType, ownerEntityId] as const,
   types: (accountId: string, includeDisabled: boolean) =>

@@ -100,7 +100,9 @@ const PlatformStatus = () => {
   const managedAnnouncements = useManagedAnnouncements(adminTier);
 
   const results = health.data;
-  const overall: ServiceState = results ? overallState(results) : 'unknown';
+  const syncState = syncTier ? deriveSyncWorkerState(syncActivity.data ?? undefined) : 'unknown';
+  const probedOverall: ServiceState = results ? overallState(results) : 'unknown';
+  const overall: ServiceState = syncState === 'down' ? 'down' : probedOverall;
 
   const detailFor = (result: HealthProbeResult | undefined): string | undefined => {
     if (!result?.reason) return undefined;
@@ -118,8 +120,6 @@ const PlatformStatus = () => {
   const lastChecked = health.dataUpdatedAt
     ? relativeAge(new Date(health.dataUpdatedAt).toISOString(), now)
     : null;
-
-  const syncState = syncTier ? deriveSyncWorkerState(syncActivity.data ?? undefined) : 'unknown';
 
   return (
     <ArgonBox minHeight="100vh" py={5} sx={{ backgroundColor: ({ palette }) => palette.background.default }}>

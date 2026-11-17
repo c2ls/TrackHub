@@ -1,55 +1,63 @@
-# TrackHub Router API
+# TrackHub Router
 
-[English](README.en.md) | [Español](README.es.md)
+The GPS integration layer. It talks to each external tracking provider through its own API,
+normalizes positions into one shape (km/h, decimal degrees, UTC), and serves live and historical
+positions, device sync, manual sync and connectivity ping. This folder also holds the **SyncWorker**,
+the background host that runs the position, device and health loops against every operator.
 
-TrackHub is an innovative open-source application designed to unify multiple monitoring platforms into a cohesive system. Imagine having all your monitoring needs met in one place—this is the vision behind TrackHub.
+The Router has no database: master data comes from [Manager](../TrackHub.Manager); positions,
+history, health checks and sync runs go to [Telemetry](../TrackHub.Telemetry); detection feeds go to
+[Geofencing](../TrackHub.Geofencing) and [Trip Management](../TrackHub.TripManagement).
 
-Currently in development, our project aims to foster collaboration among diverse companies and developers, promoting continuous improvement and growth. TrackHub empowers organizations to centralize information about their assets and personnel, regardless of their vendors.
+Implemented providers: CommandTrack, Traccar, Flespi, Geotab, GpsGate, Navixy, Samsara, Wialon,
+Protrack, MettaX IoT, Tracksolid Pro, Motive, Cartrack, Pegasus Gateway, Webfleet, RedGPS, Plaspy,
+Ruptela TrustTrack, Mapon and GPS Trackit — one project each under `src/Infrastructure/<Protocol>`.
 
-We believe in the strength of community collaboration to create effective and accessible tools for everyone. Contribute to TrackHub to help shape the future of monitoring solutions!
+Wiki: [Router](https://github.com/shernandezp/TrackHub/wiki/Router) (provider table, capabilities,
+sync loops), [Adding a Provider](https://github.com/shernandezp/TrackHub/wiki/Adding-a-Provider).
 
-![Image](../TrackHub.AuthorityServer/src/Web/wwwroot/images/logo.png)
+## Build, run, test
 
----
+From this folder:
 
-## Overview
+```bash
+dotnet build TrackHub.Router.slnx
+dotnet test TrackHub.Router.slnx
 
-The Router API is the provider-facing service — TrackHub's multi-protocol integration layer. It connects to GPS provider APIs and serves the live map and per-transporter position reads (on demand from the provider, or from the stored latest-position projection), history replay, trip segmentation and reverse geocoding, and it dispatches manual and automatic device synchronization.
+dotnet run --project src/Web          # https://localhost:5002/graphql, REST reference at /scalar
+dotnet run --project src/SyncWorker   # optional, the background loops
+```
 
-It has no database of its own: master data is read and written through the **Management API**, and position, history, health and sync-run telemetry through the **Telemetry API**. The repository also contains the **SyncWorker** background host.
+Settings, in **both** `src/Web/appsettings.json` and `src/SyncWorker/appsettings.json`:
+`AppSettings:GraphQL{Manager,Telemetry,Geofence,TripManagement}Service`, `AppSettings:EncryptionKey`
+(must match Manager's) and `AppSettings:Protocols`, the enabled providers. Operator credentials are
+entered through the portal and stored by Manager. The `/scalar` and OpenAPI endpoints exist in the
+Development environment only.
 
----
+## Gotchas
 
-## Documentation
-
-| | |
-|---|---|
-| **Technical documentation** | The [TrackHub wiki](https://github.com/shernandezp/TrackHub/wiki) — start with [Router](https://github.com/shernandezp/TrackHub/wiki/Router) and [Adding a Provider](https://github.com/shernandezp/TrackHub/wiki/Adding-a-Provider) |
-| **User documentation** | In the app — the Help button or **F1** on any screen (English and Spanish) |
-| **Deployment** | [TrackHub.Deployment](../TrackHub.Deployment) |
-
----
-
-## Modules in this repository
-
-| Repository | Purpose |
-|---|---|
-| [TrackHubCommon](../TrackHubCommon) | Shared framework, referenced by project |
-| [TrackHub.AuthorityServer](../TrackHub.AuthorityServer) | Authorization service (OAuth 2.0 / OpenID Connect) |
-| [TrackHubSecurity](../TrackHubSecurity) | Security API — users, roles, policies, permissions |
-| [TrackHub.Manager](../TrackHub.Manager) | Management API — master data |
-| [TrackHubRouter](../TrackHubRouter) | Router API and SyncWorker — GPS provider integration |
-| [TrackHub.Telemetry](../TrackHub.Telemetry) | Telemetry API — positions, history, operator health |
-| [TrackHub.Geofencing](../TrackHub.Geofencing) | Geofencing API |
-| [TrackHub.TripManagement](../TrackHub.TripManagement) | Trip Management API |
-| [TrackHub.Reporting](../TrackHub.Reporting) | Reporting API |
-| [TrackHub.Portal](../TrackHub.Portal) | Web portal (React) |
-| [TrackHubMobile](https://github.com/shernandezp/TrackHubMobile) | Mobile application |
-| [TrackHub.IntegrationTests](../TrackHub.IntegrationTests) | Cross-service GraphQL contract tests |
-| [TrackHub.Deployment](../TrackHub.Deployment) | Docker deployment for the whole stack |
-
----
-
-## License
-
-Apache License 2.0. See the [LICENSE file](https://www.apache.org/licenses/LICENSE-2.0) for more information.
+- **A misconfigured provider fails at startup, on purpose.** A listed protocol with no assembly, no
+  readers, or a capability declaration that does not match its readers throws instead of being
+  skipped.
+- **Adding a provider touches three places:** the `ProtocolType` value in TrackHubCommon, the
+  provider project (namespace `TrackHub.Router.Infrastructure.<Protocol>`, readers with matching
+  `Protocol`, a `ProviderDescriptor`), and `AppSettings:Protocols` in **both** Web and SyncWorker.
+  The capability catalog and the portal's provider list build themselves from the descriptors.
+- **A provider's polling limit outranks the account's storing interval.** `ProviderDescriptor`
+  may declare `MinPositionIntervalSeconds`; the position loop skips an operator polled more
+  recently than that.
+- **`Ping` must make a real provider round-trip.** Sessions are cached in `IProviderSessionStore`,
+  so a ping that only initializes would report HEALTHY while the provider is down.
+- **Provider errors must throw, never degrade to empty results.** A swallowed error becomes a
+  "successful" sync of 0 positions while health stays green. Wialon and Navixy report failures as
+  HTTP 200 with an error payload; both are detected.
+- **The SyncWorker is single-instance by design.** `IOperatorSyncLock`, `ExecutionIntervalManager`
+  and `IProviderSessionStore` are in-process; scaling out needs a cross-instance claim first.
+- **Tenant scope follows the caller; credentials are read with the service identity.** Resolve the
+  operator through `IOperatorReader` (caller's token), then the decrypted credential through
+  `IOperatorSystemReader`. Never widen a user's permissions to reach credential material.
+- **Provider `HttpClient`s disable auto-redirect**, so an operator-configured URL cannot redirect
+  the Router to an internal address.
+- `AttributesVm.Hourmeter` is in hours; `Mileage` is not converted at the mapper boundary.
+- After changing the GraphQL surface, run `dotnet test ../TrackHub.IntegrationTests` and then the
+  portal's `npm run codegen`.

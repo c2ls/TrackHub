@@ -69,8 +69,9 @@ const FormDialog = ({
                 if (reason !== 'backdropClick') handleClose();
             }}
             data-testid="dialog-form"
-            // Forms also open from inside dialogs, so the panel stacks with them, not below.
-            sx={{ zIndex: (theme) => theme.zIndex.modal }}
+            // Forms also open from inside dialogs, so the panel stacks with them, not below. The
+            // theme's MuiDrawer override is the sidenav's and forces nowrap on every drawer.
+            sx={{ zIndex: (theme) => theme.zIndex.modal, whiteSpace: 'normal' }}
             slotProps={{
                 paper: {
                     role: 'dialog',

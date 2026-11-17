@@ -68,7 +68,7 @@ public class ReportDatasetEquivalenceTests
     public void Admin_AccountByStatusRowVm_ColumnsAndValuesMatch()
         => AssertMatchesProperties(new[]
         {
-            new AccountByStatusRowVm("Acme", "Active", 1, true, DateTimeOffset.UtcNow)
+            new AccountByStatusRowVm("Acme", "Active", "Business", true, DateTimeOffset.UtcNow)
         });
 
     [Test]
@@ -81,7 +81,7 @@ public class ReportDatasetEquivalenceTests
     [Test]
     public void AppliedFilters_EchoProvidedValuesUnderNamedKeys()
     {
-        var dataset = ReportDataset.Create(Filters(), new[] { new AccountByStatusRowVm("A", "Active", 1, true, DateTimeOffset.UtcNow) });
+        var dataset = ReportDataset.Create(Filters(), new[] { new AccountByStatusRowVm("A", "Active", "Business", true, DateTimeOffset.UtcNow) });
         var applied = dataset.AppliedFilters.ToDictionary(f => f.Key, f => f.Value);
 
         // Named echo: "Filter" + PascalCase(name); dates as instants (rendered in the account zone), others raw.

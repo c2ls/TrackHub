@@ -41,6 +41,7 @@ Su nueva contraseña debe tener al menos **8 caracteres** e incluir **una letra 
 | **Permisos de Cliente de Servicio** | Qué cliente puede realizar qué acción sobre qué recurso | Rara vez |
 | **Tipos de Unidades** | Umbrales de movimiento que deciden cuándo una unidad cuenta como detenida | Rara vez — déjelos como se instalaron |
 | **Proveedores de Geocodificación** | El servicio que convierte coordenadas en direcciones | Una vez, al configurar |
+| **Catálogo de peajes** | Clases de vehículo, estaciones de peaje y tarifas detrás de las estimaciones de peajes de los viajes | Cuando se usan viajes |
 | **Roles** | La matriz de permisos detrás de Administrador, Gestor y Usuario | Rara vez — déjela como se instaló |
 | **Políticas** | Conjuntos de permisos reutilizables | Rara vez — déjelas como se instalaron |
 | **Funcionalidades de Cuenta** | Qué funcionalidades tiene cada cuenta | En cada cliente nuevo |
@@ -52,9 +53,9 @@ Cada sección se describe campo por campo en [Administración del sistema](topic
 
 Una **cuenta** es un cliente — sus propios usuarios, unidades, dispositivos y datos, aislados de cualquier otra cuenta.
 
-1. Abra la sección **Cuenta** y haga clic en el ícono **+**.
+1. Abra la sección **Cuenta** y presione **Agregar**.
 2. Complete el diálogo **Detalle de la Cuenta**:
-   - **Nombre** (obligatorio) y **Descripción**.
+   - **Nombre** (obligatorio), **Descripción** y **Zona horaria** — toda fecha que TrackHub calcula para la cuenta (hoy, totales diarios, rangos de reportes) se interpreta en esta zona.
    - **Correo Electrónico**, **Contraseña**, **Nombre**, **Apellido** — estos son el **primer usuario** de la cuenta, y solo aparecen al crear una cuenta nueva.
    - **Tipo** (obligatorio) — **Personal**, **Empresarial** o **Asociado**.
    - **Activo** — déjelo marcado.
@@ -104,16 +105,18 @@ Se **requiere** un **Motivo** al mover una cuenta a **Suspendida** o **Cancelada
 Una cuenta nueva empieza **sin ninguna funcionalidad**. Hasta que las aprovisione, le faltará el menú Geocercas, no tendrá las pantallas de notificaciones y sus reportes GPS no existirán. Este paso no es opcional.
 
 1. Abra la sección **Funcionalidades de Cuenta**.
-2. Haga clic en el ícono **+** (**Agregar Funcionalidad a la Cuenta**).
+2. Presione **Agregar** (**Agregar Funcionalidad a la Cuenta**).
 3. Elija la **Cuenta** y la **Funcionalidad**.
-4. Configure **Habilitada**, un **Nivel** (una etiqueta de plan; `default` está bien) y —para las dos funcionalidades que lo tienen— el valor de ajuste:
+4. Configure **Habilitada**, un **Nivel** (**Predeterminado** está bien) y los ajustes de la funcionalidad cuando los tenga:
    - **Intervalo de Almacenamiento (Segundos)** para Integración GPS, predeterminado **360**.
    - **Días de Retención** para Historial de Posiciones GPS, predeterminado **30**.
-5. Presione **Guardar** y repita para cada funcionalidad a la que el cliente tenga derecho.
+   - **Bloquear la asignación cuando la licencia del personal esté vencida** para Personal, desactivado por defecto.
+   - Los ajustes automáticos de viajes para Gestión de Viajes — vea el [Catálogo de funcionalidades](topic:feature-catalog#gestión-de-viajes).
+5. Presione **Guardar** y repita para cada funcionalidad que deba tener la cuenta.
 
 Editar una fila existente mantiene fijas la cuenta y la funcionalidad y le permite cambiar el resto.
 
-Para un cliente de rastreo típico, empiece con **Integración GPS** e **Historial de Posiciones GPS**, y luego agregue lo que incluya la suscripción. Qué hace cada funcionalidad, y exactamente qué desaparece cuando una está desactivada, se detalla en el [Catálogo de funcionalidades](topic:feature-catalog).
+Para un cliente de rastreo típico, empiece con **Integración GPS** e **Historial de Posiciones GPS**, y luego agregue lo demás que necesite el cliente. Qué hace cada funcionalidad, y exactamente qué desaparece cuando una está desactivada, se detalla en el [Catálogo de funcionalidades](topic:feature-catalog).
 
 ## 6. Datos de referencia de la plataforma
 
@@ -134,7 +137,7 @@ Las concesiones tienen tiempo limitado y quedan registradas a propósito. Úsela
 
 La cuenta existe, está Activa y sus funcionalidades están activadas. Lo que queda le corresponde a la persona que creó como su Gestor. Dígale:
 
-- Qué funcionalidades tiene su cuenta, y que cambiarlas es una decisión de facturación que vuelve a usted.
+- Qué funcionalidades tiene su cuenta, y que cambiarlas vuelve a usted.
 - Que debe cambiar su contraseña en el primer inicio de sesión, exactamente como hizo usted en el paso 1.
 - Que el orden de su configuración importa, y que está escrito para él en [Configuración de su cuenta](topic:admin-account-setup).
 - Que **crear un usuario no le da un rol a ese usuario**, y que **un Usuario sencillo sin grupo ve un mapa vacío**. Estas son las dos cosas que los gestores nuevos hacen mal.

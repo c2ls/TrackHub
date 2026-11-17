@@ -466,9 +466,11 @@
     "resourceType": "Tipo de Recurso",
     "resourceId": "Id del Recurso",
     "scopes": "Ámbitos (separados por coma)",
+    "scopesHeader": "Ámbitos",
     "purpose": "Propósito",
     "expiresAt": "Vence En",
     "revokedAt": "Revocado En",
+    "revoked": "Revocado",
     "accessCount": "Accesos",
     "status": "Estado"
   },
@@ -1197,10 +1199,17 @@
     "maxTimeGap": "Tiempo Máximo (Minutos)",
     "maxDistance": "Máxima Distancia (Km)"
   },
+  "entityTypes": {
+    "Trip": "Viaje",
+    "Transporter": "Unidad",
+    "Document": "Documento",
+    "Staff": "Personal",
+    "User": "Usuario"
+  },
   "transporterTypes": {
     "unknown": "Desconocido",
     "aircraft": "Aeronave",
-    "asset": "Activo",
+    "asset": "Bien",
     "bicycle": "Bicicleta",
     "boat": "Barco",
     "car": "Automóvil",
@@ -1412,9 +1421,13 @@
       "running": "En Ejecución",
       "pending": "Pendiente"
     },
+    "trigger": {
+      "automatic": "Automática",
+      "manual": "Manual"
+    },
     "assignmentForm": {
       "transporter": "Unidad que recibirá el dispositivo",
-      "transporterHelp": "Seleccione la unidad/activo que debe usar este dispositivo GPS.",
+      "transporterHelp": "Seleccione la unidad/bien que debe usar este dispositivo GPS.",
       "selectTransporter": "Seleccione una unidad",
       "device": "Dispositivo GPS sin asignar",
       "deviceHelp": "Solo se muestran dispositivos que no están asignados actualmente a una unidad.",
@@ -1563,7 +1576,6 @@
         "alert-evaluation": "Evaluación de alertas",
         "notification-dispatch": "Envío de notificaciones",
         "notification-digest": "Resúmenes de notificaciones",
-        "delivery-retention": "Limpieza de envíos",
         "document-scan": "Análisis antivirus de documentos",
         "document-expiration": "Avisos de vencimiento de documentos",
         "document-retention-cleanup": "Limpieza de retención de documentos",
@@ -1572,8 +1584,7 @@
         "workforce-expiration-scan": "Recordatorios de vencimiento del personal",
         "trip-eta-refresh": "Actualización de ETA de viajes",
         "trip-schedule-reminder": "Recordatorios de inicio de viajes",
-        "router-sync-worker": "Sincronizador GPS",
-        "platform-retention": "Limpieza de retención de la plataforma"
+        "router-sync-worker": "Sincronizador GPS"
       }
     },
     "manage": {

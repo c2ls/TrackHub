@@ -20,6 +20,8 @@ This topic describes what your customer sees, so you can answer their questions 
 
 At the top: the **trip code**, its current **status**, and the planned start. The customer can press **Refresh** at any time to pull the latest state.
 
+![Customer tracking page with the trip status, stops and live position](assets/en/public-trip-tracking.png)
+
 Below that, the stop list in visit order. For each stop:
 
 - its **number** and **name**, and the **city** if one is known;

@@ -29,6 +29,7 @@ import type {
   GetCurrentUserQuery,
   GetUsersByAccountQuery,
   GetIntegrationUsersQuery,
+  GetUserLookupByAccountQuery,
   CreateUserDtoInput,
   UpdateUserDtoInput,
   UpdateCurrentUserDtoInput,
@@ -37,6 +38,7 @@ import {
   GetCurrentUserDocument,
   GetIntegrationUsersDocument,
   GetUsersByAccountDocument,
+  GetUserLookupByAccountDocument,
   CreateUserDocument,
   CreateManagerDocument,
   UpdateUserDocument,
@@ -53,6 +55,7 @@ export type CurrentUser = GetCurrentUserQuery['currentUser'];
 export type AccountUser = GetUsersByAccountQuery['usersByAccount']['items'][number];
 export type AccountUsersPage = Page<AccountUser>;
 export type IntegrationUser = GetIntegrationUsersQuery['users'][number];
+export type UserLookup = GetUserLookupByAccountQuery['userLookupByAccount'][number];
 export type { CreateUserDtoInput, UpdateUserDtoInput, UpdateCurrentUserDtoInput };
 
 export async function getCurrentUser(options?: RequestOptions): Promise<CurrentUser> {
@@ -73,6 +76,12 @@ export async function getUsersByAccount(params: ListParams = {}, options?: Reque
     search: params.search ?? null,
   }, options);
   return data.usersByAccount;
+}
+
+/** Every member of the caller's account, id and username only. */
+export async function getUserLookupByAccount(options?: RequestOptions): Promise<UserLookup[]> {
+  const data = await executeGraphQL('security', GetUserLookupByAccountDocument, undefined, options);
+  return data.userLookupByAccount;
 }
 
 export async function createUser(user: CreateUserDtoInput): Promise<User> {
