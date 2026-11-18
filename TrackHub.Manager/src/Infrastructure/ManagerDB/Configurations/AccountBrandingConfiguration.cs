@@ -21,7 +21,6 @@ namespace TrackHub.Manager.Infrastructure.Configurations;
 
 public class AccountBrandingConfiguration : IEntityTypeConfiguration<AccountBranding>
 {
-    // Manager-owned; not in the shared TableMetadata to avoid a Common repack for a single name.
     private const string TableName = "account_branding";
     private const int ColorLength = 7; // #RRGGBB
 
